@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PSG - PHONGSUPTHAVY GROUP</title>
-<link rel="icon" type="image/png" href="public/images/logo.jpg">
+<link rel="icon" type="image/png" href="<?=BASE_URL?>/public/images/logo.jpg">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
@@ -19,6 +19,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script>
 <script src="<?=BASE_URL?>/public/js/app.js?v=<?=time();?>" defer></script>
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/style.css?v=<?=time();?>">
+<script>
+    const BASE_URL = "<?= BASE_URL ?>";
+</script>
 </head>
 <body>
 <div id="loading" class="loader-overlay">
@@ -49,7 +52,7 @@
             <?php } ?>
             <h1 class="h4 m-0">
                 <a href="./" class="text-decoration-none text-dark d-flex align-items-center">
-                    <img src="public/images/logo.jpg" alt="" height="50" class="me-2">
+                    <img src="<?=BASE_URL?>/public/images/logo.jpg" alt="" height="50" class="me-2">
                     <span class="fw-bold">PSG</span>
                 </a>
             </h1>
@@ -165,22 +168,22 @@
             <?php } ?>
             <div class="dropdown dropdown-language">
                 <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-                    <img src="public/flags/la.png" width="20" class="me-1"> LO
+                    <img src="<?=BASE_URL?>/public/flags/la.png" width="20" class="me-1"> LO
                 </button>
                 <ul class="dropdown-menu">
                     <li>
                         <a class="dropdown-item" data-value="lo">
-                            <img src="public/flags/la.png" width="20" class="me-2"> ລາວ
+                            <img src="<?=BASE_URL?>/public/flags/la.png" width="20" class="me-2"> ລາວ
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item" data-value="en">
-                            <img src="public/flags/gb.png" width="20" class="me-2"> English
+                            <img src="<?=BASE_URL?>/public/flags/gb.png" width="20" class="me-2"> English
                         </a>
                     </li>
                     <li>
                         <a class="dropdown-item" data-value="th">
-                            <img src="public/flags/th.png" width="20" class="me-2"> ไทย
+                            <img src="<?=BASE_URL?>/public/flags/th.png" width="20" class="me-2"> ไทย
                         </a>
                     </li>
                 </ul>
@@ -221,14 +224,4 @@
         </div>
     </div>
 </header>
-<div id="slidePanel">
-  <div class="panel-header d-flex justify-content-between align-items-center">
-    <div>
-      <h5 class="mb-1" id="panelTitle">ข้อมูลเสา</h5>
-      <small id="panelSubtitle">รายละเอียดเสา Smart Pole</small>
-    </div>
-    <button class="btn btn-light" onclick="closePanel()">×</button>
-  </div>
-  <div class="p-4" id="panelContent"></div>
-</div>
 <div class="main-container <?=(empty($_SESSION)?'blue-frame':'')?>">

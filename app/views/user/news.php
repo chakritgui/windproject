@@ -210,7 +210,10 @@
             if (item.isNew) badges.push('<span class="news-badge badge-new">ใหม่</span>');
             if (item.isHot) badges.push('<span class="news-badge badge-hot">ฮอต</span>');
             col.innerHTML = `
-                <div class="news-card">
+                <a href="${BASE_URL}/news/${item.slug || '8d6121e3-cfb2-4053-b840-3a416bba83bd'}" 
+                    class="news-card d-block text-decoration-none" 
+                    target="_blank" 
+                    rel="noopener">
                     <div class="news-image-container">
                         <i class="fas fa-wind"></i>
                         ${badges.join('')}
@@ -226,7 +229,7 @@
                             <span><i class="far fa-eye"></i> ${item.views.toLocaleString()}</span>
                         </div>
                     </div>
-                </div>
+                </a>
             `;
             container.appendChild(col);
         });

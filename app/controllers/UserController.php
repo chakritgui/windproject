@@ -16,4 +16,15 @@
             ensure_login();
             $this->view('user/download');
         }
+        public function newsDetail($slug) {
+            ensure_login();
+            $news = 1;
+            if (!$news) {
+                http_response_code(404);
+                exit('News not found');
+            }
+            $this->view('user/news/detail', [
+                'news' => $news
+            ]);
+        }
     }

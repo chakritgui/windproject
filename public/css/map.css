@@ -1,0 +1,60 @@
+#map { 
+    position:absolute; 
+    width:100%; 
+    height:100%; 
+}
+.marker {
+    width:20px;
+    height:20px;
+    background-size:contain;
+    background-repeat:no-repeat;
+    cursor:pointer;
+}
+.marker.red { 
+    background-image:url('https://cdn-icons-png.flaticon.com/512/252/252025.png'); 
+}
+.marker.green { 
+    background-image:url('https://cdn-icons-png.flaticon.com/512/149/149060.png'); 
+}
+.marker.blue { 
+    background-image:url('https://cdn-icons-png.flaticon.com/512/252/252025.png'); 
+}
+.gallery-img {
+    cursor: pointer;
+    transition: transform 0.3s;
+    height: 100px;
+    object-fit: cover;
+}
+.gallery-img:hover {
+    transform: scale(1.05);
+}
+.img360-thumb {
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 3px solid transparent;
+}
+.img360-thumb:hover {
+    border-color: #667eea;
+    transform: scale(1.05);
+}
+.badge-status {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+}
+#viewer360 {
+    width: 100%;
+    height: 400px;
+    background: #000;
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+}
+#viewer360:active {
+    cursor: grabbing;
+}
+#viewer360 img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    user-select: none;
+}

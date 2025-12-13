@@ -44,6 +44,7 @@
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');
             $router->get('/news', 'UserController@news');
+            $router->get('/news/{slug}', 'UserController@newsDetail');
             $router->get('/document', 'UserController@document');
             $router->get('/download', 'UserController@download');
         }

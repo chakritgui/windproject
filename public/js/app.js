@@ -4,7 +4,7 @@ let pageLength = 50;
 let lengthMenu = [[50, 100, 250, 500, 1000, -1], [50, 100, 250, 500, 1000, "All"]];
 async function loadLang(lang) {
     try {
-        const res = await fetch(`public/lang/${lang}.json?v=${Date.now()}`);
+        const res = await fetch(`${BASE_URL}/public/lang/${lang}.json?v=${Date.now()}`);
         if (!res.ok) throw new Error("Language file missing");
         langData = await res.json();
         updateText();
@@ -33,7 +33,7 @@ function updateDropdownLabel(lang) {
         label = "TH";
     }
     $('.dropdown-language .dropdown-toggle').html(`
-        <img src="public/flags/${flag}.png" width="20" class="me-1"> ${label}
+        <img src="${BASE_URL}/public/flags/${flag}.png" width="20" class="me-1"> ${label}
     `);
 }
 $(document).on('click', '.dropdown-language .dropdown-item', async function(){
@@ -182,12 +182,4 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error:', error);
         });
     }
-});
-Fancybox.bind("[data-fancybox='gallery']", {
-    Image: {
-      zoom: true,
-      click: "toggleZoom",
-      wheel: "zoom",
-    },
-    Thumbs: true,
 });

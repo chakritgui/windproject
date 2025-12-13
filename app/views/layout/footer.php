@@ -2,6 +2,23 @@
 <div class="footer">
     Copyright © 2025 iWind Corporation Limited
 </div>
+<div id="slidePanel">
+    <div class="panel-header d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="mb-1" id="panelTitle">ข้อมูลเสา</h5>
+            <small id="panelSubtitle">รายละเอียดเสา Smart Pole</small>
+        </div>
+        <button class="btn btn-light" onclick="closePanel()">×</button>
+    </div>
+    <div class="p-4" id="panelContent"></div>
+    <div class="panel-footer align-items-center">
+        <div class="d-grid">
+            <button class="btn btn-primary btn-lg show-report">
+                <i class="bi bi-wind"></i> ดูรายงานค่าลม
+            </button>
+        </div>       
+    </div>
+</div>
 <div class="modal fade" id="windModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
