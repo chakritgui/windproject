@@ -27,4 +27,15 @@
                 'news' => $news
             ]);
         }
+        public function pole($slug) {
+            ensure_login();
+            $pole = 1;
+            if (!$pole) {
+                http_response_code(404);
+                exit('News not found');
+            }
+            $this->view('user/pole', [
+                'pole' => $pole
+            ]);
+        }
     }

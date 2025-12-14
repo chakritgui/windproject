@@ -196,25 +196,25 @@
                 <ul class="dropdown-menu dropdown-menu-end">
                 <?php if(isset($_SESSION['user']['role']) && $_SESSION['user']['role'] == 'admin') { ?>
                     <li>
-                        <a class="dropdown-item" href="switch-user">
+                        <a class="dropdown-item" href="<?=BASE_URL?>/switch-user">
                             <i class="bi bi-person me-2"></i> <span data-i18n="user_panel"></span>
                         </a>
                     </li>
                 <?php } else { ?>
                     <li>
-                        <a class="dropdown-item" href="switch-admin">
+                        <a class="dropdown-item" href="<?=BASE_URL?>/switch-admin">
                             <i class="bi bi-person me-2"></i> <span data-i18n="admin_tools"></span>
                         </a>
                     </li>
                 <?php } ?>
                     <li>
-                        <a class="dropdown-item" href="account">
+                        <a class="dropdown-item" href="<?=BASE_URL?>/account">
                             <i class="bi bi-gear me-2"></i> <span data-i18n="account_settings"></span>
                         </a>
                     </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                        <a class="dropdown-item text-danger" href="logout">
+                        <a class="dropdown-item text-danger" href="<?=BASE_URL?>/logout">
                             <i class="bi bi-box-arrow-right me-2"></i> <span data-i18n="logout"></span>
                         </a>
                     </li>

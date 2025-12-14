@@ -11,13 +11,7 @@
         <button class="btn btn-light" onclick="closePanel()">×</button>
     </div>
     <div class="p-4" id="panelContent"></div>
-    <div class="panel-footer align-items-center">
-        <div class="d-grid">
-            <button class="btn btn-primary btn-lg show-report">
-                <i class="bi bi-wind"></i> ดูรายงานค่าลม
-            </button>
-        </div>       
-    </div>
+    <div id="panelFooter" class="panel-footer align-items-center"></div>
 </div>
 <div class="modal fade" id="windModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -97,19 +91,6 @@
             </div>
         </div>
     </div>
-</div>
-<div class="modal fade" id="windReportModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title"><i class="bi bi-wind"></i> รายงานค่าลม</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div id="windReportContent"></div>
-      </div>
-    </div>
-  </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.3/dist/sweetalert2.all.min.js"></script>

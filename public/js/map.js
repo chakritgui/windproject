@@ -192,9 +192,17 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiamFra3JpdGd1aSIsImEiOiJjbWgzazI4ZmwzNHpiMmpvZ
     function openPolePanel(pole) {
         const panel = document.getElementById('slidePanel');
         const content = document.getElementById('panelContent');
+        const footer = document.getElementById('panelFooter');
         document.getElementById('panelTitle').textContent = pole.name;
         document.getElementById('panelSubtitle').textContent = pole.type;
         const statusColor = pole.status === 'ปกติ' ? 'success' : 'warning';
+        footer.innerHTML = `
+            <div class="d-grid">
+                <a href="${BASE_URL}/pole/8d6121e3-cfb2-4053-b840-3a416bba83bd" class="btn btn-primary btn-lg text-decoration-none" target="_blank" rel="noopener">
+                    <i class="bi bi-wind"></i> ดูรายงานค่าลม
+                </a>
+            </div> 
+        `;
         content.innerHTML = `
             <div class="mb-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -278,67 +286,4 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiamFra3JpdGd1aSIsImEiOiJjbWgzazI4ZmwzNHpiMmpvZ
     }
     function closePanel() {
         document.getElementById('slidePanel').classList.remove('active');
-    }
-    function showWindReport(poleId) {
-        const windData = {
-            1: { speed: 12.5, direction: 'ตะวันออกเฉียงเหนือ', gust: 18.2, temp: 32, humidity: 65 },
-            2: { speed: 10.3, direction: 'เหนือ', gust: 15.1, temp: 31, humidity: 68 },
-            3: { speed: 15.8, direction: 'ตะวันตก', gust: 22.5, temp: 33, humidity: 62 },
-            4: { speed: 9.2, direction: 'ใต้', gust: 13.7, temp: 30, humidity: 70 }
-        };
-        const data = windData[poleId];
-        document.getElementById('windReportContent').innerHTML = `
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="card border-primary">
-                        <div class="card-body text-center">
-                            <i class="bi bi-wind text-primary" style="font-size: 3rem;"></i>
-                            <h3 class="mt-2 mb-0">${data.speed} <small>m/s</small></h3>
-                            <p class="text-muted mb-0">ความเร็วลมเฉลี่ย</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card border-warning">
-                        <div class="card-body text-center">
-                            <i class="bi bi-hurricane text-warning" style="font-size: 3rem;"></i>
-                            <h3 class="mt-2 mb-0">${data.gust} <small>m/s</small></h3>
-                            <p class="text-muted mb-0">ความเร็วลมสูงสุด</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card bg-light">
-                        <div class="card-body text-center">
-                            <i class="bi bi-compass"></i>
-                            <p class="mb-0"><strong>${data.direction}</strong></p>
-                            <small class="text-muted">ทิศทางลม</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card bg-light">
-                        <div class="card-body text-center">
-                            <i class="bi bi-thermometer-half"></i>
-                            <p class="mb-0"><strong>${data.temp}°C</strong></p>
-                            <small class="text-muted">อุณหภูมิ</small>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card bg-light">
-                        <div class="card-body text-center">
-                            <i class="bi bi-droplet"></i>
-                            <p class="mb-0"><strong>${data.humidity}%</strong></p>
-                            <small class="text-muted">ความชื้น</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="alert alert-info mt-3">
-                <i class="bi bi-info-circle"></i> 
-                <strong>หมายเหตุ:</strong> ข้อมูลอัพเดทล่าสุดเมื่อ ${new Date().toLocaleString('th-TH')}
-            </div>
-        `; 
-        new bootstrap.Modal(document.getElementById('windReportModal')).show();
     }
