@@ -17,28 +17,18 @@
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" />
 <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script>
-<script src="<?=BASE_URL?>/public/js/app.js?v=<?=time();?>" defer></script>
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/style.css?v=<?=time();?>">
 <script>
     const BASE_URL = "<?= BASE_URL ?>";
 </script>
 </head>
 <body>
-<div id="loading" class="loader-overlay">
-    <div class="loader-container">
-        <div class="windmill">
-            <div class="windmill-blades">
-                <div class="blade"></div>
-                <div class="blade"></div>
-                <div class="blade"></div>
-            </div>
-            <div class="windmill-center"></div>
-            <div class="windmill-pole"></div>
-        </div>
-        <div class="loading-text">
-            <span class="dots"><span>.</span><span>.</span><span>.</span></span>
-        </div>
+<div id="pageLoader" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="z-index: 1055; background: rgba(255,255,255,.7);">
+    <div class="d-flex justify-content-center align-items-center h-100">
+        <div class="spinner-border" role="status" aria-hidden="true"></div>
+        <span class="ms-2" data-i18n="loading"></span>
     </div>
+
 </div>
 <?=include('menu.php')?>
 <div id="sidebarOverlay" class="sidebar-overlay"></div>
@@ -194,19 +184,6 @@
                     <i class="fa-regular fa-user"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                <?php if(isset($_SESSION['user']['role']) && $_SESSION['user']['role'] == 'admin') { ?>
-                    <li>
-                        <a class="dropdown-item" href="<?=BASE_URL?>/switch-user">
-                            <i class="bi bi-person me-2"></i> <span data-i18n="user_panel"></span>
-                        </a>
-                    </li>
-                <?php } else { ?>
-                    <li>
-                        <a class="dropdown-item" href="<?=BASE_URL?>/switch-admin">
-                            <i class="bi bi-person me-2"></i> <span data-i18n="admin_tools"></span>
-                        </a>
-                    </li>
-                <?php } ?>
                     <li>
                         <a class="dropdown-item" href="<?=BASE_URL?>/account">
                             <i class="bi bi-gear me-2"></i> <span data-i18n="account_settings"></span>

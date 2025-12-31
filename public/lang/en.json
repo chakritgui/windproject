@@ -30,6 +30,7 @@
     "return_to_login": "Return to login",
     "email_not_found": "Email not found",
     "invalid_credentials": "Invalid credentials",
+    "account_inactive": "Account Inactive",
     "reset_success": "A link to reset your password has been sent to your email. Please check your email.",
     "success": "Success",
     "admin_tools": "Admin Tools",
@@ -124,5 +125,6 @@
     "pole_list": "Pole List",
     "website_management": "Website Management",
     "shortcut": "Shortcut",
-    "shortcut_management": "Shortcut Management"
+    "shortcut_management": "Shortcut Management",
+    "loading": "Loading..."
 }

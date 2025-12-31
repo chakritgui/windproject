@@ -86,17 +86,23 @@ function showWarning(title, msg, ConfirmButton = true) {
         confirmButtonText: langData['ok'] || 'OK'
     });
 }
-document.getElementById("sidebarToggle").addEventListener("click", () => {
-    document.getElementById("sidebar").classList.add("open");
-    document.getElementById("sidebarOverlay").classList.add("show");
-});
-document.getElementById("sidebarClose").addEventListener("click", () => {
-    document.getElementById("sidebar").classList.remove("open");
-    document.getElementById("sidebarOverlay").classList.remove("show");
-});
-document.getElementById("sidebarOverlay").addEventListener("click", () => {
-    document.getElementById("sidebar").classList.remove("open");
-    document.getElementById("sidebarOverlay").classList.remove("show");
+document.addEventListener("DOMContentLoaded", () => {
+    const toggle = document.getElementById("sidebarToggle");
+    const closeBtn = document.getElementById("sidebarClose");
+    const overlay = document.getElementById("sidebarOverlay");
+    const sidebar = document.getElementById("sidebar");
+    toggle?.addEventListener("click", () => {
+        sidebar.classList.add("open");
+        overlay.classList.add("show");
+    });
+    closeBtn?.addEventListener("click", () => {
+        sidebar.classList.remove("open");
+        overlay.classList.remove("show");
+    });
+    overlay?.addEventListener("click", () => {
+        sidebar.classList.remove("open");
+        overlay.classList.remove("show");
+    });
 });
 function getTableLang() {
     return {
@@ -119,31 +125,32 @@ document.addEventListener('DOMContentLoaded', function() {
             const notificationId = this.dataset.notificationId;
             this.classList.remove('unread');
             const badge = this.querySelector('.badge');
-            if (badge) {
-                badge.remove();
-            }
+            if (badge) badge.remove();
             updateNotificationCount();
             console.log('Notification ' + notificationId + ' marked as read');
         });
     });
-    document.getElementById('markAllRead').addEventListener('click', function(e) {
+    const markAllBtn = document.getElementById('markAllRead');
+    markAllBtn?.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
         document.querySelectorAll('.notification-item.unread').forEach(item => {
             item.classList.remove('unread');
+
             const badge = item.querySelector('.badge');
-            if (badge) {
-                badge.remove();
-            }
+            if (badge) badge.remove();
         });
         const countBadge = document.getElementById('notificationCount');
-        countBadge.textContent = '0';
-        countBadge.style.display = 'none';
+        if (countBadge) {
+            countBadge.textContent = '0';
+            countBadge.style.display = 'none';
+        }
         console.log('All notifications marked as read');
     });
     function updateNotificationCount() {
         const unreadCount = document.querySelectorAll('.notification-item.unread').length;
         const countBadge = document.getElementById('notificationCount');
+        if (!countBadge) return; 
         if (unreadCount > 0) {
             countBadge.textContent = unreadCount;
             countBadge.style.display = 'inline-block';
@@ -151,35 +158,10 @@ document.addEventListener('DOMContentLoaded', function() {
             countBadge.style.display = 'none';
         }
     }
-    function markNotificationAsRead(notificationId) {
-        fetch('api/mark-notification-read.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id: notificationId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-    }
-    function markAllNotificationsAsRead() {
-        fetch('api/mark-all-notifications-read.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Success:', data);
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
-    }
 });
+function showPageLoader() {
+    $("#pageLoader").removeClass("d-none");
+}
+function hidePageLoader() {
+    $("#pageLoader").addClass("d-none");
+}

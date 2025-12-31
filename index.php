@@ -59,8 +59,6 @@
         }
     }
     $router->get('/account', 'AuthController@account');
-    $router->get('/switch-admin', 'AuthController@switchAdmin');
-    $router->get('/switch-user', 'AuthController@switchUser');
     $router->get('/logout', 'AuthController@logout');
     $currentRoute = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     $basePath = dirname($_SERVER['SCRIPT_NAME']);

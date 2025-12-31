@@ -94,5 +94,6 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.3/dist/sweetalert2.all.min.js"></script>
+<script src="<?=BASE_URL?>/public/js/app.js?v=<?=time();?>" defer></script>
 </body>
 </html>

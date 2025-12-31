@@ -19,28 +19,26 @@ function showLoginWarning(field) {
 function doLogin() {
     let username = $("#username").val().trim();
     let password = $("#password").val().trim();
-    let keepLoggedIn = $("#keepLoggedIn").val();
-    if (username === "") {
-        showLoginWarning('username');
-        return;
-    }
-    if (password === "") {
-        showLoginWarning('password');
-        return;
-    }
-    $('#loading').show();
+    if (!username) { showLoginWarning('username'); return; }
+    if (!password) { showLoginWarning('password'); return; }
+    showPageLoader();
     $.post('api/auth', {
         username: username,
-        password: password,
-        keepLoggedIn: keepLoggedIn
+        password: password
     }, function(res){
-        $('#loading').hide();
-        if(res.status === 'success'){
-            window.location.href = './';
+        if (res.status === 'success') {
+            window.location.href = `${BASE_URL}`;
         } else {
             showError(langData['login_failed'], langData[res.message]);
         }
-    }, 'json');
+
+    }, 'json')
+    .fail(function() {
+        showError("Error", "Network error");
+    })
+    .always(function(){
+        hidePageLoader();
+    });
 }
 $(document).on('click', '.login-btn', function() {
     doLogin();
@@ -57,7 +55,6 @@ $(document).on('click', '.login-forgot', function() {
         showLoginWarning('email');
         return;
     }
-    $('#loading').show();
     $.post('api/auth/forgot', {
         email: email
     }, function(res){

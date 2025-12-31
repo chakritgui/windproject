@@ -21,19 +21,24 @@ class AuthController extends Controller {
             exit;
         }
         $m = new Auth();
-        $user = $m->findByEmail($username);
-        if ($user && md5($pass) === $user['password']) {
+        $user = $m->findMember($username);
+        if ($user && md5($pass) === $user['password_hash'] && $user['status'] === 'active') {
             $_SESSION['user'] = [
-                'id'   => $user['id'],
-                'role' => 'user'
+                'id'   => $user['member_id'],
+                'role' => $user['role']
             ];
             echo json_encode([
                 'status' => 'success'
             ]);
         } else {
+            if($user && $user['status'] !== 'active') {
+                $message = 'account_inactive';
+            } else {
+                $message = 'invalid_credentials';
+            }
             echo json_encode([
                 'status'  => 'error',
-                'message' => 'invalid_credentials'
+                'message' => $message
             ]);
         }
         exit;
@@ -62,21 +67,6 @@ class AuthController extends Controller {
             'status'  => $user ? 'success' : 'error',
             'message' => $user ? 'reset_success' : 'email_not_found'
         ]);
-        exit;
-    }
-    public function switchAdmin() {
-        if (!empty($_SESSION['user'])) {
-            $_SESSION['user']['role'] = 'admin';
-        }
-
-         $this->redirect(BASE_URL);
-        exit;
-    }
-    public function switchUser() {
-        if (!empty($_SESSION['user'])) {
-            $_SESSION['user']['role'] = 'user';
-        }
-        $this->redirect(BASE_URL);
         exit;
     }
     public function account() {
