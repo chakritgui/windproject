@@ -22,7 +22,7 @@ class AuthController extends Controller {
         }
         $m = new Auth();
         $user = $m->findMember($username);
-        if ($user && md5($pass) === $user['password_hash'] && $user['status'] === 'active') {
+        if ($user && $pass === decryptToken($user['password_hash']) && $user['status'] === 'active') {
             $_SESSION['user'] = [
                 'id'   => $user['member_id'],
                 'role' => $user['role']

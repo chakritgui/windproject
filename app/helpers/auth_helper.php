@@ -6,5 +6,5 @@
         }
     }
     function is_admin() {
-        return !empty($_SESSION['user']) && $_SESSION['user']['role'] === 'admin';
+        return !empty($_SESSION['user']) && ($_SESSION['user']['role'] === 'admin' || $_SESSION['user']['role'] === 'administrator');
     }

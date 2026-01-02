@@ -5,3 +5,4 @@
     define('DB_NAME', 'windproject');
     define('BASE_URL', 'http://localhost:8080/windproject');
     define('APP_URL', 'http://localhost:8080');
+    define('key', 'yJj3mH8kF0cT1oZfTqPqvFj4T7t5Q3vYlT3W8yD2zZk=');

@@ -16,37 +16,24 @@
                 </ol>
             </nav>
         </div>
-        <div class="ms-md-3 text-md-end align-items-end">
-            <button class="btn btn-primary btn-sm manage-member">
-                <i class="fa-solid fa-plus"></i> <span data-i18n="member"></span>
-            </button>
-        </div>
     </div>
 </div>
 <div class="container-fluid mt-3 mb-5">
     <div class="row g-2 mb-3">
         <div class="col-sm-3">
-            <select id="filter_company" class="form-select filter">
-                <option value="">-- Company --</option>
-            </select>
-        </div>
-        <div class="col-sm-3">
-            <select id="filter_position" class="form-select filter">
-                <option value="">-- Position --</option>
-            </select>
-        </div>
-        <div class="col-sm-3">
             <select id="filter_role" class="form-select filter">
                 <option value="">-- Role --</option>
-                <option value="Admin">Admin</option>
-                <option value="User">User</option>
+                <option value="administrator">Administrator</option>
+                <option value="admin">Admin</option>
+                <option value="user">User</option>
             </select>
         </div>
         <div class="col-sm-3">
             <select id="filter_status" class="form-select filter">
                 <option value="">-- Status --</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+                <option value="active" selected>Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="banned">Banned</option>
             </select>
         </div>
     </div>
@@ -58,13 +45,11 @@
                 <tr>
                     <th></th>
                     <th data-i18n="full_name"></th>
-                    <th data-i18n="company"></th>
-                    <th data-i18n="position"></th>
                     <th data-i18n="email"></th>
                     <th data-i18n="mobile"></th>
                     <th data-i18n="role"></th>
                     <th data-i18n="create_at"></th>
-                    <th data-i18n="create_by"></th>
+                    <th data-i18n="last_login"></th>
                     <th data-i18n="status"></th>
                     <th></th>
                 </tr>

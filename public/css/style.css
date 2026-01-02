@@ -8,6 +8,9 @@ body {
     font-family: 'Sarabun', sans-serif !important;
     font-size: 12px !important;
 }
+.btn, a, select, input, textarea {
+    font-size: 12px !important;
+}
 .main-container {
     position: fixed;
     top: 75px;
@@ -267,4 +270,9 @@ a {
     position: sticky;
     bottom: 0;
     z-index: 10;
+}
+label.required::after {
+    content: " *";
+    color: red;
+    font-weight: bold;
 }

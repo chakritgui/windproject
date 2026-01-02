@@ -9,10 +9,11 @@ class MemberController extends BaseController {
         $start = intval($_POST['start'] ?? 0);
         $length= intval($_POST['length'] ?? 10);
         $filters = [
+            'role'=> $_POST['role'] ?? '',
             'status'=> $_POST['status'] ?? '',
-            'company'=> $_POST['company'] ?? ''
         ];
-        $res = $this->model->list($start,$length,$filters);
+        $search = $_POST['search']['value'] ?? '';
+        $res = $this->model->list($start,$length,$filters,$search);
         $this->json([
             "draw" => intval($_POST['draw'] ?? 1),
             "recordsTotal" => $res['total'],
@@ -22,6 +23,36 @@ class MemberController extends BaseController {
     }
     public function get(){
         $id = intval($_POST['id'] ?? 0);
-        $this->json(['status'=>'success','data'=>$this->model->get($id)]);
+        $this->json(['status'=>true,'data'=>$this->model->get($id)]);
+    }
+    public function delete() {
+        $id = intval($_POST['id'] ?? 0);
+        $this->json(['status'=>$this->model->delete($id)]);
+    }
+    public function save() {
+        $data = [
+            'member_id' => intval($_POST['member_id'] ?? 0),
+            'username' => $_POST['username'] ?? '',
+            'first_name' => $_POST['first_name'] ?? '',
+            'last_name' => $_POST['last_name'] ?? '',
+            'email' => $_POST['email'] ?? '',
+            'phone' => $_POST['phone'] ?? '',
+            'role' => $_POST['role'] ?? '',
+            'status' => $_POST['status'] ?? '',
+            'password' => $_POST['password'] ?? ''
+        ];
+        $this->json(['status'=>$this->model->save($data)]);
+    }
+    public function checkemail() {
+        $email = $_POST['email'] ?? '';
+        $member_id = $_POST['member_id'] ?? '';
+        $exists = $this->model->checkEmailExists($email, $member_id);
+        $this->json(['exists' => $exists]);
+    }
+    public function checkusername() {
+        $username = $_POST['username'] ?? '';
+        $member_id = $_POST['member_id'] ?? '';
+        $exists = $this->model->checkUsernameExists($username, $member_id);
+        $this->json(['exists' => $exists]);
     }
 }

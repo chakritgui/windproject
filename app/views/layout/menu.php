@@ -12,7 +12,7 @@
         </button>
     </div>
     <ul class="list-unstyled mt-3 flex-grow-1">
-        <?php if(isset($_SESSION['user']['role']) && $_SESSION['user']['role'] == 'admin') { ?>
+        <?php if(isset($_SESSION['user']['role']) && ($_SESSION['user']['role'] == 'admin' || $_SESSION['user']['role'] == 'administrator')) { ?>
             <li><a href="<?=BASE_URL?>/" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/'?'active':'') ?>">
                 <i class="fas fa-wind"></i> <span data-i18n="dashboard"></span>
             </a></li>

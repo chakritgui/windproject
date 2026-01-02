@@ -44,7 +44,7 @@ $(document).on('click', '.dropdown-language .dropdown-item', async function(){
 });
 loadLang(currentLang);
 function updatePlaceholders() {
-    $('#username').attr('placeholder', langData['username']);
+    $('#username').attr('placeholder', langData['username_or_email']);
     $('#password').attr('placeholder', langData['password']);
     $('#email').attr('placeholder', langData['email']);
 }
@@ -75,6 +75,22 @@ function showError(title, msg, ConfirmButton = true) {
         text: msg,
         showConfirmButton: ConfirmButton,
         confirmButtonText: langData['ok'] || 'OK'
+    });
+}
+function showConfirm(title, msg, confirmCallback, cancelCallback) {
+    Swal.fire({
+        title: title,   
+        text: msg,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: langData['yes'] || 'Yes',
+        cancelButtonText: langData['no'] || 'No'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            if (typeof confirmCallback === 'function') confirmCallback();
+        } else {
+            if (typeof cancelCallback === 'function') cancelCallback();
+        }
     });
 }
 function showWarning(title, msg, ConfirmButton = true) {
@@ -164,4 +180,8 @@ function showPageLoader() {
 }
 function hidePageLoader() {
     $("#pageLoader").addClass("d-none");
+}
+function isValidEmail(email){
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
 }
