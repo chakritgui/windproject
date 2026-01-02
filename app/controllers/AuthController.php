@@ -5,13 +5,13 @@ class AuthController extends Controller {
             $this->redirect(BASE_URL);
             exit;
         }
-
         $this->view('auth/login');
     }
     public function doLogin() {
         header('Content-Type: application/json; charset=utf-8');
         $username      = $_POST['username'] ?? null;
         $pass          = $_POST['password'] ?? null;
+        $timezone          = $_POST['timezone'] ?? null;
         $keepLoggedIn  = $_POST['keepLoggedIn'] ?? false;
         if (!$username || !$pass) {
             echo json_encode([
@@ -23,10 +23,14 @@ class AuthController extends Controller {
         $m = new Auth();
         $user = $m->findMember($username);
         if ($user && $pass === decryptToken($user['password_hash']) && $user['status'] === 'active') {
+            $m->updateLogin($user['member_id']);
             $_SESSION['user'] = [
                 'id'   => $user['member_id'],
                 'role' => $user['role']
             ];
+            if($timezone) {
+                $_SESSION['timezone'] = $timezone;
+            }
             echo json_encode([
                 'status' => 'success'
             ]);
@@ -44,6 +48,8 @@ class AuthController extends Controller {
         exit;
     }
     public function logout() {
+        $m = new Auth();
+        $m->updateLogout($_SESSION['user']['id']);
         session_destroy();
         $this->redirect('login');
         exit;

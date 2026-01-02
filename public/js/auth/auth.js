@@ -17,6 +17,7 @@ function showLoginWarning(field) {
     showWarning(title, message);
 }
 function doLogin() {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     let username = $("#username").val().trim();
     let password = $("#password").val().trim();
     if (!username) { showLoginWarning('username'); return; }
@@ -24,7 +25,8 @@ function doLogin() {
     showPageLoader();
     $.post('api/auth', {
         username: username,
-        password: password
+        password: password,
+        timezone: tz
     }, function(res){
         if (res.status === 'success') {
             window.location.href = `${BASE_URL}`;

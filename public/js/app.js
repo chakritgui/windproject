@@ -41,7 +41,17 @@ $(document).on('click', '.dropdown-language .dropdown-item', async function(){
     currentLang = lang;
     sessionStorage.setItem('lang', lang);
     await loadLang(lang);
+    await refreshAllTables();
 });
+async function refreshAllTables() {
+    await loadLang(currentLang); 
+    $('.dataTable').each(function() {
+        let tableId = $(this).attr('id');
+        let tableApi = $(this).DataTable();
+        let currentPage = tableApi.page();
+        if (tableId === 'tb_member') initMemberTable();
+    });
+}
 loadLang(currentLang);
 function updatePlaceholders() {
     $('#username').attr('placeholder', langData['username_or_email']);
@@ -122,16 +132,18 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 function getTableLang() {
     return {
-        search: langData['search'] || "Search",
+        search: langData?.search || "Search",
+        lengthMenu: langData?.lengthMenu || "Show _MENU_ entries",
+        zeroRecords: langData?.zeroRecords || "No matching records found",
+        info: langData?.info || "Showing _START_ to _END_ of _TOTAL_ entries",
+        infoEmpty: langData?.infoEmpty || "Showing 0 to 0 of 0 entries",
+        infoFiltered: langData?.infoFiltered || "(filtered from _MAX_ total entries)",
         paginate: {
-            next: langData['next'] || "Next",
-            previous: langData['previous'] || "Previous"
-        },
-        lengthMenu: langData['lengthMenu'] || "Show _MENU_ entries",
-        zeroRecords: langData['zeroRecords'] || "No matching records found",
-        info: langData['info'] || "Showing _START_ to _END_ of _TOTAL_ entries",
-        infoEmpty: langData['infoEmpty'] || "Showing 0 to 0 of 0 entries",
-        infoFiltered: langData['infoFiltered'] || "(filtered from _MAX_ total entries)"
+            first: langData?.first || "First",
+            last: langData?.last || "Last",
+            next: langData?.next || "Next",
+            previous: langData?.previous || "Previous"
+        }
     };
 }
 document.addEventListener('DOMContentLoaded', function() {

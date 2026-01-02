@@ -14,4 +14,18 @@
             $stmt->execute([$email]);
             return $stmt->fetch();
         }
+        public function updateLogin($member_id) {
+            $stmt = $this->db->prepare('UPDATE wp_members SET last_login_at = NOW() WHERE member_id = ?');
+            $stmt->execute([$member_id]);
+            $stmt = $this->db->prepare('INSERT INTO wp_login_logs (member_id, login_at, ip_address) VALUES (?, NOW(), ?)');
+            $ip_address = getClientIp();
+            if ($ip_address === '::1') {
+                $ip_address = '127.0.0.1';
+            }
+            $stmt->execute([$member_id, $ip_address]);
+        }
+        public function updateLogout($member_id) {
+            $stmt = $this->db->prepare('UPDATE wp_login_logs SET logout_at = NOW() WHERE member_id = ? ORDER BY login_at DESC LIMIT 1');
+            $stmt->execute([$member_id]);  
+        }    
     }

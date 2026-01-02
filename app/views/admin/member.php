@@ -20,20 +20,20 @@
 </div>
 <div class="container-fluid mt-3 mb-5">
     <div class="row g-2 mb-3">
-        <div class="col-sm-3">
+        <div class="col-sm-2">
             <select id="filter_role" class="form-select filter">
-                <option value="">-- Role --</option>
-                <option value="administrator">Administrator</option>
-                <option value="admin">Admin</option>
-                <option value="user">User</option>
+                <option value="" data-i18n="-- role --"></option>
+                <option value="administrator" data-i18n="administrator"></option>
+                <option value="admin" data-i18n="admin"></option>
+                <option value="user" data-i18n="user"></option>
             </select>
         </div>
-        <div class="col-sm-3">
+        <div class="col-sm-2">
             <select id="filter_status" class="form-select filter">
-                <option value="">-- Status --</option>
-                <option value="active" selected>Active</option>
-                <option value="inactive">Inactive</option>
-                <option value="banned">Banned</option>
+                <option value="" data-i18n="-- status --"></option>
+                <option value="active" selected data-i18n="active"></option>
+                <option value="inactive" data-i18n="inactive"></option>
+                <option value="banned" data-i18n="banned"></option>
             </select>
         </div>
     </div>

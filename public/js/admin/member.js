@@ -1,5 +1,14 @@
 let tb_member;
 function initMemberTable() {
+    let oldPage = 0;
+    if ($.fn.DataTable.isDataTable('#tb_member')) {
+        oldPage = $('#tb_member').DataTable().page();
+        $('#tb_member').DataTable().destroy();
+    }
+    if ($.fn.DataTable.isDataTable('#tb_member')) {
+        $('#tb_member').DataTable().ajax.reload(null, false);
+        return;
+    }
     tb_member = $('#tb_member').DataTable({
         processing: true,
         serverSide: true,
@@ -59,7 +68,7 @@ function initMemberTable() {
                         default:
                             badge = "secondary";
                     }
-                    return `<span class="badge bg-${badge} text-${badge} bg-opacity-10" style="font-size: 13px; font-weight: 400;" data-i18n="${status}"></span>`;
+                    return `<span class="badge bg-${badge} text-${badge} bg-opacity-10" style="font-weight: 400;" data-i18n="${status}"></span>`;
                 }
             },
             {
@@ -72,8 +81,13 @@ function initMemberTable() {
                 }
             }
         ],
+        stateSave: true,
         pageLength: pageLength,
         lengthMenu: lengthMenu,
+        stateLoadParams: function (settings, data) {
+            data.start = oldPage;
+            data.length = pageLength; 
+        },
         language: getTableLang(),
         initComplete: function(){
             let $filter = $('#tb_member_filter');
@@ -93,11 +107,12 @@ function initMemberTable() {
         }, 
         drawCallback: function(){
             loadLang(currentLang); 
+            getTableLang();
         }
     });
 }
 $('.filter').on('change', function () {
-    tb_member.ajax.reload();
+    initMemberTable();
 });
 async function initApp() {
     await loadLang(currentLang); 
@@ -117,7 +132,7 @@ $(document).on('click', '.delete-member', function() {
             success: function(res) {
                 if(res.status === true){
                     showSuccess('Success', langData['deleted_successfully']);
-                    tb_member.ajax.reload();
+                    initMemberTable();
                 } else {
                     showError('Error', langData['cannot_delete']);
                 }   
@@ -176,9 +191,9 @@ $(document).on('click', '.manage-member', function() {
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fa-solid fa-id-badge"></i></span>
                                 <select class="form-select obj-required" id="role">
-                                    <option value="user" selected>User</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="administrator">Administrator</option>
+                                    <option value="user" selected data-i18n="user"></option>
+                                    <option value="admin" data-i18n="admin"></option>
+                                    <option value="administrator" data-i18n="administrator"></option>
                                 </select>
                             </div>
                         </div>
@@ -187,9 +202,9 @@ $(document).on('click', '.manage-member', function() {
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fa-solid fa-circle-dot"></i></span>
                                 <select class="form-select obj-required" id="status">
-                                    <option value="active" selected>Active</option>
-                                    <option value="inactive">Inactive</option>
-                                    <option value="banned">Banned</option>
+                                    <option value="active" selected data-i18n="active"></option>
+                                    <option value="inactive" data-i18n="inactive">Inactive</option>
+                                    <option value="banned" data-i18n="banned">Banned</option>
                                 </select>
                             </div>
                         </div>
@@ -311,7 +326,7 @@ $(document).on('keyup', '#username_', function () {
 function verifyAuth(key, type){
     if(type === 'password'){ 
         $('#pw_len').prop('checked', key.length >= 4 && key.length <= 20);
-        $('#pw_only').prop('checked', /^[A-Za-z0-9]+$/.test(key));
+        $('#pw_only').prop('checked', /^[A-Za-z0-9@_\-\.&!+]+$/.test(key));
         $('#pw_upper').prop('checked', /[A-Z]/.test(key));
         $('#pw_lower').prop('checked', /[a-z]/.test(key));
     } else {
@@ -328,7 +343,7 @@ function validPassword(pw){
     return (
         pw.length >= 4 &&
         pw.length <= 20 &&
-        /^[A-Za-z0-9]+$/.test(pw) &&
+        /^[A-Za-z0-9@_\-\.&!+]+$/.test(pw) &&
         /[A-Z]/.test(pw) &&
         /[a-z]/.test(pw)
     );
@@ -375,6 +390,7 @@ $(document).on('blur', '#email', function () {
                 if($('#username_').val() === '') {
                     $("#username_").val(email);
                     checkUsernameUnique(email);
+                    verifyAuth(email, 'username');
                 }
             }
         }
@@ -467,7 +483,7 @@ $(document).on('click', '.save-member', function () {
         success: function(res) {
             if(res.status === true){
                 showSuccess('Success', langData['saved_successfully']);
-                tb_member.ajax.reload();
+                initMemberTable();
                 $('#windModal').modal('hide');
             } else {
                 showError('Error', langData['cannot_save']);

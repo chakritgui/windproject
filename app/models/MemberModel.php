@@ -20,7 +20,7 @@ class MemberModel {
             $where .= " AND (username LIKE :search OR first_name LIKE :search OR last_name LIKE :search OR email LIKE :search OR phone LIKE :search) ";
             $params[':search'] = '%' . $search . '%';
         }
-        $sqlTotal = "SELECT COUNT(*) FROM wp_members " . $where;
+        $sqlTotal = "SELECT COUNT(*) FROM wp_members " . $where . "and status != 'deleted'";
         $stmtTotal = $pdo->prepare($sqlTotal);
         $stmtTotal->execute($params);
         $total = $stmtTotal->fetchColumn();
@@ -52,6 +52,16 @@ class MemberModel {
         }
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $userTz = $_SESSION['timezone'] ?? 'UTC';
+        foreach ($rows as &$r) {
+            foreach (['created_at','last_login_at'] as $field) {
+                if (!empty($r[$field])) {
+                    $dt = new DateTime($r[$field], new DateTimeZone('UTC'));
+                    $dt->setTimezone(new DateTimeZone($userTz));
+                    $r[$field] = $dt->format('Y/m/d H:i:s');
+                }
+            }
+        }
         return [
             "total" => (int)$total,
             "data"  => $rows
