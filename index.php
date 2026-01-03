@@ -57,6 +57,9 @@
             $router->post('/api/wind/list', 'WindController@list');
             $router->post('/api/notification/list', 'NotificationController@list');
             $router->post('/api/notification/get', 'NotificationController@get');
+            $router->post('/api/setting/get', 'SettingController@get');
+            $router->post('/api/setting/save1', 'SettingController@save1');
+            $router->post('/api/setting/save3', 'SettingController@save3');
         } else {
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');

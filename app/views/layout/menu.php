@@ -1,11 +1,7 @@
 <div id="sidebar" class="sidebar d-flex flex-column">
     <div class="sidebar-header">
         <div class="px-2">
-            <img src="<?=BASE_URL?>/public/images/logo.jpg" alt="" width="40" height="40">
-        </div>
-        <div>
-            <small class="text-success">ກຸ່ມບໍລິສັດ ພົງຊັບທະວີ</small><br>
-            <small style="font-size: 10px;">PHONGSUPTHAVY <span class="text-success">GROUP</span></small>
+            <img src="<?=BASE_URL?>/public/images/logo.png" alt="" height="40">
         </div>
         <button id="sidebarClose" class="btn btn-sm btn-light">
             <i class="bi bi-x-lg"></i>

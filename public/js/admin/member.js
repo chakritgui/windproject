@@ -136,12 +136,12 @@ function initMemberTable() {
 $('.filter').on('change', function () {
     initMemberTable();
 });
-async function initApp() {
+async function initMember() {
     await loadLang(currentLang); 
     initMemberTable(); 
 }
 $(document).ready(function () {
-    initApp();
+    initMember();
 });
 $(document).on('click', '.delete-member', function() {
     let member_id = $(this).data("id");
@@ -329,11 +329,11 @@ $(document).on('click', '.manage-member', function() {
                 }
                 loadLang(currentLang);
             } else {
-                showError('Error', res.message || 'Cannot load member data');
+                showError('Error', langData['cannot_load']);
             }
         },
         error: function(){
-            showError('Error', 'Cannot load member data');
+            showError('Error', langData['cannot_load']);
         }
     });
 });

@@ -170,5 +170,17 @@
     "start_date": "Start date",
     "end_date": "End date",
     "download_history": "Download history",
-    "total_downloads": "Total downloads"
+    "total_downloads": "Total downloads",
+    "information": "Information",
+    "background": "Background",
+    "language": "Language",
+    "logo": "Logo",
+    "icon": "Icon",
+    "recommend": "Recommend",
+    "website_name": "Website Name (Supports Multiple Languages)",
+    "language-switch": "Enable/disable language support on the website.",
+    "choose_language_display": "Select the language you want displayed on the website.",
+    "language_note": "Note At least one language must be enabled. Languages ​​that are disabled will not be displayed in the website's language switching menu.",
+    "one_language": "At least one language must be enabled.",
+    "cannot_load": "Cannot load data"
 }

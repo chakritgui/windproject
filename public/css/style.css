@@ -75,6 +75,10 @@ header h1 {
     gap: 15px;
     margin-bottom: 20px;
 }
+.logo-header img {
+    max-width: 100%;
+    max-height: 80px;
+}
 .btn-login {
     width: 100%;
     padding: 12px;
@@ -275,4 +279,11 @@ label.required::after {
     content: " *";
     color: red;
     font-weight: bold;
+}
+.logo-full { display: block; }
+.logo-small { display: none; }
+
+@media (max-width: 768px) {
+    .logo-full { display: none; }
+    .logo-small { display: block; }
 }

@@ -137,9 +137,9 @@ function langTab(lang, d) {
         </div>
     `;
 }
-async function initApp() {
+async function initNotification() {
     await loadLang(currentLang);
     initNotificationTable();
     loadCreatorFilter();
 }
-$(document).ready(initApp);
+$(document).ready(initNotification);

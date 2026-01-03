@@ -74,13 +74,13 @@ function loadNewsFilters() {
         }
     });
 }
-async function initApp() {
+async function initNews() {
     await loadLang(currentLang); 
     initNewsTable(); 
     loadNewsFilters();
 }
 $(document).ready(function () {
-    initApp();
+    initNews();
 });
 $(document).on("click", ".manage-news", function () {
     let id = $(this).data("id");

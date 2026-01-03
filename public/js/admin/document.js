@@ -157,13 +157,13 @@ function loadDocumentFilters() {
         }
     });
 }
-async function initApp() {
+async function initDocument() {
     await loadLang(currentLang); 
     initDocumentTable(); 
     loadDocumentFilters();
 }
 $(document).ready(function () {
-    initApp();
+    initDocument();
 });
 $(document).on('click', '.manage-document', function () {
     let document_id = $(this).data("id");
@@ -263,7 +263,12 @@ $(document).on('click', '.manage-document', function () {
                     }
                 }
                 loadLang(currentLang);
+            } else {
+                showError('Error', langData['cannot_load']);
             }
+        },
+        error: function(){
+            showError('Error', langData['cannot_load']);
         }
     });
 });

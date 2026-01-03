@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PSG - PHONGSUPTHAVY GROUP</title>
-<link rel="icon" type="image/png" href="<?=BASE_URL?>/public/images/logo.jpg">
+<link rel="icon" type="image/png" href="<?=BASE_URL?>/public/images/icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
@@ -42,8 +42,8 @@
             <?php } ?>
             <h1 class="h4 m-0">
                 <a href="./" class="text-decoration-none text-dark d-flex align-items-center">
-                    <img src="<?=BASE_URL?>/public/images/logo.jpg" alt="" height="50" class="me-2">
-                    <span class="fw-bold">PSG</span>
+                    <img src="<?=BASE_URL?>/public/images/logo.png" alt="" height="50" class="me-2 logo-full">
+                    <img src="<?=BASE_URL?>/public/images/icon.png" alt="" height="35" class="me-2 logo-small">
                 </a>
             </h1>
         </div>

@@ -3,11 +3,7 @@
         <div class="col-lg-5 col-md-12 col-12 d-flex flex-column align-items-center mb-4 mb-lg-0">
             <div class="logo-container bg-white shadow rounded-4">
                 <div class="logo-header">
-                    <img src="public/images/logo.jpg" alt="" width="80">
-                    <div class="logo-text">
-                        <h4 class="text-success">ກຸ່ມບໍລິສັດ ພົງຊັບທະວີ</h4>
-                        <p>PHONGSUPTHAVY <span class="text-success">GROUP</span></p>
-                    </div>
+                    <img src="public/images/logo.png">
                 </div>
                 <div class="login-title mb-3" data-i18n="sign_in_continue"></div>
                 <input type="text" class="form-control mb-3" id="username">

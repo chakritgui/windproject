@@ -2,6 +2,10 @@ let currentLang = sessionStorage.getItem('lang') || 'en';
 let langData = {};
 let pageLength = 50;
 let lengthMenu = [[50, 100, 250, 500, 1000, -1], [50, 100, 250, 500, 1000, "All"]];
+let icon;
+let logo;
+let lang;
+let website;
 async function loadLang(lang) {
     try {
         const res = await fetch(`${BASE_URL}/public/lang/${lang}.json?v=${Date.now()}`);
