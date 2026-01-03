@@ -24,9 +24,6 @@
             <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#general" type="button"><i class="bi bi-house-fill me-2"></i><span data-i18n="information"></span></button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#backgrounds" type="button"><i class="bi bi-image-fill me-2"></i><span data-i18n="background"></span></button>
-        </li>
-        <li class="nav-item" role="presentation">
             <button class="nav-link" data-bs-toggle="pill" data-bs-target="#languages" type="button"><i class="bi bi-translate me-2"></i><span data-i18n="language"></span></button>
         </li>
     </ul>
@@ -88,102 +85,20 @@
                     </div>
                 </div>
             </div>
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3"><i class="bi bi-text-left text-primary me-2"></i><span data-i18n="footer"></span></h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" id="footerText">
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="text-end mt-4">
                 <button class="btn btn-lg btn-success save-setting-1">
                     <i class="bi bi-save me-2"></i><span data-i18n="save"></span>
                 </button>
-            </div>
-        </div>
-        <div class="tab-pane fade" id="backgrounds">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title mb-3"><i class="bi bi-images text-primary me-2"></i>รูปพื้นหลังแต่ละหน้า</h5>
-                    <p class="text-muted">อัปโหลดรูปภาพพื้นหลังสำหรับแต่ละหน้าของเว็บไซต์</p>
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <div class="card border">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="bi bi-house-door me-2"></i>หน้าแรก (Home)</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="preview-box" id="bgHome">
-                                        <div class="text-center">
-                                            <i class="bi bi-image fs-2 text-muted"></i>
-                                            <p class="mt-2 mb-0 text-muted">อัปโหลดพื้นหลัง</p>
-                                        </div>
-                                        <button class="remove-btn" onclick="removeBackground('bgHome')">
-                                            <i class="bi bi-x"></i>
-                                        </button>
-                                    </div>
-                                    <input type="file" id="bgHomeInput" class="d-none" accept="image/*" onchange="previewBackground('bgHome', this)">
-                                    <button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="document.getElementById('bgHomeInput').click()">
-                                        <i class="bi bi-upload me-2"></i>เลือกรูป
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card border">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>เกี่ยวกับเรา (About)</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="preview-box" id="bgAbout">
-                                        <div class="text-center">
-                                            <i class="bi bi-image fs-2 text-muted"></i>
-                                            <p class="mt-2 mb-0 text-muted">อัปโหลดพื้นหลัง</p>
-                                        </div>
-                                        <button class="remove-btn" onclick="removeBackground('bgAbout')">
-                                            <i class="bi bi-x"></i>
-                                        </button>
-                                    </div>
-                                    <input type="file" id="bgAboutInput" class="d-none" accept="image/*" onchange="previewBackground('bgAbout', this)">
-                                    <button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="document.getElementById('bgAboutInput').click()">
-                                        <i class="bi bi-upload me-2"></i>เลือกรูป
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card border">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="bi bi-briefcase me-2"></i>บริการของเรา (Services)</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="preview-box" id="bgServices">
-                                        <div class="text-center">
-                                            <i class="bi bi-image fs-2 text-muted"></i>
-                                            <p class="mt-2 mb-0 text-muted">อัปโหลดพื้นหลัง</p>
-                                        </div>
-                                        <button class="remove-btn" onclick="removeBackground('bgServices')">
-                                            <i class="bi bi-x"></i>
-                                        </button>
-                                    </div>
-                                    <input type="file" id="bgServicesInput" class="d-none" accept="image/*" onchange="previewBackground('bgServices', this)">
-                                    <button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="document.getElementById('bgServicesInput').click()"><i class="bi bi-upload me-2"></i>เลือกรูป</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card border">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="bi bi-envelope me-2"></i>ติดต่อเรา (Contact)</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="preview-box" id="bgContact">
-                                        <div class="text-center">
-                                            <i class="bi bi-image fs-2 text-muted"></i>
-                                            <p class="mt-2 mb-0 text-muted">อัปโหลดพื้นหลัง</p>
-                                        </div>
-                                        <button class="remove-btn" onclick="removeBackground('bgContact')"><i class="bi bi-x"></i></button>
-                                    </div>
-                                    <input type="file" id="bgContactInput" class="d-none" accept="image/*" onchange="previewBackground('bgContact', this)">
-                                    <button class="btn btn-sm btn-outline-primary w-100 mt-2" onclick="document.getElementById('bgContactInput').click()"><i class="bi bi-upload me-2"></i>เลือกรูป</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
         <div class="tab-pane fade" id="languages">

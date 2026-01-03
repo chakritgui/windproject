@@ -129,7 +129,6 @@ function initDocumentTable() {
             });
         }, 
         drawCallback: function(){
-            loadLang(currentLang); 
             getTableLang();
         }
     });
@@ -158,7 +157,6 @@ function loadDocumentFilters() {
     });
 }
 async function initDocument() {
-    await loadLang(currentLang); 
     initDocumentTable(); 
     loadDocumentFilters();
 }
@@ -262,7 +260,6 @@ $(document).on('click', '.manage-document', function () {
                         $("#document_file").removeClass("obj-required");
                     }
                 }
-                loadLang(currentLang);
             } else {
                 showError('Error', langData['cannot_load']);
             }
@@ -326,7 +323,6 @@ function handleFile(file, mode = 'edit') {
             </div>
         </div>
     `);
-    loadLang(currentLang);
 }
 $(document).on("click", "#remove_file", function () {
     $("#document_file").val("");
@@ -548,7 +544,6 @@ $(document).on('click', '.history-download', function(){
     $(document).off("click", "#btnFilter").on("click", "#btnFilter", function(){
         $('#downloadHistoryTable').DataTable().ajax.reload();
     });
-    loadLang(currentLang);
 });
 function loadDownloadHistory(document_id){
     $('#downloadHistoryTable').DataTable({
@@ -591,7 +586,6 @@ function loadDownloadHistory(document_id){
         language: getTableLang(),
         drawCallback: function(settings){
             $("#total_downloads").text(settings.json.total_downloads);
-            loadLang(currentLang);
         }
     });
 }

@@ -1,7 +1,5 @@
 </div>
-<div class="footer">
-    Copyright © 2025 iWind Corporation Limited
-</div>
+<div class="footer"></div>
 <div id="slidePanel">
     <div class="panel-header d-flex justify-content-between align-items-center">
         <div>

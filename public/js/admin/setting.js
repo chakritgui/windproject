@@ -29,6 +29,9 @@ function initSetting() {
                         case 'website_th':
                             $('#nameTh').val(item.setting_value);
                             break;
+                        case 'footer':
+                            $('#footerText').val(item.setting_value);
+                            break;
                         case 'language':
                             let l = item.setting_value;
                             setLanguagesFromDB(l);
@@ -115,12 +118,14 @@ $(document).on('click', '.save-setting-1', function () {
     const nameEn = $("#nameEn").val();
     const nameLo = $("#nameLo").val();
     const nameTh = $("#nameTh").val();
+    const footerText = $("#footerText").val();
     const logoInput = $("#logoInput")[0].files[0] || null;
     const iconInput = $("#iconInput")[0].files[0] || null;
     const formData = new FormData();
     formData.append("nameEn", nameEn);
     formData.append("nameLo", nameLo);
     formData.append("nameTh", nameTh);
+    formData.append("footerText", footerText);
     formData.append("logoInput", logoInput);
     formData.append("iconInput", iconInput);
     Swal.fire({
@@ -182,33 +187,4 @@ function toggleLanguage(lang) {
     } else {
         icon.className = 'bi bi-circle fs-4 text-muted';
     }
-}
-function previewBackground(id, input) {
-    const preview = document.getElementById(id);
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.innerHTML = `
-                <img src="${e.target.result}" class="preview-img" alt="Background Preview">
-                <button class="remove-btn" onclick="removeBackground('${id}')">
-                    <i class="bi bi-x"></i>
-                </button>
-            `;
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
-function removeBackground(id) {
-    const preview = document.getElementById(id);
-    const inputId = id + 'Input';
-    document.getElementById(inputId).value = '';
-    preview.innerHTML = `
-        <div class="text-center">
-            <i class="bi bi-image fs-2 text-muted"></i>
-            <p class="mt-2 mb-0 text-muted">อัปโหลดพื้นหลัง</p>
-        </div>
-        <button class="remove-btn" onclick="removeBackground('${id}')">
-            <i class="bi bi-x"></i>
-        </button>
-    `;
 }

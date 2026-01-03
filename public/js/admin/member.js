@@ -128,7 +128,6 @@ function initMemberTable() {
             });
         }, 
         drawCallback: function(){
-            loadLang(currentLang); 
             getTableLang();
         }
     });
@@ -137,7 +136,6 @@ $('.filter').on('change', function () {
     initMemberTable();
 });
 async function initMember() {
-    await loadLang(currentLang); 
     initMemberTable(); 
 }
 $(document).ready(function () {
@@ -327,7 +325,6 @@ $(document).on('click', '.manage-member', function() {
                 if(member && member.username) {
                     verifyAuth($('#username_').val(), 'username');
                 }
-                loadLang(currentLang);
             } else {
                 showError('Error', langData['cannot_load']);
             }

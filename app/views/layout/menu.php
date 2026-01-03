@@ -1,7 +1,7 @@
 <div id="sidebar" class="sidebar d-flex flex-column">
     <div class="sidebar-header">
         <div class="px-2">
-            <img src="<?=BASE_URL?>/public/images/logo.png" alt="" height="40" class="logo">
+            <img alt="" height="40" class="logo">
         </div>
         <button id="sidebarClose" class="btn btn-sm btn-light">
             <i class="bi bi-x-lg"></i>

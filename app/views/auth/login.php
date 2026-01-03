@@ -3,10 +3,12 @@
         <div class="col-lg-5 col-md-12 col-12 d-flex flex-column align-items-center mb-4 mb-lg-0">
             <div class="logo-container bg-white shadow rounded-4">
                 <div class="logo-header">
-                    <img src="<?=BASE_URL?>/public/images/logo.png" class="logo">
+                    <img class="logo">
                 </div>
                 <div class="login-title mb-3" data-i18n="sign_in_continue"></div>
+                <p data-i18n="username_or_email"></p>
                 <input type="text" class="form-control mb-3" id="username">
+                <p data-i18n="password"></p>
                 <div class="input-group mb-3">
                     <input type="password" class="form-control" id="password">
                     <span class="input-group-text" id="togglePassword" style="cursor:pointer;">

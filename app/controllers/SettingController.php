@@ -9,18 +9,19 @@ class SettingController extends BaseController {
             'nameEn' => $_POST['nameEn'] ?? '',
             'nameLo' => $_POST['nameLo'] ?? '',
             'nameTh' => $_POST['nameTh'] ?? '',
+            'footerText' => $_POST['footerText'] ?? '',
             'logoInput' => $_FILES['logoInput'] ?? null,
             'iconInput' => $_FILES['iconInput'] ?? null,
         ];
-        $this->json(['status'=>$this->model->save1($data)]);
+        $this->json(['status'=>$this->model->saveWebsiteSetting($data)]);
     }
     public function save3() {
         $data = [
             'languages' => $_POST['languages'] ?? 'en',
         ];
-        $this->json(['status'=>$this->model->save3($data)]);
+        $this->json(['status'=>$this->model->saveLanguageSetting($data)]);
     }
     public function get() {
-        $this->json(['status'=> true, 'data' => $this->model->get()]);
+        $this->json(['status'=> true, 'data' => $this->model->getAll()]);
     }
 }
