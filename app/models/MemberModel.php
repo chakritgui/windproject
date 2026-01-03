@@ -52,13 +52,10 @@ class MemberModel {
         }
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $userTz = $_SESSION['timezone'] ?? 'UTC';
         foreach ($rows as &$r) {
             foreach (['created_at','last_login_at'] as $field) {
                 if (!empty($r[$field])) {
-                    $dt = new DateTime($r[$field], new DateTimeZone('UTC'));
-                    $dt->setTimezone(new DateTimeZone($userTz));
-                    $r[$field] = $dt->format('Y/m/d H:i:s');
+                    $r[$field] = convertTimeZone($r[$field], 'Y/m/d H:i:s');
                 }
             }
         }

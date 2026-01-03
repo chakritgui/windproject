@@ -4,8 +4,7 @@
     require_once __DIR__ . '/app/core/Database.php';
     require_once __DIR__ . '/app/core/Controller.php';
     require_once __DIR__ . '/app/core/Router.php';
-    require_once __DIR__ . '/app/helpers/auth_helper.php';
-    require_once __DIR__ . '/app/helpers/key_helper.php';
+    require_once __DIR__ . '/app/helpers/helpers.php';
     spl_autoload_register(function ($class) {
         $paths = [
             'app/controllers/',
