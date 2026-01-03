@@ -50,6 +50,7 @@ async function refreshAllTables() {
         let tableApi = $(this).DataTable();
         let currentPage = tableApi.page();
         if (tableId === 'tb_member') initMemberTable();
+        if (tableId === 'tb_document') initDocumentTable();
     });
 }
 loadLang(currentLang);

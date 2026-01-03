@@ -17,12 +17,13 @@
         public function updateLogin($member_id) {
             $stmt = $this->db->prepare('UPDATE wp_members SET last_login_at = NOW() WHERE member_id = ?');
             $stmt->execute([$member_id]);
-            $stmt = $this->db->prepare('INSERT INTO wp_login_logs (member_id, login_at, ip_address) VALUES (?, NOW(), ?)');
+            $stmt = $this->db->prepare('INSERT INTO wp_login_logs (member_id, login_at, ip_address, login_device) VALUES (?, NOW(), ?, ?)');
             $ip_address = getClientIp();
             if ($ip_address === '::1') {
                 $ip_address = '127.0.0.1';
             }
-            $stmt->execute([$member_id, $ip_address]);
+            $login_device = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
+            $stmt->execute([$member_id, $ip_address, $login_device]);
         }
         public function updateLogout($member_id) {
             $stmt = $this->db->prepare('UPDATE wp_login_logs SET logout_at = NOW() WHERE member_id = ? ORDER BY login_at DESC LIMIT 1');

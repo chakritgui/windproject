@@ -43,11 +43,15 @@
             $router->post('/api/member/get', 'MemberController@get');
             $router->post('/api/member/save', 'MemberController@save');
             $router->post('/api/member/delete', 'MemberController@delete');
-            $router->post('/api/member/delete', 'MemberController@delete');
             $router->post('/api/member/check-email', 'MemberController@checkemail');
             $router->post('/api/member/check-username', 'MemberController@checkusername');
+            $router->post('/api/member/change', 'MemberController@change');
             $router->post('/api/document/list', 'DocumentController@list');
             $router->post('/api/document/get', 'DocumentController@get');
+            $router->post('/api/document/save', 'DocumentController@save');
+            $router->post('/api/document/delete', 'DocumentController@delete');
+            $router->post('/api/document/change', 'DocumentController@change');
+            $router->post('/api/document/download_history', 'DocumentController@downloadHistory');
             $router->post('/api/news/list', 'NewsController@list');
             $router->post('/api/news/get', 'NewsController@get');
             $router->post('/api/wind/list', 'WindController@list');

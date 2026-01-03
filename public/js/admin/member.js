@@ -25,6 +25,7 @@ function initMemberTable() {
         columns: [         
             { 
                 data: null, 
+                orderable: false,
                 className: 'text-center',
                 render: function(row){
                     let initials = "";
@@ -54,9 +55,9 @@ function initMemberTable() {
             { data: "role" },
             { data: "created_at" },
             { data: "last_login_at" },
-            { 
+            {
                 data: "status",
-                render: function(status){
+                render: function (status, type, row) {
                     let badge = '';
                     switch(status) {
                         case "active":
@@ -68,11 +69,32 @@ function initMemberTable() {
                         default:
                             badge = "secondary";
                     }
-                    return `<span class="badge bg-${badge} text-${badge} bg-opacity-10" style="font-weight: 400;" data-i18n="${status}"></span>`;
+                    return `
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-${badge}" style="font-weight:400;" data-i18n="${status}"></span>
+                            <div class="dropdown">
+                                <button class="btn btn-sm border-0" data-bs-toggle="dropdown">
+                                    <i class="fa-solid fa-angle-down"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow">
+                                    <li>
+                                        <a class="dropdown-item change-status" data-id="${row.member_id}" data-status="active"><span data-i18n="active" class="text-success"></span></a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item change-status" data-id="${row.member_id}" data-status="inactive"><span data-i18n="inactive" class="text-secondary"></span></a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item change-status" data-id="${row.member_id}" data-status="banned"><span data-i18n="banned" class="text-danger"></span></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    `;
                 }
             },
             {
                 data: null,
+                orderable: false,
                 render: function(row){
                     return `
                         <button class="btn btn-light text-secondary manage-member" data-id="${row.member_id}"><i class="fa-solid fa-pen-to-square"></i></button>
@@ -508,4 +530,30 @@ $(document).on('input change', '.obj-required', function () {
     if (value) {
         $(this).removeClass('is-invalid');
     }
+});
+$(document).on('click', '.change-status', function() {
+    let member_id = $(this).data("id");
+    let status = $(this).data("status");
+    showConfirm(langData['confirm'], langData['confirm_change'], function(){
+        $.ajax({
+            url: 'api/member/change',
+            method: 'POST',
+            data: { 
+                id: member_id,
+                status: status,
+            },
+            dataType: 'json',
+            success: function(res) {
+                if(res.status === true){
+                    showSuccess('Success', langData['change_successfully']);
+                    initMemberTable();
+                } else {
+                    showError('Error', langData['cannot_change']);
+                }   
+            },
+            error: function(){
+                showError('Error', langData['cannot_change']);
+            }
+        });
+    });
 });

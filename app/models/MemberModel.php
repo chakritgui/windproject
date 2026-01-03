@@ -187,4 +187,13 @@ class MemberModel {
         $count = $stmt->fetchColumn();
         return $count > 0;
     }
+    public function change($id, $status) {
+        if ($id) {
+            $pdo = $this->db;
+            $sql = "UPDATE wp_members SET status= ?, updated_at=NOW() WHERE member_id=?";
+            $stmt = $pdo->prepare($sql);
+            return $stmt->execute([$status, (int)$id]);
+        }
+        return false;
+    }
 }

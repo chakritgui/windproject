@@ -16,33 +16,18 @@
                 </ol>
             </nav>
         </div>
-        <div class="ms-md-3 text-md-end align-items-end">
-            <button class="btn btn-primary btn-sm manage-document">
-                <i class="fa-solid fa-plus"></i> <span data-i18n="document"></span>
-            </button>
-        </div>
     </div>
 </div>
 <div class="container-fluid mt-3 mb-5">
     <div class="row g-2 mb-3">
-        <div class="col-sm-3">
+        <div class="col-sm-2">
             <input type="date" class="form-control filter" id="filter_date">
         </div>
-        <div class="col-sm-3">
-            <select id="filter_type" class="form-select">
-                <option value="">-- Type --</option>
-            </select>
-        </div>
-        <div class="col-sm-3">
+        <div class="col-sm-2">
             <select id="filter_status" class="form-select filter">
-                <option value="">-- Status --</option>
-                <option value="Private">Private</option>
-                <option value="Public">Public</option>
-            </select>
-        </div>
-        <div class="col-sm-3">
-            <select id="filter_status" class="form-select filter">
-                <option value="">-- Creator --</option>
+                <option value=""data-i18n="-- status --"></option>
+                <option value="private" data-i18n="private"></option>
+                <option value="public" data-i18n="public"></option>
             </select>
         </div>
     </div>
@@ -58,8 +43,8 @@
                     <th data-i18n="date"></th>
                     <th data-i18n="size"></th>
                     <th data-i18n="create_at"></th>
-                    <th data-i18n="create_by"></th>
                     <th data-i18n="status"></th>
+                    <th data-i18n="download"></th>
                     <th></th>
                 </tr>
             </thead>
