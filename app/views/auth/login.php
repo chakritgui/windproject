@@ -3,7 +3,7 @@
         <div class="col-lg-5 col-md-12 col-12 d-flex flex-column align-items-center mb-4 mb-lg-0">
             <div class="logo-container bg-white shadow rounded-4">
                 <div class="logo-header">
-                    <img src="public/images/logo.png">
+                    <img src="<?=BASE_URL?>/public/images/logo.png" class="logo">
                 </div>
                 <div class="login-title mb-3" data-i18n="sign_in_continue"></div>
                 <input type="text" class="form-control mb-3" id="username">

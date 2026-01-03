@@ -157,26 +157,8 @@
             </div>
             <?php } ?>
             <div class="dropdown dropdown-language">
-                <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-                    <img src="<?=BASE_URL?>/public/flags/la.png" width="20" class="me-1"> LO
-                </button>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a class="dropdown-item" data-value="lo">
-                            <img src="<?=BASE_URL?>/public/flags/la.png" width="20" class="me-2"> ລາວ
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" data-value="en">
-                            <img src="<?=BASE_URL?>/public/flags/gb.png" width="20" class="me-2"> English
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" data-value="th">
-                            <img src="<?=BASE_URL?>/public/flags/th.png" width="20" class="me-2"> ไทย
-                        </a>
-                    </li>
-                </ul>
+                <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"></button>
+                <ul class="dropdown-menu" id="languageMenu"></ul>
             </div>
             <?php if(!empty($_SESSION)) { ?>
             <div class="dropdown">

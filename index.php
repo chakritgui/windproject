@@ -57,7 +57,6 @@
             $router->post('/api/wind/list', 'WindController@list');
             $router->post('/api/notification/list', 'NotificationController@list');
             $router->post('/api/notification/get', 'NotificationController@get');
-            $router->post('/api/setting/get', 'SettingController@get');
             $router->post('/api/setting/save1', 'SettingController@save1');
             $router->post('/api/setting/save3', 'SettingController@save3');
         } else {
@@ -70,6 +69,7 @@
             $router->get('/download', 'UserController@download');
         }
     }
+    $router->post('/api/setting/get', 'SettingController@get');
     $router->get('/account', 'AuthController@account');
     $router->get('/logout', 'AuthController@logout');
     $currentRoute = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);

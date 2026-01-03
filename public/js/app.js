@@ -5,7 +5,88 @@ let lengthMenu = [[50, 100, 250, 500, 1000, -1], [50, 100, 250, 500, 1000, "All"
 let icon;
 let logo;
 let lang;
-let website;
+let website = {
+    en: '',
+    lo: '',
+    th: ''
+};
+$(document).ready(function () {
+    initApp();
+});
+async function initApp() {
+    $.ajax({
+        url: 'api/setting/get',
+        method: 'POST',
+        dataType: 'json',
+        success: function(res) {
+            if(res.status === true){
+                res.data.forEach(item => {
+                    switch(item.setting_type){
+                        case 'logo':
+                            logo = `${BASE_URL}/${item.setting_value}`;
+                            document.querySelectorAll('img.logo-full').forEach(el=>{
+                                el.src = logo;
+                            });
+                            break;
+                        case 'icon':
+                            icon = `${BASE_URL}/${item.setting_value}`;
+                            document.querySelectorAll('img.logo-small').forEach(el=>{
+                                el.src = icon;
+                            });
+                            let favicon = document.querySelector('link[rel="icon"]');
+                            if(favicon) favicon.href = icon;
+                            break;
+                        case 'website_en':
+                            website.en = item.setting_value;
+                            break;
+                        case 'website_lo':
+                            website.lo = item.setting_value;
+                            break;
+                        case 'website_th':
+                            website.th = item.setting_value;
+                            break;
+                        case 'language':
+                            let l = item.setting_value;
+                            initLanguage(l);
+                            break;
+                    }
+                });
+            } else {
+                showError('Error', langData['cannot_load']);
+            }
+        }
+    });
+}
+const langInfo = {
+    'lo': { flag: 'la', label: 'LO', full: 'ລາວ' },
+    'en': { flag: 'gb', label: 'EN', full: 'English' },
+    'th': { flag: 'th', label: 'TH', full: 'ไทย' },
+};
+async function initLanguage(languagesStr) {
+    const arr = languagesStr.split(',').map(s => s.trim());
+    currentLang = sessionStorage.getItem('lang') || arr[0];
+    const menu = document.getElementById('languageMenu');
+    menu.innerHTML = ''; 
+    arr.forEach(lang => {
+        if (langInfo[lang]) {
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <a class="dropdown-item" data-value="${lang}">
+                    <img src="${BASE_URL}/public/flags/${langInfo[lang].flag}.png" width="20" class="me-2"> ${langInfo[lang].full}
+                </a>
+            `;
+            menu.appendChild(li);
+            li.querySelector('a').addEventListener('click', async function() {
+                currentLang = this.dataset.value;
+                sessionStorage.setItem('lang', currentLang);
+                await loadLang(currentLang);
+                updateDropdownLabel(currentLang);
+            });
+        }
+    });
+    await loadLang(currentLang);
+    updateDropdownLabel(currentLang);
+}
 async function loadLang(lang) {
     try {
         const res = await fetch(`${BASE_URL}/public/lang/${lang}.json?v=${Date.now()}`);
@@ -14,6 +95,9 @@ async function loadLang(lang) {
         updateText();
         updatePlaceholders();
         updateDropdownLabel(lang);
+        if (website[lang]) {
+            document.title = website[lang];
+        }
     } catch(e) {
         console.error("Error loading language:", e);
     }
@@ -57,7 +141,6 @@ async function refreshAllTables() {
         if (tableId === 'tb_document') initDocumentTable();
     });
 }
-loadLang(currentLang);
 function updatePlaceholders() {
     $('#username').attr('placeholder', langData['username_or_email']);
     $('#password').attr('placeholder', langData['password']);
