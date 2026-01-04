@@ -17,36 +17,15 @@
                 </ol>
             </nav>
         </div>
-        <div>
-            <button class="btn btn-primary btn-sm manage-notification" data-id="">
-                <i class="fa-solid fa-plus me-1"></i> <span data-i18n="notification"></span>
-            </button>
-        </div>
     </div>
 </div>
 <div class="container-fluid mt-3 mb-5">
     <div class="row g-2 mb-3">
-        <div class="col-sm-3">
-            <input type="date" id="filter_date" class="form-control filter">
-        </div>
-        <div class="col-sm-3">
-            <select id="filter_notification" class="form-select filter">
-                <option value="">-- Notification --</option>
-                <option value="1" data-i18n="yes"></option>
-                <option value="0" data-i18n="no"></option>
-            </select>
-        </div>
-        <div class="col-sm-3">
+        <div class="col-sm-2">
             <select id="filter_status" class="form-select filter">
-                <option value="">-- Status --</option>
-                <option value="published">Published</option>
-                <option value="draft">Draft</option>
-                <option value="scheduled">Scheduled</option>
-            </select>
-        </div>
-        <div class="col-sm-3">
-            <select id="filter_creator" class="form-select filter">
-                <option value="">-- Creator --</option>
+                <option value="" data-i18n="-- status --"></option>
+                <option value="published" data-i18n="published"></option>
+                <option value="draft" data-i18n="draft"></option>
             </select>
         </div>
     </div>
@@ -59,10 +38,9 @@
                     <th data-i18n="notification"></th>
                     <th data-i18n="publish_at"></th>
                     <th data-i18n="create_at"></th>
-                    <th data-i18n="create_by"></th>
                     <th data-i18n="view"></th>
                     <th data-i18n="status"></th>
-                    <th class="text-center"></th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody></tbody>

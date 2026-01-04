@@ -1,37 +1,244 @@
 <?php
 class NotificationModel {
-    public function list($start=0,$length=10,$filters=[]){
-        $titles = ["ระบบจะปิดปรับปรุงคืนนี้","ประกาศวันหยุดบริษัท","ย้ายสำนักงานใหม่","กิจกรรมปีใหม่ 2025","รายงานสรุปการขายไตรมาส 4"];
-        $statuses = ["draft","published","scheduled"];
-        $admins = ["Somchai","Anan","Somsak","Kittisak","Suchart"];
-        $mock = [];
-        for($i=1;$i<=50;$i++){
-            $status = $statuses[array_rand($statuses)];
-            $publish_at = $status==="scheduled" ? date("Y-m-d H:i:s", strtotime("+".rand(1,10)." days")) : date("Y-m-d H:i:s", strtotime("-".rand(1,10)." days"));
-            $mock[] = [
-                "id"=>$i,
-                "title"=>$titles[array_rand($titles)]." #".$i,
-                "cover_image"=>"https://www.citypng.com/public/uploads/preview/flat-newspaper-news-round-icon.png",
-                "status"=>$status,
-                "publish_at"=>$publish_at,
-                "notify_users"=>rand(0,1),
-                "view"=>rand(0,2000),
-                "created_at"=>date("Y-m-d H:i:s", strtotime("-".rand(1,200)." days")),
-                "create_by"=>$admins[array_rand($admins)]
-            ];
+    private $db;
+    public function __construct() {
+        $this->db = Database::getInstance()->pdo;
+    }
+    public function list($start = 0, $length = 10, $filters = [], $search = '') {
+        $pdo = $this->db;
+        $where = " WHERE n.status != 'deleted' ";
+        $params = [];
+        if (!empty($filters['status'])) {
+            $where .= " AND n.status = :status ";
+            $params[':status'] = $filters['status'];
         }
-        $total = count($mock);
-        $data = array_values(array_slice($mock,$start,$length));
-        return ["total"=>$total,"data"=>$data];
+        if (!empty($search)) {
+            $where .= " AND (
+                iEn.notifications_subject LIKE :search OR
+                iLo.notifications_subject LIKE :search OR
+                iTh.notifications_subject LIKE :search
+            )";
+            $params[':search'] = "%{$search}%";
+        }
+        $sqlTotal = "SELECT COUNT(*) FROM wp_notifications n WHERE n.status != 'deleted'";
+        $total = $pdo->query($sqlTotal)->fetchColumn();
+        $sqlFiltered = "SELECT COUNT(*) 
+                        FROM wp_notifications n
+                        LEFT JOIN wp_notifications_item iEn ON iEn.notifications_id = n.notifications_id AND iEn.notifications_lang='en'
+                        LEFT JOIN wp_notifications_item iLo ON iLo.notifications_id = n.notifications_id AND iLo.notifications_lang='lo'
+                        LEFT JOIN wp_notifications_item iTh ON iTh.notifications_id = n.notifications_id AND iTh.notifications_lang='th'
+                        $where";
+        $stmtFiltered = $pdo->prepare($sqlFiltered);
+        $stmtFiltered->execute($params);
+        $filtered = $stmtFiltered->fetchColumn();
+        $sql = "SELECT 
+                    n.notifications_id,
+                    n.publish_at,
+                    n.created_at,
+                    n.status,
+                    iEn.notifications_subject AS title_en,
+                    iLo.notifications_subject AS title_lo,
+                    iTh.notifications_subject AS title_th,
+                    n.notifications_view
+                FROM wp_notifications n
+                LEFT JOIN wp_notifications_item iEn ON iEn.notifications_id = n.notifications_id AND iEn.notifications_lang='en'
+                LEFT JOIN wp_notifications_item iLo ON iLo.notifications_id = n.notifications_id AND iLo.notifications_lang='lo'
+                LEFT JOIN wp_notifications_item iTh ON iTh.notifications_id = n.notifications_id AND iTh.notifications_lang='th'
+                $where
+                ORDER BY n.notifications_id DESC
+                LIMIT :start, :length";
+        $stmt = $pdo->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
+        $stmt->bindValue(':start', (int)$start, PDO::PARAM_INT);
+        $stmt->bindValue(':length', (int)$length, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as &$r) {
+            foreach (['created_at', 'publish_at'] as $field) {
+                if (!empty($r[$field])) {
+                    $r[$field] = convertTimeZone($r[$field], 'Y/m/d H:i:s');
+                }
+            }
+            foreach (['notifications_view'] as $field) {
+                if (!empty($r[$field])) {
+                    $r[$field] = number_format($r[$field]);
+                }
+            }
+        }
+        return [
+            "total"    => (int)$total,
+            "data"            => $rows
+        ];
     }
     public function get($id){
+        $pdo = $this->db;
+        if(!$id){
+            return [
+                "id"=>"",
+                "status"=>"",
+                "publish_at"=>"",
+                "title"=>["th"=>"","lo"=>"","en"=>""],
+                "content"=>["th"=>"","lo"=>"","en"=>""]
+            ];
+        }
+        $stmt = $pdo->prepare("SELECT notifications_id, status, publish_at FROM wp_notifications WHERE notifications_id = ?");
+        $stmt->execute([$id]);
+        $n = $stmt->fetch(PDO::FETCH_ASSOC);
+        if(!$n){
+            return null;
+        }
+        $stmt = $pdo->prepare("SELECT notifications_lang, notifications_subject, notifications_body FROM wp_notifications_item WHERE notifications_id = ?");
+        $stmt->execute([$id]);
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $title = ["th"=>"","lo"=>"","en"=>""];
+        $content = ["th"=>"","lo"=>"","en"=>""];
+        foreach($items as $row){
+            $lang = $row['notifications_lang'];
+            $title[$lang]   = $row['notifications_subject'];
+            $content[$lang] = $row['notifications_body'];
+        }
+        $publishLocal = "";
+        if(!empty($n['publish_at'])){
+            $publishLocal = convertTimeZone($n['publish_at'], 'Y-m-d\TH:i');
+        }
         return [
-            "id"=>$id,
-            "status"=>"scheduled",
-            "publish_at"=>"2025-12-15 10:00:00",
-            "notify_users"=>1,
-            "title"=>["th"=>"แจ้งปิดปรับปรุงระบบ","la"=>"ແຈ້ງການປິດປັບປຸງລະບົບ","en"=>"System Maintenance Notice"],
-            "content"=>["th"=>"ระบบจะปิดปรับปรุงเวลา 22:00 - 02:00 น.","la"=>"ລະບົບຈະປິດປັບປຸງ 22:00 - 02:00","en"=>"The system will be under maintenance from 22:00 - 02:00."]
+            "id"         => $n['notifications_id'],
+            "status"     => $n['status'],
+            "publish_at" => $publishLocal,
+            "title"      => $title,
+            "content"    => $content
         ];
+    }
+    public function save($data){
+        $pdo = $this->db;
+        $notifications_id = $data['notifications_id'] ?? null;
+        $status      = $data['status'] ?? '';
+        $publish_at = $data['publish_at'] ?? null;
+        if ($status === 'draft') {
+            $publish_at = null;
+        } else {
+            if ($publish_at === 'now' || empty($publish_at)) {
+                $publish_at = date('Y-m-d H:i:s');
+            } else {
+                $publish_at = date('Y-m-d H:i:s', strtotime($publish_at));
+                $publish_at = convertTimeZoneUTC($publish_at, 'Y-m-d H:i:s');
+            }
+        }
+        $title = [
+            'en' => $data['title_en'] ?? '',
+            'lo' => $data['title_lo'] ?? '',
+            'th' => $data['title_th'] ?? ''
+        ];
+        $content = [
+            'en' => $data['content_en'] ?? '',
+            'lo' => $data['content_lo'] ?? '',
+            'th' => $data['content_th'] ?? ''
+        ];
+        try {
+            $pdo->beginTransaction();
+            if ($notifications_id) {
+                $sql = "UPDATE wp_notifications SET status = :status,publish_at = :publish_at,updated_at = NOW() WHERE notifications_id = :notifications_id";
+                $stmt = $pdo->prepare($sql);
+                $stmt->bindValue(':notifications_id', (int)$notifications_id, PDO::PARAM_INT);
+            } else {
+                $sql = "INSERT INTO wp_notifications (status, publish_at, created_at, updated_at) VALUES (:status, :publish_at, NOW(), NOW())";
+                $stmt = $pdo->prepare($sql);
+            }
+            $stmt->bindValue(':status', $status);
+            $stmt->bindValue(':publish_at', $publish_at, $publish_at === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+            $stmt->execute();
+            if (!$notifications_id) {
+                $notifications_id = $pdo->lastInsertId();
+            }
+            $sqlItem = "INSERT INTO wp_notifications_item
+                (notifications_id, notifications_subject, notifications_body, notifications_lang, created_at, updated_at)
+                VALUES
+                (:notifications_id, :subject, :body, :lang, NOW(), NOW())
+                ON DUPLICATE KEY UPDATE
+                    notifications_subject = VALUES(notifications_subject),
+                    notifications_body    = VALUES(notifications_body),
+                    updated_at            = NOW()";
+            $stmtItem = $pdo->prepare($sqlItem);
+            foreach (['en', 'lo', 'th'] as $lang) {
+                if ($title[$lang] === '' && $content[$lang] === '') {
+                    continue;
+                }
+                $stmtItem->execute([
+                    ':notifications_id' => $notifications_id,
+                    ':subject' => $title[$lang],
+                    ':body'    => $content[$lang],
+                    ':lang'    => $lang
+                ]);
+            }
+            $allImages = [];
+            foreach ($content as $html) {
+                preg_match_all('/<img[^>]+src="([^">]+)"/i', $html, $matches);
+                if (!empty($matches[1])) {
+                    $allImages = array_merge($allImages, $matches[1]);
+                }
+            }
+            $allImages = array_unique($allImages);
+            $stmt = $pdo->prepare("SELECT file_path FROM wp_notifications_files WHERE notifications_id = ?");
+            $stmt->execute([$notifications_id]);
+            $oldFiles = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            $toDelete = array_diff($oldFiles ?: [], $allImages);
+            foreach ($toDelete as $file) {
+                $fullPath = $_SERVER['DOCUMENT_ROOT'] . $file;
+                if (file_exists($fullPath)) {
+                    @unlink($fullPath);
+                }
+                $del = $pdo->prepare("DELETE FROM wp_notifications_files WHERE notifications_id = ? AND file_path = ?");
+                $del->execute([$notifications_id, $file]);
+            }
+            $ins = $pdo->prepare("INSERT IGNORE INTO wp_notifications_files (notifications_id, file_path, created_at) VALUES (:nid, :path, NOW())");
+            foreach ($allImages as $path) {
+                $ins->execute([
+                    ':nid'  => $notifications_id,
+                    ':path' => $path
+                ]);
+            }
+            $pdo->commit();
+            return true;
+        } catch (Exception $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            throw $e;
+        }
+    }
+    public function delete($id) {
+        if($id) {
+            $pdo = $this->db;
+            $sql = "UPDATE wp_notifications set status = 'deleted', updated_at = NOW() WHERE notifications_id = :id";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+            return $stmt->execute();
+        }
+        return false;
+    }
+    public function change($id, $status) {
+        if (!$id) {
+            return false;
+        }
+        $pdo = $this->db;
+        if ($status === 'published') {
+            $publish_at = date('Y-m-d H:i:s');
+        } elseif ($status === 'draft') {
+            $publish_at = null;
+        } else {
+            $publish_at = null; 
+        }
+        $sql = "UPDATE wp_notifications SET status = :status,publish_at = :publish_at, updated_at = NOW() WHERE notifications_id = :id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindValue(':status', $status);
+        $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+        if ($publish_at === null) {
+            $stmt->bindValue(':publish_at', null, PDO::PARAM_NULL);
+        } else {
+            $stmt->bindValue(':publish_at', $publish_at, PDO::PARAM_STR);
+        }
+        return $stmt->execute();
     }
 }

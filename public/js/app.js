@@ -144,6 +144,7 @@ function refreshAllTables() {
         const id = this.id;
         if (id === 'tb_member') initMemberTable();
         if (id === 'tb_document') initDocumentTable();
+        if (id === 'tb_notification') initNotificationTable();
     });
 }
 function getTableLang() {

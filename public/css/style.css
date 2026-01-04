@@ -282,7 +282,6 @@ label.required::after {
 }
 .logo-full { display: block; }
 .logo-small { display: none; }
-
 @media (max-width: 768px) {
     .logo-full { display: none; }
     .logo-small { display: block; }

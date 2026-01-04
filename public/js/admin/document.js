@@ -62,10 +62,10 @@ function initDocumentTable() {
                                     <i class="fa-solid fa-angle-down"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow">
-                                    <li>
+                                    <li class="${status === 'public' ? 'd-none' : ''}">
                                         <a class="dropdown-item change-status" data-id="${row.document_id}" data-status="public"><span data-i18n="public" class="text-success"></span></a>
                                     </li>
-                                    <li>
+                                    <li class="${status === 'private' ? 'd-none' : ''}">
                                         <a class="dropdown-item change-status" data-id="${row.document_id}" data-status="private"><span data-i18n="private" class="text-muted"></span></a>
                                     </li>
                                 </ul>
@@ -90,7 +90,7 @@ function initDocumentTable() {
                     return `
                         <a href="${BASE_URL}/${row.document_path}" target="_blank" class="btn btn-light text-secondary" data-id="${row.document_id}"><i class="fa-solid fa-folder-open"></i></a> 
                         <button class="btn btn-light text-secondary manage-document" data-id="${row.document_id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-light text-secondary delete-document" data-id="${row.document_id}"><i class="fa-regular fa-trash-can"></i></button>
+                        <button class="btn btn-light text-secondary text-danger delete-document" data-id="${row.document_id}"><i class="fa-regular fa-trash-can"></i></button>
                     `;
                 }
             }
@@ -136,29 +136,8 @@ function initDocumentTable() {
 $('.filter').on('change', function () {
     initDocumentTable();
 });
-function loadDocumentFilters() {
-    $.ajax({
-        url: "api/member/filterData",
-        type: "POST",
-        dataType: "json",
-        success: function(res) {
-            if(res.status === "success") {
-                let company = res.data.company;
-                company.forEach(c => {
-                    $("#filter_company").append(`<option value="${c}">${c}</option>`);
-                });
-                let position = res.data.position;
-                position.forEach(p => {
-                    $("#filter_position").append(`<option value="${p}">${p}</option>`);
-                });
-
-            }
-        }
-    });
-}
 async function initDocument() {
     initDocumentTable(); 
-    loadDocumentFilters();
 }
 $(document).ready(function () {
     initDocument();
@@ -382,6 +361,7 @@ $(document).on('click', '.save-document', function () {
     saveDocument();
 });
 function saveDocument() {
+    $(".save-document").attr("disable", true);
     const document_id   = $("#document_id").val() || "";
     const name          = $("#document_name").val();
     const start_date    = $("#document_start").val();
@@ -427,27 +407,17 @@ function saveDocument() {
         },
         success: function (res) {
             if (res.status === true) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Success',
-                    text: langData['saved_successfully']
-                });
+                showSuccess('Success', langData['saved_successfully']);
                 initDocumentTable();
                 $('#windModal').modal('hide');
             } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: langData['cannot_save']
-                });
+                showError('Error', langData['cannot_save']);
             }
+            $(".save-document").attr("disable", false);
         },
         error: function () {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: langData['cannot_save']
-            });
+            showError('Error', langData['cannot_save']);
+            $(".save-document").attr("disable", false);
         }
     });
 }

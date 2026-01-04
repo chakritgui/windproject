@@ -77,13 +77,13 @@ function initMemberTable() {
                                     <i class="fa-solid fa-angle-down"></i>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow">
-                                    <li>
+                                    <li class="${status === 'active' ? 'd-none' : ''}">
                                         <a class="dropdown-item change-status" data-id="${row.member_id}" data-status="active"><span data-i18n="active" class="text-success"></span></a>
                                     </li>
-                                    <li>
+                                    <li class="${status === 'inactive' ? 'd-none' : ''}">
                                         <a class="dropdown-item change-status" data-id="${row.member_id}" data-status="inactive"><span data-i18n="inactive" class="text-secondary"></span></a>
                                     </li>
-                                    <li>
+                                    <li class="${status === 'banned' ? 'd-none' : ''}">
                                         <a class="dropdown-item change-status" data-id="${row.member_id}" data-status="banned"><span data-i18n="banned" class="text-danger"></span></a>
                                     </li>
                                 </ul>
@@ -98,7 +98,7 @@ function initMemberTable() {
                 render: function(row){
                     return `
                         <button class="btn btn-light text-secondary manage-member" data-id="${row.member_id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        ${((row.role || '').toLowerCase() !== 'administrator') ? `<button class="btn btn-light text-secondary delete-member" data-id="${row.member_id}"><i class="fa-regular fa-trash-can"></i></button>` : ''}
+                        ${((row.role || '').toLowerCase() !== 'administrator') ? `<button class="btn btn-light text-secondary text-danger delete-member" data-id="${row.member_id}"><i class="fa-regular fa-trash-can"></i></button>` : ''}
                     `;
                 }
             }
@@ -484,6 +484,10 @@ $(document).on('click', '.save-member', function () {
     } else {
         $("#username_").removeClass("is-invalid");
     }
+    saveMember();
+});
+function saveMember() {
+    $(".save-member").attr("disable", true);
     $.ajax({
         url: 'api/member/save',
         method: 'POST',
@@ -507,12 +511,14 @@ $(document).on('click', '.save-member', function () {
             } else {
                 showError('Error', langData['cannot_save']);
             }   
+            $(".save-document").attr("disable", false);
         },
         error: function(){
             showError('Error', langData['cannot_save']);
+            $(".save-document").attr("disable", false);
         }
     });
-});
+}
 $(document).on('input change', '.obj-required', function () {
     let value = $(this).val();
     if ($(this).is(':checkbox') || $(this).is(':radio')) {

@@ -183,5 +183,10 @@
     "language_note": "Note At least one language must be enabled. Languages ​​that are disabled will not be displayed in the website's language switching menu.",
     "one_language": "At least one language must be enabled.",
     "cannot_load": "Cannot load data",
-    "footer": "Footer"
+    "footer": "Footer",
+    "published": "Published",
+    "draft": "draft",
+    "scheduled": "scheduled",
+    "warning": "Warning",
+    "past_date": "You cannot select a past date and time."
 }

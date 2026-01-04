@@ -71,6 +71,7 @@ $(document).on('click', '.save-setting-3', function () {
     let languagesStr = activeLangs.join(',');
     let formData = new FormData();
     formData.append('languages', languagesStr);
+    $(".save-setting-3").attr("disable", true);
     $.ajax({
         url: 'api/setting/save3', 
         type: 'POST',
@@ -83,9 +84,11 @@ $(document).on('click', '.save-setting-3', function () {
             } else {
                 showError('Success', langData['cannot_save']);
             }
+            $(".save-setting-3").attr("disable", false);
         },
         error: function(){
             showError('Success', langData['cannot_save']);
+            $(".save-setting-3").attr("disable", false);
         }
     });
 
@@ -138,6 +141,7 @@ $(document).on('click', '.save-setting-1', function () {
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
     });
+    $(".save-setting-1").attr("disable", true);
     $.ajax({
         url: "api/setting/save1",
         type: "POST",
@@ -166,9 +170,11 @@ $(document).on('click', '.save-setting-1', function () {
             } else {
                 showError('Error', langData['cannot_save']);
             }
+            $(".save-setting-1").attr("disable", false);
         },
         error: function () {
             showError('Error', langData['cannot_save']);
+            $(".save-setting-1").attr("disable", false);
         }
     });
 });

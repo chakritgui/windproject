@@ -45,12 +45,12 @@
         $dt->setTimezone(new DateTimeZone($userTz));
         return $dt->format($format);
     }
-    function convertTimeZoneUTC($datetime_str, $format = 'Y/m/d H:i:s') {
-        $userTz = 'UTC';
-        if(!$datetime_str) {
-            return '';  
+    function convertTimeZoneUTC($datetime_str, $format = 'Y-m-d H:i:s') {
+        $userTz = $_SESSION['timezone'] ?? 'UTC';
+        if (!$datetime_str) {
+            return '';
         }
-        $dt = new DateTime($datetime_str, new DateTimeZone('UTC'));
-        $dt->setTimezone(new DateTimeZone($userTz));
+        $dt = new DateTime($datetime_str, new DateTimeZone($userTz));
+        $dt->setTimezone(new DateTimeZone('UTC'));
         return $dt->format($format);
     }

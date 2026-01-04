@@ -57,6 +57,9 @@
             $router->post('/api/wind/list', 'WindController@list');
             $router->post('/api/notification/list', 'NotificationController@list');
             $router->post('/api/notification/get', 'NotificationController@get');
+            $router->post('/api/notification/save', 'NotificationController@save');
+            $router->post('/api/notification/delete', 'NotificationController@delete');
+            $router->post('/api/notification/change', 'NotificationController@change');
             $router->post('/api/setting/save1', 'SettingController@save1');
             $router->post('/api/setting/save3', 'SettingController@save3');
         } else {
