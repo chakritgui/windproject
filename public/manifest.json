@@ -1,0 +1,24 @@
+{
+    "name": "",
+    "short_name": "Basic",
+    "description": "",
+    "start_url": "\/",
+    "display": "standalone",
+    "orientation": "any",
+    "theme_color": "#0d6efd",
+    "background_color": "#ffffff",
+    "icons": [
+        {
+            "src": "icons\/icon-android.png",
+            "sizes": "512x512",
+            "type": "image\/png",
+            "purpose": "any"
+        },
+        {
+            "src": "icons\/icon-ios.png",
+            "sizes": "512x512",
+            "type": "image\/png",
+            "purpose": "maskable"
+        }
+    ]
+}

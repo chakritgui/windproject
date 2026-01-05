@@ -61,6 +61,7 @@
             $router->post('/api/notification/change', 'NotificationController@change');
             $router->post('/api/setting/save1', 'SettingController@save1');
             $router->post('/api/setting/save3', 'SettingController@save3');
+            $router->post('/api/setting/shortcut', 'SettingController@shortcut');
         } else {
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');

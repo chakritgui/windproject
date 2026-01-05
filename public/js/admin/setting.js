@@ -91,7 +91,6 @@ $(document).on('click', '.save-setting-3', function () {
             $(".save-setting-3").attr("disable", false);
         }
     });
-
 });
 function previewLogo(input) {
     const preview = document.getElementById('logoPreview');

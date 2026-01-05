@@ -15,6 +15,25 @@ class SettingController extends BaseController {
         ];
         $this->json(['status'=>$this->model->saveWebsiteSetting($data)]);
     }
+    public function shortcut(){
+        $data = [
+            'name'             => $_POST['name'] ?? '',
+            'short_name'       => $_POST['short_name'] ?? '',
+            'description'      => $_POST['description'] ?? '',
+            'display'          => $_POST['display'] ?? '',
+            'orientation'      => $_POST['orientation'] ?? '',
+            'theme_color'      => $_POST['theme_color'] ?? '',
+            'background_color' => $_POST['background_color'] ?? '',
+            'statusBarStyle'   => $_POST['statusBarStyle'] ?? '',
+            'webAppCapable'    => $_POST['webAppCapable'] ?? '',
+            'androidIcon'      => $_FILES['androidIcon'] ?? null,
+            'iosIcon'          => $_FILES['iosIcon'] ?? null,
+        ];
+        $status = $this->model->shortcut($data);
+        $this->json([
+            'status' => $status
+        ]);
+    }
     public function save3() {
         $data = [
             'languages' => $_POST['languages'] ?? 'en',
