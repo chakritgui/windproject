@@ -40,13 +40,208 @@ async function loadNotification() {
             method: 'POST',
             dataType: 'json'
         });
-        if (!res.status) {
+        if (!res || res.status !== true) {
             showError('Error', langData['cannot_load']);
             return;
         }
-        res.data.forEach(handleSettingItem);
+        updateUnreadBadge(res.data.unread);
     } catch (err) {
-        console.error(err);
+        showError('Error', langData['cannot_load']);
+    }
+}
+$(document).on('shown.bs.dropdown', '.btn-notification', async function () {
+    $('.notification-list').empty();
+    updateUnreadBadge(0);
+    await readNotification();
+});
+async function readNotification() {
+    try {
+        const res = await $.ajax({
+            url: 'api/notification/read',
+            method: 'POST',
+            dataType: 'json'
+        });
+        if (!res || res.status !== true) {
+            showError('Error', langData['cannot_load']);
+            return;
+        }
+        notifyPage = 1;
+        notifyFinished = false;
+        await loadNotificationItem();
+    } catch (err) {
+        showError('Error', langData['cannot_load']);
+    }
+}
+let notifyPage = 1;
+let notifyLoading = false;
+let notifyFinished = false;
+async function loadNotificationItem() {
+    if (notifyLoading || notifyFinished) return;
+    notifyLoading = true;
+    try {
+        const res = await $.ajax({
+            url: 'api/notification/load-list',
+            method: 'POST',
+            data: {
+                page: notifyPage,
+                limit: 10
+            },
+            dataType: 'json'
+        });
+        if (!res || res.status !== true) {
+            showError('Error', langData['cannot_load']);
+            return;
+        }
+        const items = res.data.data ?? [];
+        handleNotificationItem(items);
+        notifyPage++;
+    } catch (err) {
+        console.error('Notification load error:', err);
+        showError('Error', langData['cannot_load']);
+    } finally {
+        notifyLoading = false;
+    }
+}
+function handleNotificationItem(items) {
+    const $list = $('.notification-list');
+    $(".show-notification-count").html(items.length);
+    $list.empty();
+    if (!items || items.length === 0) {
+        const emptyHtml = `
+            <li class="text-center py-4 text-muted">
+                <div class="d-flex flex-column align-items-center">
+                    <i class="bi bi-bell-slash fs-2 mb-2"></i>
+                    <div data-i18n="no_notification"></div>
+                </div>
+            </li>
+        `;
+        $list.append(emptyHtml);
+        return;
+    }
+    items.forEach(item => {
+        const isUnread = !item.read_at ? 'unread' : '';
+        let title = '';
+        switch(currentLang) {
+            case 'en':
+                title = item.title_en;
+                break;
+            case 'lo':
+                title = item.title_lo || item.title_en;
+                break;
+            case 'th':
+                title = item.title_th || item.title_en;
+                break;
+        }
+        const html = `
+            <li>
+                <a class="dropdown-item py-3 border-bottom notification-item ${isUnread}" data-id="${item.notifications_item}" data-target="${item.notifications_target}">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-shrink-0 me-3">
+                            <div class="bg-${item.notifications_target == 'news' ? `primary` : `warning`} bg-opacity-10 rounded-circle p-2">
+                                <i class="${item.notifications_target == 'news' ? `fa-regular fa-newspaper` : `fa-solid fa-bell`} fa-2x text-${item.notifications_target == 'news' ? `primary` : `warning`}"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="mb-1 fw-semibold">${title}</div>
+                            <p class="mb-1 small text-muted" data-i18n="${item.notifications_target}"></p>
+                            <small class="text-muted">
+                                <i class="bi bi-clock me-1"></i>${item.notification_at}
+                            </small>
+                        </div>
+                        ${!item.read_at ? `<span class="badge bg-danger rounded-pill ms-2" data-i18n="new"></span>` : ''}
+                    </div>
+                </a>
+            </li>
+        `;
+        $list.append(html);
+    });
+    $(".notification-item").click(function() {
+        let id = $(this).data("id");
+        let target = $(this).data("target");
+        notificatinInfo(id, 'view', target);
+    });
+}
+function notificatinInfo(id, type, target = 'notifications') {
+    $.ajax({
+        url: "api/notification/get",
+        method: "POST",
+        data: { id },
+        dataType: "json",
+        success(res) {
+            let $modal = $("#windModal");
+            let modal = new bootstrap.Modal($modal[0]);
+            $modal.find(".modal-header").html(`
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            `);
+            if(type == 'preview') {
+                $modal.find(".modal-body").html(`
+                    <ul class="nav nav-tabs mb-2">
+                        <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#v_en">English</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#v_lo">ລາວ</a></li>
+                        <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#v_th">ไทย</a></li>
+                    </ul>
+                    <div class="tab-content p-2">
+                        <div class="tab-pane fade show active" id="v_en">
+                            <h5>${res.data.title?.en ?? ""}</h5>
+                            <div>${res.data.content?.en ?? ""}</div>
+                        </div>
+                        <div class="tab-pane fade" id="v_lo">
+                            <h5>${res.data.title?.lo ?? ""}</h5>
+                            <div>${res.data.content?.lo ?? ""}</div>
+                        </div>
+                        <div class="tab-pane fade" id="v_th">
+                            <h5>${res.data.title?.th ?? ""}</h5>
+                            <div>${res.data.content?.th ?? ""}</div>
+                        </div>
+                    </div>
+                `);
+            } else {
+                let title = '';
+                let content = '';
+                switch(currentLang) {
+                    case 'en':
+                        title = res.data.title?.en;
+                        content = res.data.content?.en;
+                        break;
+                    case 'lo':
+                        title = res.data.title?.lo || res.data.title?.en;
+                        content = res.data.content?.lo || res.data.content?.en;
+                        break;
+                    case 'th':
+                        title = res.data.title?.th || res.data.title?.en;
+                        content = res.data.content?.th || res.data.content?.en;
+                        break;
+                }
+                $modal.find(".modal-body").html(`
+                    <h5>${title ?? ""}</h5>
+                    <div>${content ?? ""}</div>
+                `);
+            }
+            $modal.find(".modal-footer").html(`
+                <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
+            `);
+            $modal.find(".modal-body img").addClass("img-fluid");
+            modal.show();
+        }
+    });
+}
+$('.notification-list').on('scroll', async function () {
+    const el = this;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
+        await loadNotificationItem();
+    }
+});
+function updateUnreadBadge(unread) {
+    if(unread > 0) {
+        if(unread < 100) {
+            unread = unread;
+        } else {
+            unread = '99+';
+        }
+        $(".notification-badge").removeClass("d-none");
+        $("#notificationCount").html(unread);
+    } else {
+        $(".notification-badge").addClass("d-none");
     }
 }
 function handleSettingItem(item) {
@@ -246,4 +441,22 @@ function isValidEmail(email) {
 }
 $(document).on('shown.bs.modal', '.modal', function () {
     applyLanguage(currentLang, this);
+});
+$(document).on('hide.bs.dropdown', '.dropdown', function (e) {
+    if ($(e.clickEvent?.target).closest('.custom-notification-menu').length) {
+        e.preventDefault();
+    }
+});
+$(document).on('click', '.btn-close-dropdown', function () {
+    const trigger = $(this).closest('.dropdown').find('[data-bs-toggle="dropdown"]')[0];
+    const dd = bootstrap.Dropdown.getInstance(trigger);
+    dd.hide();
+});
+$('#windModal').on('show.bs.modal', function () {
+    $(document).on('hide.bs.dropdown.block-by-modal', '.dropdown', function (e) {
+        e.preventDefault();
+    });
+});
+$('#windModal').on('hidden.bs.modal', function () {
+    $(document).off('hide.bs.dropdown.block-by-modal');
 });

@@ -56,7 +56,6 @@
             $router->post('/api/news/get', 'NewsController@get');
             $router->post('/api/wind/list', 'WindController@list');
             $router->post('/api/notification/list', 'NotificationController@list');
-            $router->post('/api/notification/get', 'NotificationController@get');
             $router->post('/api/notification/save', 'NotificationController@save');
             $router->post('/api/notification/delete', 'NotificationController@delete');
             $router->post('/api/notification/change', 'NotificationController@change');
@@ -72,7 +71,10 @@
             $router->get('/download', 'UserController@download');
         }
     }
+    $router->post('/api/notification/get', 'NotificationController@get');
+    $router->post('/api/notification/read', 'NotificationController@read');
     $router->post('/api/notification/load', 'NotificationController@load');
+    $router->post('/api/notification/load-list', 'NotificationController@loadlist');
     $router->post('/api/setting/get', 'SettingController@get');
     $router->get('/account', 'AuthController@account');
     $router->get('/logout', 'AuthController@logout');

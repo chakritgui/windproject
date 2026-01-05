@@ -230,12 +230,10 @@ class NotificationModel {
         $pdo = $this->db;
         if ($status === 'published') {
             $publish_at = date('Y-m-d H:i:s');
-        } elseif ($status === 'draft') {
-            $publish_at = null;
         } else {
-            $publish_at = null; 
+            $publish_at = null;
         }
-        $sql = "UPDATE wp_notifications SET status = :status,publish_at = :publish_at, updated_at = NOW() WHERE notifications_id = :id";
+        $sql = "UPDATE wp_notifications SET status = :status,publish_at = :publish_at,updated_at = NOW() WHERE notifications_id = :id";
         $stmt = $pdo->prepare($sql);
         $stmt->bindValue(':status', $status);
         $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
@@ -244,8 +242,11 @@ class NotificationModel {
         } else {
             $stmt->bindValue(':publish_at', $publish_at, PDO::PARAM_STR);
         }
-        $this->notification($id, $status);
-        return $stmt->execute();
+        $ok = $stmt->execute();
+        if ($ok) {
+            $this->notification($id, $status);
+        }
+        return $ok;
     }
     public function notification($id, $status) {
         $pdo = $this->db;
@@ -297,40 +298,119 @@ class NotificationModel {
             throw $e;
         }
     }
-    public function load(){
+    public function load() {
+        try {
+            $pdo = $this->db;
+            $member_id = $_SESSION['user']['id'] ?? null;
+            if (!$member_id) {
+                return [
+                    'unread' => 0,
+                ];
+            }
+            $sql1 = "SELECT COUNT(*) AS unread FROM wp_notification_targets WHERE member_id = ? AND status = 'published' AND publish_at <= NOW() AND read_at IS NULL LIMIT 100";
+            $stmt = $pdo->prepare($sql1);
+            $stmt->execute([$member_id]);
+            $unread = (int)$stmt->fetch(PDO::FETCH_ASSOC)['unread'];
+            return [
+                'status' => true,
+                'unread' => $unread
+            ];
+        } catch (PDOException $e) {
+            return [
+                'status' => false
+            ];
+            exit;
+        }
+    }
+    public function loadlist($page = 1, $limit = 10) {
+        try {
+            $pdo = $this->db;
+            $member_id = $_SESSION['user']['id'] ?? null;
+            if (!$member_id) {
+                return [
+                    'status' => false,
+                    'data' => []
+                ];
+            }
+            $page  = max(1, (int)$page);
+            $limit = max(1, (int)$limit);
+            $offset = ($page - 1) * $limit;
+            $sql = "SELECT 
+                        t.targets_id,
+                        t.publish_at,
+                        t.read_at,
+                        CASE
+                            WHEN t.notifications_target = 'notifications' THEN iEn.notifications_subject
+                            ELSE ''
+                        END AS title_en,
+                        CASE
+                            WHEN t.notifications_target = 'notifications' THEN iLo.notifications_subject
+                            ELSE ''
+                        END AS title_lo,
+                        CASE
+                            WHEN t.notifications_target = 'notifications' THEN iTh.notifications_subject
+                            ELSE ''
+                        END AS title_th,
+                        CASE
+                            WHEN t.notifications_target = 'notifications' THEN n.created_at
+                            ELSE NULL
+                        END AS notification_at,
+                        t.notifications_target,
+                        t.notifications_item
+                    FROM wp_notification_targets t
+                    LEFT JOIN wp_notifications n on n.notifications_id = t.notifications_item
+                    LEFT JOIN wp_notifications_item iEn 
+                        ON iEn.notifications_id = t.notifications_item AND iEn.notifications_lang = 'en'
+                    LEFT JOIN wp_notifications_item iLo 
+                        ON iLo.notifications_id = t.notifications_item AND iLo.notifications_lang = 'lo'
+                    LEFT JOIN wp_notifications_item iTh 
+                        ON iTh.notifications_id = t.notifications_item AND iTh.notifications_lang = 'th'
+                    WHERE t.member_id = ?
+                    AND t.status = 'published'
+                    AND t.publish_at <= NOW()
+                    ORDER BY t.publish_at DESC
+                    LIMIT ?, ?";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindValue(1, $member_id, PDO::PARAM_INT);
+            $stmt->bindValue(2, (int)$offset, PDO::PARAM_INT);
+            $stmt->bindValue(3, (int)$limit, PDO::PARAM_INT);
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($rows as &$r) {
+                foreach (['read_at', 'publish_at', 'notification_at'] as $field) {
+                    if (!empty($r[$field])) {
+                        $r[$field] = convertTimeZone($r[$field], 'Y/m/d H:i:s');
+                    }
+                }
+            }
+            return [
+                'status' => true,
+                'data'   => $rows
+            ];
+        } catch (PDOException $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+    public function read() {
         $pdo = $this->db;
         $member_id = $_SESSION['user']['id'] ?? null;
         if (!$member_id) {
             return [
-                'unread' => 0,
-                'list' => []
+                'status' => false,
+                'data' => []
             ];
         }
-        $sql1 = "SELECT COUNT(*) AS unread FROM wp_notification_targets WHERE member_id = ? AND status = 'published' AND publish_at <= NOW() AND read_at IS NULL";
-        $stmt = $pdo->prepare($sql1);
-        $stmt->execute([$member_id]);
-        $unread = (int)$stmt->fetch(PDO::FETCH_ASSOC)['unread'];
-        $sql2 = "SELECT 
-                t.targets_id,
-                t.publish_at,
-                t.read_at,
-                n.notifications_id,
-                n.title,
-                n.message
-            FROM wp_notification_targets t
-            JOIN wp_notifications n 
-            ON n.notifications_id = t.notifications_item
-            WHERE t.member_id = ?
-            AND t.status = 'published'
-            AND t.publish_at <= NOW()
-            ORDER BY t.publish_at DESC
-        ";
-        $stmt = $pdo->prepare($sql2);
-        $stmt->execute([$member_id]);
-        $list = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return [
-            'unread' => $unread,
-            'list'   => $list
-        ];
+        $sql = "UPDATE wp_notification_targets 
+                SET read_at = NOW() 
+                WHERE member_id = :member_id 
+                AND read_at IS NULL 
+                AND publish_at <= NOW()";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindValue(':member_id', (int)$member_id, PDO::PARAM_INT);
+        return $stmt->execute();
     }
 }

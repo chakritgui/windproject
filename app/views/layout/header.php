@@ -50,108 +50,34 @@
         <div class="d-flex align-items-center gap-3">
             <?php if(!empty($_SESSION)) { ?>
             <div class="dropdown">
-                <button class="btn btn-light btn-sm position-relative" data-bs-toggle="dropdown" aria-expanded="false">
+                <button class="btn btn-light btn-sm position-relative btn-notification"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false">
                     <i class="bi bi-bell"></i>
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notificationCount">
-                        5
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge d-none">
+                        <span id="notificationCount">5</span>
                         <span class="visually-hidden">unread notifications</span>
                     </span>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow" style="min-width: 350px; max-height: 450px; overflow-y: auto;">
-                    <li class="dropdown-header d-flex justify-content-between align-items-center border-bottom pb-2">
-                        <span class="fw-bold"><i class="bi bi-bell me-2"></i><span data-i18n="notifications">Notifications</span></span>
-                        <a href="#" class="text-primary text-decoration-none small" id="markAllRead">
-                            <span data-i18n="mark_all_read">Mark all as read</span>
-                        </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow custom-notification-menu" data-bs-auto-close="false">
+                    <li class="dropdown-header d-flex justify-content-between align-items-center border-bottom pb-2 bg-white position-sticky top-0">
+                        <span class="fw-bold">
+                            <i class="bi bi-bell me-2"></i>
+                            <span data-i18n="notification"></span>
+                        </span>
+                        <button class="btn btn-sm btn-light border-0 btn-close-dropdown">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
                     </li>
-                    <li>
-                        <a class="dropdown-item py-3 border-bottom notification-item unread" href="#" data-notification-id="1">
-                            <div class="d-flex align-items-start">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="bg-primary bg-opacity-10 rounded-circle p-2">
-                                        <i class="bi bi-wind text-primary"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1 fw-semibold">Wind Speed Alert</h6>
-                                    <p class="mb-1 small text-muted">Station WT-12 exceeded 25 km/h threshold</p>
-                                    <small class="text-muted"><i class="bi bi-clock me-1"></i>5 minutes ago</small>
-                                </div>
-                                <span class="badge bg-primary rounded-pill ms-2">New</span>
-                            </div>
-                        </a>
+                    <li class="p-0">
+                        <div class="notification-list"></div>
                     </li>
-                    <li>
-                        <a class="dropdown-item py-3 border-bottom notification-item unread" href="#" data-notification-id="2">
-                            <div class="d-flex align-items-start">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="bg-danger bg-opacity-10 rounded-circle p-2">
-                                        <i class="bi bi-exclamation-triangle text-danger"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1 fw-semibold">Connection Lost</h6>
-                                    <p class="mb-1 small text-muted">Station WT-07 is offline</p>
-                                    <small class="text-muted"><i class="bi bi-clock me-1"></i>15 minutes ago</small>
-                                </div>
-                                <span class="badge bg-primary rounded-pill ms-2">New</span>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item py-3 border-bottom notification-item unread" href="#" data-notification-id="3">
-                            <div class="d-flex align-items-start">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="bg-success bg-opacity-10 rounded-circle p-2">
-                                        <i class="bi bi-file-earmark-arrow-up text-success"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1 fw-semibold">Data Import Completed</h6>
-                                    <p class="mb-1 small text-muted">wind_data_08dec.xlsx has been imported</p>
-                                    <small class="text-muted"><i class="bi bi-clock me-1"></i>1 hour ago</small>
-                                </div>
-                                <span class="badge bg-primary rounded-pill ms-2">New</span>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item py-3 border-bottom notification-item" href="#" data-notification-id="4">
-                            <div class="d-flex align-items-start">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="bg-warning bg-opacity-10 rounded-circle p-2">
-                                        <i class="bi bi-tools text-warning"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1 fw-semibold">Maintenance Schedule</h6>
-                                    <p class="mb-1 small text-muted">System maintenance on Dec 10, 2025</p>
-                                    <small class="text-muted"><i class="bi bi-clock me-1"></i>2 hours ago</small>
-                                </div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item py-3 border-bottom notification-item unread" href="#" data-notification-id="5">
-                            <div class="d-flex align-items-start">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="bg-info bg-opacity-10 rounded-circle p-2">
-                                        <i class="bi bi-person-check text-info"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1 fw-semibold">New User Login</h6>
-                                    <p class="mb-1 small text-muted">Manager01 logged in from 192.168.1.20</p>
-                                    <small class="text-muted"><i class="bi bi-clock me-1"></i>3 hours ago</small>
-                                </div>
-                                <span class="badge bg-primary rounded-pill ms-2">New</span>
-                            </div>
-                        </a>
-                    </li>
-                    <li class="dropdown-footer text-center border-top pt-2">
-                        <a href="notifications" class="text-primary text-decoration-none">
-                            <span data-i18n="view_all_notifications">View All Notifications</span> <i class="bi bi-arrow-right"></i>
-                        </a>
+                    <li class="dropdown-footer text-center border-top pt-2 pb-2 bg-white position-sticky bottom-0">
+                        <small class="text-muted">
+                            <span data-i18n="notifications"></span>
+                            <span class="show-notification-count"></span>
+                            <span data-i18n="item"></span>
+                        </small>
                     </li>
                 </ul>
             </div>

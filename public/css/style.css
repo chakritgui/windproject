@@ -208,7 +208,7 @@ a {
     scrollbar-width: thin;
 }
 #notificationCount {
-    font-size: 0.7rem;
+    font-size: 0.5rem;
     animation: pulse 2s infinite;
 }
 @keyframes pulse {
@@ -285,4 +285,34 @@ label.required::after {
 @media (max-width: 768px) {
     .logo-full { display: none; }
     .logo-small { display: block; }
+}
+.custom-notification-menu {
+    display: flex !important;
+    flex-direction: column;
+    max-height: 85vh;
+    width:350px;
+}
+@media (max-width: 768px) {
+    .custom-notification-menu {
+        position: fixed !important;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        max-height: 85vh;
+        border-radius: 5px;
+        margin: 0;
+        display: flex !important;
+        flex-direction: column;
+        z-index: 9999;
+    }
+    .notification-list {
+        flex: 1;
+        overflow-y: auto;
+    }
+}
+.custom-notification-menu:not(.show) {
+    display: none !important;
+}
+.notification-list{
+    overflow-y: auto;
 }

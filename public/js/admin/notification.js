@@ -397,43 +397,5 @@ $(document).on('click', '.change-status', function() {
 });
 $(document).on("click", ".view-notification", function () {
     const id = $(this).data("id");
-    $.ajax({
-        url: "api/notification/get",
-        method: "POST",
-        data: { id },
-        dataType: "json",
-        success(res) {
-            let $modal = $("#windModal");
-            let modal = new bootstrap.Modal($modal[0]);
-            $modal.find(".modal-header").html(`
-                <button class="btn-close" data-bs-dismiss="modal"></button>
-            `);
-            $modal.find(".modal-body").html(`
-                <ul class="nav nav-tabs mb-2">
-                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#v_en">English</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#v_lo">ລາວ</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#v_th">ไทย</a></li>
-                </ul>
-                <div class="tab-content p-2">
-                    <div class="tab-pane fade show active" id="v_en">
-                        <h5>${res.data.title?.en ?? ""}</h5>
-                        <div>${res.data.content?.en ?? ""}</div>
-                    </div>
-                    <div class="tab-pane fade" id="v_lo">
-                        <h5>${res.data.title?.lo ?? ""}</h5>
-                        <div>${res.data.content?.lo ?? ""}</div>
-                    </div>
-                    <div class="tab-pane fade" id="v_th">
-                        <h5>${res.data.title?.th ?? ""}</h5>
-                        <div>${res.data.content?.th ?? ""}</div>
-                    </div>
-                </div>
-            `);
-            $modal.find(".modal-footer").html(`
-                <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-            `);
-            $modal.find(".modal-body img").addClass("img-fluid");
-            modal.show();
-        }
-    });
+    notificatinInfo(id, 'preview');
 });

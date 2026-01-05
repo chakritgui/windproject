@@ -189,5 +189,10 @@
     "draft": "draft",
     "scheduled": "scheduled",
     "warning": "Warning",
-    "past_date": "You cannot select a past date and time."
+    "past_date": "You cannot select a past date and time.",
+    "view_all_notifications": "View All Notifications",
+    "notifications": "Notifications",
+    "new": "New",
+    "no_notification": "No notification",
+    "item": "Items"
 }
