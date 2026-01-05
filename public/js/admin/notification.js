@@ -24,6 +24,15 @@ function initNotificationTable() {
         },
         columns: [
             { 
+                data: "status",
+                className: 'text-center',
+                orderable: false,
+                searchable: false,
+                render: function(data){
+                    return `<i class="fa-solid fa-bell fa-2x ${(data == 'published') ? 'text-warning' : 'text-muted'}"></i>`;
+                }
+            },
+            { 
                 data: null,
                 render: (_, __, row) => {
                     let title = '';
@@ -56,7 +65,7 @@ function initNotificationTable() {
                 render: function (status, type, row) {
                     return `
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-${status === 'published' ? 'success' : 'secondary'} bg-opacity-10 text-dark px-3 py-2" data-i18n="${status}"></span>
+                            <span class="badge bg-${status === 'published' ? 'success' : 'secondary'}" data-i18n="${status}"></span>
                             <div class="dropdown">
                                 <button class="btn btn-sm border-0" data-bs-toggle="dropdown">
                                     <i class="fa-solid fa-angle-down"></i>
@@ -64,6 +73,9 @@ function initNotificationTable() {
                                 <ul class="dropdown-menu dropdown-menu-end shadow">
                                     <li class="${status === 'published' ? 'd-none' : ''}">
                                         <a class="dropdown-item change-status" data-id="${row.notifications_id}" data-status="published"><span data-i18n="published" class="text-success"></span></a>
+                                    </li>
+                                    <li class="${status === 'draft' ? 'd-none' : ''}">
+                                        <a class="dropdown-item change-status" data-id="${row.notifications_id}" data-status="published"><span data-i18n="re-published" class="text-warning"></span></a>
                                     </li>
                                     <li class="${status === 'draft' ? 'd-none' : ''}">
                                         <a class="dropdown-item change-status" data-id="${row.notifications_id}" data-status="draft"><span data-i18n="draft" class="text-secondary"></span></a>

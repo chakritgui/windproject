@@ -46,4 +46,7 @@ class NotificationController extends BaseController {
         $status = $_POST['status'] ?? 'public';
         $this->json(['status'=>$this->model->change($id, $status)]);
     }
+    public function load() {
+        $this->json(['status'=> true, 'data' => $this->model->load()]);
+    }
 }

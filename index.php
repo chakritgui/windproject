@@ -72,6 +72,7 @@
             $router->get('/download', 'UserController@download');
         }
     }
+    $router->post('/api/notification/load', 'NotificationController@load');
     $router->post('/api/setting/get', 'SettingController@get');
     $router->get('/account', 'AuthController@account');
     $router->get('/logout', 'AuthController@logout');

@@ -12,6 +12,7 @@ const langInfo = {
 $(document).ready(initApp);
 async function initApp() {
     await loadSetting();
+    await loadNotification();
     bindSidebar();
     bindNotification();
     initAutoLanguageObserver();
@@ -20,6 +21,22 @@ async function loadSetting() {
     try {
         const res = await $.ajax({
             url: 'api/setting/get',
+            method: 'POST',
+            dataType: 'json'
+        });
+        if (!res.status) {
+            showError('Error', langData['cannot_load']);
+            return;
+        }
+        res.data.forEach(handleSettingItem);
+    } catch (err) {
+        console.error(err);
+    }
+}
+async function loadNotification() {
+    try {
+        const res = await $.ajax({
+            url: 'api/notification/load',
             method: 'POST',
             dataType: 'json'
         });

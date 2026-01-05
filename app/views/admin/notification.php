@@ -35,6 +35,7 @@
         <table class="table table-hover" id="tb_notification">
             <thead>
                 <tr>
+                    <th></th>
                     <th data-i18n="notification"></th>
                     <th data-i18n="publish_at"></th>
                     <th data-i18n="create_at"></th>

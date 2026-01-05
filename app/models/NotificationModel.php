@@ -68,8 +68,8 @@ class NotificationModel {
             }
         }
         return [
-            "total"    => (int)$total,
-            "data"            => $rows
+            "total" => (int)$total,
+            "data" => $rows
         ];
     }
     public function get($id){
@@ -96,7 +96,7 @@ class NotificationModel {
         $content = ["th"=>"","lo"=>"","en"=>""];
         foreach($items as $row){
             $lang = $row['notifications_lang'];
-            $title[$lang]   = $row['notifications_subject'];
+            $title[$lang] = $row['notifications_subject'];
             $content[$lang] = $row['notifications_body'];
         }
         $publishLocal = "";
@@ -104,11 +104,11 @@ class NotificationModel {
             $publishLocal = convertTimeZone($n['publish_at'], 'Y-m-d\TH:i');
         }
         return [
-            "id"         => $n['notifications_id'],
-            "status"     => $n['status'],
+            "id" => $n['notifications_id'],
+            "status" => $n['status'],
             "publish_at" => $publishLocal,
-            "title"      => $title,
-            "content"    => $content
+            "title" => $title,
+            "content" => $content
         ];
     }
     public function save($data){
@@ -152,14 +152,15 @@ class NotificationModel {
             if (!$notifications_id) {
                 $notifications_id = $pdo->lastInsertId();
             }
+            $this->notification($notifications_id, $status);
             $sqlItem = "INSERT INTO wp_notifications_item
                 (notifications_id, notifications_subject, notifications_body, notifications_lang, created_at, updated_at)
                 VALUES
                 (:notifications_id, :subject, :body, :lang, NOW(), NOW())
                 ON DUPLICATE KEY UPDATE
                     notifications_subject = VALUES(notifications_subject),
-                    notifications_body    = VALUES(notifications_body),
-                    updated_at            = NOW()";
+                    notifications_body = VALUES(notifications_body),
+                    updated_at = NOW()";
             $stmtItem = $pdo->prepare($sqlItem);
             foreach (['en', 'lo', 'th'] as $lang) {
                 if ($title[$lang] === '' && $content[$lang] === '') {
@@ -168,8 +169,8 @@ class NotificationModel {
                 $stmtItem->execute([
                     ':notifications_id' => $notifications_id,
                     ':subject' => $title[$lang],
-                    ':body'    => $content[$lang],
-                    ':lang'    => $lang
+                    ':body' => $content[$lang],
+                    ':lang' => $lang
                 ]);
             }
             $allImages = [];
@@ -214,6 +215,10 @@ class NotificationModel {
             $sql = "UPDATE wp_notifications set status = 'deleted', updated_at = NOW() WHERE notifications_id = :id";
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+            $stmt = $pdo->prepare("UPDATE wp_notification_targets SET status = 'deleted',publish_at = NULL,read_at = NULL WHERE notifications_item = :id AND notifications_target = 'notifications'");
+            $stmt->execute([
+                ':id'     => $id
+            ]);
             return $stmt->execute();
         }
         return false;
@@ -239,6 +244,93 @@ class NotificationModel {
         } else {
             $stmt->bindValue(':publish_at', $publish_at, PDO::PARAM_STR);
         }
+        $this->notification($id, $status);
         return $stmt->execute();
+    }
+    public function notification($id, $status) {
+        $pdo = $this->db;
+        $pdo->beginTransaction();
+        try {
+            if ($status == 'published') {
+                $stmt = $pdo->prepare("SELECT publish_at FROM wp_notifications WHERE notifications_id = ?");
+                $stmt->execute([$id]);
+                $n = $stmt->fetch(PDO::FETCH_ASSOC);
+                $publish_at = $n['publish_at'] ?? null;
+                $stmt = $pdo->prepare("SELECT member_id FROM wp_members WHERE status = 'active'");
+                $stmt->execute();
+                $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                foreach ($members as $m) {
+                    $stmt = $pdo->prepare("SELECT targets_id FROM wp_notification_targets WHERE notifications_target = 'notifications' AND notifications_item = ? AND member_id = ? LIMIT 1");
+                    $stmt->execute([$id, $m['member_id']]);
+                    $target = $stmt->fetch(PDO::FETCH_ASSOC);
+                    if ($target) {
+                        $stmt = $pdo->prepare("UPDATE wp_notification_targets SET status = :status, publish_at = :publish_at, read_at = NULL WHERE targets_id = :tid");
+                        $stmt->execute([
+                            ':status' => $status,
+                            ':publish_at' => $publish_at,
+                            ':tid' => $target['targets_id']
+                        ]);
+                    } else {
+                        $stmt = $pdo->prepare("INSERT INTO wp_notification_targets 
+                                (notifications_target, notifications_item, member_id, publish_at, status, read_at)
+                            VALUES 
+                                ('notifications', :id, :member_id, :publish_at, :status, NULL)
+                        ");
+                        $stmt->execute([
+                            ':id' => $id,
+                            ':member_id' => $m['member_id'],
+                            ':publish_at' => $publish_at,
+                            ':status' => $status
+                        ]);
+                    }
+                }
+            } else {
+                $stmt = $pdo->prepare("UPDATE wp_notification_targets SET status = :status,publish_at = NULL,read_at = NULL WHERE notifications_item = :id AND notifications_target = 'notifications'");
+                $stmt->execute([
+                    ':status' => $status,
+                    ':id'     => $id
+                ]);
+            }
+            $pdo->commit();
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
+    public function load(){
+        $pdo = $this->db;
+        $member_id = $_SESSION['user']['id'] ?? null;
+        if (!$member_id) {
+            return [
+                'unread' => 0,
+                'list' => []
+            ];
+        }
+        $sql1 = "SELECT COUNT(*) AS unread FROM wp_notification_targets WHERE member_id = ? AND status = 'published' AND publish_at <= NOW() AND read_at IS NULL";
+        $stmt = $pdo->prepare($sql1);
+        $stmt->execute([$member_id]);
+        $unread = (int)$stmt->fetch(PDO::FETCH_ASSOC)['unread'];
+        $sql2 = "SELECT 
+                t.targets_id,
+                t.publish_at,
+                t.read_at,
+                n.notifications_id,
+                n.title,
+                n.message
+            FROM wp_notification_targets t
+            JOIN wp_notifications n 
+            ON n.notifications_id = t.notifications_item
+            WHERE t.member_id = ?
+            AND t.status = 'published'
+            AND t.publish_at <= NOW()
+            ORDER BY t.publish_at DESC
+        ";
+        $stmt = $pdo->prepare($sql2);
+        $stmt->execute([$member_id]);
+        $list = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return [
+            'unread' => $unread,
+            'list'   => $list
+        ];
     }
 }
