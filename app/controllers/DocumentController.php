@@ -46,6 +46,13 @@ class DocumentController extends BaseController {
         $status = $_POST['status'] ?? 'public';
         $this->json(['status'=>$this->model->change($id, $status)]);
     }
+    public function filter() {
+        $page = intval($_POST['page'] ?? 0);
+        $limit = intval($_POST['limit'] ?? 10);
+        $searchTerm = $_POST['searchTerm'] ?? '';
+        $type = $_POST['type'] ?? '';
+        $this->json(['status'=>true , 'data' => $this->model->filter($page, $limit, $type, $searchTerm)]);
+    }
     public function downloadHistory(){
         $start  = intval($_POST['start'] ?? 0);
         $length = intval($_POST['length'] ?? 10);

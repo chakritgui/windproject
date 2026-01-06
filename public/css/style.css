@@ -8,7 +8,7 @@ body {
     font-family: 'Sarabun', sans-serif !important;
     font-size: 12px !important;
 }
-.btn, a, select, input, textarea {
+.btn, a, select, input, textarea, .select2-container--bootstrap-5 .select2-selection, .select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option {
     font-size: 12px !important;
 }
 .main-container {
@@ -315,4 +315,35 @@ label.required::after {
 }
 .notification-list{
     overflow-y: auto;
+}
+.datepicker {
+    padding: 10px !important;
+    border-radius: 12px !important;
+    border: none !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
+    font-size: 13px;
+}
+.datepicker table tr td, .datepicker table tr th {
+    width: 35px;
+    height: 35px;
+    border-radius: 8px !important;
+    border: none;
+}
+.datepicker table tr td.active, 
+.datepicker table tr td.active:hover {
+    background-image: none !important;
+    background-color: #0d6efd !important;
+    color: #fff !important;
+    text-shadow: none;
+}
+.datepicker table tr td.today {
+    background-color: #e7f1ff !important;
+    color: #0d6efd !important;
+    background-image: none !important;
+}
+.datepicker .prev, .datepicker .next, .datepicker .datepicker-switch {
+    transition: 0.2s;
+}
+.datepicker .prev:hover, .datepicker .next:hover {
+    background-color: #f8f9fa !important;
 }

@@ -50,7 +50,13 @@ class DocumentModel {
     }
     public function get($id) {
         if (!$id) return null;
-        $sql = "SELECT * FROM wp_documents WHERE document_id = ?";
+        $sql = "SELECT 
+            d.*,
+            t.type_id as source_id,
+            t.type_name as source_name
+        FROM wp_documents d
+        LEFT JOIN wp_type t on t.type_id = d.type_id
+        WHERE d.document_id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([(int)$id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -66,18 +72,20 @@ class DocumentModel {
     public function save($data) {
         $this->db->beginTransaction();
         try {
-            $document_id    = $data['document_id'] ?? null;
+            $document_id    = !empty($data['document_id']) ? $data['document_id'] : null;
             $document_name  = $data['document_name'];
-            $document_start = $data['document_start'];
-            $document_end   = $data['document_end'];
             $status         = $data['status'];
             $source         = $data['source'];
+            $startObj = DateTime::createFromFormat('d/m/Y', trim($data['document_start']));
+            $endObj   = DateTime::createFromFormat('d/m/Y', trim($data['document_end']));
+            $document_start = ($startObj) ? $startObj->format('Y-m-d') : null;
+            $document_end   = ($endObj) ? $endObj->format('Y-m-d') : null;
             if ($document_id) {
                 $this->updateDocument($document_id, $document_name, $document_start, $document_end, $status, $source);
             } else {
                 $document_id = $this->insertDocument($document_name, $document_start, $document_end, $status, $source);
             }
-            if (!empty($_FILES['document_file'])) {
+            if (isset($_FILES['document_file']) && $_FILES['document_file']['error'] === UPLOAD_ERR_OK) {
                 $this->handleFileUpload($document_id, $_FILES['document_file']);
             }
             $this->db->commit();
@@ -113,7 +121,7 @@ class DocumentModel {
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($rows as &$r) {
             if (!empty($r['download_date'])) {
-                $r['download_date'] = convertTimeZone($r['download_date'], 'Y/m/d H:i:s');
+                $r['download_date'] = convertTimeZone($r['download_date'], 'd/m/Y H:i:s');
             }
         }
         return [
@@ -133,8 +141,20 @@ class DocumentModel {
             $params[':source'] = $filters['source'];
         }
         if (!empty($filters['date'])) {
-            $where .= " AND :date BETWEEN DATE(d.document_start) AND DATE(d.document_end)";
-            $params[':date'] = convertTimeZoneUTC($filters['date'], 'Y-m-d');
+            $dateParts = explode(' - ', $filters['date']);
+            if (count($dateParts) == 2) {
+                $startObj = DateTime::createFromFormat('d/m/Y', trim($dateParts[0]));
+                $endObj   = DateTime::createFromFormat('d/m/Y', trim($dateParts[1]));
+                if ($startObj && $endObj) {
+                    $startDate = $startObj->format('Y-m-d');
+                    $endDate   = $endObj->format('Y-m-d');
+                    $startDateUTC = convertTimeZoneUTC($startDate, 'Y-m-d');
+                    $endDateUTC   = convertTimeZoneUTC($endDate, 'Y-m-d');
+                    $where .= " AND (DATE(d.document_start) BETWEEN :start AND :end)";
+                    $params[':start'] = $startDateUTC;
+                    $params[':end']   = $endDateUTC;
+                }
+            }
         }
         if (!empty($search)) {
             $where .= " AND d.document_name LIKE :search";
@@ -144,14 +164,14 @@ class DocumentModel {
     }
     private function formatDocumentRow(&$row) {
         if (!empty($row['created_at'])) {
-            $row['created_at'] = convertTimeZone($row['created_at'], 'Y/m/d H:i:s');
+            $row['created_at'] = convertTimeZone($row['created_at'], 'd/m/Y H:i:s');
         }
         if (!empty($row['document_dowload'])) {
             $row['document_dowload'] = number_format($row['document_dowload']);
         }
         foreach (['document_start', 'document_end'] as $f) {
             if (!empty($row[$f])) {
-                $row[$f] = convertTimeZone($row[$f], 'Y/m/d');
+                $row[$f] = convertTimeZone($row[$f], 'd/m/Y');
             }
         }
     }
@@ -212,5 +232,46 @@ class DocumentModel {
             $params[] = "%{$search}%";
         }
         return [$where, $params];
+    }
+    public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {
+        $offset = ($page - 1) * $limit;
+        $items = [];
+        $totalCount = 0;
+        switch($type) {
+            case 'source':
+                $where = "WHERE 1=1";
+                $params = [];
+                if (!empty($searchTerm)) {
+                    $where .= " AND (type_name LIKE ?)";
+                    $params[] = "%$searchTerm%";
+                }
+                $sqlCount = "SELECT COUNT(*) as total FROM wp_type $where";
+                $stmtCount = $this->db->prepare($sqlCount);
+                $stmtCount->execute($params);
+                $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
+                $sqlData = "SELECT type_id as id, type_name as text FROM wp_type $where ORDER BY type_id DESC LIMIT $limit OFFSET $offset";
+                $stmtData = $this->db->prepare($sqlData);
+                $stmtData->execute($params);
+                $items = $stmtData->fetchAll(PDO::FETCH_ASSOC);
+                break;
+
+            case 'status':
+                $staticData = [
+                    ['id' => 'public', 'text' => 'Public'],
+                    ['id' => 'private', 'text' => 'Private']
+                ];
+                if (!empty($searchTerm)) {
+                    $staticData = array_values(array_filter($staticData, function($item) use ($searchTerm) {
+                        return strpos(strtolower($item['text']), strtolower($searchTerm)) !== false;
+                    }));
+                }
+                $totalCount = count($staticData);
+                $items = array_slice($staticData, $offset, $limit);
+                break;
+        }
+        return [
+            'items' => $items,
+            'total_count' => $totalCount
+        ];
     }
 }

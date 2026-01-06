@@ -51,6 +51,7 @@
             $router->post('/api/document/delete', 'DocumentController@delete');
             $router->post('/api/document/change', 'DocumentController@change');
             $router->post('/api/document/download_history', 'DocumentController@downloadHistory');
+            $router->post('/api/document/filter', 'DocumentController@filter');
             $router->post('/api/project/list', 'ProjectController@list');
             $router->post('/api/project/get', 'ProjectController@get');
             $router->post('/api/wind/list', 'WindController@list');

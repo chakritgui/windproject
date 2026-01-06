@@ -21,17 +21,16 @@
 <div class="container-fluid mt-3 mb-5">
     <div class="row g-2 mb-3">
         <div class="col-sm-2">
-            <input type="date" class="form-control filter" id="filter_date">
+            <p><i class="fa-regular fa-calendar"></i> <span data-i18n="document_date"></span></p>
+            <input type="text" class="form-control filter" id="filter_date">
         </div>
         <div class="col-sm-2">
-            <select id="filter_status" class="form-select filter">
-                <option value=""data-i18n="-- status --"></option>
-                <option value="private" data-i18n="private"></option>
-                <option value="public" data-i18n="public"></option>
-            </select>
-        </div>
-        <div class="col-sm-2">
+            <p><i class="fa-solid fa-cubes"></i> <span data-i18n="source"></span></p>
             <select id="filter_source" class="form-select filter"></select>
+        </div>
+        <div class="col-sm-2">
+            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+            <select id="filter_status" class="form-select filter"></select>
         </div>
     </div>
 </div>

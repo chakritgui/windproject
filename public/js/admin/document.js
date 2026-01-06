@@ -143,6 +143,9 @@ async function initDocument() {
 }
 $(document).ready(function () {
     initDocument();
+    initSelect2Remote('#filter_source', 'api/document/filter', { type: 'source' });
+    initSelect2Remote('#filter_status', 'api/document/filter', { type: 'status' });
+    initDateRangePicker('#filter_date', initDocumentTable);
 });
 $(document).on('click', '.manage-document', function () {
     let document_id = $(this).data("id");
@@ -153,7 +156,7 @@ $(document).on('click', '.manage-document', function () {
         dataType: 'json',
         success: function(res){
             if (res.status === 'success') {
-                let document = res.data;
+                let docData = res.data;
                 let modalEl = $('#windModal');
                 let modal = new bootstrap.Modal(modalEl[0]);
                 modal.show();
@@ -204,11 +207,11 @@ $(document).on('click', '.manage-document', function () {
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required" data-i18n="startDate"></label>
-                            <input type="date" class="form-control obj-required" id="document_start">
+                            <input type="text" class="form-control obj-required" id="document_start">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required" data-i18n="endDate"></label>
-                            <input type="date" class="form-control obj-required" id="document_end">
+                            <input type="text" class="form-control obj-required" id="document_end">
                         </div>
                     </div>
                     <div class="row">
@@ -218,31 +221,44 @@ $(document).on('click', '.manage-document', function () {
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required" data-i18n="status"></label>
-                            <div class="btn-group w-100" role="group">
-                                <input type="radio" class="btn-check obj-required" name="status" id="public" value="public" checked>
-                                <label class="btn btn-outline-success" for="public" data-i18n="public"></label>
-                                <input type="radio" class="btn-check obj-required" name="status" id="private" value="private">
-                                <label class="btn btn-outline-danger" for="private" data-i18n="private"></label>
-                            </div>
+                            <select id="status" class="form-select obj-required"></select>
                         </div>
                     </div>
                 `);
-                if (document) {
-                    $("#document_id").val(document.document_id);
-                    $("#document_name").val(document.document_name);
-                    $("#document_start").val(document.document_start);
-                    $("#document_end").val(document.document_end);
-                    $("input[name='status'][value='" + document.status + "']").prop("checked", true);
-                    if (document.document_path) {
-                        const fileName = document.document_path.split("/").pop();
-                        const fileType = document.document_type;
-                        const fileSize = document.document_size;
+                initSelect2Remote('#source', 'api/document/filter', { type: 'source' });
+                initSelect2Remote('#status', 'api/document/filter', { type: 'status' });
+                initDatePicker('#document_start');
+                initDatePicker('#document_end');
+                if (docData) {
+                    $("#document_id").val(docData.document_id);
+                    $("#document_name").val(docData.document_name);
+                    if (docData.document_start) {
+                        let startDate = new Date(docData.document_start);
+                        $('#document_start').datepicker('setDate', startDate);
+                    }
+                    if (docData.document_end) {
+                        let endDate = new Date(docData.document_end);
+                        $('#document_end').datepicker('setDate', endDate);
+                    }
+                    if (docData.document_path) {
+                        const fileName = docData.document_path.split("/").pop();
+                        const fileType = docData.document_type;
+                        const fileSize = docData.document_size;
                         const fakeFile = {
                             name: fileName,
                             size: fileSize
                         };
                         handleFile(fakeFile);
                         $("#document_file").removeClass("obj-required");
+                    }
+                    if (docData.source_id) {
+                        var newOptionSource = new Option(docData.source_name, docData.source_id, true, true);
+                        $('#source').append(newOptionSource).trigger('change');
+                    }
+                    if (docData.status) {
+                        let statusName = docData.status.charAt(0).toUpperCase() + docData.status.slice(1);
+                        var newOptionStatus = new Option(statusName, docData.status, true, true);
+                        $('#status').append(newOptionStatus).trigger('change');
                     }
                 }
             } else {
@@ -255,16 +271,20 @@ $(document).on('click', '.manage-document', function () {
     });
 });
 function validateDates() {
-    let start = $('#document_start').val();
-    let end = $('#document_end').val();
-    if (!start || !end) return;
-    if (end < start) {
+    let startStr = $('#document_start').val();
+    let endStr = $('#document_end').val();
+    if (!startStr || !endStr) return;
+    let startDate = moment(startStr, "DD/MM/YYYY");
+    let endDate = moment(endStr, "DD/MM/YYYY");
+    if (endDate.isBefore(startDate)) {
         showWarning(
             langData['validation_error'] || 'Validation Error',
             langData['validation_date'] || 'End date cannot be earlier than start date.'
         );
         $('#document_end').val('');
-        $('#document_end').focus();
+        if ($('#document_end').data('datepicker')) {
+            $('#document_end').datepicker('clearDates');
+        }
     }
 }
 $(document).on("change", "#document_start, #document_end", function () {
@@ -373,7 +393,7 @@ function saveDocument() {
     const start_date = $("#document_start").val();
     const end_date = $("#document_end").val();
     const source = $("#source").val();
-    const status = $("input[name='status']:checked").val();
+    const status = $("#status").val();
     const file = $("#document_file")[0].files[0] || null;
     const formData = new FormData();
     formData.append("document_id", document_id);
