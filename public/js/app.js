@@ -16,6 +16,24 @@ async function initApp() {
     bindSidebar();
     bindNotification();
     initAutoLanguageObserver();
+    initMeta();
+}
+function initMeta() {
+    $.ajax({
+        url: 'api/setting/shortcut',
+        method: 'POST',
+        dataType: 'json',
+        success: function(res) {
+            if (res.status === true && res.data) {
+                const d = res.data;
+                if (d.short_name) {
+                    $('meta[name="apple-mobile-web-app-title"]').attr('content', d.short_name);
+                }
+            } else {
+                showError('Error', langData['cannot_load']);
+            }
+        }
+    });
 }
 async function loadSetting() {
     try {

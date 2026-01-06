@@ -1,3 +1,8 @@
+<?php
+    $publicPath   = dirname(__DIR__, 3) . "/public/";
+    $manifestFile = $publicPath . "manifest.json";
+    $iconDir      = $publicPath . "icons/";
+?>
 <!doctype html>
 <html>
 <head>
@@ -18,17 +23,29 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" />
 <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script>
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/style.css?v=<?=time();?>">
-<link rel="manifest" href="<?=BASE_URL?>/public/manifest.json">
-<link rel="apple-touch-icon" href="<?=BASE_URL?>/icons/icon-ios.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="App Short Name">
+<?php
+    if (file_exists($manifestFile)) {
+?>
+        <link rel="manifest" href="<?=BASE_URL?>/public/manifest.json">
+        <link rel="apple-touch-icon" href="<?=BASE_URL?>/icons/icon-ios.png">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="apple-mobile-web-app-title" content="App Short Name">
+<?php
+    }
+?>
 <script>
     const BASE_URL = "<?= BASE_URL ?>";
+<?php
+    if (file_exists($manifestFile)) {
+?>
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register(BASE_URL + '/public/sw.js');
     }
+<?php
+    }
+?>
 </script>
 </head>
 <body>
@@ -37,7 +54,6 @@
         <div class="spinner-border" role="status" aria-hidden="true"></div>
         <span class="ms-2" data-i18n="loading"></span>
     </div>
-
 </div>
 <?=include('menu.php')?>
 <div id="sidebarOverlay" class="sidebar-overlay"></div>

@@ -4,7 +4,7 @@ require_once __DIR__ . '/../models/SettingModel.php';
 class SettingController extends BaseController {
     private $model;
     public function __construct(){ $this->model = new SettingModel(); }
-    public function save1() {
+    public function saveInfo() {
         $data = [
             'nameEn' => $_POST['nameEn'] ?? '',
             'nameLo' => $_POST['nameLo'] ?? '',
@@ -15,7 +15,7 @@ class SettingController extends BaseController {
         ];
         $this->json(['status'=>$this->model->saveWebsiteSetting($data)]);
     }
-    public function shortcut(){
+    public function saveShortcut(){
         $data = [
             'name'             => $_POST['name'] ?? '',
             'short_name'       => $_POST['short_name'] ?? '',
@@ -29,12 +29,12 @@ class SettingController extends BaseController {
             'androidIcon'      => $_FILES['androidIcon'] ?? null,
             'iosIcon'          => $_FILES['iosIcon'] ?? null,
         ];
-        $status = $this->model->shortcut($data);
+        $status = $this->model->saveShortcut($data);
         $this->json([
             'status' => $status
         ]);
     }
-    public function save3() {
+    public function saveLang() {
         $data = [
             'languages' => $_POST['languages'] ?? 'en',
         ];
@@ -42,5 +42,8 @@ class SettingController extends BaseController {
     }
     public function get() {
         $this->json(['status'=> true, 'data' => $this->model->getAll()]);
+    }
+    public function shortcut() {
+        $this->json(['status'=> true, 'data' => $this->model->shortcut()]);
     }
 }

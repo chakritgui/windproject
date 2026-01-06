@@ -232,5 +232,7 @@
     "landscape-primary": "Landscape Primary",
     "help-text11": "Lock screen orientation",
     "png_only": "Please select PNG file only",
-    "news": "News"
+    "news": "News",
+    "news_management": "News Management",
+    "preview": "Preview"
 }

@@ -69,7 +69,7 @@ class SettingModel {
             $this->updateSetting($settingType, $filePath);
         }
     }
-    public function shortcut($data){
+    public function saveShortcut($data){
         $iconDir = __DIR__ . "/../../public/icons/";
         if (!file_exists($iconDir)) {
             mkdir($iconDir, 0777, true);
@@ -119,5 +119,48 @@ class SettingModel {
             json_encode($iosMeta, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
         );
         return true;
+    }
+    public function shortcut(){
+        $publicPath   = __DIR__ . "/../../public/";
+        $manifestFile = $publicPath . "manifest.json";
+        $iconDir      = $publicPath . "icons/";
+        if (!file_exists($manifestFile)) {
+            return [];
+        }
+        $manifest = json_decode(file_get_contents($manifestFile), true);
+        if (!$manifest) {
+            return [];
+        }
+        $iosMetaFile = $publicPath . "ios_meta.json";
+        $iosMeta = [];
+        if (file_exists($iosMetaFile)) {
+            $iosMeta = json_decode(file_get_contents($iosMetaFile), true);
+        }
+        $fileDate = function ($file) {
+            return file_exists($file)
+                ? date('Y/m/d H:i:s', filemtime($file))
+                : null;
+        };
+        $data = [
+            'name'             => $manifest['name'] ?? '',
+            'short_name'       => $manifest['short_name'] ?? '',
+            'description'      => $manifest['description'] ?? '',
+            'display'          => $manifest['display'] ?? '',
+            'orientation'      => $manifest['orientation'] ?? '',
+            'theme_color'      => $manifest['theme_color'] ?? '',
+            'background_color' => $manifest['background_color'] ?? '',
+            'statusBarStyle' => $iosMeta['apple-mobile-web-app-status-bar-style'] ?? '',
+            'webAppCapable'  => $iosMeta['apple-mobile-web-app-capable'] ?? '',
+            'androidIcon' => [
+                'path' => 'icons/icon-android.png',
+                'date' => $fileDate($iconDir . 'icon-android.png'),
+            ],
+            'iosIcon' => [
+                'path' => 'icons/icon-ios.png',
+                'date' => $fileDate($iconDir . 'icon-ios.png'),
+            ],
+            'manifestDate' => $fileDate($manifestFile),
+        ];
+        return $data;
     }
 }

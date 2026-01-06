@@ -1,3 +1,50 @@
+$(document).ready(function () {
+    initShortcut();
+});
+function initShortcut() {
+    $.ajax({
+        url: 'api/setting/shortcut',
+        method: 'POST',
+        dataType: 'json',
+        success: function(res) {
+            if (res.status === true && res.data) {
+                const d = res.data;
+                $('#appName').val(d.short_name || '');
+                $('#appFullName').val(d.name || '');
+                $('#description').val(d.description || '');
+                $('#statusBarStyle').val(d.statusBarStyle || 'default');
+                $('#appleWebAppCapable').val(d.webAppCapable || 'yes');
+                if (d.iosIcon && d.iosIcon.path) {
+                    $('#iosIconPreview').html(
+                        `<img src="${BASE_URL}/public/${d.iosIcon.path}?v=${Date.now()}" alt="iOS Icon">`
+                    );
+                    $("#iosIcon").removeClass("obj-required");
+                }
+                $('#themeColor').val(d.theme_color || '#0d6efd');
+                $('#themeColorHex').val(d.theme_color || '#0d6efd');
+                $('#bgColor').val(d.background_color || '#ffffff');
+                $('#bgColorHex').val(d.background_color || '#ffffff');
+                $('#displayMode').val(d.display || 'standalone');
+                $('#orientation').val(d.orientation || 'any');
+                if (d.androidIcon && d.androidIcon.path) {
+                    $('#androidIconPreview').html(
+                        `<img src="${BASE_URL}/public/${d.androidIcon.path}?v=${Date.now()}" alt="Android Icon">`
+                    );
+                    $("#androidIcon").removeClass("obj-required");
+                }
+                if(d.manifestDate) {
+                    $(".preview-button").removeClass("d-none");
+                    $(".shortcut-date").html(`<i class="fa-regular fa-calendar-check"></i> ${d.manifestDate}`);
+                }
+            } else {
+                showError('Error', langData['cannot_load']);
+            }
+        },
+        error: function() {
+            showError('Error', langData['cannot_load']);
+        }
+    });
+}
 document.getElementById('iosIcon').addEventListener('change', function(e) {
     validatePngOnly(e, 'iosIconPreview');
 });
@@ -87,7 +134,7 @@ $('#pwaForm').on('submit', function (e) {
         fd.append('iosIcon', $('#iosIcon')[0].files[0]);
     }
     $.ajax({
-        url: 'api/setting/shortcut',
+        url: 'api/setting/saveShortcut',
         method: 'POST',
         data: fd,
         processData: false,
@@ -95,6 +142,7 @@ $('#pwaForm').on('submit', function (e) {
         success: function (res) {
             if (res.status === true) {
                 showSuccess('Success', langData['saved_successfully']);
+                initShortcut();
             } else {
                 showError('Error', langData['cannot_save']);
             }

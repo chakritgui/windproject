@@ -73,7 +73,7 @@ $(document).on('click', '.save-setting-3', function () {
     formData.append('languages', languagesStr);
     $(".save-setting-3").attr("disable", true);
     $.ajax({
-        url: 'api/setting/save3', 
+        url: 'api/setting/saveLang', 
         type: 'POST',
         data: formData,
         contentType: false,
@@ -81,6 +81,7 @@ $(document).on('click', '.save-setting-3', function () {
         success: function(res){
             if(res.status === true){
                 showSuccess('Success', langData['saved_successfully']);
+                initSetting();
             } else {
                 showError('Success', langData['cannot_save']);
             }
@@ -142,7 +143,7 @@ $(document).on('click', '.save-setting-1', function () {
     });
     $(".save-setting-1").attr("disable", true);
     $.ajax({
-        url: "api/setting/save1",
+        url: "api/setting/saveInfo",
         type: "POST",
         data: formData,
         contentType: false,
@@ -164,7 +165,7 @@ $(document).on('click', '.save-setting-1', function () {
         success: function (res) {
             if (res.status === true) {
                 showSuccess('Success', langData['saved_successfully']);
-                initDocumentTable();
+                initSetting();
                 $('#windModal').modal('hide');
             } else {
                 showError('Error', langData['cannot_save']);

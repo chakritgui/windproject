@@ -58,8 +58,9 @@
             $router->post('/api/news/save', 'NewsController@save');
             $router->post('/api/news/delete', 'NewsController@delete');
             $router->post('/api/news/change', 'NewsController@change');
-            $router->post('/api/setting/save1', 'SettingController@save1');
-            $router->post('/api/setting/save3', 'SettingController@save3');
+            $router->post('/api/setting/saveInfo', 'SettingController@saveInfo');
+            $router->post('/api/setting/saveLang', 'SettingController@saveLang');
+            $router->post('/api/setting/saveShortcut', 'SettingController@saveShortcut');
             $router->post('/api/setting/shortcut', 'SettingController@shortcut');
         } else {
             $router->get('/', 'UserController@user');
