@@ -137,6 +137,8 @@ $('.filter').on('change', function () {
 });
 async function initMember() {
     initMemberTable(); 
+    initSelect2Remote('#filter_role', 'api/member/filter', { type: 'role' });
+    initSelect2Remote('#filter_status', 'api/member/filter', { type: 'status' });
 }
 $(document).ready(function () {
     initMember();
@@ -192,41 +194,21 @@ $(document).on('click', '.manage-member', function() {
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required" data-i18n="firstname"></label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-regular fa-user"></i></span>
-                                <input type="text" class="form-control obj-required" id="first_name" maxlength="150">
-                            </div>
+                            <input type="text" class="form-control obj-required" id="first_name" maxlength="150">
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required" data-i18n="lastname"></label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-regular fa-user"></i></span>
-                                <input type="text" class="form-control obj-required" id="last_name" maxlength="150">
-                            </div>
+                            <input type="text" class="form-control obj-required" id="last_name" maxlength="150">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required" data-i18n="role"></label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-id-badge"></i></span>
-                                <select class="form-select obj-required" id="role">
-                                    <option value="user" selected data-i18n="user"></option>
-                                    <option value="admin" data-i18n="admin"></option>
-                                    <option value="administrator" data-i18n="administrator"></option>
-                                </select>
-                            </div>
+                            <select class="form-select obj-required" id="role"></select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required" data-i18n="status"></label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-circle-dot"></i></span>
-                                <select class="form-select obj-required" id="status">
-                                    <option value="active" selected data-i18n="active"></option>
-                                    <option value="inactive" data-i18n="inactive">Inactive</option>
-                                    <option value="banned" data-i18n="banned">Banned</option>
-                                </select>
-                            </div>
+                            <select class="form-select obj-required" id="status"></select>
                         </div>
                     </div>
                     <hr>
@@ -309,6 +291,8 @@ $(document).on('click', '.manage-member', function() {
                         icon.removeClass('fa-eye-slash').addClass('fa-eye');
                     }
                 });
+                initSelect2Remote('#role', 'api/member/filter', { type: 'role' });
+                initSelect2Remote('#status', 'api/member/filter', { type: 'status' });
                 let member = res.data;
                 $('#member_id').val(member_id || '');
                 $('#first_name').val(member && member.first_name || '');
@@ -319,6 +303,16 @@ $(document).on('click', '.manage-member', function() {
                 $('#status').val(member && member.status || '');
                 $('#password_').val(member && member.password_hash || '');
                 $('#username_').val(member && member.username || '');
+                if (member && member.role) {
+                    let roleName = member.role.charAt(0).toUpperCase() + member.role.slice(1);
+                    var newOptionStatus = new Option(roleName, member.role, true, true);
+                    $('#role').append(newOptionStatus).trigger('change');
+                }
+                if (member && member.status) {
+                    let statusName = member.status.charAt(0).toUpperCase() + member.status.slice(1);
+                    var newOptionStatus = new Option(statusName, member.status, true, true);
+                    $('#status').append(newOptionStatus).trigger('change');
+                }
                 if(member && member.password_hash) {
                     verifyAuth($('#password_').val(), 'password');
                 }

@@ -45,6 +45,7 @@
             $router->post('/api/member/check-email', 'MemberController@checkemail');
             $router->post('/api/member/check-username', 'MemberController@checkusername');
             $router->post('/api/member/change', 'MemberController@change');
+            $router->post('/api/member/filter', 'MemberController@filter');
             $router->post('/api/document/list', 'DocumentController@list');
             $router->post('/api/document/get', 'DocumentController@get');
             $router->post('/api/document/save', 'DocumentController@save');
