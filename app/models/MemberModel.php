@@ -196,7 +196,7 @@ class MemberModel {
         }
         return false;
     }
-     public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {
+    public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {
         $offset = ($page - 1) * $limit;
         $items = [];
         $totalCount = 0;

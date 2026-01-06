@@ -150,6 +150,13 @@ $(document).on("click", ".manage-news", function () {
         $modal.find(".modal-body").html(getNewsForm(d));
         togglePublishControls();
         setMinDateTimeNow();
+        initSelect2Remote('#status', 'api/news/filter', { type: 'status' });
+        let status = (d.status) ? d.status : 'draft';
+        if (status) {
+            let statusName = status.charAt(0).toUpperCase() + status.slice(1);
+            var newOptionStatus = new Option(statusName, status, true, true);
+            $('#status').append(newOptionStatus).trigger('change');
+        }
         $("#publish_at").on("change", function () {
             const min = $(this).attr("min");
             if (this.value < min) {
@@ -212,10 +219,7 @@ function getNewsForm(d) {
         <div class="row g-3">
             <div class="col-md-4">
                 <label class="mb-2 mt-3 required" data-i18n="status"></label>
-                <select id="status" class="form-select obj-required">
-                    <option value="draft" data-i18n="draft" ${(d.status === 'draft') ? 'selected' : ''}></option>
-                    <option value="published" data-i18n="published" ${(d.status === 'published') ? 'selected' : ''}></option>
-                </select>
+                <select id="status" class="form-select obj-required"></select>
             </div>
             <div class="col-md-4">
                 <label class="mb-2 mt-3 required" data-i18n="publish_at"></label>
@@ -268,7 +272,10 @@ function langTab(lang, d) {
 async function initNews() {
     initNewsTable();
 }
-$(document).ready(initNews);
+$(document).ready(function () {
+    initNews();
+    initSelect2Remote('#filter_status', 'api/news/filter', { type: 'status' });
+});
 $(document).on('click', '.save-news', function () {
     let errors = [];
     $('.obj-required').each(function () {

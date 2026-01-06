@@ -60,6 +60,7 @@
             $router->post('/api/news/save', 'NewsController@save');
             $router->post('/api/news/delete', 'NewsController@delete');
             $router->post('/api/news/change', 'NewsController@change');
+            $router->post('/api/news/filter', 'NewsController@filter');
             $router->post('/api/setting/saveInfo', 'SettingController@saveInfo');
             $router->post('/api/setting/saveLang', 'SettingController@saveLang');
             $router->post('/api/setting/saveShortcut', 'SettingController@saveShortcut');

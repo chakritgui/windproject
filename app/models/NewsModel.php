@@ -53,7 +53,7 @@ class NewsModel {
         foreach ($rows as &$r) {
             foreach (['created_at', 'publish_at'] as $field) {
                 if (!empty($r[$field])) {
-                    $r[$field] = convertTimeZone($r[$field], 'Y/m/d H:i:s');
+                    $r[$field] = convertTimeZone($r[$field], 'd/m/Y H:i:s');
                 }
             }
             foreach (['news_view'] as $field) {
@@ -292,5 +292,29 @@ class NewsModel {
             $pdo->rollBack();
             throw $e;
         }
+    }
+    public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {
+        $offset = ($page - 1) * $limit;
+        $items = [];
+        $totalCount = 0;
+        switch($type) {
+            case 'status':
+                $staticData = [
+                    ['id' => 'published', 'text' => 'Published'],
+                    ['id' => 'draft', 'text' => 'Draft']
+                ];
+                if (!empty($searchTerm)) {
+                    $staticData = array_values(array_filter($staticData, function($item) use ($searchTerm) {
+                        return strpos(strtolower($item['text']), strtolower($searchTerm)) !== false;
+                    }));
+                }
+                $totalCount = count($staticData);
+                $items = array_slice($staticData, $offset, $limit);
+                break;
+        }
+        return [
+            'items' => $items,
+            'total_count' => $totalCount
+        ];
     }
 }

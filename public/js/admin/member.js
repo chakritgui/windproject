@@ -137,11 +137,11 @@ $('.filter').on('change', function () {
 });
 async function initMember() {
     initMemberTable(); 
-    initSelect2Remote('#filter_role', 'api/member/filter', { type: 'role' });
-    initSelect2Remote('#filter_status', 'api/member/filter', { type: 'status' });
 }
 $(document).ready(function () {
     initMember();
+    initSelect2Remote('#filter_role', 'api/member/filter', { type: 'role' });
+    initSelect2Remote('#filter_status', 'api/member/filter', { type: 'status' });
 });
 $(document).on('click', '.delete-member', function() {
     let member_id = $(this).data("id");
