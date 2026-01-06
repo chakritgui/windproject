@@ -1,10 +1,10 @@
-let tb_news;
-function initNewsTable() {
-    tb_news = $('#tb_news').DataTable({
+let tb_project;
+function initProjectTable() {
+    tb_project = $('#tb_project').DataTable({
         processing: true,
         serverSide: true,
         responsive: true, 
-        ajax: { url: "api/news/list", type: "POST" },
+        ajax: { url: "api/project/list", type: "POST" },
         columns: [
             {
                 data: "cover_image",
@@ -32,7 +32,7 @@ function initNewsTable() {
                 className: 'text-center',
                 render: () => `
                     <button class="btn btn-light text-secondary" data-id="1"><i class="fa-solid fa-folder-open"></i></button>
-                    <button class="btn btn-light text-secondary manage-news" data-id="1"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="btn btn-light text-secondary manage-project" data-id="1"><i class="fa-solid fa-pen-to-square"></i></button>
                     <button class="btn btn-light text-secondary"><i class="fa-regular fa-trash-can"></i></button>
                 `
             }
@@ -41,7 +41,7 @@ function initNewsTable() {
         lengthMenu: lengthMenu,
         language: getTableLang(),
         initComplete: function(){
-            var input = $('#tb_news_filter input').unbind();
+            var input = $('#tb_project_filter input').unbind();
             var self = this.api();
             input.bind('keypress', function(e){
                 if(e.keyCode == 13) {
@@ -52,9 +52,9 @@ function initNewsTable() {
     });
 }
 $('.filter').on('change', function () {
-    tb_news.ajax.reload();
+    tb_project.ajax.reload();
 });
-function loadNewsFilters() {
+function loadProjectFilters() {
     $.ajax({
         url: "api/member/filterData",
         type: "POST",
@@ -74,24 +74,24 @@ function loadNewsFilters() {
         }
     });
 }
-async function initNews() {
+async function initProject() {
     await loadLang(currentLang); 
-    initNewsTable(); 
-    loadNewsFilters();
+    initProjectTable(); 
+    loadProjectFilters();
 }
 $(document).ready(function () {
-    initNews();
+    initProject();
 });
-$(document).on("click", ".manage-news", function () {
+$(document).on("click", ".manage-project", function () {
     let id = $(this).data("id");
-    $.post("api/news/get", { id }, function(res){
+    $.post("api/project/get", { id }, function(res){
         if(res.status !== "success") return;
         let d = res.data;
         let modalEl = $('#windModal');
         let modal = new bootstrap.Modal(modalEl[0]);
         modal.show();
         modalEl.find(".modal-header").html(`
-            <h5 class="modal-title" data-i18n="news_management"></h5>
+            <h5 class="modal-title" data-i18n="project_management"></h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         `);
         modalEl.find(".modal-footer").html(`
@@ -99,7 +99,7 @@ $(document).on("click", ".manage-news", function () {
             <button type="submit" class="btn btn-primary" data-i18n="save"></button>
         `);
         modalEl.find(".modal-body").html(`
-            <input type="hidden" id="news_id">
+            <input type="hidden" id="project_id">
             <div class="mb-3">
                 <label class="form-label" data-i18n="cover_image"></label>
                 <input type="file" class="form-control" id="cover_image">
@@ -153,7 +153,7 @@ $(document).on("click", ".manage-news", function () {
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="mb-2" data-i18n="status"></label>
-                    <select id="news_status" class="form-select">
+                    <select id="project_status" class="form-select">
                         <option value="draft">Draft</option>
                         <option value="published">Published</option>
                         <option value="scheduled">Scheduled</option>
@@ -161,11 +161,11 @@ $(document).on("click", ".manage-news", function () {
                 </div>
                 <div class="col-md-4">
                     <label class="mb-2" data-i18n="publish_at"></label>
-                    <input type="datetime-local" class="form-control" id="news_publish_at">
+                    <input type="datetime-local" class="form-control" id="project_publish_at">
                 </div>
                 <div class="col-md-4">
                     <label class="mb-2" data-i18n="notification"></label>
-                    <select id="news_notify" class="form-select">
+                    <select id="project_notify" class="form-select">
                         <option value="1" data-i18n="yes"></option>
                         <option value="0" data-i18n="no"></option>
                     </select>

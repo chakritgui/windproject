@@ -4,9 +4,9 @@
             ensure_login();
             $this->view('user/map');
         }
-        public function news() {
+        public function project() {
             ensure_login();
-            $this->view('user/news');
+            $this->view('user/project');
         }
         public function document() {
             ensure_login();
@@ -16,15 +16,15 @@
             ensure_login();
             $this->view('user/download');
         }
-        public function newsDetail($slug) {
+        public function projectDetail($slug) {
             ensure_login();
-            $news = 1;
-            if (!$news) {
+            $project = 1;
+            if (!$project) {
                 http_response_code(404);
-                exit('News not found');
+                exit('Project not found');
             }
-            $this->view('user/news/detail', [
-                'news' => $news
+            $this->view('user/project/detail', [
+                'project' => $project
             ]);
         }
         public function pole($slug) {
@@ -32,7 +32,7 @@
             $pole = 1;
             if (!$pole) {
                 http_response_code(404);
-                exit('News not found');
+                exit('Project not found');
             }
             $this->view('user/pole', [
                 'pole' => $pole

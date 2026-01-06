@@ -137,8 +137,8 @@ function handleNotificationItem(items) {
                 <a class="dropdown-item py-3 border-bottom notification-item ${isUnread}" data-id="${item.notifications_item}" data-target="${item.notifications_target}">
                     <div class="d-flex align-items-start">
                         <div class="flex-shrink-0 me-3">
-                            <div class="bg-${item.notifications_target == 'news' ? `primary` : `warning`} bg-opacity-10 rounded-circle p-2">
-                                <i class="${item.notifications_target == 'news' ? `fa-regular fa-newspaper` : `fa-solid fa-bell`} fa-2x text-${item.notifications_target == 'news' ? `primary` : `warning`}"></i>
+                            <div class="bg-${item.notifications_target == 'project' ? `primary` : `warning`} bg-opacity-10 rounded-circle p-2">
+                                <i class="${item.notifications_target == 'project' ? `fa-solid fa-diagram-project` : `fa-solid fa-bell`} fa-2x text-${item.notifications_target == 'project' ? `primary` : `warning`}"></i>
                             </div>
                         </div>
                         <div class="flex-grow-1">

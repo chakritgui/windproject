@@ -1,5 +1,5 @@
 <?php
-class NewsModel {
+class ProjectModel {
     public function list($start=0,$length=10,$filters=[]){
         $titles = ["ระบบจะปิดปรับปรุงคืนนี้","ประกาศวันหยุดบริษัท","ย้ายสำนักงานใหม่","กิจกรรมปีใหม่ 2025","รายงานสรุปการขายไตรมาส 4"];
         $statuses = ["draft","published","scheduled"];
@@ -31,7 +31,7 @@ class NewsModel {
             "status"=>"scheduled",
             "publish_at"=>"2025-12-15 10:00:00",
             "notify_users"=>1,
-            "cover_image"=>"uploads/news/cover_{$id}.jpg"
+            "cover_image"=>"uploads/project/cover_{$id}.jpg"
         ];
     }
 }

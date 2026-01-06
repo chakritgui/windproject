@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/BaseController.php';
-require_once __DIR__ . '/../models/NewsModel.php';
-class NewsController extends BaseController {
+require_once __DIR__ . '/../models/ProjectModel.php';
+class ProjectController extends BaseController {
     private $model;
-    public function __construct(){ $this->model = new NewsModel(); }
+    public function __construct(){ $this->model = new ProjectModel(); }
     public function list(){
         $start = intval($_POST['start'] ?? 0);
         $length= intval($_POST['length'] ?? 10);

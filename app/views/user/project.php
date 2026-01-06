@@ -21,7 +21,7 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     }
-    .news-card {
+    .project-card {
         background: white;
         border-radius: 15px;
         overflow: hidden;
@@ -32,11 +32,11 @@
         display: flex;
         flex-direction: column;
     }
-    .news-card:hover {
+    .project-card:hover {
         transform: translateY(-10px);
         box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
     }
-    .news-image-container {
+    .project-image-container {
         position: relative;
         width: 100%;
         height: 200px;
@@ -47,7 +47,7 @@
         color: white;
         font-size: 3rem;
     }
-    .news-badge {
+    .project-badge {
         position: absolute;
         top: 15px;
         right: 15px;
@@ -92,27 +92,27 @@
         background: #ff6348;
         color: white;
     }
-    .news-content {
+    .project-content {
         padding: 20px;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
     }
-    .news-title {
+    .project-title {
         font-size: 1.2rem;
         font-weight: 600;
         color: #2d3436;
         margin-bottom: 10px;
         line-height: 1.4;
     }
-    .news-excerpt {
+    .project-excerpt {
         color: #636e72;
         font-size: 0.95rem;
         margin-bottom: 15px;
         line-height: 1.6;
         flex-grow: 1;
     }
-    .news-meta {
+    .project-meta {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -162,7 +162,7 @@
                 <button class="btn category-btn" data-category="research">งานวิจัย</button>
             </div>
         </div>
-        <div id="newsContainer" class="row"></div>
+        <div id="projectContainer" class="row"></div>
     </div>
 </div>
-<script src="<?=BASE_URL?>/public/js/news.js?v=<?=time();?>" defer></script>
+<script src="<?=BASE_URL?>/public/js/project.js?v=<?=time();?>" defer></script>

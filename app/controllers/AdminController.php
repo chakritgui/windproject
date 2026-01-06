@@ -14,12 +14,12 @@
             }
             $this->view('admin/member');
         }
-        public function news() {
+        public function project() {
             ensure_login();
             if (!is_admin()) { 
                 $this->redirect('login');
             }
-            $this->view('admin/news');
+            $this->view('admin/project');
         }
         public function map() {
             ensure_login();

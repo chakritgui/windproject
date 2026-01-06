@@ -1,4 +1,4 @@
-const newsData = [
+const projectData = [
     {id: 1, title: "โครงการกังหันลมนอกชายฝั่งใหม่ในอ่าวไทยเริ่มก่อสร้าง", excerpt: "รัฐบาลอนุมัติโครงการกังหันลมขนาดใหญ่นอกชายฝั่งที่จะผลิตไฟฟ้าได้ถึง 500 เมกะวัตต์", category: "renewable", categoryName: "พลังงานหมุนเวียน", date: "2025-12-10", views: 1250, isNew: true, isHot: true},
     {id: 2, title: "พายุหมุนเขตร้อนกำลังเข้าสู่ภาคใต้ ประชาชนควรเตรียมพร้อม", excerpt: "กรมอุตุนิยมวิทยาเตือนพายุกำลังแรงจะเข้าสู่ฝั่งภาคใต้ในช่วง 48 ชั่วโมงข้างหน้า", category: "weather", categoryName: "สภาพอากาศ", date: "2025-12-10", views: 2340, isNew: true, isHot: true},
     {id: 3, title: "นวัตกรรมกังหันลมรุ่นใหม่ประหยัดพื้นที่ 40%", excerpt: "บริษัทญี่ปุ่นพัฒนากังหันลมแนวตั้งที่สามารถติดตั้งในพื้นที่จำกัดได้อย่างมีประสิทธิภาพ", category: "technology", categoryName: "เทคโนโลยี", date: "2025-12-09", views: 890, isNew: true, isHot: false},
@@ -30,30 +30,30 @@ const newsData = [
     {id: 29, title: "ลมค้าขั้วโลกมีผลต่อระบบนิเวศทางทะเล", excerpt: "งานวิจัยแสดงให้เห็นว่าลมค้าขั้วโลกมีบทบาทสำคัญในการหมุนเวียนสารอาหารในมหาสมุทร", category: "research", categoryName: "งานวิจัย", date: "2025-11-26", views: 620, isNew: false, isHot: false},
     {id: 30, title: "โครงการป่าชายเลนช่วยลดผลกระทบจากลมพายุ", excerpt: "การปลูกป่าชายเลนในพื้นที่ชายฝั่งช่วยป้องกันความเสียหายจากพายุและคลื่นลมแรง", category: "environment", categoryName: "สิ่งแวดล้อม", date: "2025-11-26", views: 980, isNew: false, isHot: false}
 ];
-let filteredNews = [...newsData];
+let filteredProject = [...projectData];
 let currentCategory = 'all';
-function renderNews(news) {
-    const container = document.getElementById('newsContainer');
+function renderProject(project) {
+    const container = document.getElementById('projectContainer');
     container.innerHTML = '';
-    news.forEach(item => {
+    project.forEach(item => {
         const col = document.createElement('div');
         col.className = 'col-md-6 col-lg-4';
         const badges = [];
-        if (item.isNew) badges.push('<span class="news-badge badge-new">ใหม่</span>');
-        if (item.isHot) badges.push('<span class="news-badge badge-hot">ฮอต</span>');
+        if (item.isNew) badges.push('<span class="project-badge badge-new">ใหม่</span>');
+        if (item.isHot) badges.push('<span class="project-badge badge-hot">ฮอต</span>');
         col.innerHTML = `
-            <a href="${BASE_URL}/news/${item.slug || '8d6121e3-cfb2-4053-b840-3a416bba83bd'}" class="news-card d-block text-decoration-none"  target="_blank" rel="noopener">
-                <div class="news-image-container">
+            <a href="${BASE_URL}/project/${item.slug || '8d6121e3-cfb2-4053-b840-3a416bba83bd'}" class="project-card d-block text-decoration-none"  target="_blank" rel="noopener">
+                <div class="project-image-container">
                     <i class="fas fa-wind"></i>
                     ${badges.join('')}
                 </div>
-                <div class="news-content">
+                <div class="project-content">
                     <div>
                         <span class="category-badge cat-${item.category}">${item.categoryName}</span>
                     </div>
-                    <h3 class="news-title">${item.title}</h3>
-                    <p class="news-excerpt">${item.excerpt}</p>
-                    <div class="news-meta">
+                    <h3 class="project-title">${item.title}</h3>
+                    <p class="project-excerpt">${item.excerpt}</p>
+                    <div class="project-meta">
                         <span><i class="far fa-calendar"></i> ${item.date}</span>
                         <span><i class="far fa-eye"></i> ${item.views.toLocaleString()}</span>
                     </div>
@@ -68,19 +68,19 @@ document.querySelectorAll('.category-btn').forEach(btn => {
         document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
         this.classList.add('active');
         currentCategory = this.dataset.category;
-        filterNews();
+        filterProject();
     });
 });
 document.getElementById('searchInput').addEventListener('input', function(e) {
-    filterNews();
+    filterProject();
 });
-function filterNews() {
+function filterProject() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    filteredNews = newsData.filter(news => {
-        const matchCategory = currentCategory === 'all' || news.category === currentCategory;
-        const matchSearch = news.title.toLowerCase().includes(searchTerm) || news.excerpt.toLowerCase().includes(searchTerm);
+    filteredProject = projectData.filter(project => {
+        const matchCategory = currentCategory === 'all' || project.category === currentCategory;
+        const matchSearch = project.title.toLowerCase().includes(searchTerm) || project.excerpt.toLowerCase().includes(searchTerm);
         return matchCategory && matchSearch;
     });
-    renderNews(filteredNews);
+    renderProject(filteredProject);
 }
-renderNews(newsData);
+renderProject(projectData);

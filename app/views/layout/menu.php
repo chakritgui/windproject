@@ -18,8 +18,8 @@
             <li><a href="<?=BASE_URL?>/member" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/member'?'active':'') ?>">
                 <i class="fa-solid fa-users-line"></i> <span data-i18n="member"></span>
             </a></li>
-            <li><a href="<?=BASE_URL?>/news" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/news'?'active':'') ?>">
-                <i class="fa-regular fa-newspaper"></i> <span data-i18n="news"></span>
+            <li><a href="<?=BASE_URL?>/project" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/project'?'active':'') ?>">
+                <i class="fa-solid fa-diagram-project"></i> <span data-i18n="project"></span>
             </a></li>
             <li><a href="<?=BASE_URL?>/document" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/document'?'active':'') ?>">
                 <i class="fa-solid fa-folder-tree"></i> <span data-i18n="document"></span>
@@ -40,8 +40,8 @@
             <li><a href="<?=BASE_URL?>/" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/' || $GLOBALS['currentRoute']=='/map' ?'active':'') ?>">
                 <i class="fa-solid fa-map-location-dot"></i> <span data-i18n="map"></span>
             </a></li>
-            <li><a href="<?=BASE_URL?>/news" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/news'?'active':'') ?>">
-                <i class="fa-regular fa-newspaper"></i> <span data-i18n="news"></span>
+            <li><a href="<?=BASE_URL?>/project" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/project'?'active':'') ?>">
+                <i class="fa-solid fa-diagram-project"></i> <span data-i18n="project"></span>
             </a></li>
             <li><a href="<?=BASE_URL?>/document" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/document'?'active':'') ?>">
                 <i class="fa-regular fa-folder-open"></i> <span data-i18n="document"></span>

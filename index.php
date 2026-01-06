@@ -32,7 +32,6 @@
             $router->get('/', 'AdminController@index');
             $router->get('/member', 'AdminController@member');
             $router->get('/project', 'AdminController@project');
-            $router->get('/news', 'AdminController@news');
             $router->get('/map', 'AdminController@map');
             $router->get('/document', 'AdminController@document');
             $router->get('/import', 'AdminController@import');
@@ -52,8 +51,8 @@
             $router->post('/api/document/delete', 'DocumentController@delete');
             $router->post('/api/document/change', 'DocumentController@change');
             $router->post('/api/document/download_history', 'DocumentController@downloadHistory');
-            $router->post('/api/news/list', 'NewsController@list');
-            $router->post('/api/news/get', 'NewsController@get');
+            $router->post('/api/project/list', 'ProjectController@list');
+            $router->post('/api/project/get', 'ProjectController@get');
             $router->post('/api/wind/list', 'WindController@list');
             $router->post('/api/notification/list', 'NotificationController@list');
             $router->post('/api/notification/save', 'NotificationController@save');
@@ -66,8 +65,8 @@
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');
             $router->get('/pole/{slug}', 'UserController@pole');
-            $router->get('/news', 'UserController@news');
-            $router->get('/news/{slug}', 'UserController@newsDetail');
+            $router->get('/project', 'UserController@project');
+            $router->get('/project/{slug}', 'UserController@projectDetail');
             $router->get('/document', 'UserController@document');
             $router->get('/download', 'UserController@download');
         }
