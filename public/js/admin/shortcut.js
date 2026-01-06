@@ -33,7 +33,6 @@ function initShortcut() {
                     $("#androidIcon").removeClass("obj-required");
                 }
                 if(d.manifestDate) {
-                    $(".preview-button").removeClass("d-none");
                     $(".shortcut-date").html(`<i class="fa-regular fa-calendar-check"></i> ${d.manifestDate}`);
                 }
             } else {

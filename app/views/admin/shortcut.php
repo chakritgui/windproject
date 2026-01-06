@@ -25,12 +25,6 @@
                 <div class="text-success shortcut-date"></div>
             </div>
         </div>
-        <div class="row g-4 mb-2 preview-button d-none">
-            <div class="col-12 text-end">
-                <button class="btn btn-success"><i class="fa-brands fa-android"></i> <span data-i18n="preview"></span></button>
-                <button class="btn btn-light"><i class="fa-brands fa-apple"></i> <span data-i18n="preview"></span></button>
-            </div>
-        </div>
         <div class="row g-4 mb-4">
             <div class="col-12">
                 <div class="p-4 border rounded-3 shadow-sm bg-white">

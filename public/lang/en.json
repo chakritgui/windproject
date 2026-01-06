@@ -234,5 +234,7 @@
     "png_only": "Please select PNG file only",
     "news": "News",
     "news_management": "News Management",
-    "preview": "Preview"
+    "preview": "Preview",
+    "source": "Source",
+    "uploading": "Uploading"
 }

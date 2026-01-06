@@ -19,6 +19,7 @@ function initDocumentTable() {
             data: function(d){
                 d.date = $('#filter_date').val();
                 d.status = $('#filter_status').val();
+                d.source = $('#filter_source').val();
             }
         },
         columns: [      
@@ -33,6 +34,7 @@ function initDocumentTable() {
                 }
             },
             { data: "document_name" },
+            { data: "source_name" },
             { data: "document_type" },
             { 
                 data: null,
@@ -211,6 +213,10 @@ $(document).on('click', '.manage-document', function () {
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
+                            <label class="mb-2 required" data-i18n="source"></label>
+                            <select id="source" class="form-select obj-required"></select>
+                        </div>
+                        <div class="col-md-6 mb-3">
                             <label class="mb-2 required" data-i18n="status"></label>
                             <div class="btn-group w-100" role="group">
                                 <input type="radio" class="btn-check obj-required" name="status" id="public" value="public" checked>
@@ -362,21 +368,23 @@ $(document).on('click', '.save-document', function () {
 });
 function saveDocument() {
     $(".save-document").attr("disable", true);
-    const document_id   = $("#document_id").val() || "";
-    const name          = $("#document_name").val();
-    const start_date    = $("#document_start").val();
-    const end_date      = $("#document_end").val();
-    const status        = $("input[name='status']:checked").val();
-    const file          = $("#document_file")[0].files[0] || null;
+    const document_id = $("#document_id").val() || "";
+    const name = $("#document_name").val();
+    const start_date = $("#document_start").val();
+    const end_date = $("#document_end").val();
+    const source = $("#source").val();
+    const status = $("input[name='status']:checked").val();
+    const file = $("#document_file")[0].files[0] || null;
     const formData = new FormData();
     formData.append("document_id", document_id);
     formData.append("document_name", name);
     formData.append("document_start", start_date);
     formData.append("document_end", end_date);
     formData.append("status", status);
+    formData.append("source", source);
     formData.append("document_file", file);
     Swal.fire({
-        title: 'Uploading...',
+        title: langData['uploading'],
         html: `
             <div class="progress mt-2">
                 <div id="swal-progress" class="progress-bar" role="progressbar" style="width:0%">0%</div>

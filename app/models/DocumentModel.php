@@ -6,15 +6,26 @@ class DocumentModel {
     }
     public function list($start = 0, $length = 10, $filters = [], $search = '') {
         list($where, $params) = $this->buildListWhere($filters, $search);
-        $sqlTotal = "SELECT COUNT(*) FROM wp_documents {$where}";
+        $sqlTotal = "SELECT COUNT(*) FROM wp_documents d {$where}";
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = (int)$stmt->fetchColumn();
         $sql = "SELECT
-                document_id, document_name, document_type, document_size, document_start, document_end, document_path, status, created_at, document_dowload
-            FROM wp_documents
+                d.document_id, 
+                d.document_name, 
+                d.document_type, 
+                d.document_size, 
+                d.document_start, 
+                d.document_end, 
+                d.document_path, 
+                d.status, 
+                d.created_at, 
+                d.document_dowload,
+                t.type_name as source_name
+            FROM wp_documents d
+            LEFT JOIN wp_type t on t.type_id = d.type_id
             {$where}
-            ORDER BY document_id DESC
+            ORDER BY d.document_id DESC
         ";
         if ($length != -1) {
             $sql .= " LIMIT :start, :length";
@@ -60,10 +71,11 @@ class DocumentModel {
             $document_start = $data['document_start'];
             $document_end   = $data['document_end'];
             $status         = $data['status'];
+            $source         = $data['source'];
             if ($document_id) {
-                $this->updateDocument($document_id, $document_name, $document_start, $document_end, $status);
+                $this->updateDocument($document_id, $document_name, $document_start, $document_end, $status, $source);
             } else {
-                $document_id = $this->insertDocument($document_name, $document_start, $document_end, $status);
+                $document_id = $this->insertDocument($document_name, $document_start, $document_end, $status, $source);
             }
             if (!empty($_FILES['document_file'])) {
                 $this->handleFileUpload($document_id, $_FILES['document_file']);
@@ -110,18 +122,22 @@ class DocumentModel {
         ];
     }
     private function buildListWhere($filters, $search) {
-        $where  = " WHERE status != 'deleted' ";
+        $where  = " WHERE d.status != 'deleted' ";
         $params = [];
         if (!empty($filters['status'])) {
-            $where .= " AND status = :status";
+            $where .= " AND d.status = :status";
             $params[':status'] = $filters['status'];
         }
+        if (!empty($filters['source'])) {
+            $where .= " AND d.type_id = :source";
+            $params[':source'] = $filters['source'];
+        }
         if (!empty($filters['date'])) {
-            $where .= " AND :date BETWEEN DATE(document_start) AND DATE(document_end)";
+            $where .= " AND :date BETWEEN DATE(d.document_start) AND DATE(d.document_end)";
             $params[':date'] = convertTimeZoneUTC($filters['date'], 'Y-m-d');
         }
         if (!empty($search)) {
-            $where .= " AND document_name LIKE :search";
+            $where .= " AND d.document_name LIKE :search";
             $params[':search'] = "%{$search}%";
         }
         return [$where, $params];
@@ -139,16 +155,16 @@ class DocumentModel {
             }
         }
     }
-    private function insertDocument($name, $start, $end, $status) {
-        $sql = "INSERT INTO wp_documents (document_name, document_start, document_end, status, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())";
+    private function insertDocument($name, $start, $end, $status, $source) {
+        $sql = "INSERT INTO wp_documents (document_name, document_start, document_end, status, created_at, updated_at, type_id) VALUES (?, ?, ?, ?, NOW(), NOW(), ?)";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$name, $start, $end, $status]);
+        $stmt->execute([$name, $start, $end, $status, $source]);
         return $this->db->lastInsertId();
     }
-    private function updateDocument($id, $name, $start, $end, $status) {
-        $sql = "UPDATE wp_documents SET document_name=?, document_start=?, document_end=?, status=?, updated_at=NOW() WHERE document_id=?";
+    private function updateDocument($id, $name, $start, $end, $status, $source) {
+        $sql = "UPDATE wp_documents SET document_name=?, document_start=?, document_end=?, status=?, updated_at=NOW(), type_id=? WHERE document_id=?";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$name, $start, $end, $status, $id]);
+        $stmt->execute([$name, $start, $end, $status, $source, $id]);
     }
     private function updateStatus($id, $status) {
         if (!$id) return false;

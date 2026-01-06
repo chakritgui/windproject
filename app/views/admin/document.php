@@ -30,6 +30,9 @@
                 <option value="public" data-i18n="public"></option>
             </select>
         </div>
+        <div class="col-sm-2">
+            <select id="filter_source" class="form-select filter"></select>
+        </div>
     </div>
 </div>
 <div class="container-fluid mt-3 mb-5">
@@ -39,6 +42,7 @@
                 <tr>
                     <th></th>
                     <th data-i18n="document_name"></th>
+                    <th data-i18n="source"></th>
                     <th data-i18n="type"></th>
                     <th data-i18n="date"></th>
                     <th data-i18n="size"></th>
