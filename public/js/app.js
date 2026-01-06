@@ -163,7 +163,7 @@ function handleNotificationItem(items) {
 }
 function notificatinInfo(id, type, target = 'notifications') {
     $.ajax({
-        url: "api/notification/get",
+        url: "api/news/get",
         method: "POST",
         data: { id },
         dataType: "json",

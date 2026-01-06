@@ -35,7 +35,7 @@
             $router->get('/map', 'AdminController@map');
             $router->get('/document', 'AdminController@document');
             $router->get('/import', 'AdminController@import');
-            $router->get('/notification', 'AdminController@notification');
+            $router->get('/news', 'AdminController@news');
             $router->get('/setting', 'AdminController@setting');
             $router->get('/shortcut', 'AdminController@shortcut');
             $router->post('/api/member/list', 'MemberController@list');
@@ -54,10 +54,10 @@
             $router->post('/api/project/list', 'ProjectController@list');
             $router->post('/api/project/get', 'ProjectController@get');
             $router->post('/api/wind/list', 'WindController@list');
-            $router->post('/api/notification/list', 'NotificationController@list');
-            $router->post('/api/notification/save', 'NotificationController@save');
-            $router->post('/api/notification/delete', 'NotificationController@delete');
-            $router->post('/api/notification/change', 'NotificationController@change');
+            $router->post('/api/news/list', 'NewsController@list');
+            $router->post('/api/news/save', 'NewsController@save');
+            $router->post('/api/news/delete', 'NewsController@delete');
+            $router->post('/api/news/change', 'NewsController@change');
             $router->post('/api/setting/save1', 'SettingController@save1');
             $router->post('/api/setting/save3', 'SettingController@save3');
             $router->post('/api/setting/shortcut', 'SettingController@shortcut');
@@ -71,7 +71,7 @@
             $router->get('/download', 'UserController@download');
         }
     }
-    $router->post('/api/notification/get', 'NotificationController@get');
+    $router->post('/api/news/get', 'NewsController@get');
     $router->post('/api/notification/read', 'NotificationController@read');
     $router->post('/api/notification/load', 'NotificationController@load');
     $router->post('/api/notification/load-list', 'NotificationController@loadlist');

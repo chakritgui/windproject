@@ -1,6 +1,6 @@
 <?php
-    $uploadDir = dirname(__DIR__, 2) . "/uploads/notifications/";
-    $publicBase = "uploads/notifications/";
+    $uploadDir = dirname(__DIR__, 2) . "/uploads/news/";
+    $publicBase = "uploads/news/";
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0755, true);
     }

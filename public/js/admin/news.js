@@ -1,22 +1,22 @@
 let editors = {};
-let tb_notification;
-function initNotificationTable() {
+let tb_news;
+function initNewsTable() {
     let oldPage = 0;
-    if ($.fn.DataTable.isDataTable('#tb_notification')) {
-        oldPage = $('#tb_notification').DataTable().page();
-        $('#tb_notification').DataTable().destroy();
+    if ($.fn.DataTable.isDataTable('#tb_news')) {
+        oldPage = $('#tb_news').DataTable().page();
+        $('#tb_news').DataTable().destroy();
     }
-    if ($.fn.DataTable.isDataTable('#tb_notification')) {
-        $('#tb_notification').DataTable().ajax.reload(null, false);
+    if ($.fn.DataTable.isDataTable('#tb_news')) {
+        $('#tb_news').DataTable().ajax.reload(null, false);
         return;
     }
-    tb_notification = $('#tb_notification').DataTable({
+    tb_news = $('#tb_news').DataTable({
         processing: true,
         serverSide: true,
         responsive: true,
         order: [[2, 'desc']],
         ajax: {
-            url: "api/notification/list",
+            url: "api/news/list",
             type: "POST",
             data: function(d) {
                 d.status = $("#filter_status").val();
@@ -59,7 +59,7 @@ function initNotificationTable() {
                 }
             },
             { data: "created_at" },
-            { data: "notifications_view", className: "text-end" },
+            { data: "news_view", className: "text-end" },
             {
                 data: "status",
                 render: function (status, type, row) {
@@ -72,13 +72,13 @@ function initNotificationTable() {
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end shadow">
                                     <li class="${status === 'published' ? 'd-none' : ''}">
-                                        <a class="dropdown-item change-status" data-id="${row.notifications_id}" data-status="published"><span data-i18n="published" class="text-success"></span></a>
+                                        <a class="dropdown-item change-status" data-id="${row.news_id}" data-status="published"><span data-i18n="published" class="text-success"></span></a>
                                     </li>
                                     <li class="${status === 'draft' ? 'd-none' : ''}">
-                                        <a class="dropdown-item change-status" data-id="${row.notifications_id}" data-status="published"><span data-i18n="re-published" class="text-warning"></span></a>
+                                        <a class="dropdown-item change-status" data-id="${row.news_id}" data-status="published"><span data-i18n="re-published" class="text-warning"></span></a>
                                     </li>
                                     <li class="${status === 'draft' ? 'd-none' : ''}">
-                                        <a class="dropdown-item change-status" data-id="${row.notifications_id}" data-status="draft"><span data-i18n="draft" class="text-secondary"></span></a>
+                                        <a class="dropdown-item change-status" data-id="${row.news_id}" data-status="draft"><span data-i18n="draft" class="text-secondary"></span></a>
                                     </li>
                                 </ul>
                             </div>
@@ -90,13 +90,13 @@ function initNotificationTable() {
                 data: null,
                 orderable: false,
                 render: (_, __, row) => `
-                    <button class="btn btn-light text-secondary view-notification" data-id="${row.notifications_id}">
+                    <button class="btn btn-light text-secondary view-news" data-id="${row.news_id}">
                         <i class="fa-solid fa-folder-open"></i>
                     </button>
-                    <button class="btn btn-light text-secondary manage-notification" data-id="${row.notifications_id}">
+                    <button class="btn btn-light text-secondary manage-news" data-id="${row.news_id}">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
-                    <button class="btn btn-light text-danger delete-notification" data-id="${row.notifications_id}">
+                    <button class="btn btn-light text-danger delete-news" data-id="${row.news_id}">
                         <i class="fa-regular fa-trash-can"></i>
                     </button>
                 `
@@ -111,14 +111,14 @@ function initNotificationTable() {
         },
         language: getTableLang(),
         initComplete: function(){
-            let $filter = $('#tb_notification_filter');
+            let $filter = $('#tb_news_filter');
             let btn = `
-                <button class="btn btn-primary btn-sm manage-notification" data-id="">
-                    <i class="fa-solid fa-plus"></i> <span data-i18n="notification"></span>
+                <button class="btn btn-primary btn-sm manage-news" data-id="">
+                    <i class="fa-solid fa-plus"></i> <span data-i18n="news"></span>
                 </button>
             `;
             $filter.append(btn);
-            var input = $('#tb_notification_filter input').unbind();
+            var input = $('#tb_news_filter input').unbind();
             var self = this.api();
             input.bind('keypress', function(e){
                 if(e.keyCode == 13) {
@@ -131,23 +131,23 @@ function initNotificationTable() {
         }
     });
 }
-$(".filter").on("change", () => initNotificationTable());
-$(document).on("click", ".manage-notification", function () {
+$(".filter").on("change", () => initNewsTable());
+$(document).on("click", ".manage-news", function () {
     let id = $(this).data("id") ?? "";
-    $.post("api/notification/get", { id }, function(res) {
+    $.post("api/news/get", { id }, function(res) {
         if(res.status !== "success") return;
         let d = res.data;
         let $modal = $("#windModal");
         let modal = new bootstrap.Modal($modal[0]);
         $modal.find(".modal-header").html(`
-            <h5 class="modal-title" data-i18n="notification_management"></h5>
+            <h5 class="modal-title" data-i18n="news_management"></h5>
             <button class="btn-close" data-bs-dismiss="modal"></button>
         `);
         $modal.find(".modal-footer").html(`
             <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-            <button class="btn btn-primary save-notification" data-i18n="save"></button>
+            <button class="btn btn-primary save-news" data-i18n="save"></button>
         `);
-        $modal.find(".modal-body").html(getNotificationForm(d));
+        $modal.find(".modal-body").html(getNewsForm(d));
         togglePublishControls();
         setMinDateTimeNow();
         $("#publish_at").on("change", function () {
@@ -162,21 +162,21 @@ $(document).on("click", ".manage-notification", function () {
         });
         ClassicEditor.create(document.querySelector('#content_en'), {
             ckfinder: {
-                uploadUrl: BASE_URL + '/public/uploads/upload_notification_image.php'
+                uploadUrl: BASE_URL + '/public/uploads/upload_news_image.php'
             }
         }).then(editor=>{
             editors['en'] = editor;
         });
         ClassicEditor.create(document.querySelector('#content_lo'), {
             ckfinder: {
-                uploadUrl: BASE_URL + '/public/uploads/upload_notification_image.php'
+                uploadUrl: BASE_URL + '/public/uploads/upload_news_image.php'
             }
         }).then(editor=>{
             editors['lo'] = editor;
         });
         ClassicEditor.create(document.querySelector('#content_th'), {
             ckfinder: {
-                uploadUrl: BASE_URL + '/public/uploads/upload_notification_image.php'
+                uploadUrl: BASE_URL + '/public/uploads/upload_news_image.php'
             }
         }).then(editor=>{
             editors['th'] = editor;
@@ -196,9 +196,9 @@ $(document).on("click", ".manage-notification", function () {
         modal.show();
     }, "json");
 });
-function getNotificationForm(d) {
+function getNewsForm(d) {
     return `
-        <input type="hidden" id="notifications_id" value="${d.id ?? ''}">
+        <input type="hidden" id="news_id" value="${d.id ?? ''}">
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#en">English</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#lo">ລາວ</a></li>
@@ -260,16 +260,16 @@ function langTab(lang, d) {
                 <label class="mb-2 ${lang === 'en' ? 'required' : ''}" data-i18n="title"></label>
                 <input class="form-control ${lang === 'en' ? 'obj-required' : ''}" id="title_${lang}" value="${d.title[lang] ?? ''}">
             </div>
-            <label class="mb-2" data-i18n="notification"></label>
+            <label class="mb-2" data-i18n="news"></label>
             <textarea id="content_${lang}">${d.content[lang] ?? ''}</textarea>
         </div>
     `;
 }
-async function initNotification() {
-    initNotificationTable();
+async function initNews() {
+    initNewsTable();
 }
-$(document).ready(initNotification);
-$(document).on('click', '.save-notification', function () {
+$(document).ready(initNews);
+$(document).on('click', '.save-news', function () {
     let errors = [];
     $('.obj-required').each(function () {
         let value = $(this).val()?.trim() || '';
@@ -288,11 +288,11 @@ $(document).on('click', '.save-notification', function () {
         $('.is-invalid').first().focus();
         return;
     }
-    saveNotifications();
+    saveNews();
 });
-function saveNotifications() {
-    $(".save-notification").attr("disable", true);
-    const notifications_id = $("#notifications_id").val() || "";
+function saveNews() {
+    $(".save-news").attr("disable", true);
+    const news_id = $("#news_id").val() || "";
     const status = $("#status").val();
     const publish_at = $("#publish_at").val();
     const title_en = $("#title_en").val();
@@ -302,7 +302,7 @@ function saveNotifications() {
     const content_lo = editors['lo']?.getData() ?? '';
     const content_th = editors['th']?.getData() ?? '';
     const formData = new FormData();
-    formData.append("notifications_id", notifications_id);
+    formData.append("news_id", news_id);
     formData.append("status", status);
     formData.append("publish_at", publish_at);
     formData.append("title_en", title_en);
@@ -312,7 +312,7 @@ function saveNotifications() {
     formData.append("content_lo", content_lo);
     formData.append("content_th", content_th);
     $.ajax({
-        url: "api/notification/save",
+        url: "api/news/save",
         type: "POST",
         data: formData,
         contentType: false,
@@ -334,31 +334,31 @@ function saveNotifications() {
         success: function (res) {
             if (res.status === true) {
                 showSuccess('Success', langData['saved_successfully']);
-                initNotificationTable();
+                initNewsTable();
                 $('#windModal').modal('hide');
             } else {
                 showError('Error', langData['cannot_save']);
             }
-            $(".save-notification").attr("disable", false);
+            $(".save-news").attr("disable", false);
         },
         error: function () {
             showError('Error', langData['cannot_save']);
-            $(".save-notification").attr("disable", false);
+            $(".save-news").attr("disable", false);
         }
     });
 }
-$(document).on('click', '.delete-notification', function() {
-    let notifications_id = $(this).data("id");
+$(document).on('click', '.delete-news', function() {
+    let news_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: 'api/notification/delete',
+            url: 'api/news/delete',
             method: 'POST',
-            data: { id: notifications_id },
+            data: { id: news_id },
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){
                     showSuccess('Success', langData['deleted_successfully']);
-                    initNotificationTable();
+                    initNewsTable();
                 } else {
                     showError('Error', langData['cannot_delete']);
                 }   
@@ -370,21 +370,21 @@ $(document).on('click', '.delete-notification', function() {
     });
 });
 $(document).on('click', '.change-status', function() {
-    let notifications_id = $(this).data("id");
+    let news_id = $(this).data("id");
     let status = $(this).data("status");
     showConfirm(langData['confirm'], langData['confirm_change'], function(){
         $.ajax({
-            url: 'api/notification/change',
+            url: 'api/news/change',
             method: 'POST',
             data: { 
-                id: notifications_id,
+                id: news_id,
                 status: status,
             },
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){
                     showSuccess('Success', langData['change_successfully']);
-                    initNotificationTable();
+                    initNewsTable();
                 } else {
                     showError('Error', langData['cannot_change']);
                 }   
@@ -395,7 +395,7 @@ $(document).on('click', '.change-status', function() {
         });
     });
 });
-$(document).on("click", ".view-notification", function () {
+$(document).on("click", ".view-news", function () {
     const id = $(this).data("id");
     notificatinInfo(id, 'preview');
 });

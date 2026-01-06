@@ -42,12 +42,12 @@
             }
             $this->view('admin/import');
         }
-        public function notification() {
+        public function news() {
             ensure_login();
             if (!is_admin()) { 
                 $this->redirect('login');
             }
-            $this->view('admin/notification');
+            $this->view('admin/news');
         }
         public function setting() {
             ensure_login();

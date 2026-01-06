@@ -4,7 +4,7 @@
         <div>
             <h4 class="fw-bold mb-1 d-flex align-items-center">
                 <i class="bi bi-bell me-2 text-primary" style="font-size:1.5rem"></i>
-                <span data-i18n="notification_management"></span>
+                <span data-i18n="news_management"></span>
             </h4>
             <nav aria-label="breadcrumb" style="margin-left: 25px;">
                 <ol class="breadcrumb mb-0 small">
@@ -12,7 +12,7 @@
                         <span data-i18n="admin"></span>
                     </li>
                     <li class="breadcrumb-item active">
-                        <span data-i18n="notification"></span>
+                        <span data-i18n="news"></span>
                     </li>
                 </ol>
             </nav>
@@ -32,11 +32,11 @@
 </div>
 <div class="container-fluid mt-3 mb-5">
     <div class="table-responsive">
-        <table class="table table-hover" id="tb_notification">
+        <table class="table table-hover" id="tb_news">
             <thead>
                 <tr>
                     <th></th>
-                    <th data-i18n="notification"></th>
+                    <th data-i18n="news"></th>
                     <th data-i18n="publish_at"></th>
                     <th data-i18n="create_at"></th>
                     <th data-i18n="view"></th>
@@ -48,4 +48,4 @@
         </table>
     </div>
 </div>
-<script src="<?=BASE_URL?>/public/js/admin/notification.js?v=<?=time()?>"></script>
+<script src="<?=BASE_URL?>/public/js/admin/news.js?v=<?=time()?>"></script>

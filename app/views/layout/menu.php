@@ -27,8 +27,8 @@
             <li><a href="<?=BASE_URL?>/import" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/import'?'active':'') ?>">
                 <i class="fa-solid fa-upload"></i> <span data-i18n="import"></span>
             </a></li>
-            <li><a href="<?=BASE_URL?>/notification" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/notification'?'active':'') ?>">
-                <i class="bi bi-bell"></i> <span data-i18n="notification"></span>
+            <li><a href="<?=BASE_URL?>/news" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/news'?'active':'') ?>">
+                <i class="fa-solid fa-newspaper"></i> <span data-i18n="news"></span>
             </a></li>
             <li><a href="<?=BASE_URL?>/setting" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/setting'?'active':'') ?>">
                 <i class="fa-solid fa-gear"></i> <span data-i18n="setting"></span>
