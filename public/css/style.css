@@ -367,3 +367,12 @@ label.required::after {
     background: #e9f3ff;
     border-color: #2f6bff;
 }
+.swal2-html-container {
+    font-size: 12px !important;
+}
+.swal2-title {
+    font-size: 16px !important;
+}
+button {
+    font-size: 12px !important;
+}

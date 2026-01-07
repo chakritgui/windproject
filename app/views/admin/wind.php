@@ -44,4 +44,4 @@
         </table>
     </div>
 </div>
-<script src="<?=BASE_URL?>/public/js/admin/import.js?v=<?=time()?>"></script>
+<script src="<?=BASE_URL?>/public/js/admin/wind.js?v=<?=time()?>"></script>

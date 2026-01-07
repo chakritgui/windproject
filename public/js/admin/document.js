@@ -293,12 +293,6 @@ $(document).on("change", "#document_start, #document_end", function () {
 $(document).on("click", "#btn_select_file", function () {
     $("#document_file").trigger("click");
 });
-function readableSize(bytes) {
-    if (bytes === 0) return "0 B";
-    const sizes = ["B", "KB", "MB", "GB"];
-    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
-    return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
-}
 function handleFile(file, mode = 'edit') {
     if (!file) return;
     let baseName = file.name.replace(/\.[^/.]+$/, "");
@@ -352,19 +346,6 @@ $(document).on("drop", "#drop_zone", function(e){
     $("#document_file")[0].files = e.originalEvent.dataTransfer.files;
     handleFile(file, 'new');
 });
-function getFileIconClass(ext) {
-    ext = ext.toLowerCase();
-    if (["jpg","jpeg","png","gif","webp","svg"].includes(ext)) return "fa-solid fa-file-image text-info";
-    if (["pdf"].includes(ext)) return "fa-solid fa-file-pdf text-danger";
-    if (["doc","docx"].includes(ext)) return "fa-solid fa-file-word text-primary";
-    if (["xls","xlsx","csv"].includes(ext)) return "fa-solid fa-file-excel text-success";
-    if (["ppt","pptx"].includes(ext)) return "fa-solid fa-file-powerpoint text-orange";
-    if (["zip","rar","7z"].includes(ext)) return "fa-solid fa-file-zipper text-secondary";
-    if (["mp4","mov","avi","mkv"].includes(ext)) return "fa-solid fa-file-video text-purple";
-    if (["mp3","wav","ogg"].includes(ext)) return "fa-solid fa-file-audio text-info";
-    if (["txt","md","log"].includes(ext)) return "fa-solid fa-file-lines text-muted";
-    return "fa-solid fa-file text-muted";
-}
 $(document).on('click', '.save-document', function () {
     let errors = [];
     $('.obj-required').each(function () {
@@ -387,27 +368,30 @@ $(document).on('click', '.save-document', function () {
     saveDocument();
 });
 function saveDocument() {
-    $(".save-document").attr("disable", true);
-    const document_id = $("#document_id").val() || "";
+    const btn = $(".save-document");
     const name = $("#document_name").val();
-    const start_date = $("#document_start").val();
-    const end_date = $("#document_end").val();
-    const source = $("#source").val();
-    const status = $("#status").val();
-    const file = $("#document_file")[0].files[0] || null;
+    if (!name) {
+        showError('Error', 'Please enter document name');
+        return;
+    }
+    btn.prop("disabled", true);
     const formData = new FormData();
-    formData.append("document_id", document_id);
+    formData.append("document_id", $("#document_id").val() || "");
     formData.append("document_name", name);
-    formData.append("document_start", start_date);
-    formData.append("document_end", end_date);
-    formData.append("status", status);
-    formData.append("source", source);
-    formData.append("document_file", file);
+    formData.append("document_start", $("#document_start").val());
+    formData.append("document_end", $("#document_end").val());
+    formData.append("status", $("#status").val());
+    formData.append("source", $("#source").val());
+    const file = $("#document_file")[0].files[0];
+    if (file) {
+        formData.append("document_file", file);
+    }
     Swal.fire({
-        title: langData['uploading'],
+        title: langData['uploading'] || 'Uploading...',
         html: `
+            <p>Please do not close this window.</p>
             <div class="progress mt-2">
-                <div id="swal-progress" class="progress-bar" role="progressbar" style="width:0%">0%</div>
+                <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
             </div>
         `,
         allowOutsideClick: false,
@@ -434,18 +418,26 @@ function saveDocument() {
             return xhr;
         },
         success: function (res) {
+            Swal.close();
             if (res.status === true) {
                 showSuccess('Success', langData['saved_successfully']);
-                initDocumentTable();
-                $('#windModal').modal('hide');
+                if (typeof initDocumentTable === "function") initDocumentTable();
+                $('#documentModal').modal('hide');
             } else {
-                showError('Error', langData['cannot_save']);
+                showError('Error', (langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
             }
-            $(".save-document").attr("disable", false);
         },
-        error: function () {
-            showError('Error', langData['cannot_save']);
-            $(".save-document").attr("disable", false);
+        error: function (xhr, status, error) {
+            Swal.close();
+            let msg = langData['cannot_save'];
+            try {
+                let res = JSON.parse(xhr.responseText);
+                if (res.message) msg += ": " + res.message;
+            } catch (e) {}
+            showError('Error', msg);
+        },
+        complete: function() {
+            btn.prop("disabled", false);
         }
     });
 }

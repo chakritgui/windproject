@@ -41,6 +41,7 @@
     "member": "Member",
     "map": "Map",
     "wind": "Wind",
+    "import": "Import",
     "document": "Document",
     "map_setting": "Map Setting",
     "dashboard": "Dashboard",
@@ -179,7 +180,7 @@
     "choose_language_display": "Select the language you want displayed on the website.",
     "language_note": "Note At least one language must be enabled. Languages ​​that are disabled will not be displayed in the website's language switching menu.",
     "one_language": "At least one language must be enabled.",
-    "cannot_load": "Cannot load data",
+    "cannot_load": "Failed to load data",
     "footer": "Footer",
     "published": "Published",
     "re-published": "Re-Published",
@@ -258,5 +259,11 @@
     "import_end": "Import End",
     "record": "Record",
     "remark": "Remark",
-    "import_date": "Import Date"
+    "import_date": "Import Date",
+    "only_xlsx_csv": "Only .xlsx or .csv files are allowed.",
+    "importing_data": "Importing data. This may take a moment. Please do not close this window until the process is complete.",
+    "importing_data.": "Importing data...",
+    "import_successfully": "Import Successfully",
+    "cannot_import": "Failed to import",
+    "saving": "Saving..."
 }

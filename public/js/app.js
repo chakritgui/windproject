@@ -442,7 +442,7 @@ function showWarning(title, msg, confirm = true) {
 }
 function showConfirm(title, msg, yes, no) {
     Swal.fire({
-        icon: 'warning',
+        icon: 'info',
         title,
         text: msg,
         showCancelButton: true,
@@ -596,3 +596,22 @@ function initDatePicker(selector) {
     });
 }
 $("input").attr("autocomplete", "off");
+function getFileIconClass(ext) {
+    ext = ext.toLowerCase();
+    if (["jpg","jpeg","png","gif","webp","svg"].includes(ext)) return "fa-solid fa-file-image text-info";
+    if (["pdf"].includes(ext)) return "fa-solid fa-file-pdf text-danger";
+    if (["doc","docx"].includes(ext)) return "fa-solid fa-file-word text-primary";
+    if (["xls","xlsx","csv"].includes(ext)) return "fa-solid fa-file-excel text-success";
+    if (["ppt","pptx"].includes(ext)) return "fa-solid fa-file-powerpoint text-orange";
+    if (["zip","rar","7z"].includes(ext)) return "fa-solid fa-file-zipper text-secondary";
+    if (["mp4","mov","avi","mkv"].includes(ext)) return "fa-solid fa-file-video text-purple";
+    if (["mp3","wav","ogg"].includes(ext)) return "fa-solid fa-file-audio text-info";
+    if (["txt","md","log"].includes(ext)) return "fa-solid fa-file-lines text-muted";
+    return "fa-solid fa-file text-muted";
+}
+function readableSize(bytes) {
+    if (bytes === 0) return "0 B";
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+    return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
+}

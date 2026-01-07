@@ -419,28 +419,39 @@ $(document).on('click', '.save-news', function () {
     saveNews();
 });
 function saveNews() {
-    $(".save-news").attr("disable", true);
+    const btn = $(".save-news");
     const news_id = $("#news_id").val() || "";
-    const status = $("#status").val();
-    const publish_at = buildPublishAt();
-    const title_en = $("#title_en").val();
-    const title_lo = $("#title_lo").val();
     const title_th = $("#title_th").val();
-    const content_en = editors['en']?.getData() ?? '';
-    const content_lo = editors['lo']?.getData() ?? '';
-    const content_th = editors['th']?.getData() ?? '';
-    const cover = $("#cover")[0].files[0] || null;
+    if (!title_th) {
+        showError('Error', 'กรุณากรอกหัวข้อข่าว (ภาษาไทย)');
+        return;
+    }
+    btn.prop("disabled", true);
     const formData = new FormData();
     formData.append("news_id", news_id);
-    formData.append("status", status);
-    formData.append("publish_at", publish_at);
-    formData.append("title_en", title_en);
-    formData.append("title_lo", title_lo);
+    formData.append("status", $("#status").val());
+    formData.append("publish_at", typeof buildPublishAt === "function" ? buildPublishAt() : "");
+    formData.append("title_en", $("#title_en").val());
+    formData.append("title_lo", $("#title_lo").val());
     formData.append("title_th", title_th);
-    formData.append("content_en", content_en);
-    formData.append("content_lo", content_lo);
-    formData.append("content_th", content_th);
-    formData.append("cover", cover);
+    formData.append("content_en", editors['en']?.getData() ?? '');
+    formData.append("content_lo", editors['lo']?.getData() ?? '');
+    formData.append("content_th", editors['th']?.getData() ?? '');
+    const cover = $("#cover")[0].files[0] || null;
+    if (cover) {
+        formData.append("cover", cover);
+    }
+    Swal.fire({
+        title: langData['saving'] || 'Saving News...',
+        html: `
+            <p>Please do not close this page.</p>
+            <div class="progress mt-2">
+                <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
+            </div>
+        `,
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
     $.ajax({
         url: "api/news/save",
         type: "POST",
@@ -462,18 +473,26 @@ function saveNews() {
             return xhr;
         },
         success: function (res) {
+            Swal.close();
             if (res.status === true) {
                 showSuccess('Success', langData['saved_successfully']);
-                initNewsTable();
-                $('#windModal').modal('hide');
+                if (typeof initNewsTable === "function") initNewsTable();
+                $('#newsModal').modal('hide');
             } else {
-                showError('Error', langData['cannot_save']);
+                showError('Error', (langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
             }
-            $(".save-news").attr("disable", false);
         },
-        error: function () {
-            showError('Error', langData['cannot_save']);
-            $(".save-news").attr("disable", false);
+        error: function (xhr, status, error) {
+            Swal.close();
+            let msg = langData['cannot_save'];
+            try {
+                let res = JSON.parse(xhr.responseText);
+                if (res.message) msg += ": " + res.message;
+            } catch (e) {}
+            showError('Error', msg);
+        },
+        complete: function() {
+            btn.prop("disabled", false);
         }
     });
 }
@@ -493,8 +512,13 @@ $(document).on('click', '.delete-news', function() {
                     showError('Error', langData['cannot_delete']);
                 }   
             },
-            error: function(){
-                showError('Error', langData['cannot_delete']);
+            error: function (xhr, status, error) {
+                let msg = langData['cannot_save'];
+                try {
+                    let res = JSON.parse(xhr.responseText);
+                    if (res.message) msg += ": " + res.message;
+                } catch (e) {}
+                showError('Error', msg);
             }
         });
     });
