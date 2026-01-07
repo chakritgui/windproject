@@ -508,7 +508,12 @@ function initSelect2Remote(selector, apiUrl, extraData = {}) {
             processResults: function (res, params) {
                 params.page = params.page || 1;
                 const data = res.data || res.status || {};
-                const items = data.items || [];
+                const items = (data.items || []).map(item => {
+                    return {
+                        ...item,
+                        text: langData[item.id] || item.text
+                    };
+                });
                 const total = parseInt(data.total_count || 0);
                 return {
                     results: items,
