@@ -114,6 +114,7 @@
                 <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"></button>
                 <ul class="dropdown-menu" id="languageMenu"></ul>
             </div>
+            <?php if(!empty($_SESSION)) { ?>
             <div class="dropdown">
                 <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">
                     <i class="fa-regular fa-user"></i>
@@ -132,6 +133,7 @@
                     </li>
                 </ul>
             </div> 
+            <?php } ?>
         </div>
     </div>
 </header>

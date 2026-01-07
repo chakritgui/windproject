@@ -251,5 +251,6 @@
     "custom_range": "Custom Range",
     "publish_date": "Publish Date",
     "publish_time": "Publish Time",
-    "publish_now": "Publish Now"
+    "publish_now": "Publish Now",
+    "allow_images_only": "Allow images only (jpg, jpeg, png, gif, webp)"
 }

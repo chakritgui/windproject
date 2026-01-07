@@ -346,3 +346,24 @@ label.required::after {
 .datepicker .prev:hover, .datepicker .next:hover {
     background-color: #f8f9fa !important;
 }
+.cover-drop-area{
+    border: 2px dashed #c8d3e1;
+    border-radius: 14px;
+    background: #f8fafc;
+    padding: 15px;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    transition: .2s;
+    cursor: pointer;
+}
+.cover-drop-area:hover{
+    background: #f1f5ff;
+    border-color: #7aa2ff;
+}
+.cover-drop-area.dragover{
+    background: #e9f3ff;
+    border-color: #2f6bff;
+}

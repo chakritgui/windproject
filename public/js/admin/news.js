@@ -24,12 +24,17 @@ function initNewsTable() {
         },
         columns: [
             { 
-                data: "status",
+                data: "cover",
                 className: 'text-center',
                 orderable: false,
                 searchable: false,
                 render: function(data){
-                    return `<i class="fa-solid fa-bell fa-2x ${(data == 'published') ? 'text-warning' : 'text-muted'}"></i>`;
+                    if (!data) {
+                        return `<img src="${BASE_URL}/public/images/noimage.jpg" style="height:60px; border-radius:6px; object-fit:cover;">`;
+                    }
+                    return `
+                        <img src="${BASE_URL}/${data}" style="height:60px; border-radius:6px; object-fit:cover;">
+                    `;
                 }
             },
             { 
@@ -232,12 +237,30 @@ $(document).on("click", ".manage-news", function () {
             });
             el.dataset.tdInit = 1;
         });
+        initCoverUpload();
         modal.show();
     }, "json");
 });
 function getNewsForm(d, publishTime) {
     return `
         <input type="hidden" id="news_id" value="${d.id ?? ''}">
+        <div id="coverDropArea" class="cover-drop-area text-center mb-3">
+            <input type="file" id="cover" accept="image/*" hidden>
+            <div id="coverPreviewWrapper" class="h-100 d-flex align-items-center justify-content-center">
+                ${d.cover 
+                    ? `<img id="coverPreview" src="${d.cover}" class="img-fluid rounded shadow-sm" style="max-height:150px;">`
+                    : `<img id="coverPreview" class="img-fluid rounded shadow-sm d-none" style="max-height:150px;">`
+                }
+            </div>
+            <div id="coverDropLabel" class="${d.cover ? 'd-none' : ''}">
+                <div class="fw-bold fs-6 mt-2" data-i18n="dropHere"></div>
+                <div class="text-muted small mb-2">
+                    <span data-i18n="or"></span> <span data-i18n="choose"></span>
+                </div>
+            </div>
+            <div class="text-muted small mt-2" data-i18n="allow_images_only"></div>
+            <button type="button" id="btnRemoveCover" class="btn btn-sm btn-outline-danger mt-2 ${d.cover ? '' : 'd-none'}" data-i18n="remove"></button>
+        </div>
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#en">English</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#lo">ລາວ</a></li>
@@ -267,6 +290,62 @@ function getNewsForm(d, publishTime) {
             </div>
         </div>
     `;
+}
+function initCoverUpload() {
+    const dropArea = document.getElementById("coverDropArea");
+    const input = document.getElementById("cover");
+    const preview = document.getElementById("coverPreview");
+    const label = document.getElementById("coverDropLabel");
+    const btnRemove = document.getElementById("btnRemoveCover");
+    dropArea.addEventListener("click", () => input.click());
+    ["dragenter", "dragover"].forEach(ev =>
+        dropArea.addEventListener(ev, e => {
+            e.preventDefault();
+            dropArea.classList.add("border-primary");
+        })
+    );
+    ["dragleave", "drop"].forEach(ev =>
+        dropArea.addEventListener(ev, e => {
+            e.preventDefault();
+            dropArea.classList.remove("border-primary");
+        })
+    );
+    dropArea.addEventListener("drop", e => {
+        const file = e.dataTransfer.files[0];
+        if (file) showPreview(file);
+    });
+    input.addEventListener("change", e => {
+        const file = e.target.files[0];
+        if (file) showPreview(file);
+    });
+    btnRemove.addEventListener("click", e => {
+        e.stopPropagation();
+        input.value = "";
+        preview.src = "";
+        preview.classList.add("d-none");
+        label.classList.remove("d-none");
+        btnRemove.classList.add("d-none");
+    });
+    function showPreview(file) {
+        const validExt = ["jpg","jpeg","png","gif","webp"];
+        const ext = file.name.split(".").pop().toLowerCase();
+        if (!file.type.startsWith("image/") && !validExt.includes(ext)) {
+            showWarning(
+                langData['validation_error'] || 'Validation Error',
+                langData['allow_images_only'] || 'Allow images only (jpg, jpeg, png, gif, webp)'
+            );
+            input.value = "";
+            return;
+        } 
+        const reader = new FileReader();
+        reader.onload = e => {
+            preview.src = e.target.result;
+            preview.classList.remove("d-none");
+            label.classList.add("d-none");
+            btnRemove.classList.remove("d-none");
+        };
+        reader.readAsDataURL(file);
+    }
 }
 function setMinDateToday() {
     const today = new Date().toISOString().slice(0,10);
@@ -350,6 +429,7 @@ function saveNews() {
     const content_en = editors['en']?.getData() ?? '';
     const content_lo = editors['lo']?.getData() ?? '';
     const content_th = editors['th']?.getData() ?? '';
+    const cover = $("#cover")[0].files[0] || null;
     const formData = new FormData();
     formData.append("news_id", news_id);
     formData.append("status", status);
@@ -360,6 +440,7 @@ function saveNews() {
     formData.append("content_en", content_en);
     formData.append("content_lo", content_lo);
     formData.append("content_th", content_th);
+    formData.append("cover", cover);
     $.ajax({
         url: "api/news/save",
         type: "POST",

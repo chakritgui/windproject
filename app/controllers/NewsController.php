@@ -37,7 +37,8 @@ class NewsController extends BaseController {
             'title_th' => $_POST['title_th'] ?? '',
             'content_en' => $_POST['content_en'] ?? '',
             'content_lo' => $_POST['content_lo'] ?? '',
-            'content_th' => $_POST['content_th'] ?? ''
+            'content_th' => $_POST['content_th'] ?? '',
+            'cover' => $_FILES['cover'] ?? null,
         ];
         $this->json(['status'=>$this->model->save($data)]);
     }

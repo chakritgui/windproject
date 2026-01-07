@@ -14,4 +14,4 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
 <script src="https://api.windy.com/assets/map-forecast/libBoot.js"></script>
-<script src="<?=BASE_URL?>/public/js/map.js?v=<?=time();?>" defer></script>
+<script src="<?=BASE_URL?>/public/user/js/map.js?v=<?=time();?>" defer></script>
