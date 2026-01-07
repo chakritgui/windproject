@@ -1,52 +1,41 @@
 let tb_wind;
 function initWindTable() {
+    let oldPage = 0;
+    if ($.fn.DataTable.isDataTable('#tb_document')) {
+        oldPage = $('#tb_document').DataTable().page();
+        $('#tb_document').DataTable().destroy();
+    }
+    if ($.fn.DataTable.isDataTable('#tb_wind')) {
+        $('#tb_wind').DataTable().ajax.tb_wind(null, false);
+        return;
+    }
     tb_wind = $('#tb_wind').DataTable({
         processing: true,
         serverSide: true,
-        responsive: true, 
+        order: [[1, 'desc']],
         ajax: {
             url: "api/wind/list",
             type: "POST",
             data: function (d) {
-                d.station = $("#filter_station").val();
                 d.date = $("#filter_date").val();
-                d.status = $("#filter_status").val();
             }
         },
         columns: [
-            { data: null, defaultContent: "" },
-            { data: "station" },
-            { 
-                data: "wind_speed",
-                render: speed => `<span class="fw-bold">${speed} m/s</span>`
-            },
-            { 
-                data: "wind_direction",
-                render: d => `<i class="fa-solid fa-location-arrow me-1 rotate-${d}"></i> ${d}°`
-            },
-            { data: "updated_at" },
-            { 
-                data: "status",
-                render: function(s){
-                    let badge = s === "Normal" ? "success" : (s === "warning" ? "warning" : "secondary");
-                    return `<span class="badge bg-${badge} text-${badge} bg-opacity-10" style="font-size: 13px; font-weight: 400;">${s}</span>`;
-                }
-            },
-            {
-                data: null,
-                className: "text-end",
-                render: row => `
-                    <button class="btn btn-light text-secondary manage-wind" data-id="${row.id}">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                    </button>
-                    <button class="btn btn-light text-secondary delete-wind" data-id="${row.id}">
-                        <i class="fa-regular fa-trash-can"></i>
-                    </button>
-                `
-            }
+            { data: "document_name" },
+            { data: "import_start" },
+            { data: "import_end" },
+            { data: "import_type" },
+            { data: "status" },
+            { data: "import_record" },
+            { data: "remark" },
         ],
+        stateSave: true,
         pageLength: pageLength,
         lengthMenu: lengthMenu,
+        stateLoadParams: function (settings, data) {
+            data.start = oldPage;
+            data.length = pageLength; 
+        },
         language: getTableLang(),
         initComplete: function(){
             var input = $('#tb_wind_filter input').unbind();
@@ -56,12 +45,32 @@ function initWindTable() {
                     self.search(input.val()).draw();
                 }
             });
+        }, 
+        initComplete: function(){
+            let $filter = $('#tb_wind_filter');
+            let btn = `
+                <button class="btn btn-primary btn-sm manage-wind" data-id="">
+                    <i class="fa-solid fa-plus"></i> <span data-i18n="import"></span>
+                </button>
+            `;
+            $filter.append(btn);
+            var input = $('#tb_wind_filter input').unbind();
+            var self = this.api();
+            input.bind('keypress', function(e){
+                if(e.keyCode == 13) {
+                    self.search(input.val()).draw();
+                }
+            });
+        }, 
+        drawCallback: function(){
+            getTableLang();
         }
     });
 }
 $(document).ready(function () {
     initWindTable();
-    $(".filter").on("change", () => tb_wind.ajax.reload());
+    initDateRangePicker('#filter_date', initWindTable);
+    $(".filter").on("change", () => initWindTable());
 });
 $(document).on('click', '.manage-wind', function () {
     let wind_id = $(this).data("id");

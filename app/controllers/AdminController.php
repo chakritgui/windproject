@@ -35,12 +35,12 @@
             }
             $this->view('admin/document');
         }
-        public function import() {
+        public function wind() {
             ensure_login();
             if (!is_admin()) { 
                 $this->redirect('login');
             }
-            $this->view('admin/import');
+            $this->view('admin/wind');
         }
         public function news() {
             ensure_login();

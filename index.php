@@ -34,7 +34,7 @@
             $router->get('/project', 'AdminController@project');
             $router->get('/map', 'AdminController@map');
             $router->get('/document', 'AdminController@document');
-            $router->get('/import', 'AdminController@import');
+            $router->get('/wind', 'AdminController@wind');
             $router->get('/news', 'AdminController@news');
             $router->get('/setting', 'AdminController@setting');
             $router->get('/shortcut', 'AdminController@shortcut');

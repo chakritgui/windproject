@@ -11,35 +11,18 @@
                         <span data-i18n="admin"></span>
                     </li>
                     <li class="breadcrumb-item active" aria-current="page">
-                        <span data-i18n="import"></span>
+                        <span data-i18n="wind"></span>
                     </li>
                 </ol>
             </nav>
-        </div>
-        <div class="ms-md-3 text-md-end align-items-end">
-            <button class="btn btn-primary btn-sm manage-wind">
-                <i class="fa-solid fa-cloud-arrow-up"></i> <span data-i18n="import"></span>
-            </button>
         </div>
     </div>
 </div>
 <div class="container-fluid mt-3 mb-5">
     <div class="row g-2 mb-3">
-        <div class="col-sm-3">
-            <select id="filter_station" class="form-select filter">
-                <option value="">-- Station --</option>
-            </select>
-        </div>
-        <div class="col-sm-3">
-            <input type="date" class="form-control filter" id="filter_date">
-        </div>
-        <div class="col-sm-3">
-            <select id="filter_status" class="form-select filter">
-                <option value="">-- Sensor Status --</option>
-                <option value="Normal">Normal</option>
-                <option value="Warning">Warning</option>
-                <option value="Offline">Offline</option>
-            </select>
+        <div class="col-sm-2">
+            <p><i class="fa-regular fa-calendar"></i> <span data-i18n="import_date"></span></p>
+            <input type="text" class="form-control filter" id="filter_date">
         </div>
     </div>
 </div>
@@ -48,12 +31,12 @@
         <table class="table table-hover" id="tb_wind">
             <thead>
                 <tr>
-                    <th></th>
-                    <th data-i18n="station"></th>
-                    <th><span data-i18n="wind_speed"></span> (m/s)</th>
-                    <th data-i18n="direction"></th>
-                    <th data-i18n="date"></th>
-                    <th data-i18n="sensor_status"></th>
+                    <th data-i18n="import_type"></th>
+                    <th data-i18n="import_start"></th>
+                    <th data-i18n="import_end"></th>
+                    <th data-i18n="status"></th>
+                    <th data-i18n="record"></th>
+                    <th data-i18n="remark"></th>
                     <th></th>
                 </tr>
             </thead>

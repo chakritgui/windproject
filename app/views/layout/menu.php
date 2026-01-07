@@ -10,7 +10,7 @@
     <ul class="list-unstyled mt-3 flex-grow-1">
         <?php if(isset($_SESSION['user']['role']) && ($_SESSION['user']['role'] == 'admin' || $_SESSION['user']['role'] == 'administrator')) { ?>
             <li><a href="<?=BASE_URL?>/" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/'?'active':'') ?>">
-                <i class="fas fa-wind"></i> <span data-i18n="dashboard"></span>
+                <i class="fa-solid fa-chart-pie"></i> <span data-i18n="dashboard"></span>
             </a></li>
             <li><a href="<?=BASE_URL?>/map" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/map'?'active':'') ?>">
                 <i class="fa-solid fa-map-location-dot"></i> <span data-i18n="map_setting"></span>
@@ -27,8 +27,8 @@
             <li><a href="<?=BASE_URL?>/document" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/document'?'active':'') ?>">
                 <i class="fa-solid fa-folder-tree"></i> <span data-i18n="document"></span>
             </a></li>
-            <li><a href="<?=BASE_URL?>/import" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/import'?'active':'') ?>">
-                <i class="fa-solid fa-upload"></i> <span data-i18n="import"></span>
+            <li><a href="<?=BASE_URL?>/wind" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/wind'?'active':'') ?>">
+                <i class="fa-solid fa-wind"></i> <span data-i18n="wind"></span>
             </a></li>
             <li><a href="<?=BASE_URL?>/setting" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/setting'?'active':'') ?>">
                 <i class="fa-solid fa-gear"></i> <span data-i18n="setting"></span>

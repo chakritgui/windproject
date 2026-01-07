@@ -40,7 +40,7 @@
     "logout": "Logout",
     "member": "Member",
     "map": "Map",
-    "import": "Import",
+    "wind": "Wind",
     "document": "Document",
     "map_setting": "Map Setting",
     "dashboard": "Dashboard",
@@ -252,5 +252,11 @@
     "publish_date": "Publish Date",
     "publish_time": "Publish Time",
     "publish_now": "Publish Now",
-    "allow_images_only": "Allow images only (jpg, jpeg, png, gif, webp)"
+    "allow_images_only": "Allow images only (jpg, jpeg, png, gif, webp)",
+    "import_type": "Import Type",
+    "import_start": "Import Start",
+    "import_end": "Import End",
+    "record": "Record",
+    "remark": "Remark",
+    "import_date": "Import Date"
 }
