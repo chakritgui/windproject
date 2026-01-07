@@ -287,10 +287,12 @@ label.required::after {
     .logo-small { display: block; }
 }
 .custom-notification-menu {
-    display: flex !important;
     flex-direction: column;
     max-height: 85vh;
-    width:350px;
+    width: 350px;
+}
+.custom-notification-menu.show {
+    display: flex;
 }
 @media (max-width: 768px) {
     .custom-notification-menu {
@@ -309,9 +311,6 @@ label.required::after {
         flex: 1;
         overflow-y: auto;
     }
-}
-.custom-notification-menu:not(.show) {
-    display: none !important;
 }
 .notification-list{
     overflow-y: auto;

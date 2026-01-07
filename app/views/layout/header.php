@@ -20,10 +20,10 @@
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" rel="stylesheet">
-<link rel="stylesheet" href="<?= BASE_URL ?>/public/css/style.css?v=<?= time(); ?>">
+<link rel="stylesheet" href="<?=BASE_URL?>/public/css/style.css?v=<?= time(); ?>">
 <?php if (file_exists($manifestFile)) { ?>
     <link rel="manifest" href="<?= BASE_URL ?>/public/manifest.json">
-    <link rel="apple-touch-icon" href="<?= BASE_URL ?>/public/icons/icon-ios.png">
+    <link rel="apple-touch-icon" href="<?=BASE_URL?>/public/icons/icon-ios.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -45,8 +45,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.9.9/dist/css/tempus-dominus.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.9.9/dist/js/tempus-dominus.min.js"></script>
 <script>
-    const BASE_URL = "<?= BASE_URL ?>";
-
+    const BASE_URL = "<?=BASE_URL?>";
 <?php if (file_exists($manifestFile)) { ?>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register(BASE_URL + '/public/sw.js');
@@ -72,7 +71,7 @@
                 </button>
             <?php } ?>
             <h1 class="h4 m-0">
-                <a href="./" class="text-decoration-none text-dark d-flex align-items-center">
+                <a href="/" class="text-decoration-none text-dark d-flex align-items-center">
                     <img alt="" height="50" class="me-2 logo-full">
                     <img alt="" height="35" class="me-2 logo-small">
                 </a>
@@ -81,13 +80,11 @@
         <div class="d-flex align-items-center gap-3">
             <?php if(!empty($_SESSION)) { ?>
             <div class="dropdown">
-                <button class="btn btn-light btn-sm position-relative btn-notification"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false">
+                <button class="btn btn-light btn-sm position-relative btn-notification" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-bell"></i>
                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge d-none">
-                        <span id="notificationCount">5</span>
-                        <span class="visually-hidden">unread notifications</span>
+                        <span id="notificationCount">0</span>
+                        <span class="visually-hidden"></span>
                     </span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow custom-notification-menu" data-bs-auto-close="false">
@@ -117,7 +114,6 @@
                 <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"></button>
                 <ul class="dropdown-menu" id="languageMenu"></ul>
             </div>
-            <?php if(!empty($_SESSION)) { ?>
             <div class="dropdown">
                 <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">
                     <i class="fa-regular fa-user"></i>
@@ -136,7 +132,6 @@
                     </li>
                 </ul>
             </div> 
-            <?php } ?> 
         </div>
     </div>
 </header>
