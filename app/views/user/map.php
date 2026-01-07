@@ -1,5 +1,17 @@
-<script src="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.js"></script>
-<link href="https://api.mapbox.com/mapbox-gl-js/v3.5.1/mapbox-gl.css" rel="stylesheet">
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/map.css?v=<?=time();?>">
-<div id="map"></div>
+<div id="ui">
+    <div class="wind-toggle-card">
+        <div class="wind-icon">
+            <i class="fa-solid fa-fan fa-2x"></i>
+        </div>
+        <div class="wind-label">WIND MAP</div>
+        <div class="form-check form-switch m-0">
+            <input class="form-check-input" type="checkbox" id="windSwitch">
+        </div>
+    </div>
+</div>
+<div id="windy"></div>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+<script src="https://api.windy.com/assets/map-forecast/libBoot.js"></script>
 <script src="<?=BASE_URL?>/public/js/map.js?v=<?=time();?>" defer></script>

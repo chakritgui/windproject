@@ -64,7 +64,6 @@
             $router->post('/api/setting/saveInfo', 'SettingController@saveInfo');
             $router->post('/api/setting/saveLang', 'SettingController@saveLang');
             $router->post('/api/setting/saveShortcut', 'SettingController@saveShortcut');
-            $router->post('/api/setting/shortcut', 'SettingController@shortcut');
         } else {
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');
@@ -75,6 +74,7 @@
             $router->get('/download', 'UserController@download');
         }
     }
+    $router->post('/api/setting/shortcut', 'SettingController@shortcut');
     $router->post('/api/news/get', 'NewsController@get');
     $router->post('/api/notification/read', 'NotificationController@read');
     $router->post('/api/notification/load', 'NotificationController@load');

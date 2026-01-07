@@ -7,6 +7,7 @@ body {
     overflow: hidden;
     font-family: 'Sarabun', sans-serif !important;
     font-size: 12px !important;
+    margin: 0; padding: 0;
 }
 .btn, a, select, input, textarea, .select2-container--bootstrap-5 .select2-selection, .select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option {
     font-size: 12px !important;
@@ -303,7 +304,6 @@ label.required::after {
         max-height: 85vh;
         border-radius: 5px;
         margin: 0;
-        display: flex !important;
         flex-direction: column;
         z-index: 9999;
     }
