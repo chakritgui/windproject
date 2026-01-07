@@ -110,16 +110,23 @@ class NewsModel {
         $pdo = $this->db;
         $news_id = $data['news_id'] ?? null;
         $status      = $data['status'] ?? '';
-        $publish_at = $data['publish_at'] ?? null;
-        if ($status === 'draft') {
-            $publish_at = null;
-        } else {
-            if ($publish_at === 'now' || empty($publish_at)) {
-                $publish_at = date('Y-m-d H:i:s');
+        $publish_at = null;
+        if ($status !== 'draft') {
+            if (empty($data['publish_at']) || ($data['publish_now'] ?? false)) {
+                $dt = new DateTime('now', new DateTimeZone('Asia/Bangkok'));
             } else {
-                $publish_at = date('Y-m-d H:i:s', strtotime($publish_at));
-                $publish_at = convertTimeZoneUTC($publish_at, 'Y-m-d H:i:s');
+                $date = trim($data['publish_at']); 
+                $dt = DateTime::createFromFormat(
+                    'd/m/Y H:i',
+                    $date,
+                    new DateTimeZone('Asia/Bangkok')
+                );
+                if (!$dt) {
+                    $dt = new DateTime('now', new DateTimeZone('Asia/Bangkok'));
+                }
             }
+            $dt->setTimezone(new DateTimeZone('UTC'));
+            $publish_at = $dt->format('Y-m-d H:i:s');
         }
         $title = [
             'en' => $data['title_en'] ?? '',
@@ -148,14 +155,7 @@ class NewsModel {
                 $news_id = $pdo->lastInsertId();
             }
             $this->notification($news_id, $status);
-            $sqlItem = "INSERT INTO wp_news_item
-                (news_id, news_subject, news_body, news_lang, created_at, updated_at)
-                VALUES
-                (:news_id, :subject, :body, :lang, NOW(), NOW())
-                ON DUPLICATE KEY UPDATE
-                    news_subject = VALUES(news_subject),
-                    news_body = VALUES(news_body),
-                    updated_at = NOW()";
+            $sqlItem = "INSERT INTO wp_news_item (news_id, news_subject, news_body, news_lang, created_at, updated_at) VALUES (:news_id, :subject, :body, :lang, NOW(), NOW()) ON DUPLICATE KEY UPDATE news_subject = VALUES(news_subject), news_body = VALUES(news_body), updated_at = NOW()";
             $stmtItem = $pdo->prepare($sqlItem);
             foreach (['en', 'lo', 'th'] as $lang) {
                 if ($title[$lang] === '' && $content[$lang] === '') {
@@ -212,7 +212,7 @@ class NewsModel {
             $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
             $stmt = $pdo->prepare("UPDATE wp_notification_targets SET status = 'deleted',publish_at = NULL,read_at = NULL WHERE notifications_item = :id AND notifications_target = 'news'");
             $stmt->execute([
-                ':id'     => $id
+                ':id' => $id
             ]);
             return $stmt->execute();
         }
@@ -267,11 +267,7 @@ class NewsModel {
                             ':tid' => $target['targets_id']
                         ]);
                     } else {
-                        $stmt = $pdo->prepare("INSERT INTO wp_notification_targets 
-                                (notifications_target, notifications_item, member_id, publish_at, status, read_at)
-                            VALUES 
-                                ('news', :id, :member_id, :publish_at, :status, NULL)
-                        ");
+                        $stmt = $pdo->prepare("INSERT INTO wp_notification_targets (notifications_target, notifications_item, member_id, publish_at, status, read_at) VALUES ('news', :id, :member_id, :publish_at, :status, NULL)");
                         $stmt->execute([
                             ':id' => $id,
                             ':member_id' => $m['member_id'],

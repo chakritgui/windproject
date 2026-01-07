@@ -248,5 +248,8 @@
     "last_year": "Last Year",
     "apply": "Apply",
     "clear": "Clear",
-    "custom_range": "Custom Range"
+    "custom_range": "Custom Range",
+    "publish_date": "Publish Date",
+    "publish_time": "Publish Time",
+    "publish_now": "Publish Now"
 }

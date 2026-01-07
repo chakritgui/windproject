@@ -147,9 +147,12 @@ $(document).on("click", ".manage-news", function () {
             <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
             <button class="btn btn-primary save-news" data-i18n="save"></button>
         `);
-        $modal.find(".modal-body").html(getNewsForm(d));
+        const publishAt = d.publish_at ? new Date(d.publish_at) : null;
+        const publishDate = publishAt ? publishAt.toISOString().slice(0,10) : '';
+        const publishTime = publishAt ? publishAt.toTimeString().slice(0,5) : '';
+        $modal.find(".modal-body").html(getNewsForm(d, publishTime));
         togglePublishControls();
-        setMinDateTimeNow();
+        setMinDateToday();
         initSelect2Remote('#status', 'api/news/filter', { type: 'status' });
         let status = (d.status) ? d.status : 'draft';
         if (status) {
@@ -200,10 +203,39 @@ $(document).on("click", ".manage-news", function () {
                 $publishAtInput.addClass("obj-required");
             }
         });
+        initDatePicker('#publish_date');
+        if (publishDate) {
+            $('#publish_date').datepicker('setDate', publishDate);
+        }
+        document.querySelectorAll('.timepicker').forEach(el => {
+            if (el.dataset.tdInit) return;
+            const picker = new tempusDominus.TempusDominus(el, {
+                stepping: 1,
+                display: {
+                    viewMode: 'clock',
+                    components: {
+                        calendar: false,
+                        hours: true,
+                        minutes: true,
+                        seconds: false
+                    }
+                },
+                localization: {
+                    format: 'HH:mm',
+                    hourCycle: 'h23'
+                }
+            });
+            el.addEventListener('change.td', (e) => {
+                if (e.detail && e.detail.date) {
+                    picker.hide();
+                }
+            });
+            el.dataset.tdInit = 1;
+        });
         modal.show();
     }, "json");
 });
-function getNewsForm(d) {
+function getNewsForm(d, publishTime) {
     return `
         <input type="hidden" id="news_id" value="${d.id ?? ''}">
         <ul class="nav nav-tabs mb-3">
@@ -222,39 +254,48 @@ function getNewsForm(d) {
                 <select id="status" class="form-select obj-required"></select>
             </div>
             <div class="col-md-4">
-                <label class="mb-2 mt-3 required" data-i18n="publish_at"></label>
-                <div class="d-flex gap-2">
-                    <input type="datetime-local" id="publish_at" class="form-control obj-required" value="${d.publish_at ?? ''}">
-                    <div class="form-check ms-2">
-                        <input class="form-check-input" type="checkbox" id="publish_now">
-                        <label class="form-check-label" for="publish_now">
-                            Now
-                        </label>
-                    </div>
+                <label class="mb-2 mt-3 required" data-i18n="publish_date"></label>
+                <input type="text" id="publish_date" class="form-control obj-required">
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" id="publish_now">
+                    <label class="form-check-label" for="publish_now"  data-i18n="publish_now"></label>
                 </div>
+            </div>
+            <div class="col-md-4">
+                <label class="mb-2 mt-3 required" data-i18n="publish_time"></label>
+                <input type="text" id="publish_time" class="form-control timepicker obj-required" value="${publishTime}" placeholder="HH:mm">
             </div>
         </div>
     `;
 }
-function setMinDateTimeNow() {
-    const now = new Date();
-    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-    $("#publish_at").attr("min", local);
+function setMinDateToday() {
+    const today = new Date().toISOString().slice(0,10);
+    $("#publish_date").attr("min", today);
 }
-function togglePublishControls() {
-    const status = $("#status").val();
-    if (status === "draft") {
-        $("#publish_at").prop("disabled", true);
-        $("#publish_now").prop("disabled", true);
-        $("#publish_at").removeClass("obj-required");
-        $("#publish_now").removeClass("obj-required");
-        $("#publish_at").val("");
-    } else {
-        $("#publish_at").prop("disabled", false);
-        $("#publish_now").prop("disabled", false);
-        $("#publish_at").addClass("obj-required");
-        $("#publish_now").addClass("obj-required");
+$(document).on("change", "#publish_now", function () {
+    const checked = $(this).is(":checked");
+    $("#publish_date, #publish_time").prop("disabled", checked).toggleClass("obj-required", !checked);
+    if (checked) {
+        $("#publish_date, #publish_time").val("");
     }
+});
+function togglePublishControls() {
+    const isDraft = $("#status").val() === "draft";
+    $("#publish_date, #publish_time, #publish_now").prop("disabled", isDraft);
+    $("#publish_date, #publish_time").toggleClass("obj-required", !isDraft);
+    if (isDraft) {
+        $("#publish_date, #publish_time").val("");
+        $("#publish_now").prop("checked", false);
+    }
+}
+function buildPublishAt() {
+    if ($("#publish_now").is(":checked")) {
+        return moment().format("YYYY-MM-DD HH:mm:ss");
+    }
+    const d = $("#publish_date").val();
+    const t = $("#publish_time").val();
+    if (!d || !t) return null;
+    return `${d} ${t}:00`;
 }
 $(document).on("change", "#status", togglePublishControls);
 function langTab(lang, d) {
@@ -277,6 +318,7 @@ $(document).ready(function () {
     initSelect2Remote('#filter_status', 'api/news/filter', { type: 'status' });
 });
 $(document).on('click', '.save-news', function () {
+    $('.is-invalid').removeClass('is-invalid');
     let errors = [];
     $('.obj-required').each(function () {
         let value = $(this).val()?.trim() || '';
@@ -301,7 +343,7 @@ function saveNews() {
     $(".save-news").attr("disable", true);
     const news_id = $("#news_id").val() || "";
     const status = $("#status").val();
-    const publish_at = $("#publish_at").val();
+    const publish_at = buildPublishAt();
     const title_en = $("#title_en").val();
     const title_lo = $("#title_lo").val();
     const title_th = $("#title_th").val();

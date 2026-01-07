@@ -41,6 +41,9 @@
 <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.th.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2/dist/umd/popper.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.9.9/dist/css/tempus-dominus.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.9.9/dist/js/tempus-dominus.min.js"></script>
 <script>
     const BASE_URL = "<?= BASE_URL ?>";
 
