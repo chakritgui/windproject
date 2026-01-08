@@ -180,7 +180,7 @@
     "choose_language_display": "Select the language you want displayed on the website.",
     "language_note": "Note At least one language must be enabled. Languages ​​that are disabled will not be displayed in the website's language switching menu.",
     "one_language": "At least one language must be enabled.",
-    "cannot_load": "Failed to load data",
+    "cannot_load": "Failed to load data. Please try again later.",
     "footer": "Footer",
     "published": "Published",
     "re-published": "Re-Published",
@@ -264,6 +264,6 @@
     "importing_data": "Importing data. This may take a moment. Please do not close this window until the process is complete.",
     "importing_data.": "Importing data...",
     "import_successfully": "Import Successfully",
-    "cannot_import": "Failed to import",
+    "cannot_import": "Failed to import. Please try again later.",
     "saving": "Saving..."
 }
