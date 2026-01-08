@@ -31,7 +31,6 @@
         <table class="table table-hover" id="tb_wind">
             <thead>
                 <tr>
-                    <th data-i18n="import_type"></th>
                     <th data-i18n="import_start"></th>
                     <th data-i18n="import_end"></th>
                     <th data-i18n="status"></th>

@@ -341,6 +341,7 @@ async function changeLanguage(lang) {
     sessionStorage.setItem('lang', lang);
     await loadLang(lang);
     refreshAllTables();
+    $('.dropdown-menu').removeClass('show');
 }
 async function loadLang(lang) {
     try {

@@ -6,7 +6,7 @@ function initWindTable() {
         $('#tb_document').DataTable().destroy();
     }
     if ($.fn.DataTable.isDataTable('#tb_wind')) {
-        $('#tb_wind').DataTable().ajax.tb_wind(null, false);
+        $('#tb_wind').DataTable().ajax.reload(null, false);
         return;
     }
     tb_wind = $('#tb_wind').DataTable({
@@ -21,10 +21,8 @@ function initWindTable() {
             }
         },
         columns: [
-            { data: "document_name" },
             { data: "import_start" },
             { data: "import_end" },
-            { data: "import_type" },
             { data: "status" },
             { data: "import_record" },
             { data: "remark" },
@@ -205,7 +203,7 @@ function importWindData() {
         didOpen: () => Swal.showLoading()
     });
     $.ajax({
-        url: "api/wind/save",
+        url: "api/wind/import",
         type: "POST",
         data: formData,
         contentType: false,
@@ -228,8 +226,8 @@ function importWindData() {
             Swal.close();
             if (res.status === true) {
                 showSuccess('Success', langData['import_successfully'] || 'Imported successfully');
-                if (typeof initWindTable === "function") initWindTable();
                 $('#windModal').modal('hide');
+                if (typeof initWindTable === "function") initWindTable();
             } else {
                 showError('Error', (langData['cannot_import'] || 'Error: ') + ' ' + (res.message || 'Unknown error'));
             }

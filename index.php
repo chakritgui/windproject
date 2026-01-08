@@ -5,6 +5,7 @@
     require_once __DIR__ . '/app/core/Controller.php';
     require_once __DIR__ . '/app/core/Router.php';
     require_once __DIR__ . '/app/helpers/helpers.php';
+    require_once __DIR__ . '/vendor/autoload.php';
     spl_autoload_register(function ($class) {
         $paths = [
             'app/controllers/',
@@ -56,6 +57,7 @@
             $router->post('/api/project/list', 'ProjectController@list');
             $router->post('/api/project/get', 'ProjectController@get');
             $router->post('/api/wind/list', 'WindController@list');
+            $router->post('/api/wind/import', 'WindController@import');
             $router->post('/api/news/list', 'NewsController@list');
             $router->post('/api/news/save', 'NewsController@save');
             $router->post('/api/news/delete', 'NewsController@delete');

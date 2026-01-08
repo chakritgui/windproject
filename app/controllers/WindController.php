@@ -15,8 +15,11 @@ class WindController extends BaseController {
             "data" => $res['data']
         ]);
     }
-    public function get(){
-        $id = intval($_POST['id'] ?? 0);
-        $this->json(['status'=>'success','data'=>$this->model->get($id)]);
+    public function import() {
+        $data = [
+            'wind_file' => $_FILES['wind_file'] ?? null,
+        ];
+        $result = $this->model->import($data);
+        $this->json($result);
     }
 }
