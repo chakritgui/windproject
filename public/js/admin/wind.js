@@ -96,7 +96,7 @@ $(document).on('click', '.manage-wind', function () {
                 <div id="file_preview" class="mt-3 d-none"></div>
                 <div id="drop_button">
                     <button class="btn btn-primary mt-2" type="button" id="btn_select_file" data-i18n="choose"></button>
-                    <input type="file" class="d-none obj-required" id="wind_file" accept=".xlsx,.csv">
+                    <input type="file" class="d-none obj-required" id="wind_file" accept=".csv">
                 </div>
             </div>
             <div class="alert alert-info rounded-3 mt-3">
@@ -136,12 +136,12 @@ $(document).on("drop", "#drop_zone", function(e){
 });
 function handleFile(file) {
     if (!file) return;
-    const allowed = ['xlsx', 'csv'];
+    const allowed = ['csv'];
     const ext = file.name.split('.').pop().toLowerCase();
     if (!allowed.includes(ext)) {
         showWarning(
             langData['validation_error'] || 'Validation Error',
-            langData['only_xlsx_csv'] || 'Only .xlsx or .csv files are allowed.'
+            langData['only_csv'] || 'Only .csv files are allowed.'
         );
         return;
     }
