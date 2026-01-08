@@ -17,7 +17,6 @@ function toggleWind(isOn) {
     if (!windyAPI) return;
     windOn = isOn;
     const { store } = windyAPI;
-    const status = document.getElementById('windStatus');
     const canvas =
         document.querySelector('.windy-canvas-container') ||
         document.querySelector('#windy canvas');
@@ -25,9 +24,7 @@ function toggleWind(isOn) {
         store.set('overlay', 'wind');
         store.set('level', DEFAULT_LEVEL);
         if (canvas) canvas.style.visibility = 'visible';
-        status.textContent = 'ON';
     } else {
         if (canvas) canvas.style.visibility = 'hidden';
-        status.textContent = 'OFF';
     }
 }

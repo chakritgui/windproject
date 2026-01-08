@@ -6,7 +6,7 @@
         </div>
         <div class="wind-label">WIND MAP</div>
         <div class="form-check form-switch m-0">
-            <input class="form-check-input" type="checkbox" id="windSwitch">
+            <input class="form-check-input" type="checkbox" id="windSwitch" checked>
         </div>
     </div>
 </div>
@@ -14,4 +14,4 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
 <script src="https://api.windy.com/assets/map-forecast/libBoot.js"></script>
-<script src="<?=BASE_URL?>/public/user/js/map.js?v=<?=time();?>" defer></script>
+<script src="<?=BASE_URL?>/public/js/user/map.js?v=<?=time();?>" defer></script>
