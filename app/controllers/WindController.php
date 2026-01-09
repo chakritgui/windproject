@@ -7,7 +7,28 @@ class WindController extends BaseController {
     public function list(){
         $start = intval($_POST['start'] ?? 0);
         $length= intval($_POST['length'] ?? 10);
-        $res = $this->model->list($start,$length);
+        $filters = [
+            'date'=> $_POST['date'] ?? '',
+            'project'=> $_POST['project'] ?? '',
+            'pole'=> $_POST['pole'] ?? '',
+            'type'=> $_POST['type'] ?? '',
+            'installation'=> $_POST['installation'] ?? '',
+            'height'=> $_POST['height'] ?? '',
+        ];
+        $search = $_POST['search']['value'] ?? '';
+        $res = $this->model->list($start,$length,$filters,$search);
+        $this->json([
+            "draw" => intval($_POST['draw'] ?? 1),
+            "recordsTotal" => $res['total'],
+            "recordsFiltered" => $res['total'],
+            "data" => $res['data']
+        ]);
+    }
+    public function history(){
+        $start = intval($_POST['start'] ?? 0);
+        $length = intval($_POST['length'] ?? 10);
+        $search = $_POST['search']['value'] ?? '';
+        $res = $this->model->history($start,$length,$search);
         $this->json([
             "draw" => intval($_POST['draw'] ?? 1),
             "recordsTotal" => $res['total'],
@@ -21,5 +42,16 @@ class WindController extends BaseController {
         ];
         $result = $this->model->import($data);
         $this->json($result);
+    }
+    public function clear() {
+        $result = $this->model->clear();
+        $this->json($result);
+    }
+    public function filter() {
+        $page = intval($_POST['page'] ?? 0);
+        $limit = intval($_POST['limit'] ?? 10);
+        $searchTerm = $_POST['searchTerm'] ?? '';
+        $type = $_POST['type'] ?? '';
+        $this->json(['status'=>true , 'data' => $this->model->filter($page, $limit, $type, $searchTerm)]);
     }
 }

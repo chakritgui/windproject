@@ -1,9 +1,9 @@
 let tb_wind;
 function initWindTable() {
     let oldPage = 0;
-    if ($.fn.DataTable.isDataTable('#tb_document')) {
-        oldPage = $('#tb_document').DataTable().page();
-        $('#tb_document').DataTable().destroy();
+    if ($.fn.DataTable.isDataTable('#tb_wind')) {
+        oldPage = $('#tb_wind').DataTable().page();
+        $('#tb_wind').DataTable().destroy();
     }
     if ($.fn.DataTable.isDataTable('#tb_wind')) {
         $('#tb_wind').DataTable().ajax.reload(null, false);
@@ -12,22 +12,38 @@ function initWindTable() {
     tb_wind = $('#tb_wind').DataTable({
         processing: true,
         serverSide: true,
-        order: [[1, 'desc']],
+        ordering: false,
         ajax: {
             url: "api/wind/list",
             type: "POST",
             data: function (d) {
                 d.date = $("#filter_date").val();
+                d.project = $("#filter_project").val();
+                d.pole = $("#filter_pole").val();
+                d.type = $("#filter_type").val();
+                d.installation = $("#filter_installation").val();
+                d.height = $("#filter_height").val();
             }
         },
+        order: [[0, 'asc']],
         columns: [
-            { data: "import_start" },
-            { data: "import_end" },
-            { data: "status" },
-            { data: "import_record" },
-            { data: "remark" },
+            { data: "id"},
+            { data: "poles_code" },
+            { data: "project_name" },
+            { data: "type_name" },
+            { data: "installations_name" },
+            { data: "year" },
+            { data: "wind_datetime" },
+            { data: "height_name" },
+            { data: "height_levels" },
+            { data: "wind_speed" },
+            { data: "wind_direction" },
+            { data: "air_density" },
+            { data: "pressure" },
+            { data: "humidity" },
+            { data: "temperature" },
+            { data: "turbulence_intensity" },
         ],
-        stateSave: true,
         pageLength: pageLength,
         lengthMenu: lengthMenu,
         stateLoadParams: function (settings, data) {
@@ -43,8 +59,6 @@ function initWindTable() {
                     self.search(input.val()).draw();
                 }
             });
-        }, 
-        initComplete: function(){
             let $filter = $('#tb_wind_filter');
             let btn = `
                 <button class="btn btn-primary btn-sm manage-wind" data-id="">
@@ -68,6 +82,11 @@ function initWindTable() {
 $(document).ready(function () {
     initWindTable();
     initDateRangePicker('#filter_date', initWindTable);
+    initSelect2Remote('#filter_project', 'api/wind/filter', { type: 'project' });
+    initSelect2Remote('#filter_pole', 'api/wind/filter', { type: 'pole' });
+    initSelect2Remote('#filter_type', 'api/wind/filter', { type: 'type' });
+    initSelect2Remote('#filter_installation', 'api/wind/filter', { type: 'installation' });
+    initSelect2Remote('#filter_height', 'api/wind/filter', { type: 'height' });
     $(".filter").on("change", () => initWindTable());
 });
 $(document).on('click', '.manage-wind', function () {
@@ -193,15 +212,18 @@ function importWindData() {
     const formData = new FormData();
     formData.append("wind_file", file);
     Swal.fire({
-        title: langData['importing_data.'],
+        title: langData['uploading'] || 'Uploading...',
         html: `
-            <div class="progress mt-2">
-                <div id="swal-progress" class="progress-bar" role="progressbar" style="width:0%">0%</div>
+            <div id="import-status-text" class="mb-2">Uploading file...</div>
+            <div class="progress">
+                <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
             </div>
         `,
         allowOutsideClick: false,
         didOpen: () => Swal.showLoading()
     });
+    let fakePercent = 0;
+    let progressTimer;
     $.ajax({
         url: "api/wind/import",
         type: "POST",
@@ -212,41 +234,162 @@ function importWindData() {
             let xhr = new window.XMLHttpRequest();
             xhr.upload.addEventListener("progress", function (e) {
                 if (e.lengthComputable) {
-                    let percent = Math.round((e.loaded / e.total) * 100);
-                    let bar = document.getElementById("swal-progress");
-                    if (bar) {
-                        bar.style.width = percent + "%";
-                        bar.innerText = percent + "%";
-                    }
+                    let uploadPercent = Math.round((e.loaded / e.total) * 30);
+                    updateProgressBar(uploadPercent, langData['uploading'] || 'Uploading...');
                 }
             });
             return xhr;
         },
+        beforeSend: function() {
+            setTimeout(() => {
+                let current = 30;
+                progressTimer = setInterval(() => {
+                    if (current < 97) {
+                        current += Math.random() * 2;
+                        updateProgressBar(Math.floor(current), langData['processing_syncing'] || 'Processing & Syncing data');
+                    }
+                }, 1000);
+            }, 500);
+        },
         success: function (res) {
-            Swal.close();
-            if (res.status === true) {
-                showSuccess('Success', langData['import_successfully'] || 'Imported successfully');
-                $('#windModal').modal('hide');
-                if (typeof initWindTable === "function") initWindTable();
-            } else {
-                showError('Error', (langData['cannot_import'] || 'Error: ') + ' ' + (res.message || 'Unknown error'));
-            }
+            clearInterval(progressTimer);
+            updateProgressBar(100, 'Completed!');
+            setTimeout(() => {
+                Swal.close();
+                if (res.status === true) {
+                    showSuccess('Success', langData['import_successfully'] || 'Imported successfully');
+                    $('#windModal').modal('hide');
+                    if (typeof initWindTable === "function") initWindTable();
+                } else {
+                    showError('Error', res.message);
+                }
+            }, 500);
         },
         error: function (xhr, status, error) {
-            let errorMessage = "Unknown error occurred";
-            try {
-                let response = JSON.parse(xhr.responseText);
-                errorMessage = response.message || error;
-            } catch (e) {
-                errorMessage = error || xhr.statusText;
-            }
-            showError(
-                langData['error_title'] || 'Import Error', 
-                (langData['cannot_import'] || 'Failed to import: ') + ' ' +errorMessage
-            );
+            clearInterval(progressTimer);
+            Swal.close();
         },
         complete: function() {
             $(".btn-import").prop("disabled", false);
+        }
+    });
+    function updateProgressBar(pct, text) {
+        let bar = document.getElementById("swal-progress");
+        let txt = document.getElementById("import-status-text");
+        if (bar) {
+            bar.style.width = pct + "%";
+            bar.innerText = pct + "%";
+        }
+        if (txt) txt.innerText = text;
+    }
+}
+$(document).on('click', '.clear-data', function() {
+    showConfirm(langData['confirm'], langData['confirm_clear'], function(){
+        $.ajax({
+            url: 'api/wind/clear',
+            method: 'POST',
+            dataType: 'json',
+            success: function(res) {
+                if(res.status === true){
+                    showSuccess('Success', langData['clear_successfully']);
+                    initWindTable();
+                } else {
+                    showError('Error', langData['cannot_clear']);
+                }   
+            },
+            error: function (xhr, status, error) {
+                let msg = langData['cannot_clear'];
+                try {
+                    let res = JSON.parse(xhr.responseText);
+                    if (res.message) msg += ": " + res.message;
+                } catch (e) {}
+                showError('Error', msg);
+            }
+        });
+    });
+});
+$(document).on('click', '.import-history', function() {
+    let modalEl = $('#windModal');
+    let modal = new bootstrap.Modal(modalEl[0]);
+    modal.show();
+    modalEl.find(".modal-header").html(`
+        <h5 class="modal-title"data-i18n="import_history"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    `);
+    modalEl.find(".modal-footer").html(`
+        <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
+    `);
+    modalEl.find(".modal-body").html(`
+        <table id="tb_history" class="table table-striped w-100">
+            <thead>
+                <tr>
+                    <th data-i18n="no."></th>
+                    <th data-i18n="import_start"></th>
+                    <th data-i18n="import_end"></th>
+                    <th data-i18n="record"></th>
+                    <th data-i18n="status"></th>
+                    <th data-i18n="result"></th>
+                </tr>
+            </thead>
+        </table>
+    `);
+    loadImportHistory();
+});
+let tb_history;
+function loadImportHistory(){
+    let oldPage = 0;
+    if ($.fn.DataTable.isDataTable('#tb_history')) {
+        oldPage = $('#tb_history').DataTable().page();
+        $('#tb_history').DataTable().destroy();
+    }
+    if ($.fn.DataTable.isDataTable('#tb_history')) {
+        $('#tb_history').DataTable().ajax.reload(null, false);
+        return;
+    }
+    $('#tb_history').DataTable({
+        processing: true,
+        serverSide: true,
+        ordering: false,
+        order: [[1, 'desc']],
+        ajax: {
+            url: "api/wind/history",
+            type: "POST",
+        },
+        columns: [
+            {
+                data: null,
+                render: function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                }
+            },
+            { data: "import_start" },
+            { data: "import_end" },
+            { data: "import_record" },
+            {
+                data: "status",
+                render: function (status, type, row) {
+                    let badgeColor = status === "complete" ? "success" : "danger";
+                    return `
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-${badgeColor}" style="font-weight:400;" data-i18n="${status}"></span>
+                        </div>
+                    `;
+                }
+            },
+            { data: "remark" },
+        ],
+        language: getTableLang(),
+        initComplete: function(){
+            var input = $('#tb_history_filter input').unbind();
+            var self = this.api();
+            input.bind('keypress', function(e){
+                if(e.keyCode == 13) {
+                    self.search(input.val()).draw();
+                }
+            });
+        }, 
+        drawCallback: function(){
+            getTableLang();
         }
     });
 }

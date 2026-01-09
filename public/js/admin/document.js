@@ -12,7 +12,8 @@ function initDocumentTable() {
     tb_document = $('#tb_document').DataTable({
         processing: true,
         serverSide: true,
-        order: [[5, 'desc']],
+        ordering: false,
+        order: [[6, 'desc']],
         ajax: { 
             url: "api/document/list", 
             type: "POST",
@@ -97,7 +98,6 @@ function initDocumentTable() {
                 }
             }
         ],
-        stateSave: true,
         pageLength: pageLength,
         lengthMenu: lengthMenu,
         stateLoadParams: function (settings, data) {
@@ -113,8 +113,6 @@ function initDocumentTable() {
                     self.search(input.val()).draw();
                 }
             });
-        }, 
-        initComplete: function(){
             let $filter = $('#tb_document_filter');
             let btn = `
                 <button class="btn btn-primary btn-sm manage-document" data-id="">
@@ -540,6 +538,7 @@ function loadDownloadHistory(document_id){
         destroy: true,
         processing: true,
         serverSide: true,
+        ordering: false,
         order: [[2, 'desc']],
         ajax: {
             url: "api/document/download_history",

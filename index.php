@@ -58,6 +58,9 @@
             $router->post('/api/project/get', 'ProjectController@get');
             $router->post('/api/wind/list', 'WindController@list');
             $router->post('/api/wind/import', 'WindController@import');
+            $router->post('/api/wind/clear', 'WindController@clear');
+            $router->post('/api/wind/history', 'WindController@history');
+            $router->post('/api/wind/filter', 'WindController@filter');
             $router->post('/api/news/list', 'NewsController@list');
             $router->post('/api/news/save', 'NewsController@save');
             $router->post('/api/news/delete', 'NewsController@delete');

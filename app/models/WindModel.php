@@ -6,21 +6,46 @@ class WindModel{
         $this->db = Database::getInstance()->pdo;
     }
     public function list($start = 0, $length = 10, $filters = [], $search = '') {
-        list($where, $params) = $this->buildListWhere($filters, $search);
-        $sqlTotal = "SELECT COUNT(*) FROM wp_imports i {$where}";
+        list($whereBase, $whereJoin, $params) = $this->buildListWhere($filters, $search);
+        $sqlTotal = "SELECT COUNT(*) FROM wp_winds w LEFT JOIN wp_poles p ON p.poles_id = w.poles_id
+            LEFT JOIN wp_project pj ON pj.project_id = p.project_id
+            LEFT JOIN wp_type t ON t.type_id = p.type_id
+            LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
+            LEFT JOIN wp_height_levels l ON l.levels_id = w.levels_id
+            LEFT JOIN wp_height h ON h.height_id = l.height_id
+            {$whereBase}
+            {$whereJoin}";
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = (int)$stmt->fetchColumn();
         $sql = "SELECT
-                i.imports_id, 
-                i.import_start, 
-                i.import_end, 
-                i.status, 
-                i.import_record, 
-                i.remark
-            FROM wp_imports i
-            {$where}
-            ORDER BY i.imports_id DESC
+                w.id,
+                w.poles_id,
+                p.poles_code,
+                pj.project_name,
+                t.type_name,
+                i.installations_name,
+                h.height_name,
+                l.height_levels,
+                w.year,
+                w.wind_datetime,
+                w.levels_id,
+                w.wind_speed,
+                w.wind_direction,
+                w.air_density,
+                w.pressure,
+                w.humidity,
+                w.temperature,
+                w.turbulence_intensity
+            FROM wp_winds w
+            LEFT JOIN wp_poles p ON p.poles_id = w.poles_id
+            LEFT JOIN wp_project pj ON pj.project_id = p.project_id
+            LEFT JOIN wp_type t ON t.type_id = p.type_id
+            LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
+            LEFT JOIN wp_height_levels l ON l.levels_id = w.levels_id
+            LEFT JOIN wp_height h ON h.height_id = l.height_id
+            {$whereBase}
+            {$whereJoin}
         ";
         if ($length != -1) {
             $sql .= " LIMIT :start, :length";
@@ -43,36 +68,95 @@ class WindModel{
             'data'  => $rows
         ];
     }
+    public function history($start = 0, $length = 10): array{
+        $sqlTotal = "SELECT COUNT(*) FROM wp_imports";
+        $total = (int)$this->db->query($sqlTotal)->fetchColumn();
+        $sql = "SELECT
+                import_start,
+                import_end,
+                status,
+                import_record,
+                remark
+            FROM wp_imports
+        ";
+        if ($length != -1) {
+            $sql .= " LIMIT :offset, :length";
+        }
+        $stmt = $this->db->prepare($sql);
+        if ($length != -1) {
+            $stmt->bindValue(':offset', (int)$start, PDO::PARAM_INT);
+            $stmt->bindValue(':length', (int)$length, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as &$row) {
+            $this->formatImportRow($row);
+        }
+        return [
+            'total' => $total,
+            'data'  => $rows
+        ];
+    }
     private function buildListWhere($filters, $search) {
-        $where  = " WHERE 1=1 ";
-        $params = [];
+        $whereBase  = " WHERE w.status = 'active' ";
+        $whereJoin  = "";
+        $params     = [];
         if (!empty($filters['date'])) {
             $dateParts = explode(' - ', $filters['date']);
-            if (count($dateParts) == 2) {
+            if (count($dateParts) === 2) {
                 $startObj = DateTime::createFromFormat('d/m/Y', trim($dateParts[0]));
                 $endObj   = DateTime::createFromFormat('d/m/Y', trim($dateParts[1]));
-                if ($startObj && $endObj) {
-                    $startDate = $startObj->format('Y-m-d');
-                    $endDate   = $endObj->format('Y-m-d');
-                    $startDateUTC = convertTimeZoneUTC($startDate.' 00:00:00');
-                    $endDateUTC   = convertTimeZoneUTC($endDate.' 23:59:59');
-                    $where .= " AND (
-                        (i.import_start BETWEEN :start AND :end)
-                        OR
-                        (i.import_end BETWEEN :start AND :end)
-                    )";
-                    $params[':start'] = $startDateUTC;
-                    $params[':end']   = $endDateUTC;
-                }
+                $startDateUTC = convertTimeZoneUTC(
+                    $startObj->format('Y-m-d') . ' 00:00:00'
+                );
+                $endDateUTC = convertTimeZoneUTC(
+                    $endObj->format('Y-m-d') . ' 23:59:59'
+                );
+                $whereBase .= " AND w.wind_datetime BETWEEN :date_start AND :date_end ";
+                $params[':date_start'] = $startDateUTC;
+                $params[':date_end']   = $endDateUTC;
             }
         }
+        if (!empty($filters['project'])) {
+            $whereJoin .= " AND pj.project_id = :project ";
+            $params[':project'] = $filters['project'];
+        }
+        if (!empty($filters['pole'])) {
+            $whereJoin .= " AND p.poles_id = :pole ";
+            $params[':pole'] = $filters['pole'];
+        }
+        if (!empty($filters['type'])) {
+            $whereJoin .= " AND t.type_id = :type ";
+            $params[':type'] = $filters['type'];
+        }
+        if (!empty($filters['installation'])) {
+            $whereJoin .= " AND i.installations_id = :installation ";
+            $params[':installation'] = $filters['installation'];
+        }
+        if (!empty($filters['height'])) {
+            $whereJoin .= " AND l.levels_id = :height ";
+            $params[':height'] = $filters['height'];
+        }
         if (!empty($search)) {
-            $where .= " AND i.remark LIKE :search";
+            $whereJoin .= " AND (
+                p.poles_code LIKE :search OR
+                pj.project_name LIKE :search OR
+                t.type_name LIKE :search OR
+                i.installations_name LIKE :search OR
+                h.height_name LIKE :search OR
+                l.height_levels LIKE :search OR
+                w.year LIKE :search
+            ) ";
             $params[':search'] = "%{$search}%";
         }
-        return [$where, $params];
+        return [$whereBase, $whereJoin, $params];
     }
     private function formatImportRow(&$row) {
+        foreach (['wind_datetime'] as $f) {
+            if (!empty($row[$f])) {
+                $row[$f] = convertTimeZone($row[$f], 'd/m/Y h:i A');
+            }
+        }
         foreach (['import_start', 'import_end'] as $f) {
             if (!empty($row[$f])) {
                 $row[$f] = convertTimeZone($row[$f], 'd/m/Y H:i:s');
@@ -81,6 +165,13 @@ class WindModel{
         if (!empty($row['import_record'])) {
             $row['import_record'] = number_format($row['import_record']);
         }
+    }
+    public function clear(){
+        $sql = "UPDATE wp_winds SET status = 'deleted' where status = 'active'";
+        $this->db->exec($sql);
+        return [
+            'status'  => true,
+        ];
     }
     public function import(array $data): array{
         if (!isset($_FILES['wind_file'])) {
@@ -95,14 +186,7 @@ class WindModel{
             $stmt->execute();
             $importId = (int)$this->db->lastInsertId();
             $importRecord = $this->handleFileImport($_FILES['wind_file']);
-            $stmt = $this->db->prepare("UPDATE wp_imports
-                SET
-                    import_end = NOW(),
-                    status = 'complete',
-                    import_record = :cnt,
-                    remark = :remark
-                WHERE imports_id = :id
-            ");
+            $stmt = $this->db->prepare("UPDATE wp_imports SET import_end = NOW(), status = 'complete', import_record = :cnt, remark = :remark WHERE imports_id = :id");
             $stmt->execute([
                 ':cnt'    => $importRecord,
                 ':remark' => 'Import success',
@@ -115,13 +199,7 @@ class WindModel{
             ];
         } catch (Throwable $e) {
             if ($importId) {
-                $stmt = $this->db->prepare("UPDATE wp_imports
-                    SET
-                        import_end = NOW(),
-                        status = 'failed',
-                        remark = :remark
-                    WHERE imports_id = :id
-                ");
+                $stmt = $this->db->prepare("UPDATE wp_imports SET import_end = NOW(), status = 'failed', remark = :remark WHERE imports_id = :id");
                 $stmt->execute([
                     ':remark' => $e->getMessage(),
                     ':id'     => $importId
@@ -150,16 +228,9 @@ class WindModel{
             throw new Exception('Unsupported file type');
         }
         $importer = $this->detectImporter();
-        $this->db->beginTransaction();
-        try {
-            $counter = 0;
-            foreach ($csvFiles as $csv) {
-                $counter += $importer->import($csv['file'], $csv['sheet']);
-            }
-            $this->db->commit();
-        } catch (Throwable $e) {
-            $this->db->rollBack();
-            throw $e;
+        $counter = 0;
+        foreach ($csvFiles as $csv) {
+            $counter += $importer->import($csv['file'], $csv['sheet']);
         }
         $this->cleanup($tmpDir);
         return $counter;
@@ -209,7 +280,7 @@ class WindModel{
         return $target;
     }
     private function detectImporter(): ImporterInterface{
-        return new BatchImporter($this->db);
+        return new LoadDataStagingImporter($this->db);
     }
     private function generateFilename(string $prefix, string $ext): string{
         return sprintf(
@@ -227,111 +298,189 @@ class WindModel{
             }
         }
     }
+    public function filter($page = 1, $limit = 10, $type = '', $searchTerm = ''){
+        $offset = max(0, ($page - 1) * $limit);
+        $items = [];
+        $totalCount = 0;
+        $params = [];
+        switch ($type) {
+            case 'project':
+                $where = "";
+                if ($searchTerm !== '') {
+                    $where = "WHERE project_name LIKE :search";
+                    $params[':search'] = "%{$searchTerm}%";
+                }
+                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_project {$where}");
+                $stmtCount->execute($params);
+                $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
+                $sql = "SELECT project_id AS id, project_name AS text FROM wp_project {$where} ORDER BY project_id DESC LIMIT :limit OFFSET :offset";
+                break;
+            case 'pole':
+                $where = "";
+                if ($searchTerm !== '') {
+                    $where = "WHERE poles_code LIKE :search";
+                    $params[':search'] = "%{$searchTerm}%";
+                }
+                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_poles {$where}");
+                $stmtCount->execute($params);
+                $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
+                $sql = "SELECT poles_id AS id, poles_code AS text FROM wp_poles {$where} ORDER BY poles_id DESC LIMIT :limit OFFSET :offset";
+                break;
+            case 'type':
+                $where = "";
+                if ($searchTerm !== '') {
+                    $where = "WHERE type_name LIKE :search";
+                    $params[':search'] = "%{$searchTerm}%";
+                }
+                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_type {$where}");
+                $stmtCount->execute($params);
+                $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
+                $sql = "SELECT type_id AS id, type_name AS text FROM wp_type {$where} ORDER BY type_id ASC LIMIT :limit OFFSET :offset";
+                break;
+            case 'installation':
+                $where = "";
+                if ($searchTerm !== '') {
+                    $where = "WHERE installations_name LIKE :search";
+                    $params[':search'] = "%{$searchTerm}%";
+                }
+                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_installations {$where}");
+                $stmtCount->execute($params);
+                $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
+                $sql = "SELECT installations_id AS id, installations_name AS text FROM wp_installations {$where} ORDER BY installations_id ASC LIMIT :limit OFFSET :offset";
+                break;
+            case 'height':
+                $where = "";
+                if ($searchTerm !== '') {
+                    $where = "WHERE h.height_name LIKE :search OR l.height_levels LIKE :search";
+                    $params[':search'] = "%{$searchTerm}%";
+                }
+                $join = "LEFT JOIN wp_height_levels l ON l.height_id = h.height_id";
+                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_height h {$join} {$where}");
+                $stmtCount->execute($params);
+                $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
+                $sql = "SELECT l.levels_id AS id, CONCAT(h.height_name,' ',l.height_levels) AS text FROM wp_height h {$join} {$where} ORDER BY h.height_id ASC, l.levels_id ASC LIMIT :limit OFFSET :offset";
+                break;
+            default:
+                return ['items' => [], 'total_count' => 0];
+        }
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return [
+            'items' => $items,
+            'total_count' => $totalCount
+        ];
+    }
 }
 interface ImporterInterface{
     public function import(string $csvPath, string $sheet): int;
 }
-class LoadDataImporter implements ImporterInterface{
+class LoadDataStagingImporter implements ImporterInterface {
     private PDO $db;
     public function __construct(PDO $db){
         $this->db = $db;
     }
-    public function import(string $csvPath, string $sheet): int{
+    public function import(string $csvPath, string $sheet): int {
         $path = realpath($csvPath);
         if (!$path) {
             throw new Exception('CSV file not found');
         }
+        $this->db->exec("TRUNCATE TABLE wind_staging");
         $sql = "
             LOAD DATA LOCAL INFILE " . $this->db->quote($path) . "
-            INTO TABLE wind_measurements
-            FIELDS TERMINATED BY ','
-            ENCLOSED BY '\"'
+            INTO TABLE wind_staging
+            FIELDS TERMINATED BY ',' ENCLOSED BY '\"'
             LINES TERMINATED BY '\n'
             IGNORE 1 LINES
             (
-                @no,  
-                @contract,
-                @project,
-                @code,
-                @type,
-                @installation_qty,
-                @year,
-                @measure_datetime,
-                @height_label,
-                @height_level,
-                @latitude,
-                @longitude,
-                @wind_speed,
-                @wind_direction,
-                @air_density,
-                @pressure,
-                @humidity,
-                @temperature,
-                @turbulence_intensity
+                @no,
+                contract_name,
+                project_name,
+                poles_code,
+                type_name,
+                installations_name,
+                year,
+                @dt,
+                height_name,
+                height_level,
+                lat,
+                lng,
+                wind_speed,
+                wind_direction,
+                air_density,
+                pressure,
+                humidity,
+                temperature,
+                turbulence_intensity
             )
-            SET
-                contract = NULLIF(@contract,''),
-                project  = NULLIF(@project,''),
-                code     = NULLIF(@code,''),
-                type     = NULLIF(@type,''),
-                installation_qty = NULLIF(@installation_qty,''),
-                year     = NULLIF(@year,''),
-                measure_datetime = STR_TO_DATE(@measure_datetime, '%Y-%m-%d %H:%i:%s'),
-                height_label = NULLIF(@height_label,''),
-                height_level = NULLIF(@height_level,''),
-                latitude  = NULLIF(@latitude,''),
-                longitude = NULLIF(@longitude,''),
-                wind_speed = NULLIF(@wind_speed,''),
-                wind_direction = NULLIF(@wind_direction,''),
-                air_density = NULLIF(@air_density,''),
-                pressure = NULLIF(@pressure,''),
-                humidity = NULLIF(@humidity,''),
-                temperature = NULLIF(@temperature,''),
-                turbulence_intensity = NULLIF(@turbulence_intensity,''),
-                created_at = NOW()
+            SET measure_datetime = CONVERT_TZ(STR_TO_DATE(@dt,'%Y-%m-%d %H:%i:%s'), '+07:00', '+00:00')
         ";
-        $affected = $this->db->exec($sql);
-        return (int)$affected;
+        $rows = (int)$this->db->exec($sql);
+        $this->syncMasters();
+        $this->mergeWinds();
+        return $rows;
     }
-}
-class BatchImporter implements ImporterInterface{
-    private PDO $db;
-    private int $batchSize = 1000;
-    public function __construct(PDO $db){
-        $this->db = $db;
+    private function syncMasters(): void {
+        $this->db->exec("INSERT IGNORE INTO wp_contract (contract_name, created_at, updated_at)
+            SELECT DISTINCT contract_name, NOW(), NOW() FROM wind_staging
+        ");
+        $this->db->exec("INSERT IGNORE INTO wp_project (contract_id, project_name, created_at, updated_at)
+            SELECT c.contract_id, s.project_name, NOW(), NOW() FROM wind_staging s JOIN wp_contract c ON c.contract_name = s.contract_name
+        ");
+        $this->db->exec("INSERT IGNORE INTO wp_type (type_name, created_at, updated_at)
+            SELECT DISTINCT type_name, NOW(), NOW() FROM wind_staging
+        ");
+        $this->db->exec("INSERT IGNORE INTO wp_height (height_name, created_at, updated_at)
+            SELECT DISTINCT height_name, NOW(), NOW() FROM wind_staging
+        ");
+        $this->db->exec("INSERT IGNORE INTO wp_height_levels (height_id, height_levels, created_at, updated_at)
+            SELECT h.height_id, s.height_level, NOW(), NOW() FROM wind_staging s JOIN wp_height h ON h.height_name = s.height_name
+        ");
+        $this->db->exec("INSERT IGNORE INTO wp_installations (installations_name, created_at, updated_at)
+            SELECT DISTINCT installations_name, NOW(), NOW() FROM wind_staging WHERE installations_name IS NOT NULL
+        ");
+        $this->db->exec("INSERT IGNORE INTO wp_poles
+            (poles_code, project_id, type_id, installations_id, poles_lat, poles_lng, status, created_at, updated_at)
+            SELECT
+                s.poles_code,
+                p.project_id,
+                t.type_id,
+                i.installations_id,
+                s.lat,
+                s.lng,
+                'online',
+                NOW(), NOW()
+            FROM wind_staging s
+            JOIN wp_project p ON p.project_name = s.project_name
+            JOIN wp_contract c ON c.contract_name = s.contract_name AND p.contract_id = c.contract_id
+            JOIN wp_type t ON t.type_name = s.type_name
+            JOIN wp_installations i ON i.installations_name = s.installations_name
+        ");
     }
-    public function import(string $csvPath, string $sheet): int{
-        $fp = fopen($csvPath, 'r');
-        fgetcsv($fp); 
-        $rows = [];
-        $total = 0;
-        while ($r = fgetcsv($fp)) {
-            $rows[] = $r;
-            if (count($rows) >= $this->batchSize) {
-                $total += $this->insert($rows, $sheet);
-                $rows = [];
-            }
-        }
-        if ($rows) {
-            $total += $this->insert($rows, $sheet);
-        }
-        fclose($fp);
-        return $total;
-    }
-    private function insert(array $rows, string $sheet): int{
-        $counter = 0;
-        $sql = "INSERT INTO wp_winds
-            (
-                poles_id, year, wind_datetime, levels_id,
-                wind_speed, wind_direction, air_density,
-                pressure, humidity, temperature, turbulence_intensity
-            )
-            VALUES
-            (
-                :poles,:year,:dt,:lvl,
-                :ws,:wd,:ad,
-                :p,:h,:temp,:ti
-            )
+    private function mergeWinds(): void {
+        $this->db->exec("INSERT INTO wp_winds
+            (poles_id, year, wind_datetime, levels_id, wind_speed, wind_direction, air_density, pressure, humidity, temperature, turbulence_intensity)
+            SELECT
+                p.poles_id,
+                s.year,
+                s.measure_datetime,
+                hl.levels_id,
+                s.wind_speed,
+                s.wind_direction,
+                s.air_density,
+                s.pressure,
+                s.humidity,
+                s.temperature,
+                s.turbulence_intensity
+            FROM wind_staging s
+            JOIN wp_poles p ON p.poles_code = s.poles_code
+            JOIN wp_height h ON h.height_name = s.height_name
+            JOIN wp_height_levels hl ON hl.height_id = h.height_id AND hl.height_levels = s.height_level
             ON DUPLICATE KEY UPDATE
                 wind_speed = VALUES(wind_speed),
                 wind_direction = VALUES(wind_direction),
@@ -339,135 +488,8 @@ class BatchImporter implements ImporterInterface{
                 pressure = VALUES(pressure),
                 humidity = VALUES(humidity),
                 temperature = VALUES(temperature),
-                turbulence_intensity = VALUES(turbulence_intensity)
-        ";
-        $stmt = $this->db->prepare($sql);
-        $tzLocal = new DateTimeZone('Asia/Bangkok');
-        $tzUtc   = new DateTimeZone('UTC');
-        foreach ($rows as $r) {
-            $contractName = trim($r[1]);
-            $projectName  = trim($r[2]);
-            $code         = trim($r[3]);
-            $typeName     = trim($r[4]);
-            $installationName = trim($r[5]);
-            $year         = (int)$r[6];
-            $windDateObj = DateTime::createFromFormat(
-                'Y-m-d H:i:s',
-                trim($r[7]),
-                $tzLocal
-            );
-            if (!$windDateObj) {
-                throw new Exception('Invalid datetime format');
-            }
-            $windDateObj->setTimezone($tzUtc);
-            $windDateTimeStr = $windDateObj->format('Y-m-d H:i:s');
-            $heightName  = trim($r[8]);
-            $heightLevel = $r[9];
-            $lat         = $r[10];
-            $lng         = $r[11];
-            $contractId = $this->getOrCreateId('contract_id', 'wp_contract', 'contract_name', $contractName);
-            $installationId = $this->getOrCreateId('installations_id', 'wp_installations', 'installations_name', $installationName);
-            $projectId  = $this->getOrCreateProject($contractId, $projectName);
-            $typeId     = $this->getOrCreateId('type_id', 'wp_type', 'type_name', $typeName);
-            $heightId   = $this->getOrCreateId('height_id', 'wp_height', 'height_name', $heightName);
-            $levelsId   = $this->getOrCreateHeightLevel($heightId, $heightLevel);
-            $polesId = $this->getOrCreatePole([
-                'code'        => $code,
-                'project_id'  => $projectId,
-                'type_id'     => $typeId,
-                'installations_id'=> $installationId,
-                'lat'         => $lat,
-                'lng'         => $lng
-            ]);
-            $stmt->execute([
-                ':poles' => $polesId,
-                ':year'  => $year,
-                ':dt'    => $windDateTimeStr,
-                ':lvl'   => $levelsId,
-                ':ws'    => $r[12],
-                ':wd'    => $r[13],
-                ':ad'    => $r[14],
-                ':p'     => $r[15],
-                ':h'     => $r[16],
-                ':temp'  => $r[17],
-                ':ti'    => $r[18],
-            ]);
-            $counter++;
-        }
-        return $counter;
-    }
-    private function getOrCreateId($column, $table, $keyColumn, $value, array $extra = []) {
-        $sql = "SELECT {$column} FROM {$table} WHERE {$keyColumn} = :v LIMIT 1";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':v' => $value]);
-        $id = $stmt->fetchColumn();
-        if ($id) {
-            return (int)$id;
-        }
-        $cols = array_merge([$keyColumn], array_keys($extra));
-        $params = array_merge([$value], array_values($extra));
-        $sql = "INSERT INTO {$table} (" . implode(',', $cols) . ",created_at, updated_at) VALUES (" . rtrim(str_repeat('?,', count($cols)), ',') . ",NOW(), NOW())";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
-        return (int)$this->db->lastInsertId();
-    }
-    private function getOrCreateProject($contractId, $projectName){
-        $sql = "SELECT project_id FROM wp_project WHERE contract_id = :cid AND project_name = :projectName LIMIT 1";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            ':cid' => (int)$contractId,
-            ':projectName' => $projectName
-        ]);
-        $id = $stmt->fetchColumn();
-        if ($id) {
-            return (int)$id;
-        }
-        $sql = "INSERT INTO wp_project (contract_id, project_name, created_at, updated_at) VALUES (:cid, :projectName, NOW(), NOW())";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            ':cid' => $contractId,
-            ':projectName' => $projectName
-        ]);
-        return (int)$this->db->lastInsertId();
-    }
-    private function getOrCreateHeightLevel($heightId, $level){
-        $sql = "SELECT levels_id FROM wp_height_levels WHERE height_id = :hid AND height_levels = :lvl LIMIT 1";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            ':hid' => $heightId,
-            ':lvl' => number_format((float)$level, 2, '.', '')
-        ]);
-        $id = $stmt->fetchColumn();
-        if ($id) {
-            return (int)$id;
-        }
-        $sql = "INSERT INTO wp_height_levels (height_id, height_levels, created_at, updated_at) VALUES (:hid, :lvl, NOW(), NOW())";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            ':hid' => $heightId,
-            ':lvl' => number_format((float)$level, 2, '.', '')
-        ]);
-        return (int)$this->db->lastInsertId();
-    }
-    private function getOrCreatePole(array $data){
-        $sql = "SELECT poles_id FROM wp_poles WHERE poles_code = :code LIMIT 1";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([':code' => $data['code']]);
-        $id = $stmt->fetchColumn();
-        if ($id) {
-            return (int)$id;
-        }
-        $sql = "INSERT INTO wp_poles (poles_code, project_id, type_id, installations_id, poles_lat, poles_lng, status, created_at, updated_at) VALUES
-            (:code,:project,:type,:install,:lat,:lng,'online',NOW(),NOW())";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            ':code'    => $data['code'],
-            ':project' => $data['project_id'],
-            ':type'    => $data['type_id'],
-            ':install' => $data['installations_id'],
-            ':lat'     => $data['lat'],
-            ':lng'     => $data['lng'],
-        ]);
-        return (int)$this->db->lastInsertId();
+                turbulence_intensity = VALUES(turbulence_intensity),
+                status = 'active'
+        ");
     }
 }

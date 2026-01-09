@@ -249,12 +249,11 @@ class DocumentModel {
                 $stmtCount = $this->db->prepare($sqlCount);
                 $stmtCount->execute($params);
                 $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
-                $sqlData = "SELECT type_id as id, type_name as text FROM wp_type $where ORDER BY type_id DESC LIMIT $limit OFFSET $offset";
+                $sqlData = "SELECT type_id as id, type_name as text FROM wp_type $where ORDER BY type_id ASC LIMIT $limit OFFSET $offset";
                 $stmtData = $this->db->prepare($sqlData);
                 $stmtData->execute($params);
                 $items = $stmtData->fetchAll(PDO::FETCH_ASSOC);
                 break;
-
             case 'status':
                 $staticData = [
                     ['id' => 'public', 'text' => 'Public'],

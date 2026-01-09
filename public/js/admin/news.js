@@ -14,6 +14,7 @@ function initNewsTable() {
         processing: true,
         serverSide: true,
         responsive: true,
+        ordering: false,
         order: [[2, 'desc']],
         ajax: {
             url: "api/news/list",
@@ -107,7 +108,6 @@ function initNewsTable() {
                 `
             }
         ],
-        stateSave: true,
         pageLength: pageLength,
         lengthMenu: lengthMenu,
         stateLoadParams: function (settings, data) {
@@ -513,7 +513,7 @@ $(document).on('click', '.delete-news', function() {
                 }   
             },
             error: function (xhr, status, error) {
-                let msg = langData['cannot_save'];
+                let msg = langData['cannot_delete'];
                 try {
                     let res = JSON.parse(xhr.responseText);
                     if (res.message) msg += ": " + res.message;

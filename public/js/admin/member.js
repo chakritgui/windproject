@@ -13,6 +13,7 @@ function initMemberTable() {
         processing: true,
         serverSide: true,
         responsive: true, 
+        ordering: false,
         order: [[4, 'asc'], [5, 'desc']],
         ajax: { 
             url: "api/member/list",
@@ -102,8 +103,7 @@ function initMemberTable() {
                     `;
                 }
             }
-        ],
-        stateSave: true,
+        ],      
         pageLength: pageLength,
         lengthMenu: lengthMenu,
         stateLoadParams: function (settings, data) {
