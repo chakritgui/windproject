@@ -207,18 +207,15 @@ class NewsModel {
         }
         $pdo = $this->db;
         if ($status === 'published') {
-            $publish_at = date('Y-m-d H:i:s');
+            $sql = "UPDATE wp_news SET status = :status,publish_at = NOW(),updated_at = NOW() WHERE news_id = :id";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindValue(':status', $status);
+            $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
         } else {
-            $publish_at = null;
-        }
-        $sql = "UPDATE wp_news SET status = :status,publish_at = :publish_at,updated_at = NOW() WHERE news_id = :id";
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindValue(':status', $status);
-        $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
-        if ($publish_at === null) {
-            $stmt->bindValue(':publish_at', null, PDO::PARAM_NULL);
-        } else {
-            $stmt->bindValue(':publish_at', $publish_at, PDO::PARAM_STR);
+            $sql = "UPDATE wp_news SET status = :status,publish_at = NULL,updated_at = NOW() WHERE news_id = :id";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindValue(':status', $status);
+            $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
         }
         $ok = $stmt->execute();
         if ($ok) {

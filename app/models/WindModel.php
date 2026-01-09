@@ -90,16 +90,9 @@ class WindModel{
             return ['status' => false, 'message' => 'Upload error'];
         }
         $importId = null;
-        $importStart = date('Y-m-d H:i:s');
         try {
-            $stmt = $this->db->prepare("
-                INSERT INTO wp_imports
-                (import_start, status, import_record, remark)
-                VALUES (:start, 'complete', 0, 'Importing...')
-            ");
-            $stmt->execute([
-                ':start' => $importStart
-            ]);
+            $stmt = $this->db->prepare("INSERT INTO wp_imports (import_start, status, import_record, remark) VALUES (NOW(), 'complete', 0, 'Importing...')");
+            $stmt->execute();
             $importId = (int)$this->db->lastInsertId();
             $importRecord = $this->handleFileImport($_FILES['wind_file']);
             $stmt = $this->db->prepare("UPDATE wp_imports
@@ -205,12 +198,27 @@ class WindModel{
         return $files;
     }
     private function moveUploadedCsv(array $file, string $dir): string{
-        $target = "{$dir}/uploaded.csv";
-        move_uploaded_file($file['tmp_name'], $target);
+        if (!is_uploaded_file($file['tmp_name'])) {
+            throw new Exception('Invalid uploaded file');
+        }
+        $filename = $this->generateFilename('import', 'csv');
+        $target   = $dir . '/' . $filename;
+        if (!move_uploaded_file($file['tmp_name'], $target)) {
+            throw new Exception('Failed to move uploaded CSV');
+        }
         return $target;
     }
     private function detectImporter(): ImporterInterface{
         return new BatchImporter($this->db);
+    }
+    private function generateFilename(string $prefix, string $ext): string{
+        return sprintf(
+            '%s_%s_%s.%s',
+            $prefix,
+            date('Ymd_His'),
+            bin2hex(random_bytes(4)),
+            $ext
+        );
     }
     private function cleanup(string $dir): void {
         foreach (glob("$dir/*") as $file) {
@@ -218,7 +226,6 @@ class WindModel{
                 unlink($file);
             }
         }
-        @rmdir($dir);
     }
 }
 interface ImporterInterface{
@@ -249,8 +256,6 @@ class LoadDataImporter implements ImporterInterface{
                 @type,
                 @installation_qty,
                 @year,
-                @measure_date,
-                @measure_time,
                 @measure_datetime,
                 @height_label,
                 @height_level,
@@ -271,16 +276,7 @@ class LoadDataImporter implements ImporterInterface{
                 type     = NULLIF(@type,''),
                 installation_qty = NULLIF(@installation_qty,''),
                 year     = NULLIF(@year,''),
-                measure_date = STR_TO_DATE(@measure_date, '%Y-%m-%d'),
-                measure_time = STR_TO_DATE(@measure_time, '%h:%i %p'),
-                measure_datetime = STR_TO_DATE(
-                    CONCAT(
-                        DATE(STR_TO_DATE(@measure_date, '%Y-%m-%d %H:%i:%s')),
-                        ' ',
-                        STR_TO_DATE(@measure_time, '%h:%i %p')
-                    ),
-                    '%Y-%m-%d %H:%i:%s'
-                ),
+                measure_datetime = STR_TO_DATE(@measure_datetime, '%Y-%m-%d %H:%i:%s'),
                 height_label = NULLIF(@height_label,''),
                 height_level = NULLIF(@height_level,''),
                 latitude  = NULLIF(@latitude,''),
@@ -326,19 +322,17 @@ class BatchImporter implements ImporterInterface{
         $counter = 0;
         $sql = "INSERT INTO wp_winds
             (
-                poles_id, year, wind_date, wind_time, wind_datetime, levels_id,
-                latitude, longitude, wind_speed, wind_direction, air_density,
+                poles_id, year, wind_datetime, levels_id,
+                wind_speed, wind_direction, air_density,
                 pressure, humidity, temperature, turbulence_intensity
             )
             VALUES
             (
-                :poles,:year,:d,:t,:dt,:lvl,
-                :lat,:lng,:ws,:wd,:ad,
+                :poles,:year,:dt,:lvl,
+                :ws,:wd,:ad,
                 :p,:h,:temp,:ti
             )
             ON DUPLICATE KEY UPDATE
-                latitude = VALUES(latitude),
-                longitude = VALUES(longitude),
                 wind_speed = VALUES(wind_speed),
                 wind_direction = VALUES(wind_direction),
                 air_density = VALUES(air_density),
@@ -348,25 +342,31 @@ class BatchImporter implements ImporterInterface{
                 turbulence_intensity = VALUES(turbulence_intensity)
         ";
         $stmt = $this->db->prepare($sql);
+        $tzLocal = new DateTimeZone('Asia/Bangkok');
+        $tzUtc   = new DateTimeZone('UTC');
         foreach ($rows as $r) {
             $contractName = trim($r[1]);
             $projectName  = trim($r[2]);
             $code         = trim($r[3]);
             $typeName     = trim($r[4]);
-            $installation = $r[5];
+            $installationName = trim($r[5]);
             $year         = (int)$r[6];
-            $windDateObj = DateTime::createFromFormat('Y-m-d H:i:s', trim($r[7]));
-            $windTimeObj = DateTime::createFromFormat('h:i A', trim($r[8]));
-            $windDateStr = $windDateObj?->format('Y-m-d');
-            $windTimeStr = $windTimeObj?->format('H:i:s');
-            $windDateTimeStr = ($windDateStr && $windTimeStr)
-                ? "{$windDateStr} {$windTimeStr}"
-                : null;
-            $heightName  = trim($r[10]);
-            $heightLevel = $r[11];
-            $lat         = $r[12];
-            $lng         = $r[13];
+            $windDateObj = DateTime::createFromFormat(
+                'Y-m-d H:i:s',
+                trim($r[7]),
+                $tzLocal
+            );
+            if (!$windDateObj) {
+                throw new Exception('Invalid datetime format');
+            }
+            $windDateObj->setTimezone($tzUtc);
+            $windDateTimeStr = $windDateObj->format('Y-m-d H:i:s');
+            $heightName  = trim($r[8]);
+            $heightLevel = $r[9];
+            $lat         = $r[10];
+            $lng         = $r[11];
             $contractId = $this->getOrCreateId('contract_id', 'wp_contract', 'contract_name', $contractName);
+            $installationId = $this->getOrCreateId('installations_id', 'wp_installations', 'installations_name', $installationName);
             $projectId  = $this->getOrCreateProject($contractId, $projectName);
             $typeId     = $this->getOrCreateId('type_id', 'wp_type', 'type_name', $typeName);
             $heightId   = $this->getOrCreateId('height_id', 'wp_height', 'height_name', $heightName);
@@ -375,26 +375,22 @@ class BatchImporter implements ImporterInterface{
                 'code'        => $code,
                 'project_id'  => $projectId,
                 'type_id'     => $typeId,
-                'installation'=> $installation,
+                'installations_id'=> $installationId,
                 'lat'         => $lat,
                 'lng'         => $lng
             ]);
             $stmt->execute([
                 ':poles' => $polesId,
                 ':year'  => $year,
-                ':d'     => $windDateStr,
-                ':t'     => $windTimeStr,
                 ':dt'    => $windDateTimeStr,
                 ':lvl'   => $levelsId,
-                ':lat'   => $lat,
-                ':lng'   => $lng,
-                ':ws'    => $r[14],
-                ':wd'    => $r[15],
-                ':ad'    => $r[16],
-                ':p'     => $r[17],
-                ':h'     => $r[18],
-                ':temp'  => $r[19],
-                ':ti'    => $r[20],
+                ':ws'    => $r[12],
+                ':wd'    => $r[13],
+                ':ad'    => $r[14],
+                ':p'     => $r[15],
+                ':h'     => $r[16],
+                ':temp'  => $r[17],
+                ':ti'    => $r[18],
             ]);
             $counter++;
         }
@@ -461,14 +457,14 @@ class BatchImporter implements ImporterInterface{
         if ($id) {
             return (int)$id;
         }
-        $sql = "INSERT INTO wp_poles (poles_code, project_id, type_id, installation, poles_lat, poles_lng, status, created_at, updated_at) VALUES
+        $sql = "INSERT INTO wp_poles (poles_code, project_id, type_id, installations_id, poles_lat, poles_lng, status, created_at, updated_at) VALUES
             (:code,:project,:type,:install,:lat,:lng,'online',NOW(),NOW())";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             ':code'    => $data['code'],
             ':project' => $data['project_id'],
             ':type'    => $data['type_id'],
-            ':install' => $data['installation'],
+            ':install' => $data['installations_id'],
             ':lat'     => $data['lat'],
             ':lng'     => $data['lng'],
         ]);
