@@ -2,14 +2,20 @@
 <div id="ui">
     <div class="wind-toggle-card">
         <div class="wind-icon">
-            <i class="fa-solid fa-fan fa-2x"></i>
+            <i class="fa-solid fa-fan"></i>
         </div>
         <div class="wind-label">WIND MAP</div>
-        <div class="form-check form-switch m-0">
+        <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" id="windSwitch" checked>
         </div>
     </div>
 </div>
+<button id="mapFilter" class="btn btn-dark btn-sm">
+    <i class="bi bi-list"></i>
+</button>
+<div id="menu1" class="menu-panel"></div>
+<div id="menu2" class="menu-panel"></div>
+<div id="menu3" class="menu-panel"></div>
 <div id="windy"></div>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>

@@ -27,15 +27,24 @@
                 'project' => $project
             ]);
         }
-        public function pole($slug) {
-            ensure_login();
-            $pole = 1;
-            if (!$pole) {
-                http_response_code(404);
-                exit('Project not found');
+        public function pole($data = null) {
+            $filters = [];
+            if ($data) {
+                $decodedJson = base64_decode(urldecode($data));
+                $filters = json_decode($decodedJson, true);
             }
+            $poles_id = $filters['id'] ?? null;
+            $startDate = $filters['start'] ?? null;
+            $endDate   = $filters['end']   ?? null;
+            $height_id = $filters['h']     ?? null;
+            $sensors   = isset($filters['s']) ? explode(',', $filters['s']) : [];
             $this->view('user/pole', [
-                'pole' => $pole
+                'id'  => $poles_id,
+                'startDate' => $startDate,
+                'endDate'   => $endDate,
+                'height_id' => $height_id,
+                'sensors'   => $sensors,
+                'filters'   => $filters 
             ]);
         }
     }

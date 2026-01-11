@@ -74,11 +74,18 @@
             $router->get('/map', 'UserController@user');
             $router->get('/pole/{slug}', 'UserController@pole');
             $router->get('/project', 'UserController@project');
-            $router->get('/project/{slug}', 'UserController@projectDetail');
+            $router->get('/project?{slug}', 'UserController@projectDetail');
             $router->get('/document', 'UserController@document');
             $router->get('/download', 'UserController@download');
         }
     }
+    $router->post('/api/wind-area', 'MapController@windarea');
+    $router->post('/api/poles-location', 'MapController@poleslocation');
+    $router->post('/api/pole-details', 'MapController@poledetails');
+    $router->post('/api/height', 'MapController@height');
+    $router->post('/api/project', 'MapController@project');
+    $router->post('/api/type', 'MapController@type');
+    $router->post('/api/station', 'MapController@station');
     $router->post('/api/setting/shortcut', 'SettingController@shortcut');
     $router->post('/api/news/get', 'NewsController@get');
     $router->post('/api/notification/read', 'NotificationController@read');

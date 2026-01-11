@@ -34,7 +34,7 @@ async function initApp() {
 }
 function initMeta() {
     $.ajax({
-        url: 'api/setting/shortcut',
+        url: `${BASE_URL}/api/setting/shortcut`,
         method: 'POST',
         dataType: 'json',
         success: function(res) {
@@ -52,7 +52,7 @@ function initMeta() {
 async function loadSetting() {
     try {
         const res = await $.ajax({
-            url: 'api/setting/get',
+            url: `${BASE_URL}/api/setting/get`,
             method: 'POST',
             dataType: 'json'
         });
@@ -68,7 +68,7 @@ async function loadSetting() {
 async function loadNotification() {
     try {
         const res = await $.ajax({
-            url: 'api/notification/load',
+            url: `${BASE_URL}/api/notification/load`,
             method: 'POST',
             dataType: 'json'
         });
@@ -95,7 +95,7 @@ $(document).on('click', '.btn-notification', async function (e) {
 async function readNotification() {
     try {
         const res = await $.ajax({
-            url: 'api/notification/read',
+            url: `${BASE_URL}/api/notification/read`,
             method: 'POST',
             dataType: 'json'
         });
@@ -118,7 +118,7 @@ async function loadNotificationItem() {
     notifyLoading = true;
     try {
         const res = await $.ajax({
-            url: 'api/notification/load-list',
+            url: `${BASE_URL}/api/notification/load-list`,
             method: 'POST',
             data: {
                 page: notifyPage,
@@ -587,13 +587,16 @@ function initDateRangePicker(selector, callback) {
         }
     });
 }
-function initDatePicker(selector) {
+function initDatePicker(selector, minDate = null, maxDate = null) {
+    $(selector).datepicker('destroy');
     $(selector).datepicker({
         format: "dd/mm/yyyy",
         autoclose: true,  
         todayHighlight: true,
         orientation: "auto",
-        language: "en"
+        language: "en",
+        startDate: minDate,
+        endDate: maxDate 
     });
 }
 $("input").attr("autocomplete", "off");
