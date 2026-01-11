@@ -23,7 +23,9 @@ class AuthController extends Controller {
         $m = new Auth();
         $user = $m->findMember($username);
         if ($user && $pass === decryptToken($user['password_hash']) && $user['status'] === 'active') {
-            $m->updateLogin($user['member_id'], $timezone);
+            $session_id = session_id();  
+            $m->updateLogin($user['member_id'], $timezone, $session_id);
+            $_SESSION['session_id'] = $session_id;
             $_SESSION['user'] = [
                 'id'   => $user['member_id'],
                 'role' => $user['role']

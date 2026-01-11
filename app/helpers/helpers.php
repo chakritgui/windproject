@@ -1,7 +1,21 @@
 <?php
     function ensure_login() {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
         if (empty($_SESSION['user'])) {
-            header('Location: /login');
+            header('Location: login');
+            exit;
+        }
+        $member_id  = $_SESSION['user']['id'];
+        $session_id = session_id();
+        $db = Database::getInstance()->pdo;
+        $stmt = $db->prepare("SELECT COUNT(*) FROM wp_login_logs WHERE member_id = ? AND session_id = ? AND logout_at IS NULL");
+        $stmt->execute([$member_id, $session_id]);
+        $isValid = $stmt->fetchColumn();
+        if (!$isValid) {
+            session_destroy();
+            header('Location: login');
             exit;
         }
     }
