@@ -60,11 +60,27 @@
         return $dt->format($format);
     }
     function convertTimeZoneUTC($datetime_str, $format = 'Y-m-d H:i:s') {
-        $userTz = $_SESSION['timezone'] ?? 'UTC';
-        if (!$datetime_str) {
+        if (empty($datetime_str)) {
             return '';
         }
-        $dt = new DateTime($datetime_str, new DateTimeZone($userTz));
-        $dt->setTimezone(new DateTimeZone('UTC'));
-        return $dt->format($format);
+        $userTz = $_SESSION['timezone'] ?? 'UTC';
+        try {
+            $tz = new DateTimeZone($userTz);
+        } catch (Exception $e) {
+            $tz = new DateTimeZone('UTC');
+        }
+        try {
+            if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $datetime_str)) {
+                $dt = DateTime::createFromFormat('Y-m-d H:i:s', $datetime_str . ' 00:00:00', $tz);
+            } else {
+                $dt = new DateTime($datetime_str, $tz);
+            }
+            if (!$dt) {
+                return '';
+            }
+            $dt->setTimezone(new DateTimeZone('UTC'));
+            return $dt->format($format);
+        } catch (Exception $e) {
+            return '';
+        }
     }

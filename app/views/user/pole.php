@@ -1,22 +1,27 @@
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/pole.css?v=<?=time();?>">
+<input type="hidden" id="poles_id"  value="<?= htmlspecialchars($id ?? '', ENT_QUOTES, 'UTF-8') ?>">
+<input type="hidden" id="startDate" value="<?= htmlspecialchars($startDate ?? '', ENT_QUOTES, 'UTF-8') ?>">
+<input type="hidden" id="endDate"   value="<?= htmlspecialchars($endDate ?? '', ENT_QUOTES, 'UTF-8') ?>">
+<input type="hidden" id="height_id" value="<?= htmlspecialchars($height_id ?? '', ENT_QUOTES, 'UTF-8') ?>">
+<input type="hidden" id="sensors"   value="<?= htmlspecialchars(implode(',', $sensors ?? []), ENT_QUOTES, 'UTF-8') ?>">
 <div class="container-fluid mt-3 mb-5">
     <div class="header-card">
         <div class="row align-items-center">
             <div class="col-lg-12">
-                <h5 class="mb-3"><i class="fas fa-broadcast-tower me-3"></i>Met Mast 2 #SPW MM2</h5>
+                <h5 class="mb-3"><i class="fas fa-broadcast-tower me-3"></i><span id="installations_name"></span> #<span id="code"></span></h5>
                 <div class="mb-1 d-flex flex-wrap align-items-center gap-3">
-                    <span><i class="fa-solid fa-diagram-project me2"></i> Sepon Wind Farm</span>
-                    <span>
-                        <i class="fa-regular fa-calendar me-1"></i>
-                        01/11/2025 - 12/12/2025
-                    </span>
+                    <span><i class="fa-solid fa-diagram-project me2"></i> <span id="project"></span></span>
                     <span>
                         <i class="fas fa-arrows-alt-v me-1"></i>
-                        MET MAST 75
+                        <span id="level"></span>
                     </span>
                     <span>
                         <i class="fas fa-map-marker-alt me-1"></i>
-                        16.6934980, 106.3742420
+                        <span id="location"></span>
+                    </span>
+                    <span>
+                        <i class="fa-regular fa-calendar me-1"></i>
+                        <span id="period"></span> <span class="badge-days mx-1"> <span id="total_days"></span> <span data-i18n="days"></span></span>
                     </span>
                 </div>
             </div>

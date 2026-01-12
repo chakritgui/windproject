@@ -619,3 +619,19 @@ function readableSize(bytes) {
     const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
     return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
 }
+function navigateTo(url) {
+    if (isIOS()) {
+        window.location.href = url;
+    } else {
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
+function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}

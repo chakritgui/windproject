@@ -342,7 +342,7 @@ $(document).on('click', '.open-poles', async function(e) {
 function generateReport(poles_id) {
     let errors = [];
     $('.obj-required').each(function () {
-        let value = $(this).val()?.trim() || '';
+        let value = ($(this).val() || '').toString().trim();
         if (!value) {
             $(this).addClass('is-invalid');
             errors.push(this.id);
@@ -351,11 +351,11 @@ function generateReport(poles_id) {
         }
     });
     const sensors = [];
-    $('.sensor-checkbox input:checked').each(function() {
+    $('.sensor-checkbox input:checked').each(function () {
         sensors.push($(this).attr('id').replace('sensor', ''));
     });
     if (sensors.length === 0) {
-        $('.sensor-checkbox').addClass('border-danger'); 
+        $('.sensor-checkbox').addClass('border-danger');
         errors.push('sensors');
     } else {
         $('.sensor-checkbox').removeClass('border-danger');
@@ -365,7 +365,10 @@ function generateReport(poles_id) {
             ? (langData['select_sensor_message'] || 'Please select at least one sensor.')
             : (langData['required_star_message'] || 'Please fill all fields marked with *');
         showWarning(langData['validation_error'] || 'Validation Error', message);
-        $('.is-invalid').first().focus();
+        const el = $('.is-invalid').first()[0];
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
         return;
     }
     const reportData = {
@@ -375,10 +378,9 @@ function generateReport(poles_id) {
         h: $('#heightSelect').val(),
         s: sensors.join(',')
     };
-    const encodedData = btoa(JSON.stringify(reportData));
+    const encodedData = btoa(
+        unescape(encodeURIComponent(JSON.stringify(reportData)))
+    );
     const reportUrl = `${BASE_URL}/pole/${encodedData}`;
-    const newWindow = window.open(reportUrl, '_blank');
-    if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-        window.location.href = reportUrl;
-    }
+    navigateTo(reportUrl);
 }

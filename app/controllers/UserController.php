@@ -27,24 +27,56 @@
                 'project' => $project
             ]);
         }
-        public function pole($data = null) {
+        public function pole($data = null){
             $filters = [];
-            if ($data) {
-                $decodedJson = base64_decode(urldecode($data));
-                $filters = json_decode($decodedJson, true);
+            if (!empty($data)) {
+                $json = base64_decode($data, true);
+                if ($json !== false) {
+                    $decoded = json_decode($json, true);
+                    if (is_array($decoded)) {
+                        $filters = $decoded;
+                    }
+                }
             }
-            $poles_id = $filters['id'] ?? null;
-            $startDate = $filters['start'] ?? null;
-            $endDate   = $filters['end']   ?? null;
-            $height_id = $filters['h']     ?? null;
-            $sensors   = isset($filters['s']) ? explode(',', $filters['s']) : [];
+            $poles_id  = $filters['id'] ?? null;
+            $startDate = trim($filters['start'] ?? '');
+            $endDate   = trim($filters['end']   ?? '');
+            $height_id = $filters['h'] ?? null;
+            $sensors = [];
+            if (!empty($filters['s'])) {
+                $sensors = array_values(array_filter(explode(',', $filters['s'])));
+            }
+            $startDateUTC = null;
+            $endDateUTC   = null;
+            $dateFormats = ['d/m/Y', 'Y-m-d'];
+            if ($startDate) {
+                foreach ($dateFormats as $fmt) {
+                    $obj = DateTime::createFromFormat($fmt, $startDate);
+                    if ($obj instanceof DateTime) {
+                        $startDateUTC = convertTimeZoneUTC(
+                            $obj->format('Y-m-d') . ' 00:00:00'
+                        );
+                        break;
+                    }
+                }
+            }
+            if ($endDate) {
+                foreach ($dateFormats as $fmt) {
+                    $obj = DateTime::createFromFormat($fmt, $endDate);
+                    if ($obj instanceof DateTime) {
+                        $endDateUTC = convertTimeZoneUTC(
+                            $obj->format('Y-m-d') . ' 23:59:59'
+                        );
+                        break;
+                    }
+                }
+            }
             $this->view('user/pole', [
-                'id'  => $poles_id,
-                'startDate' => $startDate,
-                'endDate'   => $endDate,
+                'id'        => $poles_id,
+                'startDate' => $startDateUTC,
+                'endDate'   => $endDateUTC,
                 'height_id' => $height_id,
-                'sensors'   => $sensors,
-                'filters'   => $filters 
+                'sensors'   => $sensors
             ]);
         }
     }

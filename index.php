@@ -86,6 +86,9 @@
     $router->post('/api/project', 'MapController@project');
     $router->post('/api/type', 'MapController@type');
     $router->post('/api/station', 'MapController@station');
+    $router->post('/api/pole-stats', 'PoleController@polestats');
+    $router->post('/api/pole-val', 'PoleController@poleval');
+    $router->post('/api/pole-info', 'PoleController@info');
     $router->post('/api/setting/shortcut', 'SettingController@shortcut');
     $router->post('/api/news/get', 'NewsController@get');
     $router->post('/api/notification/read', 'NotificationController@read');
