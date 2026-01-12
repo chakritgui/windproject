@@ -1,9 +1,25 @@
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/pole.css?v=<?=time();?>">
+<link rel="stylesheet" href="<?=BASE_URL?>/public/css/map.css?v=<?=time();?>">
 <input type="hidden" id="poles_id"  value="<?= htmlspecialchars($id ?? '', ENT_QUOTES, 'UTF-8') ?>">
-<input type="hidden" id="startDate" value="<?= htmlspecialchars($startDate ?? '', ENT_QUOTES, 'UTF-8') ?>">
-<input type="hidden" id="endDate"   value="<?= htmlspecialchars($endDate ?? '', ENT_QUOTES, 'UTF-8') ?>">
+<input type="hidden" id="start" value="<?= htmlspecialchars($startDate ?? '', ENT_QUOTES, 'UTF-8') ?>">
+<input type="hidden" id="end"   value="<?= htmlspecialchars($endDate ?? '', ENT_QUOTES, 'UTF-8') ?>">
 <input type="hidden" id="height_id" value="<?= htmlspecialchars($height_id ?? '', ENT_QUOTES, 'UTF-8') ?>">
 <input type="hidden" id="sensors"   value="<?= htmlspecialchars(implode(',', $sensors ?? []), ENT_QUOTES, 'UTF-8') ?>">
+<div class="container-fluid mt-3 mb-3">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <button class="btn btn-secondary btn-sm close-page">
+                    <i class="fa-solid fa-chevron-left me-1"></i> 
+                    <span data-i18n="back">Back</span>
+                </button>
+                <button class="btn btn-primary btn-sm open-poles" data-id="<?= htmlspecialchars($id ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                    <i class="fa-solid fa-filter me-1"></i> 
+                    <span data-i18n="filter">Filter</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="container-fluid mt-3 mb-5">
     <div class="header-card">
         <div class="row align-items-center">

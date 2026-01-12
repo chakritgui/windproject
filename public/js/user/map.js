@@ -234,7 +234,7 @@ $(document).on('click', '.open-poles', async function(e) {
                         <h5 class="mb-3"><i class="fas fa-broadcast-tower me-3"></i>${data.installations_name} #${data.poles_code}</h5>
                         <div class="mb-1 d-flex flex-wrap align-items-center gap-3">
                             <span><i class="fa-solid fa-diagram-project me2"></i> ${data.project_name}</span>
-                            <span><i class="fa-regular fa-calendar me-2"></i> ${data.min_datetime} - ${data.max_datetime}</span>
+                            <span><i class="fa-regular fa-calendar me-2"></i> ${data.start_date} - ${data.end_date}</span>
                             <span><i class="fas fa-map-marker-alt me-2"></i> ${data.poles_lat}, ${data.poles_lng}</span>
                         </div>
                     </div>
@@ -331,15 +331,19 @@ $(document).on('click', '.open-poles', async function(e) {
         initDatePicker('#endDate', minVal, maxVal);
         initSelect2Remote('#heightSelect', 'api/height', { poles_id: poles_id });
         $('.modal-footer').html(`
-            <button class="btn btn-primary py-2" onclick="generateReport(${poles_id})">
+            <button class="btn btn-primary py-2" onclick="renderReport(${poles_id})">
                 <i class="fas fa-chart-line me-2"></i><span data-i18n="report"></span>
             </button>
         `);
+        if (data.levels_name && data.levels_id) {
+            const newOption = new Option(data.levels_name, data.levels_id, true, true);
+            $('#heightSelect').append(newOption).trigger('change');
+        }
     } catch (err) {
         $('#poleModalBody').html('<div class="alert alert-danger">Cannot load data. Please try again.</div>');
     }
 });
-function generateReport(poles_id) {
+function renderReport(poles_id) {
     let errors = [];
     $('.obj-required').each(function () {
         let value = ($(this).val() || '').toString().trim();

@@ -32,7 +32,10 @@ class  MapController extends BaseController {
     public function poledetails() {
         $input = json_decode(file_get_contents('php://input'), true);
         $poles_id = $input['id'] ?? ($_POST['id'] ?? 0);
-        $result = $this->model->poledetails($poles_id);
+        $start = $input['start'] ?? ($_POST['start'] ?? '');
+        $end = $input['end'] ?? ($_POST['end'] ?? '');
+        $height = $input['height'] ?? ($_POST['height'] ?? '');
+        $result = $this->model->poledetails($poles_id, $start, $end, $height);
         $this->json($result);
     }
     public function height() {

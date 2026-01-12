@@ -55,7 +55,7 @@ class MapModel{
         ]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    public function poledetails($poles_id) {
+    public function poledetails($poles_id, $start, $end, $height) {
         $sqlPole = "SELECT 
                         p.*, t.type_name, l.installations_name, pj.project_name
                     FROM wp_poles p 
@@ -77,10 +77,51 @@ class MapModel{
         $stmt2 = $this->db->prepare($sqlDate);
         $stmt2->execute([':poles_id' => $poles_id]);
         $dateInfo = $stmt2->fetch(PDO::FETCH_ASSOC);
-        $poleInfo['min_datetime'] = convertTimeZone($dateInfo['min_datetime'], 'd/m/Y');
-        $poleInfo['max_datetime'] = convertTimeZone($dateInfo['max_datetime'], 'd/m/Y');
-        $poleInfo['min_datetime_val'] = convertTimeZone($dateInfo['min_datetime'], 'Y-m-d');
-        $poleInfo['max_datetime_val'] = convertTimeZone($dateInfo['max_datetime'], 'Y-m-d');
+        $min_datetime = ($start) ? convertTimeZone($start, 'd/m/Y') : convertTimeZone($dateInfo['min_datetime'], 'd/m/Y');
+        $max_datetime = ($end) ? convertTimeZone($end, 'd/m/Y') : convertTimeZone($dateInfo['max_datetime'], 'd/m/Y');
+        $min_datetime_val = ($start) ? convertTimeZone($start, 'd/m/Y') : convertTimeZone($dateInfo['min_datetime'], 'Y-m-d');
+        $max_datetime_val = ($end) ? convertTimeZone($end, 'd/m/Y') : convertTimeZone($dateInfo['max_datetime'], 'Y-m-d');
+        $poleInfo['start_date'] = convertTimeZone($dateInfo['min_datetime'], 'd/m/Y');
+        $poleInfo['end_date'] = convertTimeZone($dateInfo['max_datetime'], 'd/m/Y');
+        $poleInfo['min_datetime'] = $min_datetime;
+        $poleInfo['max_datetime'] = $max_datetime;
+        $poleInfo['min_datetime_val'] = $min_datetime_val;
+        $poleInfo['max_datetime_val'] = $max_datetime_val;
+        $poleInfo['levels_id'] = '';
+        $poleInfo['levels_name'] = '';
+        if ($height) {
+            $sqlHeight = "SELECT 
+                            l.levels_id, 
+                            CONCAT(h.height_name,' ',l.height_levels) AS levels_name 
+                        FROM wp_height h 
+                        LEFT JOIN wp_height_levels l ON l.height_id = h.height_id 
+                        WHERE l.levels_id = :height_id"; 
+            $stmt2 = $this->db->prepare($sqlHeight);
+            $stmt2->execute([':height_id' => $height]);
+            $heightInfo = $stmt2->fetch(PDO::FETCH_ASSOC);
+            if ($heightInfo) {
+                $poleInfo['levels_id'] = $heightInfo['levels_id'];
+                $poleInfo['levels_name'] = $heightInfo['levels_name'];
+            }
+        } else {
+            $sqlFirst = "SELECT 
+                            l.levels_id, 
+                            CONCAT(h.height_name, ' ', l.height_levels) AS levels_name 
+                        FROM wp_height h 
+                        INNER JOIN wp_height_levels l ON l.height_id = h.height_id
+                        INNER JOIN wp_winds w ON w.levels_id = l.levels_id
+                        WHERE w.poles_id = :poles_id
+                        GROUP BY l.levels_id 
+                        ORDER BY h.height_id ASC, l.levels_id ASC 
+                        LIMIT 1";
+            $stmtFirst = $this->db->prepare($sqlFirst);
+            $stmtFirst->execute([':poles_id' => $poles_id]);
+            $firstItem = $stmtFirst->fetch(PDO::FETCH_ASSOC);
+            if ($firstItem) {
+                $poleInfo['levels_id'] = $firstItem['levels_id'];
+                $poleInfo['levels_name'] = $firstItem['levels_name'];
+            }
+        }
         return $poleInfo;
     }
     public function height($page = 1, $limit = 10, $searchTerm = '', $poles_id) {
@@ -113,7 +154,7 @@ class MapModel{
         $stmt->execute();
         return [
             'items' => $stmt->fetchAll(PDO::FETCH_ASSOC),
-            'total_count' => (int)$totalCount
+            'total_count' => (int)$totalCount,
         ];
     }
 }
