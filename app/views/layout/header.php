@@ -71,7 +71,7 @@
                 </button>
             <?php } ?>
             <h1 class="h4 m-0">
-                <a href="/" class="text-decoration-none text-dark d-flex align-items-center">
+                <a href="<?=BASE_URL?>/" class="text-decoration-none text-dark d-flex align-items-center">
                     <img alt="" height="50" class="me-2 logo-full">
                     <img alt="" height="35" class="me-2 logo-small">
                 </a>
