@@ -132,7 +132,7 @@ a {
     left: -260px;
     border-right: 1px solid #e0e0e0;
     box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
-    z-index: 1050;
+    z-index: 99999;
     transition: 0.3s ease;
     padding: 15px 12px;
 }
