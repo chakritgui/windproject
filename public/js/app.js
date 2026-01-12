@@ -619,19 +619,68 @@ function readableSize(bytes) {
     const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
     return (bytes / Math.pow(1024, i)).toFixed(2) + " " + sizes[i];
 }
-function navigateTo(url) {
-    if (isIOS()) {
+function navigateTo(url, type) {
+    if(type == 'self') {
         window.location.href = url;
     } else {
-        const link = document.createElement('a');
-        link.href = url;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        if (isIOS()) {
+            window.location.href = url;
+        } else {
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     }
 }
 function isIOS() {
     return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+function renderReport(poles_id, type) {
+    let errors = [];
+    $('.obj-required').each(function () {
+        let value = ($(this).val() || '').toString().trim();
+        if (!value) {
+            $(this).addClass('is-invalid');
+            errors.push(this.id);
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+    const sensors = [];
+    $('.sensor-checkbox input:checked').each(function () {
+        sensors.push($(this).attr('id').replace('sensor', ''));
+    });
+    if (sensors.length === 0) {
+        $('.sensor-checkbox').addClass('border-danger');
+        errors.push('sensors');
+    } else {
+        $('.sensor-checkbox').removeClass('border-danger');
+    }
+    if (errors.length) {
+        const message = (sensors.length === 0 && errors.length === 1)
+            ? (langData['select_sensor_message'] || 'Please select at least one sensor.')
+            : (langData['required_star_message'] || 'Please fill all fields marked with *');
+        showWarning(langData['validation_error'] || 'Validation Error', message);
+        const el = $('.is-invalid').first()[0];
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+    }
+    const reportData = {
+        id: poles_id,
+        start: $('#startDate').val(),
+        end: $('#endDate').val(),
+        h: $('#heightSelect').val(),
+        s: sensors.join(',')
+    };
+    const encodedData = btoa(
+        unescape(encodeURIComponent(JSON.stringify(reportData)))
+    );
+    const reportUrl = `${BASE_URL}/pole/${encodedData}`;
+    navigateTo(reportUrl, type);
 }

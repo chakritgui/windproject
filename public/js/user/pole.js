@@ -506,7 +506,7 @@ $(document).on('click', '.open-poles', async function(e) {
         initDatePicker('#endDate', minVal, maxVal);
         initSelect2Remote('#heightSelect', `${BASE_URL}/api/height`, { poles_id: poles_id });
         $('.modal-footer').html(`
-            <button class="btn btn-primary py-2" onclick="renderReport(${poles_id})">
+            <button class="btn btn-primary py-2" onclick="renderReport(${poles_id}, 'self')">
                 <i class="fas fa-chart-line me-2"></i><span data-i18n="report"></span>
             </button>
         `);
@@ -523,48 +523,3 @@ $(document).on('click', '.open-poles', async function(e) {
         $('#poleModalBody').html('<div class="alert alert-danger">Cannot load data. Please try again.</div>');
     }
 });
-function renderReport(poles_id) {
-    let errors = [];
-    $('.obj-required').each(function () {
-        let value = ($(this).val() || '').toString().trim();
-        if (!value) {
-            $(this).addClass('is-invalid');
-            errors.push(this.id);
-        } else {
-            $(this).removeClass('is-invalid');
-        }
-    });
-    const sensors = [];
-    $('.sensor-checkbox input:checked').each(function () {
-        sensors.push($(this).attr('id').replace('sensor', ''));
-    });
-    if (sensors.length === 0) {
-        $('.sensor-checkbox').addClass('border-danger');
-        errors.push('sensors');
-    } else {
-        $('.sensor-checkbox').removeClass('border-danger');
-    }
-    if (errors.length) {
-        const message = (sensors.length === 0 && errors.length === 1)
-            ? (langData['select_sensor_message'] || 'Please select at least one sensor.')
-            : (langData['required_star_message'] || 'Please fill all fields marked with *');
-        showWarning(langData['validation_error'] || 'Validation Error', message);
-        const el = $('.is-invalid').first()[0];
-        if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-        return;
-    }
-    const reportData = {
-        id: poles_id,
-        start: $('#startDate').val(),
-        end: $('#endDate').val(),
-        h: $('#heightSelect').val(),
-        s: sensors.join(',')
-    };
-    const encodedData = btoa(
-        unescape(encodeURIComponent(JSON.stringify(reportData)))
-    );
-    const reportUrl = `${BASE_URL}/pole/${encodedData}`;
-    window.location.href = reportUrl;
-}
