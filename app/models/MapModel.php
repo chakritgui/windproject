@@ -79,8 +79,8 @@ class MapModel{
         $dateInfo = $stmt2->fetch(PDO::FETCH_ASSOC);
         $min_datetime = ($start) ? convertTimeZone($start, 'd/m/Y') : convertTimeZone($dateInfo['min_datetime'], 'd/m/Y');
         $max_datetime = ($end) ? convertTimeZone($end, 'd/m/Y') : convertTimeZone($dateInfo['max_datetime'], 'd/m/Y');
-        $min_datetime_val = ($start) ? convertTimeZone($start, 'd/m/Y') : convertTimeZone($dateInfo['min_datetime'], 'Y-m-d');
-        $max_datetime_val = ($end) ? convertTimeZone($end, 'd/m/Y') : convertTimeZone($dateInfo['max_datetime'], 'Y-m-d');
+        $min_datetime_val = ($start) ? convertTimeZone($start, 'Y-m-d') : convertTimeZone($dateInfo['min_datetime'], 'Y-m-d');
+        $max_datetime_val = ($end) ? convertTimeZone($end, 'Y-m-d') : convertTimeZone($dateInfo['max_datetime'], 'Y-m-d');
         $poleInfo['start_date'] = convertTimeZone($dateInfo['min_datetime'], 'd/m/Y');
         $poleInfo['end_date'] = convertTimeZone($dateInfo['max_datetime'], 'd/m/Y');
         $poleInfo['min_datetime'] = $min_datetime;
