@@ -13,9 +13,6 @@
 <button id="mapFilter" class="btn btn-dark btn-sm">
     <i class="bi bi-list"></i>
 </button>
-<div id="menu1" class="menu-panel"></div>
-<div id="menu2" class="menu-panel"></div>
-<div id="menu3" class="menu-panel"></div>
 <div id="windy"></div>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>

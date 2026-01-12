@@ -7,7 +7,7 @@
             <i class="bi bi-x-lg"></i>
         </button>
     </div>
-    <ul class="list-unstyled mt-3 flex-grow-1">
+    <ul class="list-unstyled mt-3 flex-grow-1 overflow-auto">
         <?php if(isset($_SESSION['user']['role']) && ($_SESSION['user']['role'] == 'admin' || $_SESSION['user']['role'] == 'administrator')) { ?>
             <li><a href="<?=BASE_URL?>/" class="sidebar-link <?= ($GLOBALS['currentRoute']=='/'?'active':'') ?>">
                 <i class="fa-solid fa-chart-pie"></i> <span data-i18n="dashboard"></span>
