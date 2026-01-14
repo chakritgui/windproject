@@ -138,7 +138,7 @@
         padding-bottom: 15px;
     }
 </style>
-<div class="container-fluid mt-3 mb-5">
+<div class="container py-5 mt-5">
     <div class="hero-section">
         <div class="container text-center">
             <h1 class="display-4 fw-bold mb-3"><i class="fas fa-wind"></i> ข่าวสารเกี่ยวกับลม</h1>

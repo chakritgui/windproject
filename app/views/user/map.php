@@ -10,9 +10,6 @@
         </div>
     </div>
 </div>
-<button id="mapFilter" class="btn btn-dark btn-sm">
-    <i class="bi bi-list"></i>
-</button>
 <div id="windy"></div>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>

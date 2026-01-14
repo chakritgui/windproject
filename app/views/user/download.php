@@ -19,7 +19,7 @@
         font-size: 1rem; 
     }
 </style>
-<div class="container py-5">
+<div class="container py-5 mt-5">
     <div class="text-center mb-5">
         <h2 class="fw-bold mb-2">Eraser Shortcut Download</h2>
         <p class="text-muted">เลือกดาวน์โหลด Shortcut สำหรับอุปกรณ์ของคุณ พร้อมคำแนะนำในการติดตั้ง</p>

@@ -158,7 +158,7 @@
         box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
     }
 </style>
-<div class="container-fluid ">
+<div class="container-fluid mt-90 mb-5">
     <div class="dashboard-container">
         <div class="page-header">
             <div class="d-flex justify-content-between align-items-center">

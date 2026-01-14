@@ -4,7 +4,7 @@
 <input type="hidden" id="end"   value="<?= htmlspecialchars($endDate ?? '', ENT_QUOTES, 'UTF-8') ?>">
 <input type="hidden" id="height_id" value="<?= htmlspecialchars($height_id ?? '', ENT_QUOTES, 'UTF-8') ?>">
 <input type="hidden" id="sensors"   value="<?= htmlspecialchars(implode(',', $sensors ?? []), ENT_QUOTES, 'UTF-8') ?>">
-<div class="container-fluid mt-3 mb-3">
+<div class="container-fluid mt-5 mb-3" style="margin-top: 100px !important;">
     <div class="row">
         <div class="col-lg-12">
             <div class="d-flex justify-content-between align-items-center">
@@ -20,7 +20,7 @@
         </div>
     </div>
 </div>
-<div class="container-fluid mt-3 mb-5">
+<div class="container-fluid mt-3 mb-3">
     <div class="header-card">
         <div class="row align-items-center">
             <div class="col-lg-12">
@@ -44,7 +44,7 @@
         </div>
     </div>
 </div>
-<div class="container-fluid mt-3 mb-5">
+<div class="container-fluid mt-3 mb-3">
     <div id="reportSection">
         <div class="report-section">
             <h5 class="report-title"><i class="fas fa-chart-bar me-2"></i><span data-i18n="average_summary"></span></h5>
