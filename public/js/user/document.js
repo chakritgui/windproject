@@ -5,6 +5,13 @@ let currentView = 'list';
 $(document).ready(function () {
     loadDocuments();
     initSelect2Remote('#filter_source', 'api/document/filter', { type: 'source' });
+    initMonthYearPicker("#filter_date", function () {
+        docPage = 1;
+        hasMore = true;
+        $('#gridView').empty();
+        $('#listView').empty();
+        loadDocuments();
+    });
 });
 function triggerDownload(url) {
     const a = document.createElement('a');
@@ -26,7 +33,8 @@ function loadDocuments() {
         dataType: 'json',
         data: { 
             page: docPage,
-            source: $("#filter_source").val()
+            source: $("#filter_source").val(),
+            date: $("#filter_date").val()
         },
         success: function (res) {
             if (res.status === true) {
@@ -99,7 +107,7 @@ function renderListView(items) {
                     </div>
                 </div>
                 <div class="col-12 col-md">
-                    <h5 class="mb-1">${item.document_name}</h5>
+                    <h6 class="mb-1">${item.document_name}</h6>
                     <small class="text-muted d-block">
                         <i class="bi bi-calendar"></i>
                         ${item.document_start || '-'}

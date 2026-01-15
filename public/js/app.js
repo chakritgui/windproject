@@ -599,6 +599,19 @@ function initDatePicker(selector, minDate = null, maxDate = null) {
         endDate: maxDate 
     });
 }
+function initMonthYearPicker(selector, callback) {
+    $(selector).datepicker('destroy');
+    $(selector).datepicker({
+        format: "mm/yyyy",
+        startView: "months",
+        minViewMode: "months",
+        autoclose: true
+    }).on('changeDate', function () {
+        if (typeof callback === 'function') {
+            callback();
+        }
+    });
+}
 $("input").attr("autocomplete", "off");
 function getFileIconClass(ext) {
     ext = ext.toLowerCase();

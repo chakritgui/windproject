@@ -4,18 +4,38 @@ class UserModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function documentList($page = 1, $limit = 20, $type_id = null) {
+    public function documentList($page = 1, $limit = 20, $type_id = null, $date = null){
         $offset = ($page - 1) * $limit;
         $where  = "WHERE d.status = 'public'";
         $params = [];
         if (!empty($type_id)) {
             $where .= " AND d.type_id = :type_id";
-            $params[':type_id'] = (int)$type_id;
+            $params[':type_id'] = [
+                'value' => (int)$type_id,
+                'type'  => PDO::PARAM_INT
+            ];
+        }
+        if (!empty($date)) {
+            [$m, $y] = explode('/', $date);
+            $start = convertTimeZoneUTC("$y-$m-01 00:00:00", 'Y-m-d H:i:s');
+            $end   = convertTimeZoneUTC(
+                date('Y-m-t 23:59:59', strtotime("$y-$m-01")),
+                'Y-m-d H:i:s'
+            );
+            $where .= " AND d.document_start <= :end_date AND d.document_end   >= :start_date";
+            $params[':start_date'] = [
+                'value' => $start,
+                'type'  => PDO::PARAM_STR
+            ];
+            $params[':end_date'] = [
+                'value' => $end,
+                'type'  => PDO::PARAM_STR
+            ];
         }
         $sqlTotal = "SELECT COUNT(*) FROM wp_documents d $where";
         $stmt = $this->db->prepare($sqlTotal);
-        foreach ($params as $k => $v) {
-            $stmt->bindValue($k, $v, PDO::PARAM_INT);
+        foreach ($params as $k => $p) {
+            $stmt->bindValue($k, $p['value'], $p['type']);
         }
         $stmt->execute();
         $total = (int)$stmt->fetchColumn();
@@ -27,7 +47,6 @@ class UserModel {
                 d.document_start,
                 d.document_end,
                 d.document_path,
-                d.status,
                 d.created_at,
                 d.document_download,
                 COALESCE(t.type_name, '-') AS source_name
@@ -38,8 +57,8 @@ class UserModel {
             LIMIT :limit OFFSET :offset
         ";
         $stmt = $this->db->prepare($sql);
-        foreach ($params as $k => $v) {
-            $stmt->bindValue($k, $v, PDO::PARAM_INT);
+        foreach ($params as $k => $p) {
+            $stmt->bindValue($k, $p['value'], $p['type']);
         }
         $stmt->bindValue(':limit',  (int)$limit,  PDO::PARAM_INT);
         $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
@@ -48,7 +67,6 @@ class UserModel {
         foreach ($rows as &$row) {
             $this->formatDocumentRow($row);
         }
-        unset($row);
         return [
             'total'    => $total,
             'page'     => $page,

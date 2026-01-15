@@ -310,5 +310,6 @@
     "table": "Table",
     "list": "List",
     "grid": "Grid",
-    "history_download": "Download History"
+    "history_download": "Download History",
+    "month-year": "Month/Year"
 }
