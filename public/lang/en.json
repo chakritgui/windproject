@@ -306,5 +306,9 @@
     "weather_overview": "Weather Overview",
     "air_density_turbulence": "Air Density & Turbulence",
     "days": "Days",
-    "back": "Back"
+    "back": "Back",
+    "table": "Table",
+    "list": "List",
+    "grid": "Grid",
+    "history_download": "Download History"
 }

@@ -816,3 +816,19 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
         $('#poleModalBody').html('<div class="alert alert-danger">Cannot load data. Please try again.</div>');
     }
 }
+function parseUA(ua) {
+    if (/iPhone/.test(ua)) {
+        const os = ua.match(/OS ([\d_]+)/)?.[1]?.replace(/_/g,'.');
+        return {
+            icon: 'bi-phone',
+            label: `iPhone · iOS ${os} · Safari`
+        };
+    }
+    if (/Android/.test(ua)) {
+        return { icon: 'bi-phone', label: 'Android Device' };
+    }
+    if (/Windows/.test(ua)) {
+        return { icon: 'bi-laptop', label: 'Windows PC' };
+    }
+    return { icon: 'bi-device', label: 'Unknown Device' };
+}

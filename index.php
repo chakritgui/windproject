@@ -53,7 +53,6 @@
             $router->post('/api/document/delete', 'DocumentController@delete');
             $router->post('/api/document/change', 'DocumentController@change');
             $router->post('/api/document/download_history', 'DocumentController@downloadHistory');
-            $router->post('/api/document/filter', 'DocumentController@filter');
             $router->post('/api/project/list', 'ProjectController@list');
             $router->post('/api/project/get', 'ProjectController@get');
             $router->post('/api/wind/list', 'WindController@list');
@@ -73,12 +72,16 @@
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');
             $router->get('/pole/{slug}', 'UserController@pole');
+            $router->post('/api/document-list', 'UserController@documentList');
+            $router->post('/api/document-download', 'UserController@documentDownload');
+            $router->post('/api/document-download-history', 'UserController@documentDownloadHistory');
             $router->get('/project', 'UserController@project');
             $router->get('/project?{slug}', 'UserController@projectDetail');
             $router->get('/document', 'UserController@document');
             $router->get('/download', 'UserController@download');
         }
     }
+    $router->post('/api/document/filter', 'DocumentController@filter');
     $router->post('/api/wind-area', 'MapController@windarea');
     $router->post('/api/poles-location', 'MapController@poleslocation');
     $router->post('/api/pole-details', 'MapController@poledetails');

@@ -20,7 +20,7 @@ class DocumentModel {
                 d.document_path, 
                 d.status, 
                 d.created_at, 
-                d.document_dowload,
+                d.document_download,
                 t.type_name as source_name
             FROM wp_documents d
             LEFT JOIN wp_type t on t.type_id = d.type_id
@@ -49,25 +49,47 @@ class DocumentModel {
         ];
     }
     public function get($id) {
-        if (!$id) return null;
-        $sql = "SELECT 
-            d.*,
-            t.type_id as source_id,
-            t.type_name as source_name
-        FROM wp_documents d
-        LEFT JOIN wp_type t on t.type_id = d.type_id
-        WHERE d.document_id = ?";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([(int)$id]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row) {
-            foreach (['document_start', 'document_end'] as $f) {
-                if (!empty($row[$f])) {
-                    $row[$f] = convertTimeZone($row[$f], 'Y-m-d');
+        if (!$id) {
+            $sql = "SELECT t.type_id as source_id,t.type_name as source_name FROM wp_type t WHERE t.status = ? order by t.type_id asc LIMIT 1";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(['active']);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return [
+                'created_at' => '',
+                'document_download' => 0,
+                'document_end' => convertTimeZone(date('Y-m-d'), 'Y-m-d'),
+                'document_file_name' => '',
+                'document_id' => '',
+                'document_name' => '',
+                'document_path' => '',
+                'document_size' => '',
+                'document_start' => convertTimeZone(date('Y-m-d'), 'Y-m-d'),
+                'document_type' => '',
+                'source_id' => $row['source_id'],
+                'source_name' => $row['source_name'],
+                'status' => 'public',
+                'updated_at' => ''
+            ];
+        } else {
+            $sql = "SELECT 
+                d.*,
+                t.type_id as source_id,
+                t.type_name as source_name
+            FROM wp_documents d
+            LEFT JOIN wp_type t on t.type_id = d.type_id
+            WHERE d.document_id = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([(int)$id]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                foreach (['document_start', 'document_end'] as $f) {
+                    if (!empty($row[$f])) {
+                        $row[$f] = convertTimeZone($row[$f], 'Y-m-d');
+                    }
                 }
             }
+            return $row;
         }
-        return $row;
     }
     public function save($data) {
         $this->db->beginTransaction();
@@ -166,8 +188,8 @@ class DocumentModel {
         if (!empty($row['created_at'])) {
             $row['created_at'] = convertTimeZone($row['created_at'], 'd/m/Y H:i:s');
         }
-        if (!empty($row['document_dowload'])) {
-            $row['document_dowload'] = number_format($row['document_dowload']);
+        if (!empty($row['document_download'])) {
+            $row['document_download'] = number_format($row['document_download']);
         }
         foreach (['document_start', 'document_end'] as $f) {
             if (!empty($row[$f])) {
@@ -206,13 +228,14 @@ class DocumentModel {
         if (!is_dir($dir)) mkdir($dir, 0755, true);
         $ext  = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
         $size = $file['size'];
+        $name = $file['name'];
         $safe = preg_replace("/[^A-Za-z0-9_\.-]/", "_", basename($file['name']));
         $path   = "{$dir}{$document_id}_{$safe}";
         $target = dirname(__DIR__, 2) . '/' . $path;
         move_uploaded_file($file['tmp_name'], $target);
-        $sql = "UPDATE wp_documents SET document_path=?, document_type=?, document_size=? WHERE document_id=?";
+        $sql = "UPDATE wp_documents SET document_path=?, document_type=?, document_size=?, document_file_name=? WHERE document_id=?";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$path, $ext, $size, $document_id]);
+        $stmt->execute([$path, $ext, $size, $name, $document_id]);
     }
     private function buildDownloadWhere($filters, $search) {
         $where = " WHERE 1=1 ";

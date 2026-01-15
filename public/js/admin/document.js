@@ -78,7 +78,7 @@ function initDocumentTable() {
                 }
             },
             { 
-                data: "document_dowload",
+                data: "document_download",
                 className: 'text-end',
                 render: function(data, type, row) {
                     return `
@@ -167,6 +167,7 @@ $(document).on('click', '.manage-document', function () {
                     <button type="submit" class="btn btn-primary save-document" data-i18n="save"></button>
                 `);
                 modalEl.find(".modal-body").html(`
+                    <input type="hidden" id="mode" value="${document_id ? 'edit' : 'new'}">
                     <input type="hidden" name="document_id" id="document_id" value="${document_id ?? ''}">
                     <div class="mb-3">
                         <label class="mb-2 required" data-i18n="uploadFile"></label>
@@ -239,14 +240,14 @@ $(document).on('click', '.manage-document', function () {
                         $('#document_end').datepicker('setDate', endDate);
                     }
                     if (docData.document_path) {
-                        const fileName = docData.document_path.split("/").pop();
                         const fileType = docData.document_type;
+                        const fileName = docData.document_file_name;
                         const fileSize = docData.document_size;
                         const fakeFile = {
                             name: fileName,
                             size: fileSize
                         };
-                        handleFile(fakeFile);
+                        handleFile(fakeFile, 'edit');
                         $("#document_file").removeClass("obj-required");
                     }
                     if (docData.source_id) {
@@ -295,7 +296,7 @@ function handleFile(file, mode = 'edit') {
     if (!file) return;
     let baseName = file.name.replace(/\.[^/.]+$/, "");
     baseName = baseName.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
-    if (mode === 'new') {
+    if (mode === 'new' ||  $("#document_name").val() === "") {
         $("#document_name").val(baseName);
     }
     const type = file.name.split(".").pop().toLowerCase();
@@ -322,6 +323,7 @@ function handleFile(file, mode = 'edit') {
     `);
 }
 $(document).on("click", "#remove_file", function () {
+    const mode = $("#mode").val() || 'new';
     $("#document_file").val("");
     $("#file_preview").addClass("d-none").html("");
     $("#drop_text").removeClass("d-none");
@@ -333,7 +335,8 @@ $(document).on("click", "#remove_file", function () {
 });
 $(document).on("change", "#document_file", function (e) {
     const file = e.target.files[0];
-    handleFile(file, 'new');
+    const mode = $("#mode").val() || 'new';
+    handleFile(file, mode);
 });
 $(document).on("dragover", "#drop_zone", function(e){
     e.preventDefault();
@@ -342,7 +345,8 @@ $(document).on("drop", "#drop_zone", function(e){
     e.preventDefault();
     const file = e.originalEvent.dataTransfer.files[0];
     $("#document_file")[0].files = e.originalEvent.dataTransfer.files;
-    handleFile(file, 'new');
+    const mode = $("#mode").val() || 'new';
+    handleFile(file, mode);
 });
 $(document).on('click', '.save-document', function () {
     let errors = [];
@@ -420,7 +424,7 @@ function saveDocument() {
             if (res.status === true) {
                 showSuccess('Success', langData['saved_successfully']);
                 if (typeof initDocumentTable === "function") initDocumentTable();
-                $('#documentModal').modal('hide');
+                $('#windModal').modal('hide');
             } else {
                 showError('Error', (langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
             }
