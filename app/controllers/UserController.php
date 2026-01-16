@@ -83,16 +83,20 @@ class UserController extends Controller {
             'sensors'   => $sensors
         ]);
     }
-    public function documentList(){
-        $page  = isset($_POST['page']) ? (int)$_POST['page'] : 1;
-        $type_id = isset($_POST['type_id']) && $_POST['type_id'] !== ''
-            ? (int)$_POST['type_id']
-            : null;
-        $date = isset($_POST['date']) && $_POST['date'] !== ''
-            ? trim($_POST['date'])
-            : null;
-        $limit = 9;
-        $data = $this->model->documentList($page, $limit, $type_id, $date);
+    public function documentList() {
+        $page     = max(1, (int)($_POST['page'] ?? 1));
+        $type_id  = ($_POST['type_id'] !== '') ? (int)$_POST['type_id'] : null;
+        $date     = trim($_POST['date'] ?? '');
+        $keyword  = trim($_POST['keyword'] ?? '');
+        $view     = $_POST['view'] ?? 'grid';
+        $limit = ($view === 'list') ? 15 : 9;
+        $data = $this->model->documentList(
+            $page,
+            $limit,
+            $type_id,
+            $date ?: null,
+            $keyword ?: null
+        );
         $this->json([
             'status' => true,
             'data'   => $data

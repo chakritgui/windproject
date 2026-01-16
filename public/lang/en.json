@@ -311,5 +311,8 @@
     "list": "List",
     "grid": "Grid",
     "history_download": "Download History",
-    "month-year": "Month/Year"
+    "month-year": "Month/Year",
+    "no_documents_found": "No documents found",
+    "found": "Found",
+    "documents": "Documents"
 }

@@ -4,38 +4,32 @@ class UserModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function documentList($page = 1, $limit = 20, $type_id = null, $date = null){
+    public function documentList($page = 1, $limit = 20, $type_id = null, $date = null, $keyword = null) {
         $offset = ($page - 1) * $limit;
         $where  = "WHERE d.status = 'public'";
         $params = [];
-        if (!empty($type_id)) {
+        if ($type_id) {
             $where .= " AND d.type_id = :type_id";
-            $params[':type_id'] = [
-                'value' => (int)$type_id,
-                'type'  => PDO::PARAM_INT
-            ];
+            $params[':type_id'] = [(int)$type_id, PDO::PARAM_INT];
         }
-        if (!empty($date)) {
-            [$m, $y] = explode('/', $date);
+        if ($keyword) {
+            $where .= " AND d.document_name LIKE :keyword";
+            $params[':keyword'] = ['%' . $keyword . '%', PDO::PARAM_STR];
+        }
+        if ($date && preg_match('/^\d{2}\/\d{4}$/', $date)) {
+            list($m, $y) = explode('/', $date);
             $start = convertTimeZoneUTC("$y-$m-01 00:00:00", 'Y-m-d H:i:s');
             $end   = convertTimeZoneUTC(
                 date('Y-m-t 23:59:59', strtotime("$y-$m-01")),
                 'Y-m-d H:i:s'
             );
-            $where .= " AND d.document_start <= :end_date AND d.document_end   >= :start_date";
-            $params[':start_date'] = [
-                'value' => $start,
-                'type'  => PDO::PARAM_STR
-            ];
-            $params[':end_date'] = [
-                'value' => $end,
-                'type'  => PDO::PARAM_STR
-            ];
+            $where .= " AND d.document_start <= :end_date AND d.document_end >= :start_date";
+            $params[':start_date'] = [$start, PDO::PARAM_STR];
+            $params[':end_date']   = [$end, PDO::PARAM_STR];
         }
-        $sqlTotal = "SELECT COUNT(*) FROM wp_documents d $where";
-        $stmt = $this->db->prepare($sqlTotal);
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM wp_documents d $where");
         foreach ($params as $k => $p) {
-            $stmt->bindValue($k, $p['value'], $p['type']);
+            $stmt->bindValue($k, $p[0], $p[1]);
         }
         $stmt->execute();
         $total = (int)$stmt->fetchColumn();
@@ -53,15 +47,15 @@ class UserModel {
             FROM wp_documents d
             LEFT JOIN wp_type t ON t.type_id = d.type_id
             $where
-            ORDER BY d.document_id DESC
+            ORDER BY d.created_at DESC, d.document_id DESC
             LIMIT :limit OFFSET :offset
         ";
         $stmt = $this->db->prepare($sql);
         foreach ($params as $k => $p) {
-            $stmt->bindValue($k, $p['value'], $p['type']);
+            $stmt->bindValue($k, $p[0], $p[1]);
         }
-        $stmt->bindValue(':limit',  (int)$limit,  PDO::PARAM_INT);
-        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($rows as &$row) {

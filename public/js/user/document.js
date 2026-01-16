@@ -12,7 +12,35 @@ $(document).ready(function () {
         $('#listView').empty();
         loadDocuments();
     });
+    $('#btnSearch').on('click', function () {
+        docPage = 1;
+        hasMore = true;
+        $('#gridView, #listView').empty();
+        loadDocuments();
+    });
+    $('#filter_keyword').on('keypress', function (e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            const keyword = $.trim($(this).val());
+            if (keyword === '') {
+                resetAndLoad();
+            } else {
+                $('#btnSearch').click();
+            }
+        }
+    });
+    $('#filter_keyword').on('input', function () {
+        if ($.trim(this.value) === '') {
+            resetAndLoad();
+        }
+    });
 });
+function resetAndLoad() {
+    docPage = 1;
+    hasMore = true;
+    $('#gridView, #listView').empty();
+    loadDocuments();
+}
 function triggerDownload(url) {
     const a = document.createElement('a');
     a.href = url;
@@ -22,6 +50,9 @@ function triggerDownload(url) {
     document.body.removeChild(a);
 }
 $('.filter').on('change', function () {
+    docPage = 1;
+    hasMore = true;
+    $('#gridView, #listView').empty();
     loadDocuments();
 });
 function loadDocuments() {
@@ -34,10 +65,12 @@ function loadDocuments() {
         data: { 
             page: docPage,
             source: $("#filter_source").val(),
-            date: $("#filter_date").val()
+            date: $("#filter_date").val(),
+            keyword: $("#filter_keyword").val()
         },
         success: function (res) {
             if (res.status === true) {
+                $('#docTotal').text(res.data.total);
                 renderDocuments(res.data.items);
                 hasMore = res.data.has_more;
                 docPage++;
@@ -54,6 +87,15 @@ function loadDocuments() {
     });
 }
 function renderDocuments(items) {
+    if (!items.length) {
+        $('#listView').html(`
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-folder-x" style="font-size:48px;"></i>
+                <p class="mt-3" data-i18n="no_documents_found"></p>
+            </div>
+        `);
+        return;
+    }
     if (currentView === 'grid') {
         renderGridView(items);
     } else {
@@ -66,26 +108,33 @@ function renderGridView(items) {
         const icon = getDocIcon(item.document_type);
         const size = formatFileSize(item.document_size);
         html += `
-        <div class="col-md-4">
+        <div class="col-6 col-md-4">
             <div class="doc-card card h-100">
-                <div class="card-body text-center">
-                    <div class="doc-icon mb-3" style="margin: 0 auto 15px;">
-                        <i class="bi ${icon} text-white" style="font-size:40px;"></i>
+                <div class="card-body text-center p-3">
+                    <div class="doc-icon mx-auto mb-2">
+                        <i class="bi ${icon} text-white"></i>
                     </div>
-                    <h6 class="card-title" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.5rem;">${item.document_name}</h6>
-                    <p class="text-muted small mb-1">
-                        <i class="bi bi-calendar"></i>
-                        ${item.document_start || '-'}
-                        ${item.document_end ? ' - ' + item.document_end : ''}
-                    </p>
-                    <p class="text-muted small mb-1">
-                        <span data-i18n="size"></span>: ${size} | ${item.document_type.toUpperCase()}
-                    </p>
-                    <p class="text-muted small mb-3">
-                        <span class="badge bg-${(item.source_name === 'Met Mast') ? 'warning' : 'error'}" style="font-size: 10px;">${item.source_name}</span>
-                    </p>
-                    <button class="btn btn-download w-100" data-id="${item.document_id}" data-path="${item.document_path}">
-                        <i class="bi bi-download"></i> <span data-i18n="download"></span>
+                    <h6 class="card-title doc-title">
+                        ${item.document_name}
+                    </h6>
+                    <div class="doc-meta small text-muted">
+                        <div class="mb-1" style="font-size: 10px;">
+                            <i class="bi bi-calendar"></i>
+                            ${item.document_start || '-'}
+                            ${item.document_end ? ' - ' + item.document_end : ''}
+                        </div>
+                        <div class="mb-1" style="font-size: 10px;">
+                            ${size} · ${item.document_type.toUpperCase()}
+                        </div>
+                    </div>
+                    <span class="badge source-badge bg-${(item.source_name === 'Met Mast') ? 'warning' : 'error'}">
+                        ${item.source_name}
+                    </span>
+                    <button class="btn btn-download w-100 mt-2"
+                        data-id="${item.document_id}"
+                        data-path="${item.document_path}">
+                        <i class="bi bi-download"></i>
+                        <span class="btn-text" data-i18n="download"></span>
                     </button>
                 </div>
             </div>
@@ -99,31 +148,35 @@ function renderListView(items) {
         const icon = getDocIcon(item.document_type);
         const size = formatFileSize(item.document_size);
         html += `
-        <div class="list-view-item p-3">
-            <div class="row align-items-center">
-                <div class="col-12 col-md-auto mb-2 mb-md-0">
-                    <div class="doc-icon mx-auto mx-md-0">
-                        <i class="bi ${icon} text-white" style="font-size:40px;"></i>
+        <div class="list-view-item">
+            <div class="row align-items-center g-2">
+                <div class="col-auto">
+                    <div class="doc-icon">
+                        <i class="bi ${icon} text-white"></i>
                     </div>
                 </div>
-                <div class="col-12 col-md">
-                    <h6 class="mb-1">${item.document_name}</h6>
-                    <small class="text-muted d-block">
-                        <i class="bi bi-calendar"></i>
-                        ${item.document_start || '-'}
-                        ${item.document_end ? ' - ' + item.document_end : ''}
-                    </small>
-                    <small class="text-muted d-block">
-                        <i class="bi bi-file-earmark"></i>
-                        ${size} | ${item.document_type.toUpperCase()}
-                        |
-                        <span class="badge  bg-${(item.source_name === 'Met Mast') ? 'warning' : 'error'}">${item.source_name}</span>
-                    </small>
+                <div class="col">
+                    <h6 class="mb-2 doc-title">${item.document_name}</h6>
+                    <div class="doc-meta small text-muted">
+                        <div class="mb-1" style="font-size: 10px;">
+                            <i class="bi bi-calendar"></i>
+                            ${item.document_start || '-'}
+                            ${item.document_end ? ' - ' + item.document_end : ''}
+                        </div>
+                        <div class="mb-1" style="font-size: 10px;">
+                            ${size} · ${item.document_type.toUpperCase()}
+                        </div>
+                    </div>
+                    <span class="badge source-badge bg-${(item.source_name === 'Met Mast') ? 'warning' : 'error'}">
+                        ${item.source_name}
+                    </span>
                 </div>
-                <div class="col-12 col-md-auto mt-3 mt-md-0 text-md-end">
-                    <button class="btn btn-download w-100 w-md-auto" data-id="${item.document_id}" data-path="${item.document_path}">
+                <div class="col-12 col-md-auto text-end">
+                    <button class="btn btn-download w-100 w-md-auto"
+                        data-id="${item.document_id}"
+                        data-path="${item.document_path}">
                         <i class="bi bi-download"></i>
-                        <span data-i18n="download"></span>
+                        <span class="btn-text" data-i18n="download"></span>
                     </button>
                 </div>
             </div>
@@ -132,21 +185,22 @@ function renderListView(items) {
     $('#listView').append(html);
 }
 function setView(view) {
-    if (currentView === view) return;
+    if (currentView === view || isLoading) return;
     currentView = view;
-    $('#gridView').empty();
-    $('#listView').empty();
-    docPage  = 1;
-    hasMore  = true;
-    $('.view-toggle .btn').removeClass('active');
+    isLoading   = false;
+    docPage = 1;
+    hasMore = true;
+    $('#gridView, #listView').empty();
+    $('.view-toggle .btn').removeClass('active').attr('aria-pressed', 'false');
+    $('.view-toggle .btn[data-view="' + view + '"]').addClass('active').attr('aria-pressed', 'true');
     if (view === 'grid') {
-        $('#gridView').show();
-        $('#listView').hide();
-        $('.view-toggle .btn').eq(0).addClass('active');
+        $('#listView').fadeOut(150, function () {
+            $('#gridView').fadeIn(200);
+        });
     } else {
-        $('#gridView').hide();
-        $('#listView').show();
-        $('.view-toggle .btn').eq(1).addClass('active');
+        $('#gridView').fadeOut(150, function () {
+            $('#listView').fadeIn(200);
+        });
     }
     loadDocuments();
 }
@@ -260,7 +314,6 @@ function renderHistoryRows(items) {
                         <i class="bi bi-file-earmark"></i>
                         ${row.document_type.toUpperCase()}
                     </span>
-
                     <span>
                         <i class="bi bi-hdd"></i>
                         ${size}

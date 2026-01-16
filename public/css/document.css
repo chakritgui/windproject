@@ -1,14 +1,47 @@
+.header-title {
+    font-weight: 600;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.view-toggle .btn {
+    border-radius: 10px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.view-toggle .btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-color: transparent;
+}
 .doc-card {
     border: 2px solid #e9ecef;
     border-radius: 15px;
-    transition: all 0.3s ease;
     height: 100%;
     overflow: hidden;
+    transition: all 0.3s ease;
+    background: #fff;
 }
 .doc-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
     border-color: #667eea;
+}
+.doc-card .card-body {
+    padding: 1.25rem;
+}
+.doc-card .card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 .doc-icon {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -19,51 +52,103 @@
     align-items: center;
     justify-content: center;
 }
+.doc-icon i {
+    font-size: 40px;
+}
+.doc-meta {
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+.badge {
+    font-size: 11px;
+    padding: 4px 8px;
+}
+.badge-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+}
 .btn-download {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border: none;
-    color: white;
+    color: #fff;
     transition: all 0.3s ease;
 }
 .btn-download:hover {
     transform: scale(1.05);
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-    color: white;
-}
-.view-toggle .btn {
-    border-radius: 10px;
-}
-.view-toggle .btn.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-.history-item {
-    border-left: 3px solid #667eea;
-    padding-left: 15px;
-    margin-bottom: 15px;
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 10px;
-}
-.badge-custom {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.header-title {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #fff;
 }
 .list-view-item {
     border: 2px solid #e9ecef;
-    border-radius: 10px;
-    transition: all 0.3s ease;
+    border-radius: 12px;
+    padding: 14px;
     margin-bottom: 15px;
+    background: #fff;
+    transition: all 0.3s ease;
 }
 .list-view-item:hover {
     border-color: #667eea;
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
 }
+.list-view-item h6 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.history-item {
+    border-left: 3px solid #667eea;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
 #scrollEnd {
-    height: 15px;
+    height: 20px;
+}
+@media (max-width: 576px) {
+    .view-toggle {
+        display: none;
+    }
+    .doc-card {
+        border-width: 1px;
+        border-radius: 12px;
+    }
+    .doc-card:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    .doc-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+    }
+    .doc-icon i {
+        font-size: 24px;
+    }
+    .doc-card .card-title,.list-view-item h6 {
+        font-size: 0.95rem;
+    }
+    .doc-meta {
+        font-size: 0.75rem;
+    }
+    .btn-download {
+        padding: 6px 8px;
+        font-size: 0.85rem;
+    }
+    .btn-download:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    .list-view-item {
+        border-width: 1px;
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+    .list-view-item:hover {
+        box-shadow: none;
+    }
 }
