@@ -314,5 +314,7 @@
     "month-year": "Month/Year",
     "no_documents_found": "No documents found",
     "found": "Found",
-    "documents": "Documents"
+    "documents": "Documents",
+    "area": "Area",
+    "color_setting": "Color Setting"
 }

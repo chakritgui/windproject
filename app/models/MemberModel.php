@@ -89,8 +89,19 @@ class MemberModel {
                 $row['password_hash'] = decryptToken($row['password_hash']);
                 return $row;
             }
+        } else {
+            return [
+                'email' => '',
+                'first_name' => '',
+                'last_name' => '',
+                'member_id' => '',
+                'password_hash' => '',
+                'phone' => '',
+                'role' => 'user',
+                'status' => 'active',
+                'username' => ''
+            ];
         }
-        return null;
     }
     public function delete($id) {
         if($id) {

@@ -124,15 +124,13 @@ function renderGridView(items) {
                             ${item.document_end ? ' - ' + item.document_end : ''}
                         </div>
                         <div class="mb-1" style="font-size: 10px;">
-                            ${size} · ${item.document_type.toUpperCase()}
+                            <i class="bi bi-hdd"></i> ${size} · <i class="bi bi-file-earmark"></i> ${item.document_type.toUpperCase()}
                         </div>
                     </div>
                     <span class="badge source-badge bg-${(item.source_name === 'Met Mast') ? 'warning' : 'error'}">
                         ${item.source_name}
                     </span>
-                    <button class="btn btn-download w-100 mt-2"
-                        data-id="${item.document_id}"
-                        data-path="${item.document_path}">
+                    <button class="btn btn-download w-100 mt-2" data-id="${item.document_id}" data-path="${item.document_path}">
                         <i class="bi bi-download"></i>
                         <span class="btn-text" data-i18n="download"></span>
                     </button>
@@ -164,7 +162,7 @@ function renderListView(items) {
                             ${item.document_end ? ' - ' + item.document_end : ''}
                         </div>
                         <div class="mb-1" style="font-size: 10px;">
-                            ${size} · ${item.document_type.toUpperCase()}
+                            <i class="bi bi-hdd"></i> ${size} · <i class="bi bi-file-earmark"></i> ${item.document_type.toUpperCase()}
                         </div>
                     </div>
                     <span class="badge source-badge bg-${(item.source_name === 'Met Mast') ? 'warning' : 'error'}">
@@ -172,9 +170,7 @@ function renderListView(items) {
                     </span>
                 </div>
                 <div class="col-12 col-md-auto text-end">
-                    <button class="btn btn-download w-100 w-md-auto"
-                        data-id="${item.document_id}"
-                        data-path="${item.document_path}">
+                    <button class="btn btn-download w-100 w-md-auto" data-id="${item.document_id}" data-path="${item.document_path}">
                         <i class="bi bi-download"></i>
                         <span class="btn-text" data-i18n="download"></span>
                     </button>
