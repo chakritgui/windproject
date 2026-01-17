@@ -1,0 +1,3 @@
+function initPolesTable() {
+    alert('initPolesTable');
+}

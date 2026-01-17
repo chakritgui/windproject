@@ -46,13 +46,11 @@
             $router->post('/api/member/delete', 'MemberController@delete');
             $router->post('/api/member/check-email', 'MemberController@checkemail');
             $router->post('/api/member/check-username', 'MemberController@checkusername');
-            $router->post('/api/member/change', 'MemberController@change');
             $router->post('/api/member/filter', 'MemberController@filter');
             $router->post('/api/document/list', 'DocumentController@list');
             $router->post('/api/document/get', 'DocumentController@get');
             $router->post('/api/document/save', 'DocumentController@save');
             $router->post('/api/document/delete', 'DocumentController@delete');
-            $router->post('/api/document/change', 'DocumentController@change');
             $router->post('/api/document/download_history', 'DocumentController@downloadHistory');
             $router->post('/api/project/list', 'ProjectController@list');
             $router->post('/api/project/get', 'ProjectController@get');
@@ -64,13 +62,13 @@
             $router->post('/api/news/list', 'NewsController@list');
             $router->post('/api/news/save', 'NewsController@save');
             $router->post('/api/news/delete', 'NewsController@delete');
-            $router->post('/api/news/change', 'NewsController@change');
             $router->post('/api/news/filter', 'NewsController@filter');
             $router->post('/api/setting/saveInfo', 'SettingController@saveInfo');
             $router->post('/api/setting/saveLang', 'SettingController@saveLang');
             $router->post('/api/setting/saveShortcut', 'SettingController@saveShortcut');
             $router->post('/api/mapsetting/save', 'MapSettingController@save');
             $router->get('/api/mapsetting/load', 'MapSettingController@load');
+            $router->post('/api/contracts/list', 'ContractsController@list');
         } else {
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');

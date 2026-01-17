@@ -1,0 +1,3 @@
+function initProjectsTable() {
+    alert('initProjectsTable');
+}

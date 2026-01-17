@@ -42,11 +42,6 @@ class NewsController extends BaseController {
         ];
         $this->json(['status'=>$this->model->save($data)]);
     }
-    public function change() {
-        $id = intval($_POST['id'] ?? 0);
-        $status = $_POST['status'] ?? 'public';
-        $this->json(['status'=>$this->model->change($id, $status)]);
-    }
     public function filter() {
         $page = intval($_POST['page'] ?? 0);
         $limit = intval($_POST['limit'] ?? 10);

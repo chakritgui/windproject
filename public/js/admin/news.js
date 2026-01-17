@@ -72,22 +72,6 @@ function initNewsTable() {
                     return `
                         <div class="d-flex align-items-center gap-2">
                             <span class="badge bg-${status === 'published' ? 'success' : 'secondary'}" data-i18n="${status}"></span>
-                            <div class="dropdown">
-                                <button class="btn btn-sm border-0" data-bs-toggle="dropdown">
-                                    <i class="fa-solid fa-angle-down"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow">
-                                    <li class="${status === 'published' ? 'd-none' : ''}">
-                                        <a class="dropdown-item change-status" data-id="${row.news_id}" data-status="published"><span data-i18n="published" class="text-success"></span></a>
-                                    </li>
-                                    <li class="${status === 'draft' ? 'd-none' : ''}">
-                                        <a class="dropdown-item change-status" data-id="${row.news_id}" data-status="published"><span data-i18n="re-published" class="text-warning"></span></a>
-                                    </li>
-                                    <li class="${status === 'draft' ? 'd-none' : ''}">
-                                        <a class="dropdown-item change-status" data-id="${row.news_id}" data-status="draft"><span data-i18n="draft" class="text-secondary"></span></a>
-                                    </li>
-                                </ul>
-                            </div>
                         </div>
                     `
                 }
@@ -519,32 +503,6 @@ $(document).on('click', '.delete-news', function() {
                     if (res.message) msg += ": " + res.message;
                 } catch (e) {}
                 showError('Error', msg);
-            }
-        });
-    });
-});
-$(document).on('click', '.change-status', function() {
-    let news_id = $(this).data("id");
-    let status = $(this).data("status");
-    showConfirm(langData['confirm'], langData['confirm_change'], function(){
-        $.ajax({
-            url: 'api/news/change',
-            method: 'POST',
-            data: { 
-                id: news_id,
-                status: status,
-            },
-            dataType: 'json',
-            success: function(res) {
-                if(res.status === true){
-                    showSuccess('Success', langData['change_successfully']);
-                    initNewsTable();
-                } else {
-                    showError('Error', langData['cannot_change']);
-                }   
-            },
-            error: function(){
-                showError('Error', langData['cannot_change']);
             }
         });
     });

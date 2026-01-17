@@ -41,11 +41,6 @@ class DocumentController extends BaseController {
         $id = intval($_POST['id'] ?? 0);
         $this->json(['status'=>$this->model->delete($id)]);
     }
-    public function change() {
-        $id = intval($_POST['id'] ?? 0);
-        $status = $_POST['status'] ?? 'public';
-        $this->json(['status'=>$this->model->change($id, $status)]);
-    }
     public function filter() {
         $page = intval($_POST['page'] ?? 0);
         $limit = intval($_POST['limit'] ?? 10);

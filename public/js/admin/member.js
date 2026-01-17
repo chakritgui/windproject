@@ -73,22 +73,6 @@ function initMemberTable() {
                     return `
                         <div class="d-flex align-items-center gap-2">
                             <span class="badge bg-${badge}" style="font-weight:400;" data-i18n="${status}"></span>
-                            <div class="dropdown">
-                                <button class="btn btn-sm border-0" data-bs-toggle="dropdown">
-                                    <i class="fa-solid fa-angle-down"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow">
-                                    <li class="${status === 'active' ? 'd-none' : ''}">
-                                        <a class="dropdown-item change-status" data-id="${row.member_id}" data-status="active"><span data-i18n="active" class="text-success"></span></a>
-                                    </li>
-                                    <li class="${status === 'inactive' ? 'd-none' : ''}">
-                                        <a class="dropdown-item change-status" data-id="${row.member_id}" data-status="inactive"><span data-i18n="inactive" class="text-secondary"></span></a>
-                                    </li>
-                                    <li class="${status === 'banned' ? 'd-none' : ''}">
-                                        <a class="dropdown-item change-status" data-id="${row.member_id}" data-status="banned"><span data-i18n="banned" class="text-danger"></span></a>
-                                    </li>
-                                </ul>
-                            </div>
                         </div>
                     `;
                 }
@@ -527,30 +511,4 @@ $(document).on('input change', '.obj-required', function () {
     if (value) {
         $(this).removeClass('is-invalid');
     }
-});
-$(document).on('click', '.change-status', function() {
-    let member_id = $(this).data("id");
-    let status = $(this).data("status");
-    showConfirm(langData['confirm'], langData['confirm_change'], function(){
-        $.ajax({
-            url: 'api/member/change',
-            method: 'POST',
-            data: { 
-                id: member_id,
-                status: status,
-            },
-            dataType: 'json',
-            success: function(res) {
-                if(res.status === true){
-                    showSuccess('Success', langData['change_successfully']);
-                    initMemberTable();
-                } else {
-                    showError('Error', langData['cannot_change']);
-                }   
-            },
-            error: function(){
-                showError('Error', langData['cannot_change']);
-            }
-        });
-    });
 });

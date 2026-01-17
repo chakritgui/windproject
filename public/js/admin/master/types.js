@@ -1,0 +1,3 @@
+function initTypesTable() {
+    alert('initTypesTable');
+}

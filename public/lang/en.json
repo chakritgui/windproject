@@ -340,5 +340,19 @@
     "map_layers": "Map Layers",
     "support_json": "Support .json,.geojson,.geojsonl Only.",
     "master_data": "Master Data",
-    "map_and_boundary": "Map & Boundary"
+    "map_and_boundary": "Map & Boundary",
+    "contracts": "Contracts",
+    "projects": "Projects",
+    "pole_types": "Pole Types",
+    "poles": "Poles",
+    "contract_no": "Contract No.",
+    "contract_name": "Contract Name",
+    "project_code": "Project Code",
+    "project_name": "Project Name",
+    "contract": "Contract",
+    "location": "Location",
+    "type_code": "Type Code",
+    "type_name": "Type Name",
+    "pole_code": "Pole Code",
+    "content": "Content"
 }

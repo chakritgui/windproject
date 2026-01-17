@@ -55,11 +55,6 @@ class MemberController extends BaseController {
         $exists = $this->model->checkUsernameExists($username, $member_id);
         $this->json(['exists' => $exists]);
     }
-    public function change() {
-        $id = intval($_POST['id'] ?? 0);
-        $status = $_POST['status'] ?? 'public';
-        $this->json(['status'=>$this->model->change($id, $status)]);
-    }
     public function filter() {
         $page = intval($_POST['page'] ?? 0);
         $limit = intval($_POST['limit'] ?? 10);

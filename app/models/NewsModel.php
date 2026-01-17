@@ -201,28 +201,6 @@ class NewsModel {
             $this->db->prepare("UPDATE wp_news SET cover=? WHERE news_id =?")->execute([$dbPath, $news_id]);
         }
     }
-    public function change($id, $status) {
-        if (!$id) { 
-            return false;
-        }
-        $pdo = $this->db;
-        if ($status === 'published') {
-            $sql = "UPDATE wp_news SET status = :status,publish_at = NOW(),updated_at = NOW() WHERE news_id = :id";
-            $stmt = $pdo->prepare($sql);
-            $stmt->bindValue(':status', $status);
-            $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
-        } else {
-            $sql = "UPDATE wp_news SET status = :status,publish_at = NULL,updated_at = NOW() WHERE news_id = :id";
-            $stmt = $pdo->prepare($sql);
-            $stmt->bindValue(':status', $status);
-            $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
-        }
-        $ok = $stmt->execute();
-        if ($ok) {
-            $this->notification($id, $status);
-        }
-        return $ok;
-    }
     public function delete($id) {
         $pdo = $this->db;
         $pdo->prepare("UPDATE wp_news SET status = 'deleted', updated_at = NOW() WHERE news_id = ?")->execute([(int)$id]);

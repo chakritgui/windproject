@@ -60,19 +60,6 @@ function initDocumentTable() {
                     return `
                         <div class="d-flex align-items-center gap-2">
                             <span class="badge bg-${badgeColor}" style="font-weight:400;" data-i18n="${status}"></span>
-                            <div class="dropdown">
-                                <button class="btn btn-sm border-0" data-bs-toggle="dropdown">
-                                    <i class="fa-solid fa-angle-down"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow">
-                                    <li class="${status === 'public' ? 'd-none' : ''}">
-                                        <a class="dropdown-item change-status" data-id="${row.document_id}" data-status="public"><span data-i18n="public" class="text-success"></span></a>
-                                    </li>
-                                    <li class="${status === 'private' ? 'd-none' : ''}">
-                                        <a class="dropdown-item change-status" data-id="${row.document_id}" data-status="private"><span data-i18n="private" class="text-muted"></span></a>
-                                    </li>
-                                </ul>
-                            </div>
                         </div>
                     `;
                 }
@@ -465,32 +452,6 @@ $(document).on('click', '.delete-document', function() {
         });
     });
 });
-$(document).on('click', '.change-status', function() {
-    let document_id = $(this).data("id");
-    let status = $(this).data("status");
-    showConfirm(langData['confirm'], langData['confirm_change'], function(){
-        $.ajax({
-            url: 'api/document/change',
-            method: 'POST',
-            data: { 
-                id: document_id,
-                status: status,
-            },
-            dataType: 'json',
-            success: function(res) {
-                if(res.status === true){
-                    showSuccess('Success', langData['change_successfully']);
-                    initDocumentTable();
-                } else {
-                    showError('Error', langData['cannot_change']);
-                }   
-            },
-            error: function(){
-                showError('Error', langData['cannot_change']);
-            }
-        });
-    });
-});
 $(document).on('click', '.history-download', function(){
     const document_id = $(this).data("id");
     let modalEl = $('#windModal');
@@ -578,7 +539,7 @@ function loadDownloadHistory(document_id){
         lengthMenu: lengthMenu,
         language: getTableLang(),
         drawCallback: function(settings){
-            $("#total_downloads").text(settings.json.total_downloads);
+            $("#total_downloads").text(settings.json.recordsTotal);
         }
     });
 }

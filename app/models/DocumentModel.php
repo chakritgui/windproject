@@ -120,9 +120,6 @@ class DocumentModel {
     public function delete($id) {
         return $this->updateStatus($id, 'deleted');
     }
-    public function change($id, $status) {
-        return $this->updateStatus($id, $status);
-    }
     public function downloadHistory($start, $length, $filters, $search) {
         list($where, $params) = $this->buildDownloadWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*) FROM wp_documents_download_logs d LEFT JOIN wp_members m ON m.member_id = d.member_id {$where}";
