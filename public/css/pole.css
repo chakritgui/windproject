@@ -1,0 +1,280 @@
+#windy { 
+    width: 100%;
+    height: 100%; 
+    background: #eee; 
+}
+#ui {
+    position: absolute;
+    top: 65px;
+    right: 15px;
+    z-index: 9999;
+    background: transparent;
+    padding: 0;
+}
+.wind-toggle-card {
+    width: auto;
+    padding: 0px 5px;
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    text-align: center;
+    color: #fff;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease;
+    gap: 5px;
+    border-radius: 40px;
+}
+#windSwitch:checked ~ .wind-icon i {
+    animation: rotate-fan 2s linear infinite;
+    color: #00d4ff;
+}
+@keyframes rotate-fan {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.wind-icon {
+    width: 30px;
+    height: 30px;
+    margin: 0;
+    line-height: 30px;
+}
+.wind-icon i {
+    font-size: 18px;
+}
+.wind-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.form-check-input {
+    height: 1.5em !important;
+    cursor: pointer;
+}
+.menu-panel {
+    position: fixed;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    width: 225px;
+    max-width: 80vw;
+    display: none;
+    padding: 10px;
+    z-index: 9999;
+}
+.menu-item {
+    padding: 10px;
+    cursor: pointer;
+}
+.menu-item:hover,.menu-item.active {
+    background: rgba(255,255,255,0.2);
+}
+@media (max-width: 768px) {
+    .menu-panel {
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    .submenu {
+        margin-left: 20px;
+        background: rgba(0,0,0,0.1);
+        border-left: 2px solid #111111;
+        display: none;
+    }
+    .menu-item {
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+}
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #3498db;
+    --accent-color: #e74c3c;
+    --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+.header-card {
+    background: var(--bg-gradient);
+    color: white;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    animation: slideDown 0.5s ease-out;
+}
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.filter-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+.filter-card.collapsed {
+    padding: 1rem;
+}
+.filter-toggle {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 2px solid #e0e0e0;
+    margin-bottom: 1rem;
+}
+.filter-toggle i {
+    transition: transform 0.3s ease;
+}
+.filter-toggle.collapsed i {
+    transform: rotate(180deg);
+}
+.filter-content {
+    max-height: 1000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+.filter-content.hide {
+    max-height: 0;
+    opacity: 0;
+}
+.form-label {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+.sensor-checkbox {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+}
+.sensor-checkbox:hover {
+    background: #e9ecef;
+    transform: translateX(5px);
+}
+.sensor-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+.btn-generate {
+    background: var(--bg-gradient);
+    border: none;
+    color: white;
+    padding: 0.8rem 3rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+.btn-generate:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    color: white;
+}
+.report-section {
+    background: white;
+    border-radius: 15px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    animation: fadeIn 0.5s ease-out;
+}
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+.report-title {
+    color: var(--primary-color);
+    border-left: 5px solid var(--secondary-color);
+    padding-left: 1rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+.chart-container {
+    background: white;
+    border-radius: 10px;
+    height: 400px;
+    position: relative;
+}
+@media (max-width: 768px) {
+    .header-card {
+        padding: 1.5rem;
+    }
+}
+.chart-container {
+    position: relative;
+    height: 320px; 
+}
+.chart-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+.stat-card {
+    color: #fff;
+    min-height: 130px;
+    position: relative;
+    overflow: hidden;
+}
+.stat-icon {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    font-size: 2.2rem;
+    opacity: 0.25;
+}
+.stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+.badge-days {
+    background: #e1f0ff;
+    color: #007bff;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-weight: 600;
+    margin-left: 5px;
+}

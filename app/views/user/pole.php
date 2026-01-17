@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/map.css?v=<?=time();?>">
+<link rel="stylesheet" href="<?=BASE_URL?>/public/css/pole.css?v=<?=time();?>">
 <input type="hidden" id="poles_id"  value="<?= htmlspecialchars($id ?? '', ENT_QUOTES, 'UTF-8') ?>">
 <input type="hidden" id="start" value="<?= htmlspecialchars($startDate ?? '', ENT_QUOTES, 'UTF-8') ?>">
 <input type="hidden" id="end"   value="<?= htmlspecialchars($endDate ?? '', ENT_QUOTES, 'UTF-8') ?>">
