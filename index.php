@@ -39,6 +39,7 @@
             $router->get('/news', 'AdminController@news');
             $router->get('/setting', 'AdminController@setting');
             $router->get('/shortcut', 'AdminController@shortcut');
+            $router->get('/master', 'AdminController@master');
             $router->post('/api/member/list', 'MemberController@list');
             $router->post('/api/member/get', 'MemberController@get');
             $router->post('/api/member/save', 'MemberController@save');
@@ -68,6 +69,8 @@
             $router->post('/api/setting/saveInfo', 'SettingController@saveInfo');
             $router->post('/api/setting/saveLang', 'SettingController@saveLang');
             $router->post('/api/setting/saveShortcut', 'SettingController@saveShortcut');
+            $router->post('/api/mapsetting/save', 'MapSettingController@save');
+            $router->get('/api/mapsetting/load', 'MapSettingController@load');
         } else {
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');

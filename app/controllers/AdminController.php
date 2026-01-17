@@ -63,4 +63,11 @@
             }
             $this->view('admin/shortcut');
         }                               
+        public function master() {
+            ensure_login();
+            if (!is_admin()) { 
+                $this->redirect('login');
+            }
+            $this->view('admin/master');
+        }                               
     }

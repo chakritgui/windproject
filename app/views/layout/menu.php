@@ -12,10 +12,11 @@
             <li><a href="<?=BASE_URL?>/" class="sidebar-link <?=($GLOBALS['currentRoute']=='/'?'active':'')?>"><i class="fa-solid fa-chart-pie"></i> <span data-i18n="dashboard"></span></a></li>
             <li><a href="<?=BASE_URL?>/member" class="sidebar-link <?=($GLOBALS['currentRoute']=='/member'?'active':'')?>"><i class="fa-solid fa-users-line"></i> <span data-i18n="member"></span></a></li>
             <li><a href="<?=BASE_URL?>/document" class="sidebar-link <?=($GLOBALS['currentRoute']=='/document'?'active':'')?>"><i class="fa-solid fa-folder-tree"></i> <span data-i18n="document"></span></a></li>
-            <li><a href="<?=BASE_URL?>/news" class="sidebar-link <?=($GLOBALS['currentRoute']=='/news'?'active':'')?>"><i class="fa-solid fa-newspaper"></i> <span data-i18n="news"></span></a></li>
+            <li><a href="<?=BASE_URL?>/news" class="sidebar-link <?=($GLOBALS['currentRoute']=='/news'?'active':'')?>"><i class="bi bi-bell" style="font-size:1.5rem"></i> <span data-i18n="news"></span></a></li>
             <li><a href="<?=BASE_URL?>/wind" class="sidebar-link <?=($GLOBALS['currentRoute']=='/wind'?'active':'')?>"><i class="fa-solid fa-wind"></i> <span data-i18n="wind"></span></a></li>
             <li><a href="<?=BASE_URL?>/project" class="sidebar-link <?=($GLOBALS['currentRoute']=='/project'?'active':'')?>"><i class="fa-solid fa-diagram-project"></i> <span data-i18n="project"></span></a></li>
-            <li><a href="<?=BASE_URL?>/map" class="sidebar-link <?=($GLOBALS['currentRoute']=='/map'?'active':'')?>"><i class="fa-solid fa-map-location-dot"></i> <span data-i18n="map_setting"></span></a></li>
+            <li><a href="<?=BASE_URL?>/map" class="sidebar-link <?=($GLOBALS['currentRoute']=='/map'?'active':'')?>"><i class="fa-solid fa-map-location-dot"></i> <span data-i18n="map_and_boundary"></span></a></li>
+            <li><a href="<?=BASE_URL?>/master" class="sidebar-link <?=($GLOBALS['currentRoute']=='/master'?'active':'')?>"><i class="fa-solid fa-database"></i> <span data-i18n="master_data"></span></a></li>
             <li><a href="<?=BASE_URL?>/setting" class="sidebar-link <?=($GLOBALS['currentRoute']=='/setting'?'active':'')?>"><i class="fa-solid fa-gear"></i> <span data-i18n="setting"></span></a></li>
             <li><a href="<?=BASE_URL?>/shortcut" class="sidebar-link <?=($GLOBALS['currentRoute']=='/shortcut'?'active':'')?>"><i class="fa-regular fa-circle-down"></i> <span data-i18n="shortcut"></span></a></li>
         <?php } else { ?>

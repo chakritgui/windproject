@@ -481,7 +481,7 @@ $(document).on('click', '.save-member', function () {
     saveMember();
 });
 function saveMember() {
-    $(".save-member").attr("disable", true);
+    $(".save-member").attr("disabled", true);
     $.ajax({
         url: 'api/member/save',
         method: 'POST',
@@ -505,11 +505,11 @@ function saveMember() {
             } else {
                 showError('Error', langData['cannot_save']);
             }   
-            $(".save-document").attr("disable", false);
+            $(".save-member").attr("disabled", false);
         },
         error: function(){
             showError('Error', langData['cannot_save']);
-            $(".save-document").attr("disable", false);
+            $(".save-member").attr("disabled", false);
         }
     });
 }
