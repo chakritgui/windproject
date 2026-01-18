@@ -152,9 +152,9 @@ function renderPolygonList() {
                     </div>
                 </div>
                 <div class="btn-group btn-group-sm ms-2">
-                    <button class="btn btn-outline-primary" onclick="focusOnLayer(${p.poly_id})"><i class="bi bi-eye-fill"></i></button>
-                    <button class="btn btn-outline-warning" onclick="openEditPopup(${p.poly_id})"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-outline-danger" onclick="deletePolygon(${p.poly_id})"><i class="bi bi-trash-fill"></i></button>
+                    <button class="btn btn-outline-primary" onclick="focusOnLayer(${p.poly_id})"><i class="fa-solid fa-eye"></i></button>
+                    <button class="btn btn-outline-warning" onclick="openEditPopup(${p.poly_id})"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="btn btn-outline-danger" onclick="deletePolygon(${p.poly_id})"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
             </div>
         `);
@@ -269,8 +269,8 @@ function applyLockState(locked) {
     if (map.scrollWheelZoom) map.scrollWheelZoom[action]();
     if (map.doubleClickZoom) map.doubleClickZoom[action]();
     $('#statusBadge').html(locked 
-        ? '<i class="bi bi-lock-fill text-danger"></i>' 
-        : '<i class="bi bi-unlock-fill text-success"></i>'
+        ? '<i class="fa-solid fa-lock text-danger"></i>' 
+        : '<i class="fa-solid fa-lock-open text-success"></i>'
     );
 }
 async function handleJsonImport(e) {

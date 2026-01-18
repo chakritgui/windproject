@@ -12,7 +12,7 @@
                 <div class="input-group mb-3">
                     <input type="password" class="form-control" id="password">
                     <span class="input-group-text" id="togglePassword" style="cursor:pointer;">
-                        <i class="bi bi-eye-slash" id="toggleIcon"></i>
+                        <i class="fa-solid fa-eye-slash" id="toggleIcon"></i>
                     </span>
                 </div>
                 <div class="form-check my-2">

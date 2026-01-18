@@ -48,13 +48,13 @@ function setLanguagesFromDB(languagesStr) {
     let arr = languagesStr.split(',');
     document.querySelectorAll('.lang-toggle').forEach(el => {
         const langId = el.id.replace('lang','').toLowerCase();
-        const icon = el.querySelector('i.bi');
+        const icon = el.querySelector('i');
         if(arr.includes(langId)) {
             el.classList.add('active');
-            icon.className = 'bi bi-check-circle-fill fs-4';
+            icon.className = 'fa-solid fa-circle-check fs-4';
         } else {
             el.classList.remove('active');
-            icon.className = 'bi bi-circle fs-4 text-muted';
+            icon.className = 'fa-regular fa-circle fs-4 text-muted';
         }
     });
 }
@@ -187,10 +187,10 @@ function toggleLanguage(lang) {
         return;
     }
     element.classList.toggle('active');
-    const icon = element.querySelector('i.bi');
+    const icon = element.querySelector('i');
     if (element.classList.contains('active')) {
-        icon.className = 'bi bi-check-circle-fill fs-4';
+        icon.className = 'fa-solid fa-circle-check fs-4';
     } else {
-        icon.className = 'bi bi-circle fs-4 text-muted';
+        icon.className = 'fa-regular fa-circle fs-4 text-muted';
     }
 }

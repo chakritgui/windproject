@@ -11,7 +11,7 @@
     </div>
 </div>
 <div id="windy"></div>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+<link rel="stylesheet" href="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.css">
+<script src="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.js"></script>
 <script src="https://api.windy.com/assets/map-forecast/libBoot.js"></script>
 <script src="<?=BASE_URL?>/public/js/user/map.js?v=<?=time();?>" defer></script>

@@ -29,32 +29,32 @@
     <ul class="nav nav-tabs" id="profileTabs" role="tablist">
         <li class="nav-item">
             <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#personal" type="button">
-                <i class="bi bi-person-fill me-1"></i> ข้อมูลส่วนตัว
+                <i class="fa-regular fa-user me-1"></i> ข้อมูลส่วนตัว
             </button>
         </li>
         <li class="nav-item">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#contact">
-                <i class="bi bi-telephone-fill me-1"></i> การติดต่อ
+                <i class="fa-solid fa-mobile-screen me-1"></i> การติดต่อ
             </button>
         </li>
         <li class="nav-item">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#work">
-                <i class="bi bi-briefcase-fill me-1"></i> การทำงาน
+                <i class="fa-solid fa-briefcase me-1"></i> การทำงาน
             </button>
         </li>
         <li class="nav-item">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#username">
-                <i class="bi bi-person-badge-fill me-1"></i> ชื่อผู้ใช้
+                <i class="fa-solid fa-user-lock me-1"></i> ชื่อผู้ใช้
             </button>
         </li>
         <li class="nav-item">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#password">
-                <i class="bi bi-key-fill me-1"></i> รหัสผ่าน
+                <i class="fa-solid fa-key me-1"></i> รหัสผ่าน
             </button>
         </li>
         <li class="nav-item">
             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#loginlog">
-                <i class="bi bi-clock-history me-1"></i> ประวัติการเข้าใช้
+                <i class="fa-solid fa-clock-rotate-left me-1"></i> ประวัติการเข้าใช้
             </button>
         </li>
     </ul>

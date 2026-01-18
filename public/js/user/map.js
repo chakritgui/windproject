@@ -66,11 +66,11 @@ async function loadPoles(map, picker) {
                         <div style="background: #f8f9fa; border-radius: 6px; padding: 8px; margin-top: 10px; border-left: 3px solid #3498db;">
                             <div style="font-size: 11px; color: #7f8c8d; margin-bottom: 3px;">Coordinates</div>
                             <div style="font-size: 12px; color: #34495e; font-family: monospace;">
-                                <i class="bi bi-geo-alt-fill"></i> ${pole.poles_lat}, ${pole.poles_lng}
+                                <i class="fa-solid fa-location-dot"></i> ${pole.poles_lat}, ${pole.poles_lng}
                             </div>
                         </div>
                         <div style="margin-top: 10px; text-align: right;">
-                            <button class="open-poles" data-id="${pole.poles_id}" style="background: none; border: 1px solid #3498db; color: #3498db; padding: 3px 10px; border-radius: 4px; cursor: pointer; transition: 0.3s; width: 100%;"><span data-i18n="view_data"></span> <i class="bi bi-arrow-right"></i></button>
+                            <button class="open-poles" data-id="${pole.poles_id}" style="background: none; border: 1px solid #3498db; color: #3498db; padding: 3px 10px; border-radius: 4px; cursor: pointer; transition: 0.3s; width: 100%;"><span data-i18n="view_data"></span> <i class="fa-solid fa-arrow-right-from-bracket"></i></button>
                         </div>
                     </div>
                 `;
@@ -152,7 +152,7 @@ $('#mapFilter').on('click', async function(e) {
                 <div class="menu-item ${isMob ? 'project-item' : ''} d-flex align-items-center" 
                      data-id="${p.project_id}" ${isMob ? '' : `onclick="openLevel2(${p.project_id})"`}>
                     <span>${p.project_name}</span>
-                    <i class="bi ${isMob ? 'bi-chevron-down' : 'bi-chevron-right'} ms-auto"></i>
+                    <i class="${isMob ? 'fa-solid fa-chevron-down' : 'fa-solid fa-chevron-right'} ms-auto"></i>
                 </div>
                 ${isMob ? `<div class="submenu" id="submenu-${p.project_id}"></div>` : ''}`;
         });
@@ -168,7 +168,7 @@ $('#menu1').on('click', '.project-item', async function(e) {
     const types = await fetchData('api/type', { project_id: $(this).data('id') });
     let html = types.map(t => `
         <div class="menu-item type-item d-flex" data-project="${$(this).data('id')}" data-type="${t.type_id}">
-            ${t.type_name} <i class="bi bi-chevron-down ms-auto"></i>
+            ${t.type_name} <i class="fa-solid fa-chevron-down ms-auto"></i>
         </div>
         <div class="submenu"></div>`).join('');
     $submenu.html(html || getEmptyStateHTML()).slideDown();
@@ -196,7 +196,7 @@ async function openLevel2(projectId) {
     const types = await fetchData('api/type', { project_id: projectId });
     let html = types.map(t => `
         <div class="menu-item d-flex" data-type="${t.type_id}" onclick="openLevel3(${projectId}, '${t.type_id}')">
-            ${t.type_name} <i class="bi bi-chevron-right ms-auto"></i>
+            ${t.type_name} <i class="fa-solid fa-chevron-right ms-auto"></i>
         </div>`).join('');
     $('#menu2').html(html || getEmptyStateHTML());
 }

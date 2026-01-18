@@ -21,48 +21,48 @@
 <div class="container-fluid mt-3 mb-5">
     <ul class="nav nav-pills mb-4" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#general" type="button"><i class="bi bi-house-fill me-2"></i><span data-i18n="information"></span></button>
+            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#general" type="button"><i class="fa-solid fa-house-chimney me-2"></i><span data-i18n="information"></span></button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#languages" type="button"><i class="bi bi-translate me-2"></i><span data-i18n="language"></span></button>
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#languages" type="button"><i class="fa-solid fa-language me-2"></i><span data-i18n="language"></span></button>
         </li>
     </ul>
     <div class="tab-content">
         <div class="tab-pane fade show active" id="general">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title mb-3"><i class="bi bi-image text-primary me-2"></i><span data-i18n="logo"></span></h5>
+                    <h5 class="card-title mb-3"><i class="fa-solid fa-images text-primary me-2"></i><span data-i18n="logo"></span></h5>
                     <div class="row">
                         <div class="col-md-4">
                             <label class="form-label" data-i18n="logo"></label>
                             <div class="preview-box" id="logoPreview">
                                 <div class="text-center">
-                                    <i class="bi bi-cloud-upload fs-1 text-muted"></i>
+                                    <i class="fa-solid fa-cloud-arrow-up fs-1 text-muted"></i>
                                     <p class="mt-2 text-muted"><span data-i18n="uploadFile"></span></p>
                                     <small class="text-muted">PNG, JPG (<span data-i18n="recommend"></span> 200x200px)</small>
                                 </div>
                             </div>
                             <input type="file" id="logoInput" class="d-none" accept="image/*" onchange="previewLogo(this)">
-                            <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('logoInput').click()"><i class="bi bi-upload me-2"></i><span data-i18n="choose"></span></button>
+                            <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('logoInput').click()"><i class="fa-solid fa-upload me-2"></i><span data-i18n="choose"></span></button>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label" data-i18n="icon"></label>
                             <div class="preview-box" id="iconPreview">
                                 <div class="text-center">
-                                    <i class="bi bi-cloud-upload fs-1 text-muted"></i>
+                                    <i class="a-cloud-arrow-up fs-1 text-muted"></i>
                                     <p class="mt-2 text-muted"><span data-i18n="uploadFile"></span></p>
                                     <small class="text-muted">PNG, JPG (<span data-i18n="recommend"></span> 200x200px)</small>
                                 </div>
                             </div>
                             <input type="file" id="iconInput" class="d-none" accept="image/*" onchange="previewIcon(this)">
-                            <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('iconInput').click()"><i class="bi bi-upload me-2"></i><span data-i18n="choose"></span></button>
+                            <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('iconInput').click()"><i class="fa-solid fa-upload me-2"></i><span data-i18n="choose"></span></button>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title mb-3"><i class="bi bi-text-left text-primary me-2"></i><span data-i18n="website_name"></span></h5>
+                    <h5 class="card-title mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="website_name"></span></h5>
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">
@@ -87,7 +87,7 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title mb-3"><i class="bi bi-text-left text-primary me-2"></i><span data-i18n="footer"></span></h5>
+                    <h5 class="card-title mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="footer"></span></h5>
                     <div class="row g-3">
                         <div class="col-md-4">
                             <input type="text" class="form-control" id="footerText">
@@ -97,14 +97,14 @@
             </div>
             <div class="text-end mt-4">
                 <button class="btn btn-lg btn-success save-setting-1">
-                    <i class="bi bi-save me-2"></i><span data-i18n="save"></span>
+                    <i class="fa-solid fa-floppy-disk me-2"></i><span data-i18n="save"></span>
                 </button>
             </div>
         </div>
         <div class="tab-pane fade" id="languages">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title mb-3"><i class="bi bi-globe text-primary me-2"></i><span data-i18n="language-switch"></span></h5>
+                    <h5 class="card-title mb-3"><i class="fa-solid fa-globe text-primary me-2"></i><span data-i18n="language-switch"></span></h5>
                     <p class="text-muted" data-i18n="choose_language_display"></p>
                     <div class="row g-3 mt-3">
                         <div class="col-md-4">
@@ -114,7 +114,7 @@
                                         <img src="<?=BASE_URL?>/public/flags/gb.png" alt="EN" class="me-3" height="35">
                                         <strong>English</strong>
                                     </div>
-                                    <i class="bi bi-circle fs-4 text-muted"></i>
+                                    <i class="fa-solid fa-circle fs-4 text-muted"></i>
                                 </div>
                                 <small class="d-block mt-2 opacity-75">English Language</small>
                             </div>
@@ -126,7 +126,7 @@
                                         <img src="<?=BASE_URL?>/public/flags/la.png" alt="LO" class="me-3" height="35">
                                         <strong>ພາສາລາວ</strong>
                                     </div>
-                                    <i class="bi bi-circle fs-4 text-muted"></i>
+                                    <i class="fa-solid fa-circle fs-4 text-muted"></i>
                                 </div>
                                 <small class="d-block mt-2 opacity-75">Lao Language</small>
                             </div>
@@ -138,21 +138,21 @@
                                         <img src="<?=BASE_URL?>/public/flags/th.png" alt="TH" class="me-3" height="35">
                                         <strong>ภาษาไทย</strong>
                                     </div>
-                                    <i class="bi bi-circle fs-4 text-muted"></i>
+                                    <i class="fa-solid fa-circle fs-4 text-muted"></i>
                                 </div>
                                 <small class="d-block mt-2 opacity-75">Thai Language</small>
                             </div>
                         </div>
                     </div>
                     <div class="alert alert-info mt-4" role="alert">
-                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <i class="fa-solid fa-circle-info me-2"></i>
                         <span data-i18n="language_note"></span>
                     </div>
                 </div>
             </div>
             <div class="text-end mt-4">
                 <button class="btn btn-lg btn-success save-setting-3">
-                    <i class="bi bi-save me-2"></i><span data-i18n="save"></span>
+                    <i class="fa-solid fa-floppy-disk me-2"></i><span data-i18n="save"></span>
                 </button>
             </div>
         </div>

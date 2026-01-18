@@ -28,12 +28,12 @@
         <div class="col-md-6">
             <div class="card section-card h-100 p-4">
                 <div class="text-center mb-3">
-                    <i class="bi bi-android2 text-success platform-icon"></i>
+                    <i class="fa-brands fa-android text-success platform-icon"></i>
                     <h4 class="fw-bold mt-3">Android</h4>
                 </div>
                 <div class="d-grid gap-2 mb-4">
                     <a href="#" class="btn btn-success download-btn">
-                        <i class="bi bi-download me-1"></i> ดาวน์โหลด Shortcut (Android)
+                        <i class="fa-solid fa-download me-1"></i> ดาวน์โหลด Shortcut (Android)
                     </a>
                 </div>
                 <h6 class="fw-bold mb-3">วิธีการติดตั้ง</h6>
@@ -54,12 +54,12 @@
         <div class="col-md-6">
             <div class="card section-card h-100 p-4">
                 <div class="text-center mb-3">
-                    <i class="bi bi-apple text-dark platform-icon"></i>
+                    <i class="fa-brands fa-apple text-dark platform-icon"></i>
                     <h4 class="fw-bold mt-3">iOS (iPhone/iPad)</h4>
                 </div>
                 <div class="d-grid gap-2 mb-4">
                     <a href="#" class="btn btn-dark download-btn">
-                        <i class="bi bi-download me-1"></i> ดาวน์โหลด Shortcut (iOS)
+                        <i class="fa-solid fa-download me-1"></i> ดาวน์โหลด Shortcut (iOS)
                     </a>
                 </div>
                 <h6 class="fw-bold mb-3">วิธีการติดตั้ง</h6>

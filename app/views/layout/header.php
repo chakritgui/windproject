@@ -10,17 +10,17 @@
 <title>PSG - PHONGSUPTHAVY GROUP</title>
 <link rel="icon" type="image/png">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@100;200;300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.3/dist/sweetalert2.min.css" rel="stylesheet">
-<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" rel="stylesheet">
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/style.css?v=<?= time(); ?>">
+<link href="<?=BASE_URL?>/vendor/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="<?=BASE_URL?>/vendor/fontawesome-free-7.1.0-web/css/all.min.css" rel="stylesheet">
+<link href="<?=BASE_URL?>/vendor/sweetalert2/dist/sweetalert2.min.css" rel="stylesheet">
+<link href="<?=BASE_URL?>/vendor/datatables/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="<?=BASE_URL?>/vendor/fancyapps/ui/dist/fancybox.css" rel="stylesheet">
+<link href="<?=BASE_URL?>/vendor/select2/dist/css/select2.min.css" rel="stylesheet">
+<link href="<?=BASE_URL?>/vendor/select2-bootstrap-5-theme/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+<link href="<?=BASE_URL?>/vendor/daterangepicker/daterangepicker.css" rel="stylesheet">
+<link href="<?=BASE_URL?>/vendor/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet">
+<link href="<?=BASE_URL?>/vendor/tempus-dominus/dist/css/tempus-dominus.min.css" rel="stylesheet">
+<link href="<?=BASE_URL?>/public/css/style.css?v=<?= time(); ?>" rel="stylesheet">
 <?php if (file_exists($manifestFile)) { ?>
     <link rel="manifest" href="<?= BASE_URL ?>/public/manifest.json">
     <link rel="apple-touch-icon" href="<?=BASE_URL?>/public/icons/icon-ios.png">
@@ -29,21 +29,19 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="App Short Name">
 <?php } ?>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.3/dist/sweetalert2.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox.umd.js"></script>
-<script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
-<script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/locales/bootstrap-datepicker.th.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2/dist/umd/popper.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.9.9/dist/css/tempus-dominus.min.css">
-<script src="https://cdn.jsdelivr.net/npm/@eonasdan/tempus-dominus@6.9.9/dist/js/tempus-dominus.min.js"></script>
+<script src="<?=BASE_URL?>/vendor/jquery/jquery-3.6.0.min.js"></script>
+<script src="<?=BASE_URL?>/vendor/bootstrap-5.3.8-dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?=BASE_URL?>/vendor/datatables/js/jquery.dataTables.min.js"></script>
+<script src="<?=BASE_URL?>/vendor/datatables/js/dataTables.bootstrap5.min.js"></script>
+<script src="<?=BASE_URL?>/vendor/select2/dist/js/select2.min.js"></script>
+<script src="<?=BASE_URL?>/vendor/fancyapps/ui/dist/fancybox.umd.js"></script>
+<script src="<?=BASE_URL?>/vendor/ckeditor5/classic/ckeditor.js"></script>
+<script src="<?=BASE_URL?>/vendor/momentjs/latest/moment.min.js"></script>
+<script src="<?=BASE_URL?>/vendor/daterangepicker/daterangepicker.min.js"></script>
+<script src="<?=BASE_URL?>/vendor/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
+<script src="<?=BASE_URL?>/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.th.min.js"></script>
+<script src="<?=BASE_URL?>/vendor/popperjs/dist/umd/popper.min.js"></script>
+<script src="<?=BASE_URL?>/vendor/tempus-dominus/dist/js/tempus-dominus.min.js"></script>
 <script>
     const BASE_URL = "<?=BASE_URL?>";
 <?php if (file_exists($manifestFile)) { ?>
@@ -67,10 +65,10 @@
         <div class="d-flex align-items-center">
             <?php if(!empty($_SESSION)) { ?>
                 <button id="mapFilter" class="btn btn-dark btn-sm d-none">
-                    <i class="bi bi-list"></i>
+                    <i class="fa-solid fa-bars"></i>
                 </button>
                 <button id="sidebarToggle" class="btn btn-light btn-sm me-2 <?= (isset($_SESSION['user']['role']) && in_array($_SESSION['user']['role'], ['admin','administrator'])) ? '' : 'd-lg-none' ?>">
-                    <i class="bi bi-list"></i>
+                    <i class="fa-solid fa-bars"></i>
                 </button>
             <?php } ?>
             <div class="h4 m-0">
@@ -108,16 +106,16 @@
             <?php if(!empty($_SESSION)) { ?>
                 <div class="dropdown">
                     <button class="btn btn-light btn-sm position-relative btn-notification" data-bs-toggle="dropdown">
-                        <i class="bi bi-bell"></i>
+                        <i class="fa-solid fa-bell"></i>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge d-none">
                             <span id="notificationCount">0</span>
                         </span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow custom-notification-menu" data-bs-auto-close="false">
                         <li class="dropdown-header d-flex justify-content-between align-items-center border-bottom pb-2">
-                            <span class="fw-bold"><i class="bi bi-bell me-2"></i><span data-i18n="notification"></span></span>
+                            <span class="fw-bold"><i class="fa-solid fa-bell me-2"></i><span data-i18n="notification"></span></span>
                             <button class="btn btn-sm btn-light border-0 btn-close-dropdown">
-                                <i class="bi bi-x-lg"></i>
+                                <i class="fa-solid fa-xmark"></i>
                             </button>
                         </li>
                         <li><div class="notification-list"></div></li>
@@ -141,9 +139,9 @@
                         <i class="fa-regular fa-user"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="<?=BASE_URL?>/account"><i class="bi bi-gear me-2"></i> <span data-i18n="account_settings"></span></a></li>
+                        <li><a class="dropdown-item" href="<?=BASE_URL?>/account"><i class="fa-solid fa-gear me-2"></i> <span data-i18n="account_settings"></span></a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="<?=BASE_URL?>/logout"><i class="bi bi-box-arrow-right me-2"></i> <span data-i18n="logout"></span></a></li>
+                        <li><a class="dropdown-item text-danger" href="<?=BASE_URL?>/logout"><i class="fa-solid fa-right-from-bracket me-2"></i> <span data-i18n="logout"></span></a></li>
                     </ul>
                 </div>
             <?php } ?>

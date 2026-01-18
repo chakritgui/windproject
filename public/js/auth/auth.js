@@ -73,9 +73,9 @@ $(document).on('click', '#togglePassword', function () {
     let icon = $("#toggleIcon");
     if (input.attr("type") === "password") {
         input.attr("type", "text");
-        icon.removeClass("bi-eye-slash").addClass("bi-eye");
+        icon.removeClass("fa-solid fa-eye-slash").addClass("fa-solid fa-eye");
     } else {
         input.attr("type", "password");
-        icon.removeClass("bi-eye").addClass("bi-eye-slash");
+        icon.removeClass("fa-solid fa-eye").addClass("fa-solid fa-eye-slash");
     }
 });

@@ -29,19 +29,19 @@
             <select id="filter_project" class="form-select filter"></select>
         </div>
         <div class="col-sm-2">
-            <p><i class="fa-solid fa-location-dot"></i> <span data-i18n="pole"></span></p>
+            <p><i class="fa-solid fa-tower-broadcast"></i> <span data-i18n="pole"></span></p>
             <select id="filter_pole" class="form-select filter"></select>
         </div>
         <div class="col-sm-2">
-            <p><i class="fa-regular fa-calendar"></i> <span data-i18n="type"></span></p>
+            <p><i class="fa-solid fa-tags"></i> <span data-i18n="type"></span></p>
             <select id="filter_type" class="form-select filter"></select>
         </div>
         <div class="col-sm-2">
-            <p><i class="fa-regular fa-calendar"></i> <span data-i18n="installation"></span></p>
+            <p><i class="fa-solid fa-location-dot"></i> <span data-i18n="installation"></span></p>
             <select id="filter_installation" class="form-select filter"></select>
         </div>
         <div class="col-sm-2">
-            <p><i class="fa-regular fa-calendar"></i> <span data-i18n="height"></span></p>
+            <p><i class="fa-solid fa-text-height"></i> <span data-i18n="height"></span></p>
             <select id="filter_height" class="form-select filter"></select>
         </div>
     </div>

@@ -3,7 +3,7 @@
         style="background:#fff;border-left:4px solid #0d6efd;">
         <div>
             <h4 class="fw-bold mb-1 d-flex align-items-center">
-                <i class="bi bi-bell me-2 text-primary" style="font-size:1.5rem"></i>
+                <i class="fa-solid fa-bell me-2 text-primary" style="font-size:1.5rem"></i>
                 <span data-i18n="news_management"></span>
             </h4>
             <nav aria-label="breadcrumb" style="margin-left: 25px;">

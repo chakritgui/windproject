@@ -148,7 +148,7 @@ function handleNotificationItem(items) {
         const emptyHtml = `
             <li class="text-center py-4 text-muted">
                 <div class="d-flex flex-column align-items-center">
-                    <i class="bi bi-bell-slash fs-2 mb-2"></i>
+                    <i class="fa-solid fa-bell-slash fs-2 mb-2"></i>
                     <div data-i18n="no_notification"></div>
                 </div>
             </li>
@@ -183,7 +183,7 @@ function handleNotificationItem(items) {
                             <div class="mb-1 fw-semibold">${title}</div>
                             <p class="mb-1 small text-muted" data-i18n="${item.notifications_target}"></p>
                             <small class="text-muted">
-                                <i class="bi bi-clock me-1"></i>${item.notification_at}
+                                <i class="fa-solid fa-clock me-1"></i>${item.notification_at}
                             </small>
                         </div>
                         ${!item.read_at ? `<span class="badge bg-danger rounded-pill ms-2" data-i18n="new"></span>` : ''}
@@ -833,15 +833,15 @@ function parseUA(ua) {
     if (/iPhone/.test(ua)) {
         const os = ua.match(/OS ([\d_]+)/)?.[1]?.replace(/_/g,'.');
         return {
-            icon: 'bi-phone',
+            icon: 'fa-solid fa-mobile-screen',
             label: `iPhone · iOS ${os} · Safari`
         };
     }
     if (/Android/.test(ua)) {
-        return { icon: 'bi-phone', label: 'Android Device' };
+        return { icon: 'fa-solid fa-mobile-screen', label: 'Android Device' };
     }
     if (/Windows/.test(ua)) {
-        return { icon: 'bi-laptop', label: 'Windows PC' };
+        return { icon: 'fa-solid fa-laptop', label: 'Windows PC' };
     }
-    return { icon: 'bi-device', label: 'Unknown Device' };
+    return { icon: 'fa-solid fa-desktop', label: 'Unknown Device' };
 }

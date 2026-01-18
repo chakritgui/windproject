@@ -90,7 +90,7 @@ function renderDocuments(items) {
     if (!items.length) {
         $('#listView').html(`
             <div class="text-center text-muted py-5">
-                <i class="bi bi-folder-x" style="font-size:48px;"></i>
+                <i class="fa-regular fa-folder-open" style="font-size:48px;"></i>
                 <p class="mt-3" data-i18n="no_documents_found"></p>
             </div>
         `);
@@ -119,19 +119,19 @@ function renderGridView(items) {
                     </h6>
                     <div class="doc-meta small text-muted">
                         <div class="mb-1" style="font-size: 10px;">
-                            <i class="bi bi-calendar"></i>
+                            <i class="fa-regular fa-calendar"></i>
                             ${item.document_start || '-'}
                             ${item.document_end ? ' - ' + item.document_end : ''}
                         </div>
                         <div class="mb-1" style="font-size: 10px;">
-                            <i class="bi bi-hdd"></i> ${size} · <i class="bi bi-file-earmark"></i> ${item.document_type.toUpperCase()}
+                            <i class="fa-solid fa-hard-drive"></i> ${size} · <i class="fa-regular fa-file"></i> ${item.document_type.toUpperCase()}
                         </div>
                     </div>
                     <span class="badge source-badge bg-${(item.source_name === 'Met Mast') ? 'warning' : 'error'}">
                         ${item.source_name}
                     </span>
                     <button class="btn btn-download w-100 mt-2" data-id="${item.document_id}" data-path="${item.document_path}">
-                        <i class="bi bi-download"></i>
+                        <i class="fa-solid fa-download"></i>
                         <span class="btn-text" data-i18n="download"></span>
                     </button>
                 </div>
@@ -157,12 +157,12 @@ function renderListView(items) {
                     <h6 class="mb-2 doc-title">${item.document_name}</h6>
                     <div class="doc-meta small text-muted">
                         <div class="mb-1" style="font-size: 10px;">
-                            <i class="bi bi-calendar"></i>
+                            <i class="fa-regular fa-calendar"></i>
                             ${item.document_start || '-'}
                             ${item.document_end ? ' - ' + item.document_end : ''}
                         </div>
                         <div class="mb-1" style="font-size: 10px;">
-                            <i class="bi bi-hdd"></i> ${size} · <i class="bi bi-file-earmark"></i> ${item.document_type.toUpperCase()}
+                            <i class="fa-solid fa-hard-drive"></i> ${size} · <i class="fa-regular fa-file"></i> ${item.document_type.toUpperCase()}
                         </div>
                     </div>
                     <span class="badge source-badge bg-${(item.source_name === 'Met Mast') ? 'warning' : 'error'}">
@@ -171,7 +171,7 @@ function renderListView(items) {
                 </div>
                 <div class="col-12 col-md-auto text-end">
                     <button class="btn btn-download w-100 w-md-auto" data-id="${item.document_id}" data-path="${item.document_path}">
-                        <i class="bi bi-download"></i>
+                        <i class="fa-solid fa-download"></i>
                         <span class="btn-text" data-i18n="download"></span>
                     </button>
                 </div>
@@ -202,11 +202,11 @@ function setView(view) {
 }
 function getDocIcon(type) {
     type = (type || '').toLowerCase();
-    if (type === 'pdf') return 'bi-file-earmark-pdf';
-    if (['doc','docx'].includes(type)) return 'bi-file-earmark-word';
-    if (['xls','xlsx'].includes(type)) return 'bi-file-earmark-excel';
-    if (['png','jpg','jpeg'].includes(type)) return 'bi-file-earmark-image';
-    return 'bi-file-earmark';
+    if (type === 'pdf') return 'fa-solid fa-file-pdf';
+    if (['doc','docx'].includes(type)) return 'fa-solid fa-file-word';
+    if (['xls','xlsx'].includes(type)) return 'fa-solid fa-file-excel';
+    if (['png','jpg','jpeg'].includes(type)) return 'fa-solid fa-images';
+    return 'fa-regular fa-file';
 }
 function formatFileSize(bytes) {
     if (!bytes) return '-';
@@ -307,21 +307,21 @@ function renderHistoryRows(items) {
                         ${row.type_name}
                     </span>
                     <span>
-                        <i class="bi bi-file-earmark"></i>
+                        <i class="fa-regular fa-file"></i>
                         ${row.document_type.toUpperCase()}
                     </span>
                     <span>
-                        <i class="bi bi-hdd"></i>
+                        <i class="fa-solid fa-hard-drive"></i>
                         ${size}
                     </span>
                 </div>
                 <div class="small text-muted d-flex flex-wrap gap-3 align-items-center">
                     <span>
-                        <i class="bi bi-calendar"></i>
+                        <i class="fa-regular fa-calendar"></i>
                         ${row.download_date}
                     </span>
                     <span>
-                        <i class="bi bi-download"></i>
+                        <i class="fa-solid fa-download"></i>
                         ${device.label}
                     </span>
                 </div>

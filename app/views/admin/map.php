@@ -24,7 +24,7 @@
     <div class="accordion mb-4" id="guideAccordion">
         <div class="accordion-item border-0 shadow-sm">
             <h5 class="accordion-header text-primary">
-                <i class="bi bi-lightbulb-fill me-2"></i> <span data-i18n="quick_start_guide"></span>
+                <i class="fa-solid fa-lightbulb me-2"></i> <span data-i18n="quick_start_guide"></span>
             </h5>
             <div id="guideCollapse" class="accordion-collapse collapse show" data-bs-parent="#guideAccordion">
                 <div class="accordion-body bg-white">
@@ -69,10 +69,10 @@
             <div class="position-relative">
                 <div id="map"></div>
                 <button id="fitBoundaryBtn" class="map-status-badge-left btn btn-outline-dark btn-sm">
-                    <i class="bi bi-arrows-fullscreen"></i> <span data-i18n="fit_boundary"></span>
+                    <i class="fa-solid fa-up-right-and-down-left-from-center"></i> <span data-i18n="fit_boundary"></span>
                 </button>
                 <div id="statusBadge" class="map-status-badge bg-white text-dark border">
-                    <i class="bi bi-info-circle me-1"></i>
+                    <i class="fa-solid fa-circle-info me-1"></i>
                 </div>
             </div>
             <div class="control-panel mt-3" id="stylePanel">
@@ -94,7 +94,7 @@
                     </div>
                     <div class="col-md-3">
                         <button class="btn btn-primary w-100 save-map" id="saveGlobalBtn">
-                            <i class="bi bi-cloud-arrow-up"></i> <span data-i18n="save_all_changes"></span>
+                            <i class="fa-solid fa-cloud-arrow-up"></i> <span data-i18n="save_all_changes"></span>
                         </button>
                     </div>
                 </div>

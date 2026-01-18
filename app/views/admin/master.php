@@ -18,22 +18,22 @@
     <ul class="nav nav-pills mb-4" id="mainTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="contracts-tab" data-bs-toggle="pill" data-bs-target="#contracts" data-page="contracts" type="button">
-                <i class="bi bi-file-text"></i> <span data-i18n="contracts"></span>
+                <i class="fa-solid fa-file-lines"></i> <span data-i18n="contracts"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="projects-tab" data-bs-toggle="pill" data-bs-target="#projects" data-page="projects" type="button">
-                <i class="bi bi-folder"></i> <span data-i18n="projects"></span>
+                <i class="fa-solid fa-folder-tree"></i> <span data-i18n="projects"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="pole-types-tab" data-bs-toggle="pill" data-bs-target="#pole-types" data-page="types" type="button">
-                <i class="bi bi-tags"></i> <span data-i18n="pole_types"></span>
+                <i class="fa-solid fa-tags"></i> <span data-i18n="pole_types"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="poles-tab" data-bs-toggle="pill" data-bs-target="#poles" data-page="poles" type="button">
-                <i class="bi bi-broadcast-pin"></i> <span data-i18n="poles"></span>
+                <i class="fa-solid fa-tower-broadcast"></i> <span data-i18n="poles"></span>
             </button>
         </li>
     </ul>
