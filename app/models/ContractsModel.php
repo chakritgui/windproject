@@ -50,7 +50,8 @@ class ContractsModel {
             $params[':status'] = $filters['status'];
         }
         if (!empty($search)) {
-            $where .= " AND contract_name LIKE :search";
+            $where .= " AND (contract_name LIKE :search or contract_no LIKE :search)";
+            $params[':search'] = "%{$search}%";
             $params[':search'] = "%{$search}%";
         }
         return [$where, $params];
@@ -103,10 +104,7 @@ class ContractsModel {
                 'status' => 'active'
             ];
         } else {
-            $sql = "SELECT 
-                *
-            FROM wp_contract
-            WHERE contract_id  = ?";
+            $sql = "SELECT * FROM wp_contract WHERE contract_id  = ?";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([(int)$id]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);

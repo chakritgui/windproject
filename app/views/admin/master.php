@@ -39,10 +39,14 @@
     </ul>
     <div class="tab-content" id="mainTabContent">
         <div class="tab-pane fade show active" id="contracts" role="tabpanel">
-            <div class="row g-2 mb-3">
-                <div class="col-sm-2">
-                    <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
-                    <select id="filter_status" class="form-select filter"></select>
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <select id="filter_status" class="form-select filter"></select>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="table-responsive">
@@ -62,6 +66,20 @@
             </div>
         </div>
         <div class="tab-pane fade" id="projects" role="tabpanel">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-file-lines"></i> <span data-i18n="contracts"></span></p>
+                            <select id="filter_contract" class="form-select filter"></select>
+                        </div>
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <select id="filter_project_status" class="form-select filter"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table class="table table-striped table-hover" id="tb_project">
                     <thead>
@@ -69,7 +87,8 @@
                             <th data-i18n="project_code"></th>
                             <th data-i18n="project_name"></th>
                             <th data-i18n="contract"></th>
-                            <th data-i18n="location"></th>
+                            <th data-i18n="startDate"></th>
+                            <th data-i18n="endDate"></th>
                             <th data-i18n="status"></th>
                             <th></th>
                         </tr>

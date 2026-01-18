@@ -357,6 +357,9 @@
     "content": "Content",
     "manageContract": "Manage Contract",
     "newContract": "New Contract",
+    "manageProject": "Manage Project",
+    "newProject": "New Project",
     "already_contract": "This contract name already exists.",
+    "already_project": "This Project name already exists.",
     "expired": "Expired"
 }

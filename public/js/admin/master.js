@@ -18,6 +18,9 @@ function initTable() {
             initContractsTable();
             break;
         case 'projects':
+            initSelect2Remote('#filter_project_status', 'api/projects/filter', { type: 'status' });
+            initSelect2Remote('#filter_contract', 'api/projects/filter', { type: 'contract' });
+            $(".filter").on("change", () => initProjectsTable());
             initProjectsTable();
             break;
         case 'types':

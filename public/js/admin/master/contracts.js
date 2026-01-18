@@ -53,8 +53,8 @@ function initContractsTable() {
                 orderable: false,
                 render: function(row){
                     return `
-                        <button class="btn btn-light text-secondary manage-contact" data-id="${row.contract_id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-light text-secondary text-danger delete-contact" data-id="${row.contract_id}"><i class="fa-regular fa-trash-can"></i></button>
+                        <button class="btn btn-light text-secondary manage-contract" data-id="${row.contract_id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-light text-secondary text-danger delete-contract" data-id="${row.contract_id}"><i class="fa-regular fa-trash-can"></i></button>
                     `;
                 }
             }
@@ -76,12 +76,12 @@ function initContractsTable() {
             });
             let $filter = $('#tb_contract_filter');
             let btn = `
-                <button class="btn btn-primary btn-sm manage-contact" data-id="">
+                <button class="btn btn-primary btn-sm manage-contract" data-id="">
                     <i class="fa-solid fa-plus"></i> <span data-i18n="contract"></span>
                 </button>
             `;
             $filter.append(btn);
-            var input = $('#tb_contractt_filter input').unbind();
+            var input = $('#tb_contract_filter input').unbind();
             var self = this.api();
             input.bind('keypress', function(e){
                 if(e.keyCode == 13) {
@@ -94,7 +94,7 @@ function initContractsTable() {
         }
     });
 }
-$(document).on('click', '.delete-contact', function() {
+$(document).on('click', '.delete-contract', function() {
     let contract_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
@@ -116,7 +116,7 @@ $(document).on('click', '.delete-contact', function() {
         });
     });
 });
-$(document).on('click', '.manage-contact', function() {
+$(document).on('click', '.manage-contract', function() {
     let contract_id = $(this).data("id");
     $.ajax({
         url: 'api/contracts/get',
@@ -125,7 +125,7 @@ $(document).on('click', '.manage-contact', function() {
         dataType: 'json',
         success: function(res) {
             if(res.status === true){
-                let contactData = res.data;
+                let contractData = res.data;
                 let modalEl = $('#windModal');
                 let modal = new bootstrap.Modal(modalEl[0]);
                 modal.show();
@@ -167,21 +167,21 @@ $(document).on('click', '.manage-contact', function() {
                 initSelect2Remote('#status', 'api/contracts/filter', { type: 'status' });
                 initDatePicker('#contract_start');
                 initDatePicker('#contract_end');
-                if (contactData) {
-                    $("#contract_id").val(contactData.contract_id);
-                    $("#contract_name").val(contactData.contract_name);
-                    $("#contract_no").val(contactData.contract_no);
-                    if (contactData.contract_start) {
-                        let startDate = new Date(contactData.contract_start);
+                if (contractData) {
+                    $("#contract_id").val(contractData.contract_id);
+                    $("#contract_name").val(contractData.contract_name);
+                    $("#contract_no").val(contractData.contract_no);
+                    if (contractData.contract_start) {
+                        let startDate = new Date(contractData.contract_start);
                         $('#contract_start').datepicker('setDate', startDate);
                     }
-                    if (contactData.contract_end) {
-                        let endDate = new Date(contactData.contract_end);
+                    if (contractData.contract_end) {
+                        let endDate = new Date(contractData.contract_end);
                         $('#contract_end').datepicker('setDate', endDate);
                     }
-                    if (contactData.status) {
-                        let statusName = contactData.status.charAt(0).toUpperCase() + contactData.status.slice(1);
-                        var newOptionStatus = new Option(statusName, contactData.status, true, true);
+                    if (contractData.status) {
+                        let statusName = contractData.status.charAt(0).toUpperCase() + contractData.status.slice(1);
+                        var newOptionStatus = new Option(statusName, contractData.status, true, true);
                         $('#status').append(newOptionStatus).trigger('change');
                     }
                 }
