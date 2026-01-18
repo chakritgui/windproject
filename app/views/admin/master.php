@@ -42,7 +42,7 @@
             <div class="row g-2 mb-3">
                 <div class="col-sm-2">
                     <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
-                    <select id="status" class="form-select filter"></select>
+                    <select id="filter_status" class="form-select filter"></select>
                 </div>
             </div>
             <div class="table-responsive">

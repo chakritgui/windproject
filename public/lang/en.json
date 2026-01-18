@@ -354,5 +354,8 @@
     "type_code": "Type Code",
     "type_name": "Type Name",
     "pole_code": "Pole Code",
-    "content": "Content"
+    "content": "Content",
+    "manageContract": "Manage Contract",
+    "newContract": "New Contract",
+    "already_contract": "This contract name already exists."
 }

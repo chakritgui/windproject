@@ -87,4 +87,97 @@ class ContractsModel {
             'total_count' => $totalCount
         ];
     }
+    public function delete($id) {
+        $sql = "UPDATE wp_contract SET status=?, updated_at=NOW() WHERE contract_id=?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute(['deleted', (int)$id]);
+    }
+    public function get($id) {
+        if (!$id) {
+            return [
+                'contract_id' => '',
+                'contract_name' => '',
+                'contract_no' => '',
+                'contract_start' => '',
+                'contract_end' => '',
+                'status' => 'active'
+            ];
+        } else {
+            $sql = "SELECT 
+                *
+            FROM wp_contract
+            WHERE contract_id  = ?";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([(int)$id]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                foreach (['contract_start', 'contract_end'] as $f) {
+                    if (!empty($row[$f])) {
+                        $row[$f] = convertTimeZone($row[$f], 'Y-m-d');
+                    }
+                }
+            }
+            return $row;
+        }
+    }
+    public function save($data) {
+        $contract_id = $data['contract_id'] ?? null;
+        $contract_no = $data['contract_no'] ?? '';
+        $contract_name = $data['contract_name'] ?? '';
+        if ($this->isDuplicateContractName($contract_name, $contract_id)) {
+            return [
+                'status'  => false,
+                'message' => 'already_contract'
+            ];
+        }
+        $status = $data['status'] ?? '';
+        $startObj = DateTime::createFromFormat('d/m/Y', trim($data['contract_start']));
+        $endObj   = DateTime::createFromFormat('d/m/Y', trim($data['contract_end']));
+        $contract_start = ($startObj) ? $startObj->format('Y-m-d') : null;
+        $contract_end   = ($endObj) ? $endObj->format('Y-m-d') : null;
+        $pdo = $this->db;
+        if ($contract_id) {
+            $sql = "UPDATE wp_contract SET contract_no = :contract_no, contract_name = :contract_name, contract_start = :contract_start, contract_end = :contract_end, status = :status, updated_at = NOW() WHERE contract_id = :contract_id";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindValue(':contract_id', (int)$contract_id, PDO::PARAM_INT);
+        } else {
+            $sql = "INSERT INTO wp_contract (
+                contract_no,
+                contract_name,
+                contract_start,
+                contract_end,
+                status,
+                created_at,
+                updated_at
+            ) VALUES (
+                :contract_no,
+                :contract_name,
+                :contract_start,
+                :contract_end,
+                :status,
+                NOW(),
+                NOW()
+            )";
+            $stmt = $pdo->prepare($sql);
+        }
+        $stmt->bindValue(':contract_no', $contract_no);
+        $stmt->bindValue(':contract_name', $contract_name);
+        $stmt->bindValue(':contract_start', $contract_start);
+        $stmt->bindValue(':contract_end', $contract_end);
+        $stmt->bindValue(':status', $status);
+        return $stmt->execute();
+    }
+    private function isDuplicateContractName($contract_name, $contract_id = null){
+        $sql = "SELECT COUNT(*) FROM wp_contract WHERE contract_name = :contract_name";
+        if ($contract_id) {
+            $sql .= " AND contract_id != :contract_id";
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':contract_name', trim($contract_name));
+        if ($contract_id) {
+            $stmt->bindValue(':contract_id', (int)$contract_id, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        return $stmt->fetchColumn() > 0;
+    }
 }

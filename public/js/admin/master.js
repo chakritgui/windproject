@@ -13,7 +13,7 @@ function initMaster() {
 function initTable() {
     switch(pages) {
         case 'contracts':
-            initSelect2Remote('#status', 'api/contracts/filter', { type: 'status' });
+            initSelect2Remote('#filter_status', 'api/contracts/filter', { type: 'status' });
             $(".filter").on("change", () => initContractsTable());
             initContractsTable();
             break;

@@ -70,6 +70,9 @@
             $router->get('/api/mapsetting/load', 'MapSettingController@load');
             $router->post('/api/contracts/list', 'ContractsController@list');
             $router->post('/api/contracts/filter', 'ContractsController@filter');
+            $router->post('/api/contracts/delete', 'ContractsController@delete');
+            $router->post('/api/contracts/get', 'ContractsController@get');
+            $router->post('/api/contracts/save', 'ContractsController@save');
         } else {
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');
