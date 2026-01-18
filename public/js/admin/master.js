@@ -30,7 +30,7 @@ function initTable() {
             break;
         case 'installation':
             initSelect2Remote('#filter_installation_status', 'api/installations/filter', { type: 'status' });
-            $(".filter").on("change", () => initTypesTable());
+            $(".filter").on("change", () => initInstallationsTable());
             initInstallationsTable();
             break;
         case 'poles':
