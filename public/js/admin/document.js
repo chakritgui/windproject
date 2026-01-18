@@ -378,7 +378,7 @@ function saveDocument() {
     Swal.fire({
         title: langData['uploading'] || 'Uploading...',
         html: `
-            <p>Please do not close this window.</p>
+            <p data-i18n="do_not_close"></p>
             <div class="progress mt-2">
                 <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
             </div>

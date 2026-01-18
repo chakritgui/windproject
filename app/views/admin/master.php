@@ -123,6 +123,32 @@
             </div>
         </div>
         <div class="tab-pane fade" id="poles" role="tabpanel">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-file-lines"></i> <span data-i18n="contracts"></span></p>
+                            <select id="filter_pole_contract" class="form-select filter"></select>
+                        </div>
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-folder-tree"></i> <span data-i18n="projects"></span></p>
+                            <select id="filter_pole_project" class="form-select filter"></select>
+                        </div>
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-tags"></i> <span data-i18n="type"></span></p>
+                            <select id="filter_pole_type" class="form-select filter"></select>
+                        </div>
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-location-dot"></i> <span data-i18n="installation"></span></p>
+                            <select id="filter_pole_installation" class="form-select filter"></select>
+                        </div>
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <select id="filter_pole_status" class="form-select filter"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table class="table table-striped table-hover" id="tb_pole">
                     <thead>

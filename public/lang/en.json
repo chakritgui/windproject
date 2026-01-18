@@ -361,8 +361,11 @@
     "newProject": "New Project",
     "manageType": "Manage Type",
     "newType": "New Type",
+    "managePole": "Manage Pole",
+    "newPole": "New Pole",
     "already_contract": "This contract name already exists.",
     "already_project": "This Project name already exists.",
     "already_type": "This Type name already exists.",
-    "expired": "Expired"
+    "expired": "Expired",
+    "do_not_close": "Please do not close this window."
 }
