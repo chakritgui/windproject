@@ -32,7 +32,7 @@
 </div>
 <div class="container-fluid mt-3 mb-5">
     <div class="table-responsive">
-        <table class="table table-hover" id="tb_member">
+        <table class="table table-striped table-hover" id="tb_member">
             <thead>
                 <tr>
                     <th></th>

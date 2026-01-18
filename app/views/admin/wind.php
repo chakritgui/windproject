@@ -52,7 +52,7 @@
         <button class="btn btn-sm btn-danger clear-data"><i class="fa-solid fa-trash-can"></i> <span data-i18n="clear_data"></button> 
     </div>
     <div class="table-responsive">
-        <table class="table table-hover" id="tb_wind">
+        <table class="table table-striped table-hover" id="tb_wind">
             <thead>
                 <tr>
                     <th data-i18n="no."></th>

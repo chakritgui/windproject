@@ -18,7 +18,7 @@ function initContractsTable() {
             url: "api/contracts/list", 
             type: "POST",
             data: function(d){
-                d.status = $('#filter_status').val();
+                d.status = $('#status').val();
             }
         },
         columns: [      

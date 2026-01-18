@@ -69,6 +69,7 @@
             $router->post('/api/mapsetting/save', 'MapSettingController@save');
             $router->get('/api/mapsetting/load', 'MapSettingController@load');
             $router->post('/api/contracts/list', 'ContractsController@list');
+            $router->post('/api/contracts/filter', 'ContractsController@filter');
         } else {
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');

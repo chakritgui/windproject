@@ -62,4 +62,29 @@ class ContractsModel {
             }
         }
     }
+    public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {
+        $offset = ($page - 1) * $limit;
+        $items = [];
+        $totalCount = 0;
+        switch($type) {
+            case 'status':
+                $staticData = [
+                    ['id' => 'active', 'text' => 'Active'],
+                    ['id' => 'inactive', 'text' => 'Inactive'],
+                    ['id' => 'expired', 'text' => 'Expired']
+                ];
+                if (!empty($searchTerm)) {
+                    $staticData = array_values(array_filter($staticData, function($item) use ($searchTerm) {
+                        return strpos(strtolower($item['text']), strtolower($searchTerm)) !== false;
+                    }));
+                }
+                $totalCount = count($staticData);
+                $items = array_slice($staticData, $offset, $limit);
+                break;
+        }
+        return [
+            'items' => $items,
+            'total_count' => $totalCount
+        ];
+    }
 }

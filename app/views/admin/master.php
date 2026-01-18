@@ -39,8 +39,14 @@
     </ul>
     <div class="tab-content" id="mainTabContent">
         <div class="tab-pane fade show active" id="contracts" role="tabpanel">
+            <div class="row g-2 mb-3">
+                <div class="col-sm-2">
+                    <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                    <select id="status" class="form-select filter"></select>
+                </div>
+            </div>
             <div class="table-responsive">
-                <table class="table table-hover" id="tb_contract">
+                <table class="table table-striped table-hover" id="tb_contract">
                     <thead>
                         <tr>
                             <th data-i18n="contract_no"></th>
@@ -57,7 +63,7 @@
         </div>
         <div class="tab-pane fade" id="projects" role="tabpanel">
             <div class="table-responsive">
-                <table class="table table-hover" id="tb_project">
+                <table class="table table-striped table-hover" id="tb_project">
                     <thead>
                         <tr>
                             <th data-i18n="project_code"></th>
@@ -74,7 +80,7 @@
         </div>
         <div class="tab-pane fade" id="pole-types" role="tabpanel">
             <div class="table-responsive">
-                <table class="table table-hover" id="tb_type">
+                <table class="table table-striped table-hover" id="tb_type">
                     <thead>
                         <tr>
                             <th data-i18n="icon"></th>
@@ -90,7 +96,7 @@
         </div>
         <div class="tab-pane fade" id="poles" role="tabpanel">
             <div class="table-responsive">
-                <table class="table table-hover" id="tb_pole">
+                <table class="table table-striped table-hover" id="tb_pole">
                     <thead>
                         <tr>
                             <th data-i18n="pole_code"></th>
