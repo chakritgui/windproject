@@ -245,6 +245,7 @@ function getNewsForm(d, publishTime) {
             <div class="text-muted small mt-2" data-i18n="allow_images_only"></div>
             <button type="button" id="btnRemoveCover" class="btn btn-sm btn-outline-danger mt-2 ${d.cover ? '' : 'd-none'}" data-i18n="remove"></button>
         </div>
+        <input type="hidden" id="ex_cover" value="${d.cover ? d.cover : ''}">
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#en">English</a></li>
             <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#lo">ລາວ</a></li>
@@ -281,6 +282,7 @@ function initCoverUpload() {
     const preview = document.getElementById("coverPreview");
     const label = document.getElementById("coverDropLabel");
     const btnRemove = document.getElementById("btnRemoveCover");
+    const ex_cover = document.getElementById("ex_cover");
     dropArea.addEventListener("click", () => input.click());
     ["dragenter", "dragover"].forEach(ev =>
         dropArea.addEventListener(ev, e => {
@@ -305,6 +307,7 @@ function initCoverUpload() {
     btnRemove.addEventListener("click", e => {
         e.stopPropagation();
         input.value = "";
+        ex_cover.value = "";
         preview.src = "";
         preview.classList.add("d-none");
         label.classList.remove("d-none");
@@ -417,6 +420,7 @@ function saveNews() {
     formData.append("publish_at", typeof buildPublishAt === "function" ? buildPublishAt() : "");
     formData.append("title_en", $("#title_en").val());
     formData.append("title_lo", $("#title_lo").val());
+    formData.append("ex_cover", $("#ex_cover").val());
     formData.append("title_th", title_th);
     formData.append("content_en", editors['en']?.getData() ?? '');
     formData.append("content_lo", editors['lo']?.getData() ?? '');

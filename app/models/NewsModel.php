@@ -93,6 +93,7 @@ class NewsModel {
     public function save($data) {
         $pdo = $this->db;
         $news_id = $data['news_id'] ?? null;
+        $ex_cover = $data['ex_cover'] ?? null;
         $status = $data['status'] ?? 'draft';
         $publish_at = null;
         if ($status !== 'draft') {
@@ -132,6 +133,9 @@ class NewsModel {
                 if ($subj !== '' || $body !== '') {
                     $stmtItem->execute([':news_id' => $news_id, ':subject' => $subj, ':body' => $body, ':lang' => $lang]);
                 }
+            }
+            if(!$ex_cover) {
+                $this->handleFileDelete($news_id);
             }
             if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
                 $this->handleFileUpload($news_id, $_FILES['cover']);
@@ -184,13 +188,7 @@ class NewsModel {
         }
     }
     private function handleFileUpload($news_id, $file) {
-        $stmt = $this->db->prepare("SELECT cover FROM wp_news WHERE news_id = ?");
-        $stmt->execute([$news_id]);
-        $old = $stmt->fetchColumn();
-        if (!empty($old)) {
-            $oldPath = $_SERVER['DOCUMENT_ROOT'] . '/' . $old;
-            if (file_exists($oldPath) && is_file($oldPath)) @unlink($oldPath);
-        }
+        $this->handleFileDelete($news_id);
         $dir = "uploads/news/";
         $fullDir = $dir;
         if (!is_dir($fullDir)) mkdir($fullDir, 0755, true);
@@ -199,6 +197,44 @@ class NewsModel {
         $dbPath = $dir . $newName;
         if (move_uploaded_file($file['tmp_name'], dirname(__DIR__, 2) . '/' . $dir . $newName)) {
             $this->db->prepare("UPDATE wp_news SET cover=? WHERE news_id =?")->execute([$dbPath, $news_id]);
+        }
+    }
+    private function handleFileDelete($news_id){
+        $stmt = $this->db->prepare("SELECT cover FROM wp_news WHERE news_id = ?");
+        $stmt->execute([$news_id]);
+        $old = $stmt->fetchColumn();
+        if (!$old) {
+            return;
+        }
+        $basePath = realpath(dirname(__DIR__, 2));
+        if ($basePath === false) {
+            error_log("Base path not found");
+            return;
+        }
+        $old = ltrim($old, '/');
+        if (strpos($old, '..') !== false) {
+            error_log("Invalid file path: " . $old);
+            return;
+        }
+        $oldPath = $basePath . '/' . $old;
+        if (!file_exists($oldPath)) {
+            error_log("File not found: " . $oldPath);
+            return;
+        }
+        if (!is_file($oldPath)) {
+            error_log("Not a file: " . $oldPath);
+            return;
+        }
+        $this->db->beginTransaction();
+        try {
+            if (!unlink($oldPath)) {
+                throw new Exception("Cannot delete file: " . $oldPath);
+            }
+            $this->db->prepare("UPDATE wp_news SET cover = NULL WHERE news_id = ?")->execute([$news_id]);
+            $this->db->commit();
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log($e->getMessage());
         }
     }
     public function delete($id) {

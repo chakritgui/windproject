@@ -24,6 +24,8 @@ function initTable() {
             initProjectsTable();
             break;
         case 'types':
+            initSelect2Remote('#filter_type_status', 'api/types/filter', { type: 'status' });
+            $(".filter").on("change", () => initTypesTable());
             initTypesTable();
             break;
         case 'poles':

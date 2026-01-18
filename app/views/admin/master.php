@@ -98,12 +98,21 @@
             </div>
         </div>
         <div class="tab-pane fade" id="pole-types" role="tabpanel">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <select id="filter_type_status" class="form-select filter"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table class="table table-striped table-hover" id="tb_type">
                     <thead>
                         <tr>
                             <th data-i18n="icon"></th>
-                            <th data-i18n="type_code"></th>
                             <th data-i18n="type_name"></th>
                             <th data-i18n="status"></th>
                             <th></th>

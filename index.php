@@ -78,6 +78,11 @@
             $router->post('/api/projects/delete', 'ProjectsController@delete');
             $router->post('/api/projects/get', 'ProjectsController@get');
             $router->post('/api/projects/save', 'ProjectsController@save');
+            $router->post('/api/types/list', 'TypesController@list');
+            $router->post('/api/types/filter', 'TypesController@filter');
+            $router->post('/api/types/delete', 'TypesController@delete');
+            $router->post('/api/types/get', 'TypesController@get');
+            $router->post('/api/types/save', 'TypesController@save');
         } else {
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');

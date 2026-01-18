@@ -51,6 +51,7 @@ function initContractsTable() {
             { 
                 data: null,
                 orderable: false,
+                className: "text-end",
                 render: function(row){
                     return `
                         <button class="btn btn-light text-secondary manage-contract" data-id="${row.contract_id}"><i class="fa-solid fa-pen-to-square"></i></button>
