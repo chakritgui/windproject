@@ -357,5 +357,6 @@
     "content": "Content",
     "manageContract": "Manage Contract",
     "newContract": "New Contract",
-    "already_contract": "This contract name already exists."
+    "already_contract": "This contract name already exists.",
+    "expired": "Expired"
 }

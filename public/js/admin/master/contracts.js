@@ -38,7 +38,7 @@ function initContractsTable() {
                             badgeColor = "secondary";
                             break;
                         case 'expired':
-                            badgeColor = "error";
+                            badgeColor = "danger";
                             break;
                     }
                     return `
