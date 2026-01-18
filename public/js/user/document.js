@@ -4,7 +4,7 @@ let hasMore    = true;
 let currentView = 'list';
 $(document).ready(function () {
     loadDocuments();
-    initSelect2Remote('#filter_source', 'api/document/filter', { type: 'source' });
+    initSelect2Remote('#filter_type', 'api/document/filter', { type: 'type' });
     initMonthYearPicker("#filter_date", function () {
         docPage = 1;
         hasMore = true;
@@ -64,7 +64,7 @@ function loadDocuments() {
         dataType: 'json',
         data: { 
             page: docPage,
-            source: $("#filter_source").val(),
+            type: $("#filter_type").val(),
             date: $("#filter_date").val(),
             keyword: $("#filter_keyword").val()
         },
@@ -127,8 +127,8 @@ function renderGridView(items) {
                             <i class="fa-solid fa-hard-drive"></i> ${size} · <i class="fa-regular fa-file"></i> ${item.document_type.toUpperCase()}
                         </div>
                     </div>
-                    <span class="badge source-badge bg-${(item.source_name === 'Met Mast') ? 'warning' : 'error'}">
-                        ${item.source_name}
+                    <span class="badge source-badge bg-${(item.type_name === 'Met Mast') ? 'warning' : 'error'}">
+                        ${item.type_name}
                     </span>
                     <button class="btn btn-download w-100 mt-2" data-id="${item.document_id}" data-path="${item.document_path}">
                         <i class="fa-solid fa-download"></i>
@@ -165,8 +165,8 @@ function renderListView(items) {
                             <i class="fa-solid fa-hard-drive"></i> ${size} · <i class="fa-regular fa-file"></i> ${item.document_type.toUpperCase()}
                         </div>
                     </div>
-                    <span class="badge source-badge bg-${(item.source_name === 'Met Mast') ? 'warning' : 'error'}">
-                        ${item.source_name}
+                    <span class="badge source-badge bg-${(item.type_name === 'Met Mast') ? 'warning' : 'error'}">
+                        ${item.type_name}
                     </span>
                 </div>
                 <div class="col-12 col-md-auto text-end">

@@ -26,10 +26,10 @@
                 </div>
                 <div class="col-lg-3 col-md-4 col-6">
                     <label class="form-label small text-muted">
-                        <i class="fa-solid fa-cubes"></i>
-                        <span data-i18n="source"></span>
+                        <i class="fa-solid fa-tags"></i>
+                        <span data-i18n="pole_types"></span>
                     </label>
-                    <select id="filter_source" class="form-select filter"></select>
+                    <select id="filter_type" class="form-select filter"></select>
                 </div>
                 <div class="col-lg-4 col-md-5 col-12">
                     <label class="form-label small text-muted">

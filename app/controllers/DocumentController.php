@@ -10,7 +10,7 @@ class DocumentController extends BaseController {
         $filters = [
             'date'=> $_POST['date'] ?? '',
             'status'=> $_POST['status'] ?? '',
-            'source'=> $_POST['source'] ?? '',
+            'type'=> $_POST['type'] ?? '',
         ];
         $search = $_POST['search']['value'] ?? '';
         $res = $this->model->list($start,$length,$filters,$search);
@@ -32,7 +32,7 @@ class DocumentController extends BaseController {
             'document_start' => $_POST['document_start'] ?? '',
             'document_end' => $_POST['document_end'] ?? '',
             'status' => $_POST['status'] ?? '',
-            'source' => $_POST['source'] ?? '',
+            'type' => $_POST['type'] ?? '',
             'document_file' => $_FILES['document_file'] ?? null,
         ];
         $this->json(['status'=>$this->model->save($data)]);

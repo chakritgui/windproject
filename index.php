@@ -88,6 +88,11 @@
             $router->post('/api/poles/delete', 'PolesController@delete');
             $router->post('/api/poles/get', 'PolesController@get');
             $router->post('/api/poles/save', 'PolesController@save');
+            $router->post('/api/installations/list', 'InstallationsController@list');
+            $router->post('/api/installations/filter', 'InstallationsController@filter');
+            $router->post('/api/installations/delete', 'InstallationsController@delete');
+            $router->post('/api/installations/get', 'InstallationsController@get');
+            $router->post('/api/installations/save', 'InstallationsController@save');
         } else {
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');

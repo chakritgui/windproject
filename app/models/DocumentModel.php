@@ -21,7 +21,7 @@ class DocumentModel {
                 d.status, 
                 d.created_at, 
                 d.document_download,
-                t.type_name as source_name
+                t.type_name
             FROM wp_documents d
             LEFT JOIN wp_type t on t.type_id = d.type_id
             {$where}
@@ -50,7 +50,7 @@ class DocumentModel {
     }
     public function get($id) {
         if (!$id) {
-            $sql = "SELECT t.type_id as source_id,t.type_name as source_name FROM wp_type t WHERE t.status = ? order by t.type_id asc LIMIT 1";
+            $sql = "SELECT t.type_id,t.type_name FROM wp_type t WHERE t.status = ? order by t.type_id asc LIMIT 1";
             $stmt = $this->db->prepare($sql);
             $stmt->execute(['active']);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -65,16 +65,16 @@ class DocumentModel {
                 'document_size' => '',
                 'document_start' => convertTimeZone(date('Y-m-d'), 'Y-m-d'),
                 'document_type' => '',
-                'source_id' => $row['source_id'],
-                'source_name' => $row['source_name'],
+                'type_id' => $row['type_id'],
+                'type_name' => $row['type_name'],
                 'status' => 'public',
                 'updated_at' => ''
             ];
         } else {
             $sql = "SELECT 
                 d.*,
-                t.type_id as source_id,
-                t.type_name as source_name
+                t.type_id,
+                t.type_name
             FROM wp_documents d
             LEFT JOIN wp_type t on t.type_id = d.type_id
             WHERE d.document_id = ?";
@@ -97,15 +97,15 @@ class DocumentModel {
             $document_id    = !empty($data['document_id']) ? $data['document_id'] : null;
             $document_name  = $data['document_name'];
             $status         = $data['status'];
-            $source         = $data['source'];
+            $type         = $data['type'];
             $startObj = DateTime::createFromFormat('d/m/Y', trim($data['document_start']));
             $endObj   = DateTime::createFromFormat('d/m/Y', trim($data['document_end']));
             $document_start = ($startObj) ? $startObj->format('Y-m-d') : null;
             $document_end   = ($endObj) ? $endObj->format('Y-m-d') : null;
             if ($document_id) {
-                $this->updateDocument($document_id, $document_name, $document_start, $document_end, $status, $source);
+                $this->updateDocument($document_id, $document_name, $document_start, $document_end, $status, $type);
             } else {
-                $document_id = $this->insertDocument($document_name, $document_start, $document_end, $status, $source);
+                $document_id = $this->insertDocument($document_name, $document_start, $document_end, $status, $type);
             }
             if (isset($_FILES['document_file']) && $_FILES['document_file']['error'] === UPLOAD_ERR_OK) {
                 $this->handleFileUpload($document_id, $_FILES['document_file']);
@@ -155,9 +155,9 @@ class DocumentModel {
             $where .= " AND d.status = :status";
             $params[':status'] = $filters['status'];
         }
-        if (!empty($filters['source'])) {
-            $where .= " AND d.type_id = :source";
-            $params[':source'] = $filters['source'];
+        if (!empty($filters['type'])) {
+            $where .= " AND d.type_id = :type";
+            $params[':type'] = $filters['type'];
         }
         if (!empty($filters['date'])) {
             $dateParts = explode(' - ', $filters['date']);
@@ -194,16 +194,16 @@ class DocumentModel {
             }
         }
     }
-    private function insertDocument($name, $start, $end, $status, $source) {
+    private function insertDocument($name, $start, $end, $status, $type) {
         $sql = "INSERT INTO wp_documents (document_name, document_start, document_end, status, created_at, updated_at, type_id) VALUES (?, ?, ?, ?, NOW(), NOW(), ?)";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$name, $start, $end, $status, $source]);
+        $stmt->execute([$name, $start, $end, $status, $type]);
         return $this->db->lastInsertId();
     }
-    private function updateDocument($id, $name, $start, $end, $status, $source) {
+    private function updateDocument($id, $name, $start, $end, $status, $type) {
         $sql = "UPDATE wp_documents SET document_name=?, document_start=?, document_end=?, status=?, updated_at=NOW(), type_id=? WHERE document_id=?";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$name, $start, $end, $status, $source, $id]);
+        $stmt->execute([$name, $start, $end, $status, $type, $id]);
     }
     private function updateStatus($id, $status) {
         if (!$id) return false;
@@ -258,7 +258,7 @@ class DocumentModel {
         $items = [];
         $totalCount = 0;
         switch($type) {
-            case 'source':
+            case 'type':
                 $where = "WHERE 1=1";
                 $params = [];
                 if (!empty($searchTerm)) {

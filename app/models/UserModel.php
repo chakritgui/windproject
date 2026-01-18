@@ -43,7 +43,7 @@ class UserModel {
                 d.document_path,
                 d.created_at,
                 d.document_download,
-                COALESCE(t.type_name, '-') AS source_name
+                COALESCE(t.type_name, '-') AS type_name
             FROM wp_documents d
             LEFT JOIN wp_type t ON t.type_id = d.type_id
             $where

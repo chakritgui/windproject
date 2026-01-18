@@ -25,8 +25,8 @@
             <input type="text" class="form-control filter" id="filter_date">
         </div>
         <div class="col-sm-2">
-            <p><i class="fa-solid fa-cubes"></i> <span data-i18n="source"></span></p>
-            <select id="filter_source" class="form-select filter"></select>
+            <p><i class="fa-solid fa-tags"></i> <span data-i18n="pole_types"></span></p>
+            <select id="filter_type" class="form-select filter"></select>
         </div>
         <div class="col-sm-2">
             <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
@@ -41,7 +41,7 @@
                 <tr>
                     <th></th>
                     <th data-i18n="document_name"></th>
-                    <th data-i18n="source"></th>
+                    <th data-i18n="pole_types"></th>
                     <th data-i18n="type"></th>
                     <th data-i18n="date"></th>
                     <th data-i18n="size"></th>

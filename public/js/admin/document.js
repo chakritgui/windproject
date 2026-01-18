@@ -20,7 +20,7 @@ function initDocumentTable() {
             data: function(d){
                 d.date = $('#filter_date').val();
                 d.status = $('#filter_status').val();
-                d.source = $('#filter_source').val();
+                d.type = $('#filter_type').val();
             }
         },
         columns: [      
@@ -35,7 +35,7 @@ function initDocumentTable() {
                 }
             },
             { data: "document_name" },
-            { data: "source_name" },
+            { data: "type_name" },
             { data: "document_type" },
             { 
                 data: null,
@@ -128,7 +128,7 @@ async function initDocument() {
 }
 $(document).ready(function () {
     initDocument();
-    initSelect2Remote('#filter_source', 'api/document/filter', { type: 'source' });
+    initSelect2Remote('#filter_type', 'api/document/filter', { type: 'type' });
     initSelect2Remote('#filter_status', 'api/document/filter', { type: 'status' });
     initDateRangePicker('#filter_date', initDocumentTable);
 });
@@ -202,8 +202,8 @@ $(document).on('click', '.manage-document', function () {
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="source"></label>
-                            <select id="source" class="form-select obj-required"></select>
+                            <label class="mb-2 required" data-i18n="pole_types"></label>
+                            <select id="type" class="form-select obj-required"></select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required" data-i18n="status"></label>
@@ -211,7 +211,7 @@ $(document).on('click', '.manage-document', function () {
                         </div>
                     </div>
                 `);
-                initSelect2Remote('#source', 'api/document/filter', { type: 'source' });
+                initSelect2Remote('#type', 'api/document/filter', { type: 'type' });
                 initSelect2Remote('#status', 'api/document/filter', { type: 'status' });
                 initDatePicker('#document_start');
                 initDatePicker('#document_end');
@@ -237,9 +237,9 @@ $(document).on('click', '.manage-document', function () {
                         handleFile(fakeFile, 'edit');
                         $("#document_file").removeClass("obj-required");
                     }
-                    if (docData.source_id) {
-                        var newOptionSource = new Option(docData.source_name, docData.source_id, true, true);
-                        $('#source').append(newOptionSource).trigger('change');
+                    if (docData.type_id) {
+                        var newOptionType = new Option(docData.type_name, docData.type_id, true, true);
+                        $('#type').append(newOptionType).trigger('change');
                     }
                     if (docData.status) {
                         let statusName = docData.status.charAt(0).toUpperCase() + docData.status.slice(1);
@@ -370,7 +370,7 @@ function saveDocument() {
     formData.append("document_start", $("#document_start").val());
     formData.append("document_end", $("#document_end").val());
     formData.append("status", $("#status").val());
-    formData.append("source", $("#source").val());
+    formData.append("type", $("#type").val());
     const file = $("#document_file")[0].files[0];
     if (file) {
         formData.append("document_file", file);
