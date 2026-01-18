@@ -25,7 +25,7 @@
             <input type="text" class="form-control filter" id="filter_date">
         </div>
         <div class="col-sm-2">
-            <p><i class="fa-regular fa-calendar"></i> <span data-i18n="project"></span></p>
+            <p><i class="fa-solid fa-folder-tree"></i> <span data-i18n="project"></span></p>
             <select id="filter_project" class="form-select filter"></select>
         </div>
         <div class="col-sm-2">

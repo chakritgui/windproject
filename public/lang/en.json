@@ -366,6 +366,8 @@
     "already_contract": "This contract name already exists.",
     "already_project": "This Project name already exists.",
     "already_type": "This Type name already exists.",
+    "already_pole": "This Pole code already exists.",
     "expired": "Expired",
-    "do_not_close": "Please do not close this window."
+    "do_not_close": "Please do not close this window.",
+    "online": "Online"
 }

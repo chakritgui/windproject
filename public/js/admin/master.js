@@ -28,7 +28,17 @@ function initTable() {
             $(".filter").on("change", () => initTypesTable());
             initTypesTable();
             break;
+        case 'installation':
+            initSelect2Remote('#filter_installation_status', 'api/installations/filter', { type: 'status' });
+            $(".filter").on("change", () => initTypesTable());
+            initInstallationsTable();
+            break;
         case 'poles':
+            initSelect2Remote('#filter_pole_project', 'api/poles/filter', { type: 'project' });
+            initSelect2Remote('#filter_pole_type', 'api/poles/filter', { type: 'type' });
+            initSelect2Remote('#filter_pole_installation', 'api/poles/filter', { type: 'installation' });
+            initSelect2Remote('#filter_pole_status', 'api/poles/filter', { type: 'status' });
+            $(".filter").on("change", () => initPolesTable());
             initPolesTable();
             break;
     }

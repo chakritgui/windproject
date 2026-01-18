@@ -32,6 +32,11 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="installation-tab" data-bs-toggle="pill" data-bs-target="#installation" data-page="installation" type="button">
+                <i class="fa-solid fa-location-dot"></i> <span data-i18n="installation"></span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="poles-tab" data-bs-toggle="pill" data-bs-target="#poles" data-page="poles" type="button">
                 <i class="fa-solid fa-tower-broadcast"></i> <span data-i18n="poles"></span>
             </button>
@@ -122,14 +127,34 @@
                 </table>
             </div>
         </div>
-        <div class="tab-pane fade" id="poles" role="tabpanel">
+        <div class="tab-pane fade" id="installation" role="tabpanel">
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2">
-                            <p><i class="fa-solid fa-file-lines"></i> <span data-i18n="contracts"></span></p>
-                            <select id="filter_pole_contract" class="form-select filter"></select>
+                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <select id="filter_installation_status" class="form-select filter"></select>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="tb_installation">
+                    <thead>
+                        <tr>
+                            <th data-i18n="installation"></th>
+                            <th data-i18n="status"></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="poles" role="tabpanel">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
                         <div class="col-sm-2">
                             <p><i class="fa-solid fa-folder-tree"></i> <span data-i18n="projects"></span></p>
                             <select id="filter_pole_project" class="form-select filter"></select>
@@ -155,7 +180,6 @@
                         <tr>
                             <th data-i18n="pole_code"></th>
                             <th data-i18n="type"></th>
-                            <th data-i18n="contract"></th>
                             <th data-i18n="project"></th>
                             <th data-i18n="latitude"></th>
                             <th data-i18n="longitude"></th>
@@ -175,4 +199,5 @@
 <script src="<?=BASE_URL?>/public/js/admin/master/contracts.js?v=<?=time();?>"></script>
 <script src="<?=BASE_URL?>/public/js/admin/master/projects.js?v=<?=time();?>"></script>
 <script src="<?=BASE_URL?>/public/js/admin/master/types.js?v=<?=time();?>"></script>
+<script src="<?=BASE_URL?>/public/js/admin/master/installation.js?v=<?=time();?>"></script>
 <script src="<?=BASE_URL?>/public/js/admin/master/poles.js?v=<?=time();?>"></script>
