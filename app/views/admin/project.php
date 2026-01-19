@@ -1,8 +1,11 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="stylesheet" href="<?=BASE_URL?>/public/css/admin/project.css?v=<?php echo time(); ?>">
 <div class="container-fluid mt-90 mb-5">
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm" style="background: #ffffff; border-left: 4px solid #0d6efd;">
-        <div class="mb-2 mb-md-0">
-            <h4 class="fw-bold mb-1 d-flex align-items-center" style="font-size: 1.35rem;">
-                <i class="fa-solid fa-diagram-project me-2 text-primary" style="font-size: 1.5rem;"></i>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm"
+        style="background:#fff;border-left:4px solid #0d6efd;">
+        <div>
+            <h4 class="fw-bold mb-1 d-flex align-items-center">
+                <i class="fa-solid fa-diagram-project me-2 text-primary" style="font-size:1.5rem"></i>
                 <span data-i18n="project_management"></span>
             </h4>
             <nav aria-label="breadcrumb" style="margin-left: 25px;">
@@ -10,64 +13,132 @@
                     <li class="breadcrumb-item">
                         <span data-i18n="admin"></span>
                     </li>
-                    <li class="breadcrumb-item active" aria-current="page">
+                    <li class="breadcrumb-item active">
                         <span data-i18n="project"></span>
                     </li>
                 </ol>
             </nav>
         </div>
-        <div class="ms-md-3 text-md-end align-items-end">
-            <button class="btn btn-primary btn-sm manage-project">
-                <i class="fa-solid fa-plus"></i> <span data-i18n="project"></span>
+    </div>
+</div>
+<div class="container-fluid mt-3 mb-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb" id="breadcrumb" style="font-size: 1.1rem;">
+            <li class="breadcrumb-item active" data-id="1">
+                <i class="bi bi-cloud-fill me-1"></i>
+                <span>ไดรฟ์ของฉัน</span>
+            </li>
+        </ol>
+    </nav>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <button class="btn btn-sm btn-outline-secondary" id="btnCreateFolder">
+                <i class="bi bi-folder-plus"></i> สร้างโฟลเดอร์
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" id="btnCreateFile">
+                <i class="bi bi-file-earmark-plus"></i> สร้างไฟล์
+            </button>
+        </div>
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-sm btn-outline-secondary active" id="viewGrid">
+                <i class="bi bi-grid-3x3-gap"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="viewList">
+                <i class="bi bi-list-ul"></i>
             </button>
         </div>
     </div>
-</div>
-<div class="container-fluid mt-3 mb-5">
-    <div class="row g-2 mb-3">
-        <div class="col-sm-3">
-            <input type="date" class="form-control filter" id="filter_date">
-        </div>
-        <div class="col-sm-3">
-            <select id="filter_notification" class="form-select">
-                <option value="">-- Notification --</option>
-                <option value="yes">Yes</option>
-                <option value="no">No</option>
-            </select>
-        </div>
-        <div class="col-sm-3">
-            <select id="filter_status" class="form-select filter">
-                <option value="">-- Status --</option>
-                <option value="published">Published</option>
-                <option value="draft">Draft</option>
-                <option value="scheduled">Scheduled</option>
-            </select>
-        </div>
-        <div class="col-sm-3">
-            <select id="filter_status" class="form-select filter">
-                <option value="">-- Creator --</option>
-            </select>
-        </div>
-    </div>
-</div>
-<div class="container-fluid mt-3 mb-5">
-    <div class="table-responsive">
-        <table class="table table-striped table-hover" id="tb_project">
+    <div id="gridView" class="row g-3"></div>
+    <div id="listView" class="d-none">
+        <table class="table table-hover">
             <thead>
                 <tr>
-                    <th data-i18n="cover"></th>
-                    <th data-i18n="title"></th>
-                    <th data-i18n="publish_at"></th>
-                    <th data-i18n="create_at"></th>
-                    <th data-i18n="create_by"></th>
-                    <th data-i18n="notification"></th>
-                    <th data-i18n="view"></th>
-                    <th data-i18n="status"></th>
+                    <th>ชื่อ</th>
+                    <th>เจ้าของ</th>
+                    <th>แก้ไขล่าสุด</th>
+                    <th>ขนาดไฟล์</th>
                     <th></th>
                 </tr>
             </thead>
-            <tbody></tbody>
+            <tbody id="listViewBody"></tbody>
         </table>
+    </div>
+    <div id="emptyState" class="text-center py-5 d-none">
+        <i class="bi bi-folder2-open text-muted" style="font-size: 5rem;"></i>
+        <h5 class="text-muted mt-3">ไม่มีไฟล์หรือโฟลเดอร์</h5>
+        <p class="text-muted">คลิก "สร้างโฟลเดอร์" หรือ "สร้างไฟล์" เพื่อเริ่มต้น</p>
+    </div>
+</div>
+<div class="modal fade" id="modalCreateFolder" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">สร้างโฟลเดอร์ใหม่</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="folderName" class="form-label">ชื่อโฟลเดอร์</label>
+                    <input type="text" class="form-control" id="folderName" placeholder="โฟลเดอร์ใหม่">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                <button type="button" class="btn btn-primary" id="btnSaveFolder">สร้าง</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalCreateFile" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">สร้างไฟล์ใหม่</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="fileName" class="form-label">ชื่อไฟล์</label>
+                    <input type="text" class="form-control" id="fileName" placeholder="ไฟล์ใหม่">
+                </div>
+                <div class="mb-3">
+                    <label for="fileContent" class="form-label">เนื้อหา</label>
+                    <textarea class="form-control" id="fileContent" rows="10" placeholder="พิมพ์เนื้อหาที่นี่..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                <button type="button" class="btn btn-primary" id="btnSaveFile">สร้าง</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalViewFile" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewFileTitle">ไฟล์</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <textarea class="form-control" id="viewFileContent" rows="15"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+                <button type="button" class="btn btn-primary" id="btnUpdateFile">บันทึก</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="contextMenu" class="context-menu">
+    <div class="context-menu-item" data-action="open">
+        <i class="bi bi-folder2-open me-2"></i>เปิด
+    </div>
+    <div class="context-menu-item" data-action="rename">
+        <i class="bi bi-pencil me-2"></i>เปลี่ยนชื่อ
+    </div>
+    <div class="context-menu-item" data-action="delete">
+        <i class="bi bi-trash me-2"></i>ลบ
     </div>
 </div>
 <script src="<?=BASE_URL?>/public/js/admin/project.js?v=<?=time()?>"></script>
