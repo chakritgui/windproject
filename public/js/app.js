@@ -18,19 +18,6 @@ async function initApp() {
     bindNotification();
     initAutoLanguageObserver();
     initMeta();
-    $('.dropdown-toggle').on('click', function (e) {
-        e.preventDefault();
-        const $el = $(this).next('.dropdown-menu');
-        $el.toggleClass('show');
-        $(this).attr('aria-expanded', $el.hasClass('show'));
-        $('.dropdown-menu').not($el).removeClass('show');
-        e.stopPropagation();
-    });
-    $(document).on('click', function (e) {
-        if (!$(e.target).closest('.dropdown').length) {
-            $('.dropdown-menu').removeClass('show');
-        }
-    });
 }
 function initMeta() {
     $.ajax({
@@ -84,10 +71,6 @@ async function loadNotification() {
 $(document).on('click', '.btn-notification', async function (e) {
     $('.notification-list').empty();
     e.preventDefault();
-    const $el = $(this).next('.dropdown-menu');
-    $el.toggleClass('show');
-    $(this).attr('aria-expanded', $el.hasClass('show'));
-    $('.dropdown-menu').not($el).removeClass('show');
     e.stopPropagation();
     updateUnreadBadge(0);
     await readNotification();
