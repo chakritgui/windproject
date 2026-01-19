@@ -46,7 +46,7 @@
     const BASE_URL = "<?=BASE_URL?>";
 <?php if (file_exists($manifestFile)) { ?>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register(BASE_URL + '/public/sw.js');
+            navigator.serviceWorker.register(BASE_URL + '/sw.js');
         }
 <?php } ?>
 </script>

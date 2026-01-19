@@ -1,4 +1,3 @@
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/admin/project.css?v=<?php echo time(); ?>">
 <div class="container-fluid mt-90 mb-5">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm"
@@ -25,7 +24,6 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb" id="breadcrumb" style="font-size: 1.1rem;">
             <li class="breadcrumb-item active" data-id="1">
-                <i class="bi bi-cloud-fill me-1"></i>
                 <span>ไดรฟ์ของฉัน</span>
             </li>
         </ol>
@@ -33,18 +31,18 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <button class="btn btn-sm btn-outline-secondary" id="btnCreateFolder">
-                <i class="bi bi-folder-plus"></i> สร้างโฟลเดอร์
+                <i class="fa-solid fa-folder-plus"></i> สร้างโฟลเดอร์
             </button>
             <button class="btn btn-sm btn-outline-secondary" id="btnCreateFile">
-                <i class="bi bi-file-earmark-plus"></i> สร้างไฟล์
+                <i class="fa-solid fa-file-circle-plus"></i> สร้างไฟล์
             </button>
         </div>
         <div class="btn-group" role="group">
             <button type="button" class="btn btn-sm btn-outline-secondary active" id="viewGrid">
-                <i class="bi bi-grid-3x3-gap"></i>
+                <i class="fas fa-th"></i>
             </button>
             <button type="button" class="btn btn-sm btn-outline-secondary" id="viewList">
-                <i class="bi bi-list-ul"></i>
+                <i class="fas fa-list"></i>
             </button>
         </div>
     </div>
@@ -64,7 +62,7 @@
         </table>
     </div>
     <div id="emptyState" class="text-center py-5 d-none">
-        <i class="bi bi-folder2-open text-muted" style="font-size: 5rem;"></i>
+        <i class="fa-solid fa-folder-open text-muted" style="font-size: 5rem;"></i>
         <h5 class="text-muted mt-3">ไม่มีไฟล์หรือโฟลเดอร์</h5>
         <p class="text-muted">คลิก "สร้างโฟลเดอร์" หรือ "สร้างไฟล์" เพื่อเริ่มต้น</p>
     </div>
@@ -132,13 +130,13 @@
 </div>
 <div id="contextMenu" class="context-menu">
     <div class="context-menu-item" data-action="open">
-        <i class="bi bi-folder2-open me-2"></i>เปิด
+        <i class="fa-solid fa-folder-open me-2"></i>เปิด
     </div>
     <div class="context-menu-item" data-action="rename">
-        <i class="bi bi-pencil me-2"></i>เปลี่ยนชื่อ
+        <i class="fa-solid fa-pen-to-square me-2"></i>เปลี่ยนชื่อ
     </div>
     <div class="context-menu-item" data-action="delete">
-        <i class="bi bi-trash me-2"></i>ลบ
+        <i class="fa-solid fa-trash-can me-2"></i>ลบ
     </div>
 </div>
 <script src="<?=BASE_URL?>/public/js/admin/project.js?v=<?=time()?>"></script>

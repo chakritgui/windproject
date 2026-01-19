@@ -45,7 +45,6 @@ $(document).ready(function() {
         items.push(newFolder);
         $('#modalCreateFolder').modal('hide');
         loadItems();
-        showToast('สร้างโฟลเดอร์ "' + folderName + '" สำเร็จ');
     });
     $('#btnCreateFile').click(function() {
         $('#fileName').val('');
@@ -70,7 +69,6 @@ $(document).ready(function() {
         items.push(newFile);
         $('#modalCreateFile').modal('hide');
         loadItems();
-        showToast('สร้างไฟล์ "' + fileName + '" สำเร็จ');
     });
     function loadItems() {
         const currentItems = items.filter(item => item.parentId === currentFolderId);
@@ -87,7 +85,7 @@ $(document).ready(function() {
                     <div class="col-lg-2 col-md-3 col-sm-4 col-6">
                         <div class="folder-card fade-in" data-id="${item.id}" data-type="folder">
                             <div class="text-center">
-                                <i class="bi bi-folder-fill folder-icon"></i>
+                                <i class="fa-solid fa-folder folder-icon"></i>
                             </div>
                             <div class="item-name" title="${item.name}">${item.name}</div>
                             <div class="item-info">${item.createdAt || '-'}</div>
@@ -99,7 +97,7 @@ $(document).ready(function() {
                     <div class="col-lg-2 col-md-3 col-sm-4 col-6">
                         <div class="file-card fade-in" data-id="${item.id}" data-type="file">
                             <div class="text-center">
-                                <i class="bi bi-file-earmark-text-fill file-icon"></i>
+                                <i class="fa-regular fa-file file-icon"></i>
                             </div>
                             <div class="item-name" title="${item.name}">${item.name}</div>
                             <div class="item-info">${item.createdAt || '-'}</div>
@@ -116,8 +114,8 @@ $(document).ready(function() {
         let html = '';
         currentItems.forEach(item => {
             const icon = item.type === 'folder' 
-                ? '<i class="bi bi-folder-fill text-warning me-2"></i>' 
-                : '<i class="bi bi-file-earmark-text-fill text-primary me-2"></i>';
+                ? '<i class="fa-solid fa-folder text-warning me-2"></i>' 
+                : '<i class="fa-regular fa-file text-primary me-2"></i>';
             html += `
                 <tr data-id="${item.id}" data-type="${item.type}">
                     <td>${icon}${item.name}</td>
@@ -126,7 +124,7 @@ $(document).ready(function() {
                     <td>${item.type === 'folder' ? '-' : '1 KB'}</td>
                     <td>
                         <button class="btn btn-sm btn-link text-secondary">
-                            <i class="bi bi-three-dots-vertical"></i>
+                            <i class="fa-solid fa-ellipsis-vertical"></i>
                         </button>
                     </td>
                 </tr>
@@ -185,7 +183,6 @@ $(document).ready(function() {
         if (file) {
             file.content = newContent;
             $('#modalViewFile').modal('hide');
-            showToast('บันทึกไฟล์สำเร็จ');
         }
     });
     function updateBreadcrumb() {
@@ -194,14 +191,12 @@ $(document).ready(function() {
             if (index === currentPath.length - 1) {
                 html += `
                     <li class="breadcrumb-item active" data-id="${path.id}">
-                        ${index === 0 ? '<i class="bi bi-cloud-fill me-1"></i>' : ''}
                         <span>${path.name}</span>
                     </li>
                 `;
             } else {
                 html += `
                     <li class="breadcrumb-item" data-id="${path.id}">
-                        ${index === 0 ? '<i class="bi bi-cloud-fill me-1"></i>' : ''}
                         <span>${path.name}</span>
                     </li>
                 `;
@@ -243,7 +238,6 @@ $(document).ready(function() {
         if (newName && newName.trim() !== '') {
             item.name = newName.trim();
             loadItems();
-            showToast('เปลี่ยนชื่อเป็น "' + newName + '" สำเร็จ');
         }
     }
     function deleteItem(itemId) {
@@ -258,29 +252,6 @@ $(document).ready(function() {
             }
             items = items.filter(item => !idsToDelete.includes(item.id));
             loadItems();
-            showToast('ลบ "' + item.name + '" สำเร็จ');
         }
-    }
-    function showToast(message) {
-        const toastHtml = `
-            <div class="toast-container position-fixed bottom-0 end-0 p-3">
-                <div class="toast show" role="alert">
-                    <div class="toast-header">
-                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                        <strong class="me-auto">สำเร็จ</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
-                    </div>
-                    <div class="toast-body">
-                        ${message}
-                    </div>
-                </div>
-            </div>
-        `;
-        $('body').append(toastHtml);
-        setTimeout(function() {
-            $('.toast-container').fadeOut(function() {
-                $(this).remove();
-            });
-        }, 3000);
     }
 });
