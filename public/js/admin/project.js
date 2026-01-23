@@ -1,4 +1,31 @@
+function initProject() {
+    $.ajax({
+        url: 'api/project/get',
+        method: 'POST',
+        data: {
+            
+        },
+        dataType: 'json',
+        success: function(res) {
+            if(res.status === true){
+            } else {
+                showError('Error', langData['cannot_load']);
+            }   
+        },
+        error: function (xhr, status, error) {
+            let msg = langData['cannot_load'];
+            try {
+                let res = JSON.parse(xhr.responseText);
+                if (res.message) msg += ": " + res.message;
+            } catch (e) {}
+            showError('Error', msg);
+        }
+    });
+}
 $(document).ready(function() {
+    initProject();
+
+
     let currentFolderId = 1;
     let currentPath = [{id: 1, name: 'ไดรฟ์ของฉัน'}];
     let items = [
@@ -119,7 +146,8 @@ $(document).ready(function() {
             html += `
                 <tr data-id="${item.id}" data-type="${item.type}">
                     <td>${icon}${item.name}</td>
-                    <td>ฉัน</td>
+                    <td>${icon}${item.name}</td>
+                    <td>${icon}${item.name}</td>
                     <td>${item.createdAt || '-'}</td>
                     <td>${item.type === 'folder' ? '-' : '1 KB'}</td>
                     <td>

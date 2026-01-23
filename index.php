@@ -52,8 +52,6 @@
             $router->post('/api/document/save', 'DocumentController@save');
             $router->post('/api/document/delete', 'DocumentController@delete');
             $router->post('/api/document/download_history', 'DocumentController@downloadHistory');
-            $router->post('/api/project/list', 'ProjectController@list');
-            $router->post('/api/project/get', 'ProjectController@get');
             $router->post('/api/wind/list', 'WindController@list');
             $router->post('/api/wind/import', 'WindController@import');
             $router->post('/api/wind/clear', 'WindController@clear');
@@ -93,6 +91,7 @@
             $router->post('/api/installations/delete', 'InstallationsController@delete');
             $router->post('/api/installations/get', 'InstallationsController@get');
             $router->post('/api/installations/save', 'InstallationsController@save');
+            $router->post('/api/project/get', 'ProjectController@get');
         } else {
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');

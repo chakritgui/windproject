@@ -419,5 +419,9 @@
     "download_line38": "Installation cancelled. You can try again anytime!",
     "download_line39": "App installed successfully!",
     "tip:": "Tip:",
-    "download_line40": "This must be done in Safari browser. Other browsers on iOS don't support PWA installation."
+    "download_line40": "This must be done in Safari browser. Other browsers on iOS don't support PWA installation.",
+    "folder": "Folder",
+    "name": "Name",
+    "last_update": "Last Update",
+    "project_line1": "Click Create Folder or Content to get started."
 }
