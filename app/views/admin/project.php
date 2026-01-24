@@ -21,48 +21,48 @@
     </div>
 </div>
 <div class="container-fluid mt-3 mb-5">
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb" id="breadcrumb" style="font-size: 1.1rem;">
+    <nav aria-label="breadcrumb" class="breadcrumb-container shadow-sm border mb-3 px-3 py-2 bg-white">
+        <ol class="breadcrumb mb-0" id="breadcrumb">
             <li class="breadcrumb-item active" data-id="1">
-                <span>ไดรฟ์ของฉัน</span>
+                <i class="fa-solid fa-house me-1 text-primary"></i>
+                <span>PSTG PROJECT</span>
             </li>
         </ol>
     </nav>
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
         <div>
-            <button class="btn btn-sm btn-outline-secondary" id="btnCreateFolder">
+            <button class="btn btn-sm btn-outline-warning" id="btnCreateFolder">
                 <i class="fa-solid fa-folder-plus"></i> <span data-i18n="folder"></span>
             </button>
-            <button class="btn btn-sm btn-outline-secondary" id="btnCreateFile">
+            <button class="btn btn-sm btn-outline-primary" id="btnCreateFile">
                 <i class="fa-solid fa-file-circle-plus"></i> <span data-i18n="content"></span>
             </button>
         </div>
-        <div class="btn-group" role="group">
-            <button type="button" class="btn btn-sm btn-outline-secondary active" id="viewGrid">
-                <i class="fas fa-th"></i>
-            </button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" id="viewList">
-                <i class="fas fa-list"></i>
-            </button>
+        <div class="position-relative" style="min-width: 250px;">
+            <i class="fa-solid fa-magnifying-glass position-absolute text-muted" style="top: 10px; left: 12px;"></i>
+            <input type="text" id="txtSearch" class="form-control form-control-sm ps-5" autocomplete="off">
         </div>
     </div>
-    <div id="gridView" class="row g-3"></div>
-    <div id="listView" class="d-none">
-        <table class="table table-hover">
-            <thead>
+    <div id="listView" class="bg-white rounded shadow-sm border overflow-auto">
+        <table class="table table-striped table-hover mb-0">
+            <thead class="table-light">
                 <tr>
-                    <th></th>
+                    <th style="width: 60px;"></th>
                     <th data-i18n="name"></th>
                     <th data-i18n="last_update"></th>
                     <th data-i18n="notification"></th>
                     <th data-i18n="status"></th>
-                    <th></th>
+                    <th style="width: 100px;"></th>
                 </tr>
             </thead>
             <tbody id="listViewBody"></tbody>
         </table>
     </div>
-    <div id="emptyState" class="text-center py-5 d-none">
+    <div id="loadingIndicator" class="text-center d-none py-4">
+        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+        <span class="ms-2 text-muted" style="font-size: 0.85rem;" data-i18n="loading">Loading more...</span>
+    </div>
+    <div id="emptyState" class="text-center py-5 d-none bg-white rounded shadow-sm border mt-3">
         <i class="fa-solid fa-folder-open text-muted" style="font-size: 5rem;"></i>
         <h5 class="text-muted mt-3" data-i18n="no_data_found"></h5>
         <p class="text-muted" data-i18n="project_line1"></p>

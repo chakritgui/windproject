@@ -1,285 +1,322 @@
+let currentFolderId = null;
+let currentLevel = 1; 
+let currentRefId = null;
+let currentProjectId = null;
+let currentPath = [{id: null, name: 'PSTG PROJECT', level: 1, ref_id: null, project_id: null}];
+let cachedData = []; 
+let offset = 0;
+const limit = 20;
+let isLoading = false;
+let isFull = false;
+let currentSearch = '';
+initProject();
 function initProject() {
+    fetchFolders(true);
+}
+function fetchFolders(isNewSearch = false) {
+    if (isLoading) return;
+    if (isNewSearch) {
+        offset = 0;
+        isFull = false;
+        cachedData = [];
+        $('#listViewBody').html('');
+    }
+    if (isFull) return;
+    isLoading = true;
+    $('#loadingIndicator').removeClass('d-none'); 
     $.ajax({
         url: 'api/project/get',
         method: 'POST',
         data: {
-            
+            level: currentLevel,
+            item: currentFolderId,
+            ref_id: currentRefId,
+            project_id: currentProjectId,
+            start: offset,
+            length: limit,
+            search: { value: currentSearch }
         },
         dataType: 'json',
         success: function(res) {
-            if(res.status === true){
+            if(res.status === true) {
+                const result = res.data;
+                const newData = result.data;
+                cachedData = cachedData.concat(newData);
+                renderTable(newData, isNewSearch);
+                renderBreadcrumb();
+                if (!result.hasMore || newData.length < limit) {
+                    isFull = true;
+                }
+                offset += limit;
             } else {
                 showError('Error', langData['cannot_load']);
-            }   
+            }
+        },
+        error: function () {
+            showError('Error', langData['cannot_load']);
+        },
+        complete: function() {
+            isLoading = false;
+            $('#loadingIndicator').addClass('d-none');
+        }
+    });
+}
+function renderTable(data, isNewSearch) {
+    const $body = $('#listViewBody');
+    const $empty = $('#emptyState');
+    const $tableHeader = $body.closest('table').find('thead'); 
+    if (isNewSearch && (!data || data.length === 0)) {
+        $body.html('');
+        $empty.removeClass('d-none');
+        $tableHeader.addClass('d-none');
+        return;
+    }
+    $empty.addClass('d-none');
+    $tableHeader.removeClass('d-none');
+    let html = '';
+    data.forEach((item, index) => {
+        const globalIndex = cachedData.length - data.length + index;
+        let icon = 'fa-folder-open text-warning';
+        if (item.type === 'root') icon = 'fa-folder-open text-secondary';
+        if (item.type === 'content') icon = 'fa-file-lines text-primary';
+        const badge = item.child_count > 0 ? `<span class="badge rounded-pill bg-light text-dark border ms-2" style="font-size: 0.7rem;">${item.child_count}</span>` : '';
+        html += `
+            <tr data-index="${globalIndex}" style="cursor:pointer;">
+                <td class="text-center"><i class="fa-solid ${icon} fa-2x"></i></td>
+                <td>
+                    <div class="fw-bold">${item.folder_name || '-'} ${badge}</div>
+                    <small class="text-muted">${item.code ? item.code.toUpperCase() : 'FOLDER'}</small>
+                </td>
+                <td>${item.created_at || '-'}</td>
+                <td>-</td>
+                <td>-</td>
+                <td>
+                    ${(item.type !== 'root') ? `
+                        <button class="btn btn-sm btn-light manage-project" data-id="${item.id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-sm btn-light text-danger ${(item.child_count > 0) ? 'd-none' : 'delete-project'}" data-id="${item.id}"><i class="fa-regular fa-trash-can"></i></button>
+                        ` : ``}
+                </td>
+            </tr>`;
+    });
+    if (isNewSearch) {
+        $body.html(html);
+    } else {
+        $body.append(html);
+    }
+    $body.find('tr').off('click').on('click', function(e) {
+        if ($(e.target).closest('button').length) return;
+        const index = $(this).data('index');
+        const rowData = cachedData[index]; 
+        if (rowData) {
+            currentFolderId = rowData.id;
+            currentLevel = parseInt(rowData.level) + 1;
+            currentRefId = rowData.ref_id || null;
+            currentProjectId = rowData.project_id || currentProjectId;
+            currentPath.push({
+                id: currentFolderId,
+                name: rowData.folder_name, 
+                level: currentLevel,
+                ref_id: currentRefId,
+                project_id: currentProjectId
+            });
+            fetchFolders(true); 
+        }
+    });
+}
+$(window).on('scroll', function() {
+    if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
+        fetchFolders(false);
+    }
+});
+$('#txtSearch').on('keyup', function() {
+    clearTimeout(window.searchTimer);
+    const searchTerm = $(this).val();
+    window.searchTimer = setTimeout(() => {
+        currentSearch = searchTerm;
+        fetchFolders(true);
+    }, 500); 
+});
+function renderBreadcrumb() {
+    let html = '';
+    currentPath.forEach((p, idx) => {
+        const isHome = idx === 0;
+        const isActive = idx === currentPath.length - 1;
+        const homeIcon = isHome ? '<i class="fa-solid fa-house me-1"></i> ' : '';
+        let displayName = p.name;
+        if (!isActive && displayName.length > 20) {
+            displayName = displayName.substring(0, 20) + '...';
+        }
+        html += `
+            <li class="breadcrumb-item ${isActive ? 'active' : ''}">
+                ${isActive 
+                    ? `<span>${homeIcon}${displayName}</span>` 
+                    : `<a href="javascript:void(0)" class="text-decoration-none" data-idx="${idx}">${homeIcon}${displayName}</a>`
+                }
+            </li>`;
+    });
+    $('#breadcrumb').html(html);
+    $('#breadcrumb a').off('click').on('click', function() {
+        const idx = $(this).data('idx');
+        currentPath = currentPath.slice(0, idx + 1);
+        const target = currentPath[idx];
+        currentFolderId = target.id;
+        currentLevel = target.level;
+        currentRefId = target.ref_id;
+        currentProjectId = target.project_id; 
+        fetchFolders(currentLevel, currentFolderId, currentRefId, currentProjectId);
+    });
+}
+$(document).on('click', '.manage-project', function () {
+    let id = $(this).data("id");
+    manageFolder(id);
+});
+$(document).on('click', '.delete-project', function () {
+    let id = $(this).data("id");
+    showConfirm(langData['confirm'], langData['confirm_delete'], function(){
+        $.ajax({
+            url: 'api/project/delete',
+            method: 'POST',
+            data: { folder_id: id },
+            dataType: 'json',
+            success: function(res) {
+                if (res.status === 'success') {
+                    showSuccess('Success', langData['deleted_successfully']);
+                    fetchFolders(currentLevel, currentFolderId, currentRefId);
+                } else {
+                    showError('Error', langData['cannot_delete']);
+                }   
+            },
+            error: function(){
+                showError('Error', langData['cannot_delete']);
+            }
+        });
+    });
+});
+$(document).on('click', '#btnCreateFolder', function () {
+    manageFolder();
+});
+function manageFolder(folder_id = '') {
+    let modalEl = $('#windModal');
+    let modal = new bootstrap.Modal(modalEl[0]);
+    modal.show();
+    modalEl.find(".modal-header").html(`
+        <h5 class="modal-title" data-i18n="create_folder"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    `);
+    modalEl.find(".modal-footer").html(`
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
+        <button type="button" class="btn btn-primary save-folder" data-i18n="save"></button>
+    `);
+    modalEl.find(".modal-body").html(`
+        <input type="hidden" name="folder_id" id="folder_id" value="${folder_id ?? ''}">
+        <div class="mb-3">
+            <label class="mb-2 required" data-i18n="name"></label>
+            <input type="text" class="form-control obj-required" id="folder_name" maxlength="255">
+        </div>
+    `);
+    if(folder_id) {
+        $.ajax({
+            url: 'api/project/data',
+            method: 'POST',
+            data: { folder_id: folder_id },
+            dataType: 'json',
+            success: function(res){
+                if (res.status === 'success') {
+                    $('#folder_name').val(res.data.folder_name);
+                    $('#folder_id').val(res.data.id);
+                    $('#windModal').find(".modal-title").text(langData['edit_folder'] || 'Edit Folder');
+                } else {
+                    showError('Error', langData['cannot_load']);
+                }
+            },
+            error: function(){
+                showError('Error', langData['cannot_load']);
+            }
+        });
+    }
+}
+$(document).on('click', '.save-folder', function () {
+    let errors = [];
+    $('.obj-required').each(function () {
+        let value = $(this).val()?.trim() || '';
+        if (!value) {
+            $(this).addClass('is-invalid');
+            errors.push(this.name || this.id);
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+    if (errors.length) {
+        showWarning(
+            langData['validation_error'] || 'Validation Error',
+            langData['required_star_message'] || 'Please fill all fields marked with *'
+        );
+        $('.is-invalid').first().focus();
+        return;
+    }
+    saveFolder();
+});
+function saveFolder() {
+    const btn = $(".save-folder");
+    btn.prop("disabled", true);
+    const formData = new FormData();
+    formData.append("folder_id", $("#folder_id").val() || "");
+    formData.append("folder_name", $("#folder_name").val() || "");
+    formData.append("parent_id", currentFolderId || 0);
+    formData.append("level", currentLevel || 1);
+    formData.append("ref_id", currentRefId || "");
+    Swal.fire({
+        title: langData['saving'] || 'Saving...',
+        html: `
+            <p data-i18n="do_not_close"></p>
+            <div class="progress mt-2">
+                <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
+            </div>
+        `,
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    $.ajax({
+        url: "api/project/save",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+        xhr: function () {
+            let xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function (e) {
+                if (e.lengthComputable) {
+                    let percent = Math.round((e.loaded / e.total) * 100);
+                    let bar = document.getElementById("swal-progress");
+                    if (bar) {
+                        bar.style.width = percent + "%";
+                        bar.innerText = percent + "%";
+                    }
+                }
+            });
+            return xhr;
+        },
+        success: function (res) {
+            Swal.close();
+            if (res.status === true) {
+                showSuccess('Success', langData['saved_successfully']);
+                fetchFolders(currentLevel, currentFolderId, currentRefId);
+                $('#windModal').modal('hide');
+            } else {
+                showError('Error', (langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
+            }
         },
         error: function (xhr, status, error) {
-            let msg = langData['cannot_load'];
+            Swal.close();
+            let msg = langData['cannot_save'];
             try {
                 let res = JSON.parse(xhr.responseText);
                 if (res.message) msg += ": " + res.message;
             } catch (e) {}
             showError('Error', msg);
+        },
+        complete: function() {
+            btn.prop("disabled", false);
         }
     });
 }
-$(document).ready(function() {
-    initProject();
-
-
-    let currentFolderId = 1;
-    let currentPath = [{id: 1, name: 'ไดรฟ์ของฉัน'}];
-    let items = [
-        {id: 1, name: 'ไดรฟ์ของฉัน', type: 'folder', parentId: null},
-        {id: 2, name: 'เอกสารสำคัญ', type: 'folder', parentId: 1, createdAt: '2024-01-15'},
-        {id: 3, name: 'รูปภาพ', type: 'folder', parentId: 1, createdAt: '2024-01-14'},
-        {id: 4, name: 'โครงการ A', type: 'folder', parentId: 1, createdAt: '2024-01-13'},
-        {id: 5, name: 'บันทึก.txt', type: 'file', parentId: 1, content: 'นี่คือเนื้อหาตัวอย่าง', createdAt: '2024-01-12'},
-        {id: 6, name: 'สัญญา.txt', type: 'file', parentId: 2, content: 'เนื้อหาสัญญา...', createdAt: '2024-01-16'},
-        {id: 7, name: 'รายงาน.txt', type: 'file', parentId: 2, content: 'เนื้อหารายงาน...', createdAt: '2024-01-17'},
-    ];
-    let nextId = 8;
-    loadItems();
-    $('#viewGrid').click(function() {
-        $('#gridView').removeClass('d-none');
-        $('#listView').addClass('d-none');
-        $(this).addClass('active');
-        $('#viewList').removeClass('active');
-    });
-    $('#viewList').click(function() {
-        $('#listView').removeClass('d-none');
-        $('#gridView').addClass('d-none');
-        $(this).addClass('active');
-        $('#viewGrid').removeClass('active');
-        loadListView();
-    });
-    $('#btnNew, #btnCreateFolder').click(function() {
-        $('#folderName').val('');
-        $('#modalCreateFolder').modal('show');
-    });
-    $('#btnSaveFolder').click(function() {
-        const folderName = $('#folderName').val().trim();
-        if (folderName === '') {
-            alert('กรุณาใส่ชื่อโฟลเดอร์');
-            return;
-        }
-        const newFolder = {
-            id: nextId++,
-            name: folderName,
-            type: 'folder',
-            parentId: currentFolderId,
-            createdAt: new Date().toISOString().split('T')[0]
-        };
-        items.push(newFolder);
-        $('#modalCreateFolder').modal('hide');
-        loadItems();
-    });
-    $('#btnCreateFile').click(function() {
-        $('#fileName').val('');
-        $('#fileContent').val('');
-        $('#modalCreateFile').modal('show');
-    });
-    $('#btnSaveFile').click(function() {
-        const fileName = $('#fileName').val().trim();
-        const fileContent = $('#fileContent').val();
-        if (fileName === '') {
-            alert('กรุณาใส่ชื่อไฟล์');
-            return;
-        }
-        const newFile = {
-            id: nextId++,
-            name: fileName,
-            type: 'file',
-            content: fileContent,
-            parentId: currentFolderId,
-            createdAt: new Date().toISOString().split('T')[0]
-        };
-        items.push(newFile);
-        $('#modalCreateFile').modal('hide');
-        loadItems();
-    });
-    function loadItems() {
-        const currentItems = items.filter(item => item.parentId === currentFolderId);
-        if (currentItems.length === 0) {
-            $('#gridView').html('');
-            $('#emptyState').removeClass('d-none');
-            return;
-        }
-        $('#emptyState').addClass('d-none');
-        let html = '';
-        currentItems.forEach(item => {
-            if (item.type === 'folder') {
-                html += `
-                    <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                        <div class="folder-card fade-in" data-id="${item.id}" data-type="folder">
-                            <div class="text-center">
-                                <i class="fa-solid fa-folder folder-icon"></i>
-                            </div>
-                            <div class="item-name" title="${item.name}">${item.name}</div>
-                            <div class="item-info">${item.createdAt || '-'}</div>
-                        </div>
-                    </div>
-                `;
-            } else {
-                html += `
-                    <div class="col-lg-2 col-md-3 col-sm-4 col-6">
-                        <div class="file-card fade-in" data-id="${item.id}" data-type="file">
-                            <div class="text-center">
-                                <i class="fa-regular fa-file file-icon"></i>
-                            </div>
-                            <div class="item-name" title="${item.name}">${item.name}</div>
-                            <div class="item-info">${item.createdAt || '-'}</div>
-                        </div>
-                    </div>
-                `;
-            }
-        });
-        $('#gridView').html(html);
-        attachItemEvents();
-    }
-    function loadListView() {
-        const currentItems = items.filter(item => item.parentId === currentFolderId);
-        let html = '';
-        currentItems.forEach(item => {
-            const icon = item.type === 'folder' 
-                ? '<i class="fa-solid fa-folder text-warning me-2"></i>' 
-                : '<i class="fa-regular fa-file text-primary me-2"></i>';
-            html += `
-                <tr data-id="${item.id}" data-type="${item.type}">
-                    <td>${icon}${item.name}</td>
-                    <td>${icon}${item.name}</td>
-                    <td>${icon}${item.name}</td>
-                    <td>${item.createdAt || '-'}</td>
-                    <td>${item.type === 'folder' ? '-' : '1 KB'}</td>
-                    <td>
-                        <button class="btn btn-sm btn-link text-secondary">
-                            <i class="fa-solid fa-ellipsis-vertical"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        });
-        $('#listViewBody').html(html);
-        $('#listViewBody tr').click(function() {
-            const id = $(this).data('id');
-            const type = $(this).data('type');
-            handleItemClick(id, type);
-        });
-    }
-    function attachItemEvents() {
-        $('.folder-card, .file-card').click(function(e) {
-            const id = $(this).data('id');
-            const type = $(this).data('type');
-            handleItemClick(id, type);
-        });
-        $('.folder-card, .file-card').contextmenu(function(e) {
-            e.preventDefault();
-            const id = $(this).data('id');
-            const type = $(this).data('type');
-            showContextMenu(e.pageX, e.pageY, id, type);
-        });
-    }
-    function handleItemClick(id, type) {
-        if (type === 'folder') {
-            openFolder(id);
-        } else {
-            openFile(id);
-        }
-    }
-    function openFolder(folderId) {
-        currentFolderId = folderId;
-        const folder = items.find(item => item.id === folderId);
-        const existingIndex = currentPath.findIndex(p => p.id === folderId);
-        if (existingIndex !== -1) {
-            currentPath = currentPath.slice(0, existingIndex + 1);
-        } else {
-            currentPath.push({id: folderId, name: folder.name});
-        }
-        updateBreadcrumb();
-        loadItems();
-    }
-    function openFile(fileId) {
-        const file = items.find(item => item.id === fileId);
-        $('#viewFileTitle').text(file.name);
-        $('#viewFileContent').val(file.content || '');
-        $('#viewFileContent').data('file-id', fileId);
-        $('#modalViewFile').modal('show');
-    }
-    $('#btnUpdateFile').click(function() {
-        const fileId = $('#viewFileContent').data('file-id');
-        const newContent = $('#viewFileContent').val();
-        const file = items.find(item => item.id === fileId);
-        if (file) {
-            file.content = newContent;
-            $('#modalViewFile').modal('hide');
-        }
-    });
-    function updateBreadcrumb() {
-        let html = '';
-        currentPath.forEach((path, index) => {
-            if (index === currentPath.length - 1) {
-                html += `
-                    <li class="breadcrumb-item active" data-id="${path.id}">
-                        <span>${path.name}</span>
-                    </li>
-                `;
-            } else {
-                html += `
-                    <li class="breadcrumb-item" data-id="${path.id}">
-                        <span>${path.name}</span>
-                    </li>
-                `;
-            }
-        });
-        $('#breadcrumb').html(html);
-        $('.breadcrumb-item:not(.active)').click(function() {
-            const folderId = $(this).data('id');
-            openFolder(folderId);
-        });
-    }
-    function showContextMenu(x, y, itemId, itemType) {
-        $('#contextMenu').css({
-            display: 'block',
-            left: x + 'px',
-            top: y + 'px'
-        }).data('item-id', itemId).data('item-type', itemType);
-    }
-    $(document).click(function() {
-        $('#contextMenu').hide();
-    });
-    $('#contextMenu .context-menu-item').click(function(e) {
-        e.stopPropagation();
-        const action = $(this).data('action');
-        const itemId = $('#contextMenu').data('item-id');
-        const itemType = $('#contextMenu').data('item-type');
-        if (action === 'open') {
-            handleItemClick(itemId, itemType);
-        } else if (action === 'rename') {
-            renameItem(itemId);
-        } else if (action === 'delete') {
-            deleteItem(itemId);
-        }
-        $('#contextMenu').hide();
-    });
-    function renameItem(itemId) {
-        const item = items.find(i => i.id === itemId);
-        const newName = prompt('ชื่อใหม่:', item.name);
-        if (newName && newName.trim() !== '') {
-            item.name = newName.trim();
-            loadItems();
-        }
-    }
-    function deleteItem(itemId) {
-        const item = items.find(i => i.id === itemId);
-        if (confirm('คุณต้องการลบ "' + item.name + '" หรือไม่?')) {
-            const idsToDelete = [itemId];
-            let i = 0;
-            while (i < idsToDelete.length) {
-                const children = items.filter(item => item.parentId === idsToDelete[i]);
-                children.forEach(child => idsToDelete.push(child.id));
-                i++;
-            }
-            items = items.filter(item => !idsToDelete.includes(item.id));
-            loadItems();
-        }
-    }
-});

@@ -92,6 +92,9 @@
             $router->post('/api/installations/get', 'InstallationsController@get');
             $router->post('/api/installations/save', 'InstallationsController@save');
             $router->post('/api/project/get', 'ProjectController@get');
+            $router->post('/api/project/save', 'ProjectController@save');
+            $router->post('/api/project/data', 'ProjectController@data');
+            $router->post('/api/project/delete', 'ProjectController@delete');
         } else {
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');

@@ -423,5 +423,7 @@
     "folder": "Folder",
     "name": "Name",
     "last_update": "Last Update",
-    "project_line1": "Click Create Folder or Content to get started."
+    "project_line1": "Click Create Folder or Content to get started.",
+    "create_folder": "Create Folder",
+    "child": "Child"
 }
