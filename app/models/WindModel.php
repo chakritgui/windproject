@@ -441,8 +441,14 @@ class LoadDataStagingImporter implements ImporterInterface {
         $this->db->exec("INSERT IGNORE INTO wp_height_levels (height_id, height_levels, created_at, updated_at)
             SELECT h.height_id, s.height_level, NOW(), NOW() FROM wind_staging s JOIN wp_height h ON h.height_name = s.height_name
         ");
-        $this->db->exec("INSERT IGNORE INTO wp_installations (installations_name, created_at, updated_at)
-            SELECT DISTINCT installations_name, NOW(), NOW() FROM wind_staging WHERE installations_name IS NOT NULL
+        $this->db->exec("INSERT IGNORE INTO wp_installations (project_id, type_id, installations_name, created_at, updated_at)
+            SELECT 
+               p.project_id, t.type_id, s.installations_name, NOW(), NOW() 
+            FROM 
+                wind_staging s
+            JOIN wp_project p ON p.project_name = s.project_name
+            JOIN wp_type t ON t.type_name = s.type_name
+            WHERE s.installations_name IS NOT NULL
         ");
         $this->db->exec("INSERT IGNORE INTO wp_poles
             (poles_code, project_id, type_id, installations_id, poles_lat, poles_lng, status, created_at, updated_at)
@@ -459,7 +465,7 @@ class LoadDataStagingImporter implements ImporterInterface {
             JOIN wp_project p ON p.project_name = s.project_name
             JOIN wp_contract c ON c.contract_name = s.contract_name AND p.contract_id = c.contract_id
             JOIN wp_type t ON t.type_name = s.type_name
-            JOIN wp_installations i ON i.installations_name = s.installations_name
+            JOIN wp_installations i ON i.installations_name = s.installations_name and i.project_id = p.project_id and i.type_id = t.type_id
         ");
     }
     private function mergeWinds(): void {

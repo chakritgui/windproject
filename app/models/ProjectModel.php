@@ -18,8 +18,7 @@ class ProjectModel {
             'contract'     => ['table' => 'wp_contract',     'id' => 'contract_id',      'name' => 'contract_name'],
             'project'      => ['table' => 'wp_project',       'id' => 'project_id',       'name' => 'project_name'],
             'type'         => ['table' => 'wp_type',          'id' => 'type_id',          'name' => 'type_name'],
-            'installation' => ['table' => 'wp_installations', 'id' => 'installations_id', 'name' => 'installations_name'],
-            'process'      => ['table' => 'wp_process',       'id' => 'process_id',       'name' => 'process_name']
+            'installation' => ['table' => 'wp_installations', 'id' => 'installations_id', 'name' => 'installations_name']
         ];
         foreach ($folderRows as $row) {
             if (empty($row['code'])) {
@@ -79,8 +78,7 @@ class ProjectModel {
             'contract'     => ['table' => 'wp_contract',     'id' => 'contract_id'],
             'project'      => ['table' => 'wp_project',       'id' => 'project_id'],
             'type'         => ['table' => 'wp_type',          'id' => 'type_id'],
-            'installation' => ['table' => 'wp_installations', 'id' => 'installations_id'],
-            'process'      => ['table' => 'wp_process',       'id' => 'process_id']
+            'installation' => ['table' => 'wp_installations', 'id' => 'installations_id']
         ];
         foreach ($nextFolders as $nf) {
             $code = strtolower($nf['code'] ?? '');
@@ -105,11 +103,10 @@ class ProjectModel {
                     $subConditions[] = "p.project_id = :rid";
                     $params[':rid'] = $refId;
                 } elseif ($code === 'installation' && !empty($refId)) {
-                    $joinSql = " LEFT JOIN wp_poles p ON p.installations_id = t.{$cfg['id']} ";
-                    $subConditions[] = "p.type_id = :rid";
+                    $subConditions[] = "t.type_id = :rid";
                     $params[':rid'] = $refId;
                     if (!empty($project_id)) {
-                        $subConditions[] = "p.project_id = :pid";
+                        $subConditions[] = "t.project_id = :pid";
                         $params[':pid'] = $project_id;
                     }
                 }
@@ -147,7 +144,7 @@ class ProjectModel {
                 $subConditions[] = " p.project_id = :proj_id ";
                 $subParams[':proj_id'] = $currentProjectId;
             }
-        } 
+        }
         $whereStr = " WHERE " . implode(' AND ', $subConditions);
         $sqlSub = "SELECT t.{$cfg['id']} as r_id, t.{$cfg['name']} as r_name {$extraSelect} FROM {$cfg['table']} t {$joinSql} {$whereStr} GROUP BY t.{$cfg['id']}";
         $stmt = $this->db->prepare($sqlSub);
