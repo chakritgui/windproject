@@ -29,7 +29,7 @@ class NewsController extends BaseController {
     }
     public function save() {
         $data = [
-            'news_id' => intval($_POST['news_id'] ?? 0),
+            'content_id' => intval($_POST['content_id'] ?? 0),
             'status' => $_POST['status'] ?? '',
             'publish_at' => $_POST['publish_at'] ?? '',
             'title_en' => $_POST['title_en'] ?? '',

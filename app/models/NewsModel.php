@@ -20,25 +20,25 @@ class NewsModel {
             )";
             $params[':search'] = "%{$search}%";
         }
-        $sqlFiltered = "SELECT COUNT(DISTINCT n.news_id) FROM wp_news n 
-                        LEFT JOIN wp_news_item iEn ON iEn.news_id = n.news_id AND iEn.news_lang='en' 
-                        LEFT JOIN wp_news_item iLo ON iLo.news_id = n.news_id AND iLo.news_lang='lo' 
-                        LEFT JOIN wp_news_item iTh ON iTh.news_id = n.news_id AND iTh.news_lang='th' 
-                        $where";
+        $sqlFiltered = "SELECT COUNT(DISTINCT n.content_id) FROM wp_content n 
+                        LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.news_lang='en' 
+                        LEFT JOIN wp_content_item iLo ON iLo.content_id = n.content_id AND iLo.news_lang='lo' 
+                        LEFT JOIN wp_content_item iTh ON iTh.content_id = n.content_id AND iTh.news_lang='th' 
+                        $where and n.type = 'news'";
         $stmtFiltered = $pdo->prepare($sqlFiltered);
         $stmtFiltered->execute($params);
         $totalFiltered = $stmtFiltered->fetchColumn();
         $sql = "SELECT 
-                    n.news_id, n.publish_at, n.created_at, n.status, n.news_view, n.cover,
+                    n.content_id, n.publish_at, n.created_at, n.status, n.news_view, n.cover,
                     iEn.news_subject AS title_en,
                     iLo.news_subject AS title_lo,
                     iTh.news_subject AS title_th
-                FROM wp_news n
-                LEFT JOIN wp_news_item iEn ON iEn.news_id = n.news_id AND iEn.news_lang='en'
-                LEFT JOIN wp_news_item iLo ON iLo.news_id = n.news_id AND iLo.news_lang='lo'
-                LEFT JOIN wp_news_item iTh ON iTh.news_id = n.news_id AND iTh.news_lang='th'
-                $where
-                ORDER BY n.news_id DESC
+                FROM wp_content n
+                LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.news_lang='en'
+                LEFT JOIN wp_content_item iLo ON iLo.content_id = n.content_id AND iLo.news_lang='lo'
+                LEFT JOIN wp_content_item iTh ON iTh.content_id = n.content_id AND iTh.news_lang='th'
+                $where and n.type = 'news'
+                ORDER BY n.content_id DESC
                 LIMIT :start, :length";
         $stmt = $pdo->prepare($sql);
         foreach ($params as $k => $v) {
@@ -67,11 +67,11 @@ class NewsModel {
                 "content" => ["th" => "", "lo" => "", "en" => ""]
             ];
         }
-        $stmt = $pdo->prepare("SELECT news_id, status, publish_at, cover FROM wp_news WHERE news_id = ?");
+        $stmt = $pdo->prepare("SELECT content_id, status, publish_at, cover FROM wp_content WHERE content_id = ?");
         $stmt->execute([$id]);
         $n = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$n) return null;
-        $stmt = $pdo->prepare("SELECT news_lang, news_subject, news_body FROM wp_news_item WHERE news_id = ?");
+        $stmt = $pdo->prepare("SELECT news_lang, news_subject, news_body FROM wp_content_item WHERE content_id = ?");
         $stmt->execute([$id]);
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $title = ["th" => "", "lo" => "", "en" => ""];
@@ -82,7 +82,7 @@ class NewsModel {
             $content[$lang] = $row['news_body'];
         }
         return [
-            "id" => $n['news_id'],
+            "id" => $n['content_id'],
             "status" => $n['status'],
             "cover" => $n['cover'],
             "publish_at" => !empty($n['publish_at']) ? convertTimeZone($n['publish_at'], 'Y-m-d\TH:i') : "",
@@ -92,7 +92,7 @@ class NewsModel {
     }
     public function save($data) {
         $pdo = $this->db;
-        $news_id = $data['news_id'] ?? null;
+        $content_id = $data['content_id'] ?? null;
         $ex_cover = $data['ex_cover'] ?? null;
         $status = $data['status'] ?? 'draft';
         $publish_at = null;
@@ -109,19 +109,17 @@ class NewsModel {
         }
         try {
             $pdo->beginTransaction();
-            if ($news_id) {
-                $stmt = $pdo->prepare("UPDATE wp_news SET status = :status, publish_at = :publish_at, updated_at = NOW() WHERE news_id = :news_id");
-                $stmt->bindValue(':news_id', (int)$news_id, PDO::PARAM_INT);
+            if ($content_id) {
+                $stmt = $pdo->prepare("UPDATE wp_content SET status = :status, publish_at = :publish_at, updated_at = NOW() WHERE content_id = :content_id");
+                $stmt->bindValue(':content_id', (int)$content_id, PDO::PARAM_INT);
             } else {
-                $stmt = $pdo->prepare("INSERT INTO wp_news (status, publish_at, created_at, updated_at) VALUES (:status, :publish_at, NOW(), NOW())");
+                $stmt = $pdo->prepare("INSERT INTO wp_content (status, publish_at, created_at, updated_at) VALUES (:status, :publish_at, NOW(), NOW())");
             }
             $stmt->bindValue(':status', $status);
             $stmt->bindValue(':publish_at', $publish_at, $publish_at === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
             $stmt->execute();
-            if (!$news_id) $news_id = $pdo->lastInsertId();
-            $sqlItem = "INSERT INTO wp_news_item (news_id, news_subject, news_body, news_lang, created_at, updated_at) 
-                        VALUES (:news_id, :subject, :body, :lang, NOW(), NOW()) 
-                        ON DUPLICATE KEY UPDATE news_subject = VALUES(news_subject), news_body = VALUES(news_body), updated_at = NOW()";
+            if (!$content_id) $content_id = $pdo->lastInsertId();
+            $sqlItem = "INSERT INTO wp_content_item (content_id, news_subject, news_body, news_lang, created_at, updated_at, type) VALUES (:content_id, :subject, :body, :lang, NOW(), NOW(), 'news') ON DUPLICATE KEY UPDATE news_subject = VALUES(news_subject), news_body = VALUES(news_body), updated_at = NOW()";
             $stmtItem = $pdo->prepare($sqlItem);
             $langs = ['en', 'lo', 'th'];
             $all_html_content = "";
@@ -129,33 +127,32 @@ class NewsModel {
                 $subj = $data["title_$lang"] ?? '';
                 $body = $data["content_$lang"] ?? '';
                 $all_html_content .= $body;
-                
                 if ($subj !== '' || $body !== '') {
-                    $stmtItem->execute([':news_id' => $news_id, ':subject' => $subj, ':body' => $body, ':lang' => $lang]);
+                    $stmtItem->execute([':content_id' => $content_id, ':subject' => $subj, ':body' => $body, ':lang' => $lang]);
                 }
             }
             if(!$ex_cover) {
-                $this->handleFileDelete($news_id);
+                $this->handleFileDelete($content_id);
             }
             if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
-                $this->handleFileUpload($news_id, $_FILES['cover']);
+                $this->handleFileUpload($content_id, $_FILES['cover']);
             }
             preg_match_all('/<img[^>]+src="([^">]+)"/i', $all_html_content, $matches);
             $currentImages = array_unique($matches[1] ?? []);
-            $stmt = $pdo->prepare("SELECT file_path FROM wp_news_files WHERE news_id = ?");
-            $stmt->execute([$news_id]);
+            $stmt = $pdo->prepare("SELECT file_path FROM wp_content_files WHERE content_id = ?");
+            $stmt->execute([$content_id]);
             $oldFiles = $stmt->fetchAll(PDO::FETCH_COLUMN);
             $toDelete = array_diff($oldFiles ?: [], $currentImages);
             foreach ($toDelete as $file) {
                 $fullPath = $_SERVER['DOCUMENT_ROOT'] . $file;
                 if (file_exists($fullPath) && is_file($fullPath)) @unlink($fullPath);
-                $pdo->prepare("DELETE FROM wp_news_files WHERE news_id = ? AND file_path = ?")->execute([$news_id, $file]);
+                $pdo->prepare("DELETE FROM wp_content_files WHERE content_id = ? AND file_path = ?")->execute([$content_id, $file]);
             }
-            $ins = $pdo->prepare("INSERT IGNORE INTO wp_news_files (news_id, file_path, created_at) VALUES (?, ?, NOW())");
+            $ins = $pdo->prepare("INSERT IGNORE INTO wp_content_files (content_id, file_path, created_at) VALUES (?, ?, NOW())");
             foreach ($currentImages as $path) {
-                $ins->execute([$news_id, $path]);
+                $ins->execute([$content_id, $path]);
             }
-            $this->notification($news_id, $status);
+            $this->notification($content_id, $status);
             $pdo->commit();
             return true;
         } catch (Exception $e) {
@@ -163,23 +160,23 @@ class NewsModel {
             throw $e;
         }
     }
-    public function notification($news_id, $status) {
+    public function notification($content_id, $status) {
         $pdo = $this->db;
         $isExternalTrans = $pdo->inTransaction();
         try {
             if (!$isExternalTrans) $pdo->beginTransaction();
             if ($status == 'published') {
-                $stmt = $pdo->prepare("SELECT publish_at FROM wp_news WHERE news_id = ?");
-                $stmt->execute([$news_id]);
+                $stmt = $pdo->prepare("SELECT publish_at FROM wp_content WHERE content_id = ?");
+                $stmt->execute([$content_id]);
                 $publish_at = $stmt->fetchColumn();
                 $sql = "INSERT INTO wp_notification_targets (notifications_target, notifications_item, member_id, publish_at, status)
                         SELECT 'news', :nid, member_id, :pub, 'published' 
                         FROM wp_members WHERE status = 'active'
                         ON DUPLICATE KEY UPDATE status = 'published', publish_at = :pub, read_at = NULL";
-                $pdo->prepare($sql)->execute([':nid' => $news_id, ':pub' => $publish_at]);
+                $pdo->prepare($sql)->execute([':nid' => $content_id, ':pub' => $publish_at]);
             } else {
                 $stmt = $pdo->prepare("UPDATE wp_notification_targets SET status = :status, publish_at = NULL, read_at = NULL WHERE notifications_item = :id AND notifications_target = 'news'");
-                $stmt->execute([':status' => $status, ':id' => $news_id]);
+                $stmt->execute([':status' => $status, ':id' => $content_id]);
             }
             if (!$isExternalTrans) $pdo->commit();
         } catch (Exception $e) {
@@ -187,21 +184,21 @@ class NewsModel {
             throw $e;
         }
     }
-    private function handleFileUpload($news_id, $file) {
-        $this->handleFileDelete($news_id);
+    private function handleFileUpload($content_id, $file) {
+        $this->handleFileDelete($content_id);
         $dir = "uploads/news/";
         $fullDir = $dir;
         if (!is_dir($fullDir)) mkdir($fullDir, 0755, true);
         $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $newName = $news_id . "_" . time() . "." . $ext;
+        $newName = $content_id . "_" . time() . "." . $ext;
         $dbPath = $dir . $newName;
         if (move_uploaded_file($file['tmp_name'], dirname(__DIR__, 2) . '/' . $dir . $newName)) {
-            $this->db->prepare("UPDATE wp_news SET cover=? WHERE news_id =?")->execute([$dbPath, $news_id]);
+            $this->db->prepare("UPDATE wp_content SET cover=? WHERE content_id =?")->execute([$dbPath, $content_id]);
         }
     }
-    private function handleFileDelete($news_id){
-        $stmt = $this->db->prepare("SELECT cover FROM wp_news WHERE news_id = ?");
-        $stmt->execute([$news_id]);
+    private function handleFileDelete($content_id){
+        $stmt = $this->db->prepare("SELECT cover FROM wp_content WHERE content_id = ?");
+        $stmt->execute([$content_id]);
         $old = $stmt->fetchColumn();
         if (!$old) {
             return;
@@ -230,7 +227,7 @@ class NewsModel {
             if (!unlink($oldPath)) {
                 throw new Exception("Cannot delete file: " . $oldPath);
             }
-            $this->db->prepare("UPDATE wp_news SET cover = NULL WHERE news_id = ?")->execute([$news_id]);
+            $this->db->prepare("UPDATE wp_news SET cover = NULL WHERE content_id = ?")->execute([$content_id]);
             $this->db->commit();
         } catch (Exception $e) {
             $this->db->rollBack();
@@ -239,7 +236,7 @@ class NewsModel {
     }
     public function delete($id) {
         $pdo = $this->db;
-        $pdo->prepare("UPDATE wp_news SET status = 'deleted', updated_at = NOW() WHERE news_id = ?")->execute([(int)$id]);
+        $pdo->prepare("UPDATE wp_news SET status = 'deleted', updated_at = NOW() WHERE content_id = ?")->execute([(int)$id]);
         return $pdo->prepare("UPDATE wp_notification_targets SET status = 'deleted', publish_at = NULL WHERE notifications_item = ? AND notifications_target = 'news'")->execute([(int)$id]);
     }
     public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {

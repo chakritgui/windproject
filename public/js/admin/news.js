@@ -80,13 +80,13 @@ function initNewsTable() {
                 data: null,
                 orderable: false,
                 render: (_, __, row) => `
-                    <button class="btn btn-light text-secondary view-news" data-id="${row.news_id}">
+                    <button class="btn btn-light text-secondary view-news" data-id="${row.content_id}">
                         <i class="fa-solid fa-folder-open"></i>
                     </button>
-                    <button class="btn btn-light text-secondary manage-news" data-id="${row.news_id}">
+                    <button class="btn btn-light text-secondary manage-news" data-id="${row.content_id}">
                         <i class="fa-solid fa-pen-to-square"></i>
                     </button>
-                    <button class="btn btn-light text-danger delete-news" data-id="${row.news_id}">
+                    <button class="btn btn-light text-danger delete-news" data-id="${row.content_id}">
                         <i class="fa-regular fa-trash-can"></i>
                     </button>
                 `
@@ -227,7 +227,7 @@ $(document).on("click", ".manage-news", function () {
 });
 function getNewsForm(d, publishTime) {
     return `
-        <input type="hidden" id="news_id" value="${d.id ?? ''}">
+        <input type="hidden" id="content_id" value="${d.id ?? ''}">
         <div id="coverDropArea" class="cover-drop-area text-center mb-3">
             <input type="file" id="cover" accept="image/*" hidden>
             <div id="coverPreviewWrapper" class="h-100 d-flex align-items-center justify-content-center">
@@ -407,7 +407,7 @@ $(document).on('click', '.save-news', function () {
 });
 function saveNews() {
     const btn = $(".save-news");
-    const news_id = $("#news_id").val() || "";
+    const content_id = $("#content_id").val() || "";
     const title_th = $("#title_th").val();
     if (!title_th) {
         showError('Error', 'กรุณากรอกหัวข้อข่าว (ภาษาไทย)');
@@ -415,7 +415,7 @@ function saveNews() {
     }
     btn.prop("disabled", true);
     const formData = new FormData();
-    formData.append("news_id", news_id);
+    formData.append("content_id", content_id);
     formData.append("status", $("#status").val());
     formData.append("publish_at", typeof buildPublishAt === "function" ? buildPublishAt() : "");
     formData.append("title_en", $("#title_en").val());
@@ -485,12 +485,12 @@ function saveNews() {
     });
 }
 $(document).on('click', '.delete-news', function() {
-    let news_id = $(this).data("id");
+    let content_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
             url: 'api/news/delete',
             method: 'POST',
-            data: { id: news_id },
+            data: { id: content_id },
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){

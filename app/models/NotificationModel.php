@@ -78,13 +78,13 @@ class NotificationModel {
                         t.notifications_target,
                         t.notifications_item
                     FROM wp_notification_targets t
-                    LEFT JOIN wp_news n on n.news_id = t.notifications_item
-                    LEFT JOIN wp_news_item iEn 
-                        ON iEn.news_id = t.notifications_item AND iEn.news_lang = 'en'
-                    LEFT JOIN wp_news_item iLo 
-                        ON iLo.news_id = t.notifications_item AND iLo.news_lang = 'lo'
-                    LEFT JOIN wp_news_item iTh 
-                        ON iTh.news_id = t.notifications_item AND iTh.news_lang = 'th'
+                    LEFT JOIN wp_content n on n.content_id = t.notifications_item
+                    LEFT JOIN wp_content_item iEn 
+                        ON iEn.content_id = t.notifications_item AND iEn.news_lang = 'en'
+                    LEFT JOIN wp_content_item iLo 
+                        ON iLo.content_id = t.notifications_item AND iLo.news_lang = 'lo'
+                    LEFT JOIN wp_content_item iTh 
+                        ON iTh.content_id = t.notifications_item AND iTh.news_lang = 'th'
                     WHERE t.member_id = ?
                     AND t.status = 'published'
                     AND t.publish_at <= NOW()
