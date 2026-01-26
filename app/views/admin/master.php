@@ -132,6 +132,14 @@
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2">
+                            <p><i class="fa-solid fa-folder-tree"></i> <span data-i18n="projects"></span></p>
+                            <select id="filter_installation_project" class="form-select filter"></select>
+                        </div>
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-tags"></i> <span data-i18n="type"></span></p>
+                            <select id="filter_installation_type" class="form-select filter"></select>
+                        </div>
+                        <div class="col-sm-2">
                             <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
                             <select id="filter_installation_status" class="form-select filter"></select>
                         </div>
@@ -142,6 +150,8 @@
                 <table class="table table-striped table-hover" id="tb_installation">
                     <thead>
                         <tr>
+                            <th data-i18n="project"></th>
+                            <th data-i18n="type"></th>
                             <th data-i18n="installation"></th>
                             <th data-i18n="status"></th>
                             <th></th>

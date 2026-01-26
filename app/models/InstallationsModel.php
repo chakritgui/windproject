@@ -6,17 +6,21 @@ class InstallationsModel {
     }
     public function list($start = 0, $length = 10, $filters = [], $search = '') {
         list($where, $params) = $this->buildListWhere($filters, $search);
-        $sqlTotal = "SELECT COUNT(*) FROM wp_installations {$where}";
+        $sqlTotal = "SELECT COUNT(*) FROM wp_installations i {$where}";
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = (int)$stmt->fetchColumn();
         $sql = "SELECT
-                installations_id, 
-                installations_name,
-                status
-            FROM wp_installations
+                i.installations_id, 
+                i.installations_name,
+                i.status,
+                p.project_name,
+                t.type_name
+            FROM wp_installations i
+            LEFT JOIN wp_project p on p.project_id = i.project_id
+            LEFT JOIN wp_type t on t.type_id = i.type_id
             {$where}
-            ORDER BY installations_id DESC
+            ORDER BY i.installations_id DESC
         ";
         if ($length != -1) {
             $sql .= " LIMIT :start, :length";
@@ -37,14 +41,22 @@ class InstallationsModel {
         ];
     }
     private function buildListWhere($filters, $search) {
-        $where  = " WHERE status != 'deleted' ";
+        $where  = " WHERE i.status != 'deleted' ";
         $params = [];
         if (!empty($filters['status'])) {
-            $where .= " AND status = :status";
+            $where .= " AND i.status = :status";
             $params[':status'] = $filters['status'];
         }
+        if (!empty($filters['project'])) {
+            $where .= " AND i.project_id = :project";
+            $params[':project'] = $filters['project'];
+        }
+        if (!empty($filters['type'])) {
+            $where .= " AND i.type_id = :type";
+            $params[':type'] = $filters['type'];
+        }
         if (!empty($search)) {
-            $where .= " AND (installations_name LIKE :search)";
+            $where .= " AND (i.installations_name LIKE :search)";
             $params[':search'] = "%{$search}%";
         }
         return [$where, $params];
@@ -53,19 +65,113 @@ class InstallationsModel {
         $offset = ($page - 1) * $limit;
         $items = [];
         $totalCount = 0;
-        switch($type) {
+        $params = [];
+        $where = '';
+        switch ($type) {
             case 'status':
                 $staticData = [
-                    ['id' => 'active', 'text' => 'Active'],
+                    ['id' => 'active', 'text' => 'active'],
                     ['id' => 'inactive', 'text' => 'Inactive']
                 ];
-                if (!empty($searchTerm)) {
-                    $staticData = array_values(array_filter($staticData, function($item) use ($searchTerm) {
-                        return strpos(strtolower($item['text']), strtolower($searchTerm)) !== false;
+                if ($searchTerm !== '') {
+                    $staticData = array_values(array_filter($staticData, function ($item) use ($searchTerm) {
+                        return stripos($item['text'], $searchTerm) !== false;
                     }));
                 }
                 $totalCount = count($staticData);
                 $items = array_slice($staticData, $offset, $limit);
+                break;
+            case 'project':
+                if ($searchTerm !== '') {
+                    $where = "WHERE project_name LIKE :search";
+                    $params[':search'] = "%{$searchTerm}%";
+                }
+                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_project {$where}");
+                $stmtCount->execute($params);
+                $totalCount = (int)$stmtCount->fetchColumn();
+                $sql = "SELECT project_id AS id, project_name AS text
+                    FROM wp_project
+                    {$where}
+                    ORDER BY project_id DESC
+                    LIMIT :limit OFFSET :offset
+                ";
+                $stmt = $this->db->prepare($sql);
+                foreach ($params as $k => $v) {
+                    $stmt->bindValue($k, $v);
+                }
+                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+                $stmt->execute();
+                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                break;
+            case 'pole':
+                if ($searchTerm !== '') {
+                    $where = "WHERE poles_code LIKE :search";
+                    $params[':search'] = "%{$searchTerm}%";
+                }
+                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_poles {$where}");
+                $stmtCount->execute($params);
+                $totalCount = (int)$stmtCount->fetchColumn();
+                $sql = "SELECT poles_id AS id, poles_code AS text
+                    FROM wp_poles
+                    {$where}
+                    ORDER BY poles_id DESC
+                    LIMIT :limit OFFSET :offset
+                ";
+                $stmt = $this->db->prepare($sql);
+                foreach ($params as $k => $v) {
+                    $stmt->bindValue($k, $v);
+                }
+                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+                $stmt->execute();
+                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                break;
+            case 'type':
+                if ($searchTerm !== '') {
+                    $where = "WHERE type_name LIKE :search";
+                    $params[':search'] = "%{$searchTerm}%";
+                }
+                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_type {$where}");
+                $stmtCount->execute($params);
+                $totalCount = (int)$stmtCount->fetchColumn();
+                $sql = "SELECT type_id AS id, type_name AS text
+                    FROM wp_type
+                    {$where}
+                    ORDER BY type_id ASC
+                    LIMIT :limit OFFSET :offset
+                ";
+                $stmt = $this->db->prepare($sql);
+                foreach ($params as $k => $v) {
+                    $stmt->bindValue($k, $v);
+                }
+                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+                $stmt->execute();
+                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                break;
+            case 'installation':
+                if ($searchTerm !== '') {
+                    $where = "WHERE installations_name LIKE :search";
+                    $params[':search'] = "%{$searchTerm}%";
+                }
+                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_installations {$where}");
+                $stmtCount->execute($params);
+                $totalCount = (int)$stmtCount->fetchColumn();
+                $sql = "SELECT installations_id AS id, installations_name AS text
+                    FROM wp_installations
+                    {$where}
+                    ORDER BY installations_id ASC
+                    LIMIT :limit OFFSET :offset
+                ";
+                $stmt = $this->db->prepare($sql);
+                foreach ($params as $k => $v) {
+                    $stmt->bindValue($k, $v);
+                }
+                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+                $stmt->execute();
+                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 break;
         }
         return [
@@ -83,60 +189,103 @@ class InstallationsModel {
             return [
                 'installations_id' => '',
                 'installations_name' => '',
+                'project_id' => '',
+                'project_name' => '',
+                'type_id' => '',
+                'type_name' => '',
                 'status' => 'active'
             ];
         } else {
-            $sql = "SELECT * FROM wp_installations WHERE installations_id  = ?";
+            $sql = "SELECT 
+                    i.installations_id,
+                    i.installations_name,
+                    i.status,
+                    p.project_id,
+                    p.project_name,
+                    t.type_id,
+                    t.type_name
+                FROM wp_installations i
+                LEFT JOIN wp_project p on p.project_id = i.project_id
+                LEFT JOIN wp_type t on t.type_id = i.type_id
+                WHERE i.installations_id  = ?";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([(int)$id]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             return $row;
         }
     }
-    public function save($data) {
-        $installations_id = $data['installations_id'] ?? null;
-        $installations_name = $data['installations_name'] ?? '';
-        if ($this->isDuplicateInstallationName($installations_name, $installations_id)) {
+    public function save(array $data){
+        $installations_id   = !empty($data['installations_id']) ? (int)$data['installations_id'] : null;
+        $installations_name = trim($data['installations_name'] ?? '');
+        $project_id         = (int)($data['project'] ?? 0);
+        $type_id            = (int)($data['type'] ?? 0);
+        $status             = (int)($data['status'] ?? 0);
+        if ($installations_name === '') {
+            return [
+                'status'  => false,
+                'message' => 'empty_installation_name'
+            ];
+        }
+        if ($this->isDuplicateInstallationName($installations_name,$project_id,$type_id,$installations_id)) {
             return [
                 'status'  => false,
                 'message' => 'already_installation'
             ];
         }
-        $status = $data['status'] ?? '';
         $pdo = $this->db;
         if ($installations_id) {
-            $sql = "UPDATE wp_installations SET installations_name = :installations_name, status = :status, updated_at = NOW() WHERE installations_id = :installations_id";
-            $stmt = $pdo->prepare($sql);
-            $stmt->bindValue(':installations_id', (int)$installations_id, PDO::PARAM_INT);
+            $sql = "UPDATE wp_installations SET installations_name = :installations_name, project_id = :project_id, type_id = :type_id, status = :status, updated_at = NOW() WHERE installations_id = :installations_id";
         } else {
             $sql = "INSERT INTO wp_installations (
-                installations_name
-                status,
-                created_at,
-                updated_at
-            ) VALUES (
-                :installations_name,
-                :status,
-                NOW(),
-                NOW()
-            )";
-            $stmt = $pdo->prepare($sql);
+                    installations_name,
+                    project_id,
+                    type_id,
+                    status,
+                    created_at,
+                    updated_at
+                ) VALUES (
+                    :installations_name,
+                    :project_id,
+                    :type_id,
+                    :status,
+                    NOW(),
+                    NOW()
+                )
+            ";
+        }
+        $stmt = $pdo->prepare($sql);
+        if ($installations_id) {
+            $stmt->bindValue(':installations_id', $installations_id, PDO::PARAM_INT);
         }
         $stmt->bindValue(':installations_name', $installations_name);
-        $stmt->bindValue(':status', $status);
-        return $stmt->execute();
+        $stmt->bindValue(':project_id', $project_id, PDO::PARAM_INT);
+        $stmt->bindValue(':type_id', $type_id, PDO::PARAM_INT);
+        $stmt->bindValue(':status', $status, PDO::PARAM_INT);
+        $result = $stmt->execute();
+        if (!$result) {
+            return [
+                'status'  => false,
+                'message' => 'db_error'
+            ];
+        }
+        return [
+            'status' => true,
+            'id'     => $installations_id ?: (int)$pdo->lastInsertId()
+        ];
     }
-    private function isDuplicateInstallationName($installations_name, $installations_id = null){
-        $sql = "SELECT COUNT(*) FROM wp_installations WHERE installations_name = :installations_name";
+    private function isDuplicateInstallationName($installations_name,$project_id,$type_id,$installations_id = null) {
+        $sql = "SELECT 1 FROM wp_installations WHERE installations_name = :installations_name AND project_id = :project_id AND type_id = :type_id";
         if ($installations_id) {
             $sql .= " AND installations_id != :installations_id";
         }
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':installations_name', trim($installations_name));
+        $stmt->bindValue(':project_id', (int)$project_id, PDO::PARAM_INT);
+        $stmt->bindValue(':type_id', (int)$type_id, PDO::PARAM_INT);
         if ($installations_id) {
             $stmt->bindValue(':installations_id', (int)$installations_id, PDO::PARAM_INT);
         }
         $stmt->execute();
-        return $stmt->fetchColumn() > 0;
+        return (bool)$stmt->fetchColumn();
     }
 }

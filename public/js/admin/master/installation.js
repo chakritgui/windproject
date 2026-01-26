@@ -18,10 +18,14 @@ function initInstallationsTable() {
             url: "api/installations/list", 
             type: "POST",
             data: function(d){
+                d.project = $('#filter_installation_project').val();
+                d.type = $('#filter_installation_type').val();
                 d.status = $('#filter_installation_status').val();
             }
         },
         columns: [      
+            { data: "project_name" },
+            { data: "type_name" },
             { data: "installations_name" },
             { 
                 data: 'status',
@@ -143,12 +147,24 @@ $(document).on('click', '.manage-installation', function() {
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
+                            <label class="mb-2 required" data-i18n="project"></label>
+                            <select id="project" class="form-select obj-required"></select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="mb-2 required" data-i18n="type"></label>
+                            <select id="type" class="form-select obj-required"></select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
                             <label class="mb-2 required" data-i18n="status"></label>
                             <select id="status" class="form-select obj-required"></select>
                         </div>
                     </div>
                 `);
                 initSelect2Remote('#status', 'api/installations/filter', { type: 'status' });
+                initSelect2Remote('#project', 'api/installations/filter', { type: 'project' });
+                initSelect2Remote('#type', 'api/installations/filter', { type: 'type' });
                 if (installationData) {
                     $("#installations_id").val(installationData.installations_id);
                     $("#installations_name").val(installationData.installations_name);
@@ -156,6 +172,14 @@ $(document).on('click', '.manage-installation', function() {
                         let statusName = installationData.status.charAt(0).toUpperCase() + installationData.status.slice(1);
                         var newOptionStatus = new Option(statusName, installationData.status, true, true);
                         $('#status').append(newOptionStatus).trigger('change');
+                    }
+                    if (installationData.project_name) {
+                        var newOptionStatus = new Option(installationData.project_name, installationData.project_id, true, true);
+                        $('#project').append(newOptionStatus).trigger('change');
+                    }
+                    if (installationData.type_name) {
+                        var newOptionStatus = new Option(installationData.type_name, installationData.type_id, true, true);
+                        $('#type').append(newOptionStatus).trigger('change');
                     }
                 }
             } else {
@@ -195,6 +219,8 @@ function saveInstallation() {
     formData.append("installations_id", $("#installations_id").val() || "");
     formData.append("installations_name", $("#installations_name").val() || "");
     formData.append("status", $("#status").val());
+    formData.append("project", $("#project").val());
+    formData.append("type", $("#type").val());
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `

@@ -9,6 +9,8 @@ class InstallationsController extends BaseController {
         $length= intval($_POST['length'] ?? 10);
         $filters = [
             'status'=> $_POST['status'] ?? '',
+            'project'=> $_POST['project'] ?? '',
+            'type'=> $_POST['type'] ?? '',
         ];
         $search = $_POST['search']['value'] ?? '';
         $res = $this->model->list($start,$length,$filters,$search);
@@ -38,6 +40,8 @@ class InstallationsController extends BaseController {
         $data = [
             'installations_id' => intval($_POST['installations_id'] ?? 0),
             'installations_name' => $_POST['installations_name'] ?? '',
+            'project'      => (int)($_POST['project'] ?? 0),
+            'type'         => (int)($_POST['type'] ?? 0),
             'status' => $_POST['status'] ?? ''
         ];
         $result = $this->model->save($data);

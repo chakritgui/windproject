@@ -29,6 +29,8 @@ function initTable() {
             initTypesTable();
             break;
         case 'installation':
+            initSelect2Remote('#filter_installation_project', 'api/installations/filter', { type: 'project' });
+            initSelect2Remote('#filter_installation_type', 'api/installations/filter', { type: 'type' });
             initSelect2Remote('#filter_installation_status', 'api/installations/filter', { type: 'status' });
             $(".filter").on("change", () => initInstallationsTable());
             initInstallationsTable();
