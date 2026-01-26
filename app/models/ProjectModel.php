@@ -99,7 +99,7 @@ class ProjectModel {
                         $params[':rid'] = $refId;
                     }
                 } elseif ($code === 'type' && !empty($refId)) {
-                    $joinSql = " LEFT JOIN wp_poles p ON p.type_id = t.{$cfg['id']} ";
+                    $joinSql = " LEFT JOIN wp_project_pole_type p ON p.type_id = t.{$cfg['id']} ";
                     $subConditions[] = "p.project_id = :rid";
                     $params[':rid'] = $refId;
                 } elseif ($code === 'installation' && !empty($refId)) {
@@ -132,16 +132,15 @@ class ProjectModel {
             if ($currentRefId === 'another') { $subConditions[] = "(t.contract_id IS NULL OR t.contract_id = '')"; } 
             else { $subConditions[] = "t.contract_id = :ref_id"; $subParams[':ref_id'] = $currentRefId; }
         } elseif ($code === 'type' && !empty($currentRefId)) {
-            $joinSql = " LEFT JOIN wp_poles p ON p.type_id = t.{$cfg['id']} ";
+            $joinSql = " LEFT JOIN wp_project_pole_type p ON p.type_id = t.{$cfg['id']} ";
             $subConditions[] = "p.project_id = :ref_id";
             $subParams[':ref_id'] = $currentRefId;
             $extraSelect = ", p.project_id"; 
         } elseif ($code === 'installation' && !empty($currentRefId)) {
-            $joinSql = " LEFT JOIN wp_poles p ON p.installations_id = t.{$cfg['id']} ";
-            $subConditions[] = " p.type_id = :ref_id ";
+            $subConditions[] = " t.type_id = :ref_id ";
             $subParams[':ref_id'] = $currentRefId;
             if($currentProjectId) {
-                $subConditions[] = " p.project_id = :proj_id ";
+                $subConditions[] = " t.project_id = :proj_id ";
                 $subParams[':proj_id'] = $currentProjectId;
             }
         }
@@ -174,10 +173,7 @@ class ProjectModel {
     }
     public function data($data) {
         $folder_id = intval($data['folder_id']);
-        $sql = "SELECT id, name as folder_name, parent_id, level 
-                FROM wp_folder 
-                WHERE id = :id AND status <> 'deleted' 
-                LIMIT 1";
+        $sql = "SELECT id, name as folder_name, parent_id, level FROM wp_folder WHERE id = :id AND status <> 'deleted' LIMIT 1";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':id' => $folder_id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);

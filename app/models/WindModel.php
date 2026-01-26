@@ -435,6 +435,14 @@ class LoadDataStagingImporter implements ImporterInterface {
         $this->db->exec("INSERT IGNORE INTO wp_type (type_name, created_at, updated_at)
             SELECT DISTINCT type_name, NOW(), NOW() FROM wind_staging
         ");
+        $this->db->exec("INSERT IGNORE INTO wp_project_pole_type (project_id, type_id, created_at)
+            SELECT 
+               p.project_id, t.type_id, NOW()
+            FROM 
+                wind_staging s
+            JOIN wp_project p ON p.project_name = s.project_name
+            JOIN wp_type t ON t.type_name = s.type_name
+        ");
         $this->db->exec("INSERT IGNORE INTO wp_height (height_name, created_at, updated_at)
             SELECT DISTINCT height_name, NOW(), NOW() FROM wind_staging
         ");
