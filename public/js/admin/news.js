@@ -23,75 +23,74 @@ function initNewsTable() {
                 d.status = $("#filter_status").val();
             }
         },
-        columns: [
-            { 
-                data: "cover",
-                className: 'text-center',
-                orderable: false,
-                searchable: false,
-                render: function(data){
-                    if (!data) {
-                        return `<img src="${BASE_URL}/public/images/noimage.jpg" style="height:60px; border-radius:6px; object-fit:cover;">`;
-                    }
-                    return `
-                        <img src="${BASE_URL}/${data}" style="height:60px; border-radius:6px; object-fit:cover;">
-                    `;
+        columns: [{ 
+            data: "cover",
+            className: 'text-center',
+            orderable: false,
+            searchable: false,
+            render: function(data){
+                if (!data) {
+                    return `<div style="width: 50px; height: 50px; line-height: 50px; overflow: hidden; margin: 0 auto; border-radius: 4px; border: 1px solid #eee;"><img src="${BASE_URL}/public/images/noimage.jpg" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';"></div>`;
                 }
-            },
-            { 
-                data: null,
-                render: (_, __, row) => {
-                    let title = '';
-                    switch(currentLang) {
-                        case 'en':
-                            title = row.title_en;
-                            break;
-                        case 'lo':
-                            title = row.title_lo || row.title_en;
-                            break;
-                        case 'th':
-                            title = row.title_th || row.title_en;
-                            break;
-                    }
-                    return title;
+                return `
+                    <div style="width: 50px; height: 50px; line-height: 50px; overflow: hidden; margin: 0 auto; border-radius: 4px; border: 1px solid #eee;">
+                        <img src="${BASE_URL}/${data}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';">
+                    </div>
+                `;
+            }
+        },{ 
+            data: null,
+            render: (_, __, row) => {
+                let title = '';
+                switch(currentLang) {
+                    case 'en':
+                        title = row.title_en;
+                        break;
+                    case 'lo':
+                        title = row.title_lo || row.title_en;
+                        break;
+                    case 'th':
+                        title = row.title_th || row.title_en;
+                        break;
                 }
-            },
-            {
-                data: "publish_at",
-                render: function (publish_at, type, row) {
-                    return `
-                        ${(row.status === 'published') ? publish_at : ''}
-                    `;
-                }
-            },
-            { data: "created_at" },
-            { data: "news_view", className: "text-end" },
-            {
-                data: "status",
-                render: function (status, type, row) {
-                    return `
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-${status === 'published' ? 'success' : 'secondary'}" data-i18n="${status}"></span>
-                        </div>
-                    `
-                }
-            },
-            {
-                data: null,
-                orderable: false,
-                render: (_, __, row) => `
-                    <button class="btn btn-light text-secondary view-news" data-id="${row.content_id}">
-                        <i class="fa-solid fa-folder-open"></i>
-                    </button>
-                    <button class="btn btn-light text-secondary manage-news" data-id="${row.content_id}">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                    </button>
-                    <button class="btn btn-light text-danger delete-news" data-id="${row.content_id}">
-                        <i class="fa-regular fa-trash-can"></i>
-                    </button>
+                return title;
+            }
+        },{
+            data: "publish_at",
+            render: function (publish_at, type, row) {
+                return `
+                    ${(row.status === 'published') ? publish_at : ''}
+                `;
+            }
+        },{ 
+            data: "created_at" 
+        },{ 
+            data: "content_view", 
+            className: "text-end" 
+        },{
+            data: "status",
+            render: function (status, type, row) {
+                return `
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-${status === 'published' ? 'success' : 'secondary'}" data-i18n="${status}"></span>
+                    </div>
                 `
             }
-        ],
+        },{
+            data: null,
+            orderable: false,
+            render: (_, __, row) => `
+                <button class="btn btn-light text-secondary view-news" data-id="${row.content_id}">
+                    <i class="fa-solid fa-eye"></i>
+                </button>
+                <button class="btn btn-light text-secondary manage-news" data-id="${row.content_id}">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <button class="btn btn-light text-danger delete-news" data-id="${row.content_id}">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
+            `
+        }],
         pageLength: pageLength,
         lengthMenu: lengthMenu,
         stateLoadParams: function (settings, data) {
@@ -159,27 +158,7 @@ $(document).on("click", ".manage-news", function () {
                 this.value = min;
             }
         });
-        ClassicEditor.create(document.querySelector('#content_en'), {
-            ckfinder: {
-                uploadUrl: BASE_URL + '/public/uploads/upload_news_image.php'
-            }
-        }).then(editor=>{
-            editors['en'] = editor;
-        });
-        ClassicEditor.create(document.querySelector('#content_lo'), {
-            ckfinder: {
-                uploadUrl: BASE_URL + '/public/uploads/upload_news_image.php'
-            }
-        }).then(editor=>{
-            editors['lo'] = editor;
-        });
-        ClassicEditor.create(document.querySelector('#content_th'), {
-            ckfinder: {
-                uploadUrl: BASE_URL + '/public/uploads/upload_news_image.php'
-            }
-        }).then(editor=>{
-            editors['th'] = editor;
-        });
+        initTinyMCE();
         const $publishAtInput = $("#publish_at");
         const $publishNowCheck = $("#publish_now");
         $publishNowCheck.on("change", function () {
@@ -407,24 +386,18 @@ $(document).on('click', '.save-news', function () {
 });
 function saveNews() {
     const btn = $(".save-news");
-    const content_id = $("#content_id").val() || "";
-    const title_th = $("#title_th").val();
-    if (!title_th) {
-        showError('Error', 'กรุณากรอกหัวข้อข่าว (ภาษาไทย)');
-        return;
-    }
     btn.prop("disabled", true);
     const formData = new FormData();
-    formData.append("content_id", content_id);
+    formData.append("content_id", $("#content_id").val() || "");
     formData.append("status", $("#status").val());
     formData.append("publish_at", typeof buildPublishAt === "function" ? buildPublishAt() : "");
     formData.append("title_en", $("#title_en").val());
     formData.append("title_lo", $("#title_lo").val());
     formData.append("ex_cover", $("#ex_cover").val());
-    formData.append("title_th", title_th);
-    formData.append("content_en", editors['en']?.getData() ?? '');
-    formData.append("content_lo", editors['lo']?.getData() ?? '');
-    formData.append("content_th", editors['th']?.getData() ?? '');
+    formData.append("title_th", $("#title_th").val());
+    formData.append("content_en", tinymce.get('content_en')?.getContent() || '');
+    formData.append("content_lo", tinymce.get('content_lo')?.getContent() || '');
+    formData.append("content_th", tinymce.get('content_th')?.getContent() || '');
     const cover = $("#cover")[0].files[0] || null;
     if (cover) {
         formData.append("cover", cover);
@@ -465,7 +438,7 @@ function saveNews() {
             if (res.status === true) {
                 showSuccess('Success', langData['saved_successfully']);
                 if (typeof initNewsTable === "function") initNewsTable();
-                $('#newsModal').modal('hide');
+                $('#windModal').modal('hide');
             } else {
                 showError('Error', (langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
             }
@@ -513,5 +486,35 @@ $(document).on('click', '.delete-news', function() {
 });
 $(document).on("click", ".view-news", function () {
     const id = $(this).data("id");
-    notificatinInfo(id, 'preview');
+    viewNews(id);
 });
+function viewNews(id) {
+    $.post("api/project/gets", { id }, function(res) {
+        if(res.status !== "success") return;
+        let d = res.data;
+        let $modal = $("#windModal");
+        let modal = new bootstrap.Modal($modal[0]);
+        $modal.find(".modal-header").html(`
+            <h5 class="modal-title">${d.title.th || d.title.en}</h5>
+            <button class="btn-close" data-bs-dismiss="modal"></button>
+        `);
+        $modal.find(".modal-footer").html(`
+            <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
+        `);
+        $modal.find(".modal-body").html(`
+            <div class="content-view">
+                <ul class="nav nav-tabs mb-3">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#view_en">English</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#view_lo">ລາວ</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#view_th">ไทย</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="view_en">${d.content.en || ''}</div>
+                    <div class="tab-pane fade" id="view_lo">${d.content.lo || ''}</div>
+                    <div class="tab-pane fade" id="view_th">${d.content.th || ''}</div>
+                </div>
+            </div>
+        `);
+        modal.show();
+    }, "json");
+}

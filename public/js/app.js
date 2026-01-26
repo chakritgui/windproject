@@ -828,3 +828,60 @@ function parseUA(ua) {
     }
     return { icon: 'fa-solid fa-desktop', label: 'Unknown Device' };
 }
+function initTinyMCE() {
+    tinymce.remove();
+    tinymce.init({
+        selector: '#content_en, #content_lo, #content_th',
+        height: 450,
+        branding: false,
+        promotion: false,
+        plugins: 'image link lists table media code',
+        toolbar: `
+            undo redo | styles | bold italic underline |
+            alignleft aligncenter alignright |
+            bullist numlist | image media table |
+            img25 img50 img100 | code
+        `,
+        setup: function (editor) {
+            editor.ui.registry.addButton('img25', {
+                text: '25%',
+                onAction: () => resizeImage(editor, '25%')
+            });
+            editor.ui.registry.addButton('img50', {
+                text: '50%',
+                onAction: () => resizeImage(editor, '50%')
+            });
+            editor.ui.registry.addButton('img100', {
+                text: 'Full',
+                onAction: () => resizeImage(editor, '100%')
+            });
+        },
+        automatic_uploads: true,
+        images_upload_handler: function (blobInfo, progress) {
+            return new Promise((resolve, reject) => {
+                let formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
+                fetch(BASE_URL + '/public/uploads/upload_content_image.php', {
+                    method: 'POST',
+                    body: formData
+                }).then(response => response.json()).then(result => {
+                    if (result && result.url) {
+                        resolve(result.url);
+                    } else {
+                        reject('Upload failed');
+                    }
+                })
+                .catch(() => reject('Upload error'));
+            });
+        },
+        content_style: `
+            img { max-width:100%; height:auto; }
+        `
+    });
+}
+function resizeImage(editor, width) {
+    let img = editor.selection.getNode();
+    if (img && img.nodeName === 'IMG') {
+        img.style.width = width;
+    }
+}

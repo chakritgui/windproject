@@ -31,10 +31,10 @@
     </nav>
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
         <div>
-            <button class="btn btn-sm btn-outline-warning" id="btnCreateFolder">
+            <button class="btn btn-sm btn-outline-warning manage-project" data-id="">
                 <i class="fa-solid fa-folder-plus"></i> <span data-i18n="folder"></span>
             </button>
-            <button class="btn btn-sm btn-outline-primary" id="btnCreateFile">
+            <button class="btn btn-sm btn-outline-primary manage-content" data-id="">
                 <i class="fa-solid fa-file-circle-plus"></i> <span data-i18n="content"></span>
             </button>
         </div>
@@ -51,7 +51,6 @@
                     <th data-i18n="name"></th>
                     <th data-i18n="last_update"></th>
                     <th data-i18n="notification"></th>
-                    <th data-i18n="status"></th>
                     <th style="width: 100px;"></th>
                 </tr>
             </thead>

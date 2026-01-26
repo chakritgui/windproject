@@ -62,4 +62,46 @@ class ProjectController extends BaseController {
             $this->json(['status' => 'error', 'message' => 'Data not found']);
         }
     }
+    public function gets(){
+        $id = intval($_POST['id'] ?? 0);
+        $this->json(['status'=>'success','data'=>$this->model->gets($id)]);
+    }
+    public function filter() {
+        $page = intval($_POST['page'] ?? 0);
+        $limit = intval($_POST['limit'] ?? 10);
+        $searchTerm = $_POST['searchTerm'] ?? '';
+        $type = $_POST['type'] ?? '';
+        $this->json(['status'=>true , 'data' => $this->model->filter($page, $limit, $type, $searchTerm)]);
+    }
+    public function saveContent() {
+        $data = [
+            'content_id'   => intval($_POST['content_id'] ?? 0),
+            'status' => $_POST['status'] ?? '',
+            'notification' => $_POST['notification'] ?? '',
+            'parent_id'   => intval($_POST['parent_id'] ?? 0),
+            'level'       => intval($_POST['level'] ?? 1),
+            'ref_id'       => intval($_POST['ref_id'] ?? ''),
+            'title_en' => $_POST['title_en'] ?? '',
+            'title_lo' => $_POST['title_lo'] ?? '',
+            'title_th' => $_POST['title_th'] ?? '',
+            'content_en' => $_POST['content_en'] ?? '',
+            'content_lo' => $_POST['content_lo'] ?? '',
+            'content_th' => $_POST['content_th'] ?? '',
+            'ex_cover' => $_POST['ex_cover'] ?? '',
+            'cover' => $_FILES['cover'] ?? null,
+        ];
+        $this->json(['status' => $this->model->saveContent($data)]);
+    }
+    public function deleteContent() {
+        $data = [
+            'content_id' => intval($_POST['content_id'] ?? 0)
+        ];
+        $result = $this->model->deleteContent($data);
+        
+        if ($result) {
+            $this->json(['status' => 'success', 'data' => $result]);
+        } else {
+            $this->json(['status' => 'error', 'message' => 'Data not found']);
+        }
+    }
 }

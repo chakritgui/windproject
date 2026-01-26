@@ -14,29 +14,29 @@ class NewsModel {
         }
         if (!empty($search)) {
             $where .= " AND (
-                iEn.news_subject LIKE :search OR
-                iLo.news_subject LIKE :search OR
-                iTh.news_subject LIKE :search
+                iEn.content_subject LIKE :search OR
+                iLo.content_subject LIKE :search OR
+                iTh.content_subject LIKE :search
             )";
             $params[':search'] = "%{$search}%";
         }
         $sqlFiltered = "SELECT COUNT(DISTINCT n.content_id) FROM wp_content n 
-                        LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.news_lang='en' 
-                        LEFT JOIN wp_content_item iLo ON iLo.content_id = n.content_id AND iLo.news_lang='lo' 
-                        LEFT JOIN wp_content_item iTh ON iTh.content_id = n.content_id AND iTh.news_lang='th' 
+                        LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.content_lang='en' 
+                        LEFT JOIN wp_content_item iLo ON iLo.content_id = n.content_id AND iLo.content_lang='lo' 
+                        LEFT JOIN wp_content_item iTh ON iTh.content_id = n.content_id AND iTh.content_lang='th' 
                         $where and n.type = 'news'";
         $stmtFiltered = $pdo->prepare($sqlFiltered);
         $stmtFiltered->execute($params);
         $totalFiltered = $stmtFiltered->fetchColumn();
         $sql = "SELECT 
-                    n.content_id, n.publish_at, n.created_at, n.status, n.news_view, n.cover,
-                    iEn.news_subject AS title_en,
-                    iLo.news_subject AS title_lo,
-                    iTh.news_subject AS title_th
+                    n.content_id, n.publish_at, n.created_at, n.status, n.content_view, n.cover,
+                    iEn.content_subject AS title_en,
+                    iLo.content_subject AS title_lo,
+                    iTh.content_subject AS title_th
                 FROM wp_content n
-                LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.news_lang='en'
-                LEFT JOIN wp_content_item iLo ON iLo.content_id = n.content_id AND iLo.news_lang='lo'
-                LEFT JOIN wp_content_item iTh ON iTh.content_id = n.content_id AND iTh.news_lang='th'
+                LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.content_lang='en'
+                LEFT JOIN wp_content_item iLo ON iLo.content_id = n.content_id AND iLo.content_lang='lo'
+                LEFT JOIN wp_content_item iTh ON iTh.content_id = n.content_id AND iTh.content_lang='th'
                 $where and n.type = 'news'
                 ORDER BY n.content_id DESC
                 LIMIT :start, :length";
@@ -51,7 +51,7 @@ class NewsModel {
         foreach ($rows as &$r) {
             if (!empty($r['created_at'])) $r['created_at'] = convertTimeZone($r['created_at'], 'd/m/Y H:i:s');
             if (!empty($r['publish_at'])) $r['publish_at'] = convertTimeZone($r['publish_at'], 'd/m/Y H:i:s');
-            $r['news_view'] = number_format((int)$r['news_view']);
+            $r['content_view'] = number_format((int)$r['content_view']);
         }
         return [
             "total" => (int)$totalFiltered,
@@ -71,15 +71,15 @@ class NewsModel {
         $stmt->execute([$id]);
         $n = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$n) return null;
-        $stmt = $pdo->prepare("SELECT news_lang, news_subject, news_body FROM wp_content_item WHERE content_id = ?");
+        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body FROM wp_content_item WHERE content_id = ?");
         $stmt->execute([$id]);
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $title = ["th" => "", "lo" => "", "en" => ""];
         $content = ["th" => "", "lo" => "", "en" => ""];
         foreach ($items as $row) {
-            $lang = $row['news_lang'];
-            $title[$lang] = $row['news_subject'];
-            $content[$lang] = $row['news_body'];
+            $lang = $row['content_lang'];
+            $title[$lang] = $row['content_subject'];
+            $content[$lang] = $row['content_body'];
         }
         return [
             "id" => $n['content_id'],
@@ -119,7 +119,7 @@ class NewsModel {
             $stmt->bindValue(':publish_at', $publish_at, $publish_at === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
             $stmt->execute();
             if (!$content_id) $content_id = $pdo->lastInsertId();
-            $sqlItem = "INSERT INTO wp_content_item (content_id, news_subject, news_body, news_lang, created_at, updated_at, type) VALUES (:content_id, :subject, :body, :lang, NOW(), NOW(), 'news') ON DUPLICATE KEY UPDATE news_subject = VALUES(news_subject), news_body = VALUES(news_body), updated_at = NOW()";
+            $sqlItem = "INSERT INTO wp_content_item (content_id, content_subject, content_body, content_lang, created_at, updated_at) VALUES (:content_id, :subject, :body, :lang, NOW(), NOW()) ON DUPLICATE KEY UPDATE content_subject = VALUES(content_subject), content_body = VALUES(content_body), updated_at = NOW()";
             $stmtItem = $pdo->prepare($sqlItem);
             $langs = ['en', 'lo', 'th'];
             $all_html_content = "";
@@ -186,7 +186,7 @@ class NewsModel {
     }
     private function handleFileUpload($content_id, $file) {
         $this->handleFileDelete($content_id);
-        $dir = "uploads/news/";
+        $dir = "uploads/content/";
         $fullDir = $dir;
         if (!is_dir($fullDir)) mkdir($fullDir, 0755, true);
         $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
@@ -227,7 +227,7 @@ class NewsModel {
             if (!unlink($oldPath)) {
                 throw new Exception("Cannot delete file: " . $oldPath);
             }
-            $this->db->prepare("UPDATE wp_news SET cover = NULL WHERE content_id = ?")->execute([$content_id]);
+            $this->db->prepare("UPDATE wp_content SET cover = NULL WHERE content_id = ?")->execute([$content_id]);
             $this->db->commit();
         } catch (Exception $e) {
             $this->db->rollBack();
@@ -236,7 +236,7 @@ class NewsModel {
     }
     public function delete($id) {
         $pdo = $this->db;
-        $pdo->prepare("UPDATE wp_news SET status = 'deleted', updated_at = NOW() WHERE content_id = ?")->execute([(int)$id]);
+        $pdo->prepare("UPDATE wp_content SET status = 'deleted', updated_at = NOW() WHERE content_id = ?")->execute([(int)$id]);
         return $pdo->prepare("UPDATE wp_notification_targets SET status = 'deleted', publish_at = NULL WHERE notifications_item = ? AND notifications_target = 'news'")->execute([(int)$id]);
     }
     public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {

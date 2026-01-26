@@ -8,7 +8,11 @@ class ProjectModel {
         $currentRefId = $filters['ref_id'] ?? null;
         $currentProjectId = $filters['project_id'] ?? null;
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
-        $sql = "SELECT f.id, f.name as folder_name, f.code, f.level, f.parent_id, f.created_at, f.type, f.ref_id as folder_ref_id FROM wp_folder f {$mainWhere} ORDER BY f.id ASC";
+        $sql = "SELECT 
+            f.id, f.name as folder_name, f.code, f.level, f.parent_id, f.created_at, f.type, f.ref_id as folder_ref_id, f.content_id, f.notification_status, c.cover
+        FROM wp_folder f 
+        LEFT JOIN wp_content c on c.content_id = f.content_id
+        {$mainWhere} ORDER BY f.id ASC";
         $stmt = $this->db->prepare($sql);
         foreach ($mainParams as $k => $v) { $stmt->bindValue($k, $v); }
         $stmt->execute();
@@ -211,5 +215,242 @@ class ProjectModel {
             $where .= " AND (f.ref_id IS NULL OR f.ref_id = '')";
         }
         return [$where, $params];
+    }
+    public function gets($id) {
+        $pdo = $this->db;
+        if (!$id) {
+            return [
+                "id" => "", "status" => "active", "cover" => "", "notification_status" => "no",
+                "title" => ["th" => "", "lo" => "", "en" => ""],
+                "content" => ["th" => "", "lo" => "", "en" => ""]
+            ];
+        }
+        $stmt = $pdo->prepare("SELECT content_id, status, cover FROM wp_content WHERE content_id = ?");
+        $stmt->execute([$id]);
+        $n = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$n) return null;
+        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body FROM wp_content_item WHERE content_id = ?");
+        $stmt->execute([$id]);
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $title = ["th" => "", "lo" => "", "en" => ""];
+        $content = ["th" => "", "lo" => "", "en" => ""];
+        foreach ($items as $row) {
+            $lang = $row['content_lang'];
+            $title[$lang] = $row['content_subject'];
+            $content[$lang] = $row['content_body'];
+        }
+        $stmt2 = $pdo->prepare("SELECT notification_status FROM wp_folder WHERE content_id = ? LIMIT 1");
+        $stmt2->execute([$id]);
+        $row_folder = $stmt2->fetch(PDO::FETCH_ASSOC);
+        return [
+            "id" => $n['content_id'],
+            "status" => $n['status'],
+            "cover" => $n['cover'],
+            "title" => $title,
+            "content" => $content,
+            "notification_status" => $row_folder ? $row_folder['notification_status'] : "no"
+        ];
+    }
+    public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {
+        $offset = ($page - 1) * $limit;
+        $items = [];
+        $totalCount = 0;
+        switch($type) {
+            case 'status':
+                $staticData = [
+                    ['id' => 'active', 'text' => 'Active'],
+                    ['id' => 'inactive', 'text' => 'Inactive']
+                ];
+                if (!empty($searchTerm)) {
+                    $staticData = array_values(array_filter($staticData, function($item) use ($searchTerm) {
+                        return strpos(strtolower($item['text']), strtolower($searchTerm)) !== false;
+                    }));
+                }
+                $totalCount = count($staticData);
+                $items = array_slice($staticData, $offset, $limit);
+                break;
+            case 'notification':
+                $staticData = [
+                    ['id' => 'yes', 'text' => 'Yes'],
+                    ['id' => 'no', 'text' => 'No']
+                ];
+                if (!empty($searchTerm)) {
+                    $staticData = array_values(array_filter($staticData, function($item) use ($searchTerm) {
+                        return strpos(strtolower($item['text']), strtolower($searchTerm)) !== false;
+                    }));
+                }
+                $totalCount = count($staticData);
+                $items = array_slice($staticData, $offset, $limit);
+                break;
+        }
+        return [
+            'items' => $items,
+            'total_count' => $totalCount
+        ];
+    }
+    public function saveContent($data) {
+        $pdo = $this->db;
+        $content_id = $data['content_id'] ?? null;
+        $ex_cover = $data['ex_cover'] ?? null;
+        $status = $data['status'] ?? 'active';
+        $notification = $data['notification'] ?? 'no';
+        try {
+            $pdo->beginTransaction();
+            if ($content_id) {
+                $stmt = $pdo->prepare("UPDATE wp_content SET status = :status, updated_at = NOW() WHERE content_id = :content_id");
+                $stmt->bindValue(':content_id', (int)$content_id, PDO::PARAM_INT);
+            } else {
+                $stmt = $pdo->prepare("INSERT INTO wp_content (status, created_at, updated_at, type) VALUES (:status, NOW(), NOW(), 'project')");
+            }
+            $stmt->bindValue(':status', $status);
+            $stmt->execute();
+            if (!$content_id) $content_id = $pdo->lastInsertId();
+            $sqlItem = "INSERT INTO wp_content_item (content_id, content_subject, content_body, content_lang, created_at, updated_at) 
+                        VALUES (:content_id, :subject, :body, :lang, NOW(), NOW()) 
+                        ON DUPLICATE KEY UPDATE content_subject = VALUES(content_subject), content_body = VALUES(content_body), updated_at = NOW()";
+            $stmtItem = $pdo->prepare($sqlItem);
+            $langs = ['en', 'lo', 'th'];
+            $all_html_content = "";
+            foreach ($langs as $lang) {
+                $subj = $data["title_$lang"] ?? '';
+                $body = $data["content_$lang"] ?? '';
+                $all_html_content .= $body;
+                if ($subj !== '' || $body !== '') {
+                    $stmtItem->execute([':content_id' => $content_id, ':subject' => $subj, ':body' => $body, ':lang' => $lang]);
+                }
+            }
+            if(!$ex_cover) $this->handleFileDelete($content_id);
+            if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
+                $this->handleFileUpload($content_id, $_FILES['cover']);
+            }
+            preg_match_all('/<img[^>]+src="([^">]+)"/i', $all_html_content, $matches);
+            $currentImages = array_unique($matches[1] ?? []);
+            $stmt = $pdo->prepare("SELECT file_path FROM wp_content_files WHERE content_id = ?");
+            $stmt->execute([$content_id]);
+            $oldFiles = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            $toDelete = array_diff($oldFiles ?: [], $currentImages);
+            foreach ($toDelete as $file) {
+                $fullPath = $_SERVER['DOCUMENT_ROOT'] . $file;
+                if (file_exists($fullPath) && is_file($fullPath)) @unlink($fullPath);
+                $pdo->prepare("DELETE FROM wp_content_files WHERE content_id = ? AND file_path = ?")->execute([$content_id, $file]);
+            }
+            $ins = $pdo->prepare("INSERT IGNORE INTO wp_content_files (content_id, file_path, created_at) VALUES (?, ?, NOW())");
+            foreach ($currentImages as $path) {
+                $ins->execute([$content_id, $path]);
+            }
+            if ($data['content_id'] > 0) {
+                $sql = "UPDATE wp_folder SET name = :name, updated_at = NOW(), notification_status = :notification WHERE content_id = :id";
+                $stmtFolder = $pdo->prepare($sql);
+                $stmtFolder->execute([
+                    ':name' => $data["title_en"],
+                    ':id'   => $data['content_id'],
+                    ':notification' => $notification
+                ]);
+            } else {
+                $parentId = (!empty($data['parent_id']) && $data['parent_id'] > 0) ? $data['parent_id'] : null;
+                $ref_id = (!empty($data['ref_id']) && $data['ref_id'] > 0) ? $data['ref_id'] : null;
+                $sql = "INSERT INTO wp_folder (name, parent_id, level, status, type, created_at, updated_at, ref_id, content_id, notification_status) VALUES (:name, :parent_id, :level, 'active', 'content', NOW(), NOW(), :ref_id, :content_id, :notification)";
+                $stmtFolder = $pdo->prepare($sql);
+                $stmtFolder->execute([
+                    ':name'      => $data["title_en"],
+                    ':parent_id' => $parentId,
+                    ':level'     => $data['level'],
+                    ':ref_id'    => $ref_id,
+                    ':content_id' => $content_id,
+                    ':notification' => $notification
+                ]);
+            }
+            $this->notification($content_id, $notification);
+            $pdo->commit();
+            return true;
+        } catch (Exception $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            error_log($e->getMessage());
+            return false;
+        }
+    }
+    public function notification($content_id, $notification) {
+        $pdo = $this->db;
+        $isExternalTrans = $pdo->inTransaction();
+        try {
+            if (!$isExternalTrans) $pdo->beginTransaction();
+            if ($notification == 'yes') {
+                $sql = "INSERT INTO wp_notification_targets (notifications_target, notifications_item, member_id, publish_at, status)
+                        SELECT 'project', :nid, member_id, NOW(), 'published' 
+                        FROM wp_members WHERE status = 'active'
+                        ON DUPLICATE KEY UPDATE status = 'published', read_at = NULL";
+                $pdo->prepare($sql)->execute([':nid' => $content_id]);
+            } else {
+                $stmt = $pdo->prepare("UPDATE wp_notification_targets SET status = :status, publish_at = NULL, read_at = NULL WHERE notifications_item = :id AND notifications_target = 'project'");
+                $stmt->execute([':status' => 'draft', ':id' => $content_id]);
+            }
+            if (!$isExternalTrans) $pdo->commit();
+        } catch (Exception $e) {
+            if (!$isExternalTrans && $pdo->inTransaction()) $pdo->rollBack();
+            throw $e;
+        }
+    }
+    private function handleFileUpload($content_id, $file) {
+        $this->handleFileDelete($content_id);
+        $dir = "uploads/content/";
+        $fullDir = $dir;
+        if (!is_dir($fullDir)) mkdir($fullDir, 0755, true);
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        $newName = $content_id . "_" . time() . "." . $ext;
+        $dbPath = $dir . $newName;
+        if (move_uploaded_file($file['tmp_name'], dirname(__DIR__, 2) . '/' . $dir . $newName)) {
+            $this->db->prepare("UPDATE wp_content SET cover=? WHERE content_id =?")->execute([$dbPath, $content_id]);
+        }
+    }
+    private function handleFileDelete($content_id){
+        $stmt = $this->db->prepare("SELECT cover FROM wp_content WHERE content_id = ?");
+        $stmt->execute([$content_id]);
+        $old = $stmt->fetchColumn();
+        if (!$old) {
+            return;
+        }
+        $basePath = realpath(dirname(__DIR__, 2));
+        if ($basePath === false) {
+            error_log("Base path not found");
+            return;
+        }
+        $old = ltrim($old, '/');
+        if (strpos($old, '..') !== false) {
+            error_log("Invalid file path: " . $old);
+            return;
+        }
+        $oldPath = $basePath . '/' . $old;
+        if (!file_exists($oldPath)) {
+            error_log("File not found: " . $oldPath);
+            return;
+        }
+        if (!is_file($oldPath)) {
+            error_log("Not a file: " . $oldPath);
+            return;
+        }
+        $this->db->beginTransaction();
+        try {
+            if (!unlink($oldPath)) {
+                throw new Exception("Cannot delete file: " . $oldPath);
+            }
+            $this->db->prepare("UPDATE wp_content SET cover = NULL WHERE content_id = ?")->execute([$content_id]);
+            $this->db->commit();
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log($e->getMessage());
+        }
+    }
+    public function deleteContent($data) {
+        $sql_folder = "UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = :id";
+        $stmt_folder = $this->db->prepare($sql_folder);
+        $res1 = $stmt_folder->execute([
+            ':id' => $data['content_id']
+        ]);
+        $sql_content = "UPDATE wp_content SET status = 'deleted', updated_at = NOW() WHERE content_id = :id";
+        $stmt_content = $this->db->prepare($sql_content);
+        $res2 = $stmt_content->execute([
+            ':id' => $data['content_id']
+        ]);
+        return ($res1 && $res2);
     }
 }

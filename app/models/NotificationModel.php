@@ -60,15 +60,15 @@ class NotificationModel {
                         t.publish_at,
                         t.read_at,
                         CASE
-                            WHEN t.notifications_target = 'news' THEN iEn.news_subject
+                            WHEN t.notifications_target = 'news' THEN iEn.content_subject
                             ELSE ''
                         END AS title_en,
                         CASE
-                            WHEN t.notifications_target = 'news' THEN iLo.news_subject
+                            WHEN t.notifications_target = 'news' THEN iLo.content_subject
                             ELSE ''
                         END AS title_lo,
                         CASE
-                            WHEN t.notifications_target = 'news' THEN iTh.news_subject
+                            WHEN t.notifications_target = 'news' THEN iTh.content_subject
                             ELSE ''
                         END AS title_th,
                         CASE
@@ -80,11 +80,11 @@ class NotificationModel {
                     FROM wp_notification_targets t
                     LEFT JOIN wp_content n on n.content_id = t.notifications_item
                     LEFT JOIN wp_content_item iEn 
-                        ON iEn.content_id = t.notifications_item AND iEn.news_lang = 'en'
+                        ON iEn.content_id = t.notifications_item AND iEn.content_lang = 'en'
                     LEFT JOIN wp_content_item iLo 
-                        ON iLo.content_id = t.notifications_item AND iLo.news_lang = 'lo'
+                        ON iLo.content_id = t.notifications_item AND iLo.content_lang = 'lo'
                     LEFT JOIN wp_content_item iTh 
-                        ON iTh.content_id = t.notifications_item AND iTh.news_lang = 'th'
+                        ON iTh.content_id = t.notifications_item AND iTh.content_lang = 'th'
                     WHERE t.member_id = ?
                     AND t.status = 'published'
                     AND t.publish_at <= NOW()

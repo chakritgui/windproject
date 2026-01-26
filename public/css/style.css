@@ -391,3 +391,15 @@ button {
 .table>thead>tr>th {
     white-space: nowrap;
 }
+.content-view img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+.content-view table {
+    max-width: 100% !important;
+}
+.content-view iframe, 
+.content-view video {
+    max-width: 100% !important;
+}

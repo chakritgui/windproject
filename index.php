@@ -95,6 +95,10 @@
             $router->post('/api/project/save', 'ProjectController@save');
             $router->post('/api/project/data', 'ProjectController@data');
             $router->post('/api/project/delete', 'ProjectController@delete');
+            $router->post('/api/project/gets', 'ProjectController@gets');
+            $router->post('/api/project/filter', 'ProjectController@filter');
+            $router->post('/api/project/save-content', 'ProjectController@saveContent');
+            $router->post('/api/project/delete-content', 'ProjectController@deleteContent');
         } else {
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');

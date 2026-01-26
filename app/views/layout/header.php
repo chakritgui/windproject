@@ -35,7 +35,7 @@
 <script src="<?=BASE_URL?>/vendor/datatables/js/dataTables.bootstrap5.min.js"></script>
 <script src="<?=BASE_URL?>/vendor/select2/dist/js/select2.min.js"></script>
 <script src="<?=BASE_URL?>/vendor/fancyapps/ui/dist/fancybox.umd.js"></script>
-<script src="<?=BASE_URL?>/vendor/ckeditor5/classic/ckeditor.js"></script>
+<script src="https://cdn.tiny.cloud/1/6p9duehcdfxhe2uffzhybsh7yloe0xgdcxtxba6jgfb37lhp/tinymce/6/tinymce.min.js"></script>
 <script src="<?=BASE_URL?>/vendor/momentjs/latest/moment.min.js"></script>
 <script src="<?=BASE_URL?>/vendor/daterangepicker/daterangepicker.min.js"></script>
 <script src="<?=BASE_URL?>/vendor/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
