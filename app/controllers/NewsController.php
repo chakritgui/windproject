@@ -40,6 +40,12 @@ class NewsController extends BaseController {
             'content_th' => $_POST['content_th'] ?? '',
             'ex_cover' => $_POST['ex_cover'] ?? '',
             'cover' => $_FILES['cover'] ?? null,
+            'existing_attachments' => $_POST['existing_attachments'] ?? [],
+            'new_attachments'      => $_FILES['new_attachments'] ?? null,
+            'existing_images'      => $_POST['existing_images'] ?? [],
+            'new_images'           => $_FILES['new_images'] ?? null,
+            'existing_images360'   => $_POST['existing_images360'] ?? [],
+            'new_images360'        => $_FILES['new_images360'] ?? null,
         ];
         $this->json(['status'=>$this->model->save($data)]);
     }

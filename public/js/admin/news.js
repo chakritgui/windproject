@@ -1,4 +1,3 @@
-let editors = {};
 let tb_news;
 function initNewsTable() {
     let oldPage = 0;
@@ -138,7 +137,7 @@ $(document).on("click", ".manage-news", function () {
         const publishAt = d.publish_at ? new Date(d.publish_at) : null;
         const publishDate = publishAt ? publishAt.toISOString().slice(0,10) : '';
         const publishTime = publishAt ? publishAt.toTimeString().slice(0,5) : '';
-        $modal.find(".modal-body").html(getNewsForm(d, publishTime));
+        $modal.find(".modal-body").html(getContentForm(d, publishTime));
         togglePublishControls();
         setMinDateToday();
         initSelect2Remote('#status', `${BASE_URL}/api/news/filter`, { type: 'status' });
@@ -158,7 +157,6 @@ $(document).on("click", ".manage-news", function () {
                 this.value = min;
             }
         });
-        initTinyMCE();
         const $publishAtInput = $("#publish_at");
         const $publishNowCheck = $("#publish_now");
         $publishNowCheck.on("change", function () {
@@ -201,117 +199,47 @@ $(document).on("click", ".manage-news", function () {
             el.dataset.tdInit = 1;
         });
         initCoverUpload();
+        initAttachmentsUpload(d.attachments || []);
+        initImagesUpload(d.images || []);
+        init360ImagesUpload(d.images360 || []);
+        initTinyMCE();
         modal.show();
     }, "json");
 });
-function getNewsForm(d, publishTime) {
+function getContentForm(d, publishTime) {
     return `
-        <input type="hidden" id="content_id" value="${d.id ?? ''}">
-        <div id="coverDropArea" class="cover-drop-area text-center mb-3">
-            <input type="file" id="cover" accept="image/*" hidden>
-            <div id="coverPreviewWrapper" class="h-100 d-flex align-items-center justify-content-center">
-                ${d.cover 
-                    ? `<img id="coverPreview" src="${BASE_URL}/${d.cover}" class="img-fluid rounded shadow-sm" style="max-height:150px;">`
-                    : `<img id="coverPreview" class="img-fluid rounded shadow-sm d-none" style="max-height:150px;">`
-                }
-            </div>
-            <div id="coverDropLabel" class="${d.cover ? 'd-none' : ''}">
-                <div class="fw-bold fs-6 mt-2" data-i18n="dropHere"></div>
-                <div class="text-muted small mb-2">
-                    <span data-i18n="or"></span> <span data-i18n="choose"></span>
+        <form id="contentForm">
+            ${renderTabs()}
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="tab-basic">
+                    ${renderCover(d)}
+                    ${renderLangTabs(d)}
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="mb-2 mt-3 required" data-i18n="status"></label>
+                            <select id="status" class="form-select obj-required"></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="mb-2 mt-3 required" data-i18n="publish_date"></label>
+                            <input type="text" id="publish_date" class="form-control obj-required">
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="publish_now">
+                                <label class="form-check-label" for="publish_now"  data-i18n="publish_now"></label>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="mb-2 mt-3 required" data-i18n="publish_time"></label>
+                            <input type="text" id="publish_time" class="form-control timepicker obj-required" value="${publishTime}" placeholder="HH:mm">
+                        </div>
+                    </div>
                 </div>
+                ${renderGallery()}
+                ${render360()}
+                ${renderFiles()}
             </div>
-            <div class="text-muted small mt-2" data-i18n="allow_images_only"></div>
-            <button type="button" id="btnRemoveCover" class="btn btn-sm btn-outline-danger mt-2 ${d.cover ? '' : 'd-none'}" data-i18n="remove"></button>
-        </div>
-        <input type="hidden" id="ex_cover" value="${d.cover ? d.cover : ''}">
-        <ul class="nav nav-tabs mb-3">
-            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#en">English</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#lo">ລາວ</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#th">ไทย</a></li>
-        </ul>
-        <div class="tab-content">
-            ${langTab("en", d)}
-            ${langTab("lo", d)}
-            ${langTab("th", d)}
-        </div>
-        <div class="row g-3">
-            <div class="col-md-4">
-                <label class="mb-2 mt-3 required" data-i18n="status"></label>
-                <select id="status" class="form-select obj-required"></select>
-            </div>
-            <div class="col-md-4">
-                <label class="mb-2 mt-3 required" data-i18n="publish_date"></label>
-                <input type="text" id="publish_date" class="form-control obj-required">
-                <div class="form-check mt-2">
-                    <input class="form-check-input" type="checkbox" id="publish_now">
-                    <label class="form-check-label" for="publish_now"  data-i18n="publish_now"></label>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <label class="mb-2 mt-3 required" data-i18n="publish_time"></label>
-                <input type="text" id="publish_time" class="form-control timepicker obj-required" value="${publishTime}" placeholder="HH:mm">
-            </div>
-        </div>
+            <input type="hidden" id="content_id" value="${d.id ?? ''}">
+        </form>
     `;
-}
-function initCoverUpload() {
-    const dropArea = document.getElementById("coverDropArea");
-    const input = document.getElementById("cover");
-    const preview = document.getElementById("coverPreview");
-    const label = document.getElementById("coverDropLabel");
-    const btnRemove = document.getElementById("btnRemoveCover");
-    const ex_cover = document.getElementById("ex_cover");
-    dropArea.addEventListener("click", () => input.click());
-    ["dragenter", "dragover"].forEach(ev =>
-        dropArea.addEventListener(ev, e => {
-            e.preventDefault();
-            dropArea.classList.add("border-primary");
-        })
-    );
-    ["dragleave", "drop"].forEach(ev =>
-        dropArea.addEventListener(ev, e => {
-            e.preventDefault();
-            dropArea.classList.remove("border-primary");
-        })
-    );
-    dropArea.addEventListener("drop", e => {
-        const file = e.dataTransfer.files[0];
-        if (file) showPreview(file);
-    });
-    input.addEventListener("change", e => {
-        const file = e.target.files[0];
-        if (file) showPreview(file);
-    });
-    btnRemove.addEventListener("click", e => {
-        e.stopPropagation();
-        input.value = "";
-        ex_cover.value = "";
-        preview.src = "";
-        preview.classList.add("d-none");
-        label.classList.remove("d-none");
-        btnRemove.classList.add("d-none");
-    });
-    function showPreview(file) {
-        const validExt = ["jpg","jpeg","png","gif","webp"];
-        const ext = file.name.split(".").pop().toLowerCase();
-        if (!file.type.startsWith("image/") && !validExt.includes(ext)) {
-            showWarning(
-                langData['validation_error'] || 'Validation Error',
-                langData['allow_images_only'] || 'Allow images only (jpg, jpeg, png, gif, webp)'
-            );
-            input.value = "";
-            return;
-        } 
-        const reader = new FileReader();
-        reader.onload = e => {
-            preview.src = e.target.result;
-            preview.classList.remove("d-none");
-            label.classList.add("d-none");
-            btnRemove.classList.remove("d-none");
-        };
-        reader.readAsDataURL(file);
-    }
 }
 function setMinDateToday() {
     const today = new Date().toISOString().slice(0,10);
@@ -343,18 +271,6 @@ function buildPublishAt() {
     return `${d} ${t}:00`;
 }
 $(document).on("change", "#status", togglePublishControls);
-function langTab(lang, d) {
-    return `
-        <div class="tab-pane fade ${lang==='en' ? 'show active':''}" id="${lang}">
-            <div class="mb-2">
-                <label class="mb-2 ${lang === 'en' ? 'required' : ''}" data-i18n="title"></label>
-                <input class="form-control ${lang === 'en' ? 'obj-required' : ''}" id="title_${lang}" value="${d.title[lang] ?? ''}">
-            </div>
-            <label class="mb-2" data-i18n="news"></label>
-            <textarea id="content_${lang}">${d.content[lang] ?? ''}</textarea>
-        </div>
-    `;
-}
 async function initNews() {
     initNewsTable();
 }
@@ -387,7 +303,31 @@ $(document).on('click', '.save-news', function () {
 function saveNews() {
     const btn = $(".save-news");
     btn.prop("disabled", true);
-    const formData = new FormData();
+    const formData = new FormData($('#contentForm')[0]);
+    const attachments = window.getAttachmentsData();
+    attachments.forEach((att, index) => {
+        if (att.type === 'new') {
+            formData.append('new_attachments[]', att.file);
+        } else {
+            formData.append('existing_attachments[]', att.id);
+        }
+    });
+    const images = window.getImagesData();
+    images.forEach((img, index) => {
+        if (img.type === 'new') {
+            formData.append('new_images[]', img.file);
+        } else {
+            formData.append('existing_images[]', img.id);
+        }
+    });
+    const images360 = window.get360ImagesData();
+    images360.forEach((img, index) => {
+        if (img.type === 'new') {
+            formData.append('new_images360[]', img.file);
+        } else {
+            formData.append('existing_images360[]', img.id);
+        }
+    });
     formData.append("content_id", $("#content_id").val() || "");
     formData.append("status", $("#status").val());
     formData.append("publish_at", typeof buildPublishAt === "function" ? buildPublishAt() : "");
