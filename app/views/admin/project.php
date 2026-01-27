@@ -43,7 +43,7 @@
             <input type="text" id="txtSearch" class="form-control form-control-sm ps-5" autocomplete="off">
         </div>
     </div>
-    <div id="listView" class="bg-white rounded shadow-sm border overflow-auto">
+    <div id="listView" class="bg-white rounded shadow-sm border">
         <table class="table table-striped table-hover mb-0">
             <thead class="table-light">
                 <tr>
@@ -66,5 +66,6 @@
         <h5 class="text-muted mt-3" data-i18n="no_data_found"></h5>
         <p class="text-muted" data-i18n="project_line1"></p>
     </div>
+    <div id="scrollEnd"></div>
 </div>
 <script src="<?=BASE_URL?>/public/js/admin/project.js?v=<?=time()?>"></script>

@@ -154,11 +154,15 @@ function renderTable(data, isNewSearch) {
         }
     });
 }
-$(window).on('scroll', function() {
-    if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
+const observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
         fetchFolders(false);
     }
+}, {
+    root: null, 
+    rootMargin: '200px',
 });
+observer.observe(document.getElementById('scrollEnd'));
 $('#txtSearch').on('keyup', function() {
     clearTimeout(window.searchTimer);
     const searchTerm = $(this).val();
