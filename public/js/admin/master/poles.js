@@ -356,7 +356,7 @@ function getContentForm(d) {
                 <input type="file" id="cover" accept="image/*" hidden>
                 <div id="coverPreviewWrapper" class="h-100 d-flex align-items-center justify-content-center">
                     ${d.cover 
-                        ? `<img id="coverPreview" src="${d.cover}" class="img-fluid rounded shadow-sm" style="max-height:150px;">`
+                        ? `<img id="coverPreview" src="${BASE_URL}/${d.cover}" class="img-fluid rounded shadow-sm" style="max-height:150px;">`
                         : `<img id="coverPreview" class="img-fluid rounded shadow-sm d-none" style="max-height:150px;">`
                     }
                 </div>
@@ -615,7 +615,7 @@ function initImagesUpload(existingImages = []) {
             <div class="col-6 col-md-4 col-lg-3 sortable-image" data-index="${index}">
                 <div class="card">
                     <div class="position-relative">
-                        <img src="${img.preview || img.url}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                        <img src="${BASE_URL}/${img.preview || img.url}" class="card-img-top" style="height: 150px; object-fit: cover;">
                         <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" onclick="removeImage(${index})"><i class="fa-solid fa-x"></i></button>
                     </div>
                     <div class="card-body p-2">
@@ -693,7 +693,7 @@ function init360ImagesUpload(existing360Images = []) {
             <div class="col-6 col-md-4 col-lg-3 sortable-360" data-index="${index}">
                 <div class="card border-info">
                     <div class="position-relative">
-                        <img src="${img.preview || img.url}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                        <img src="${BASE_URL}/${img.preview || img.url}" class="card-img-top" style="height: 150px; object-fit: cover;">
                         <div class="position-absolute top-0 start-0 m-1">
                             <span class="badge bg-info">360°</span>
                         </div>

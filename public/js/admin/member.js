@@ -124,14 +124,14 @@ async function initMember() {
 }
 $(document).ready(function () {
     initMember();
-    initSelect2Remote('#filter_role', 'api/member/filter', { type: 'role' });
-    initSelect2Remote('#filter_status', 'api/member/filter', { type: 'status' });
+    initSelect2Remote('#filter_role', `${BASE_URL}/api/member/filter`, { type: 'role' });
+    initSelect2Remote('#filter_status', `${BASE_URL}/api/member/filter`, { type: 'status' });
 });
 $(document).on('click', '.delete-member', function() {
     let member_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: 'api/member/delete',
+            url: `${BASE_URL}/api/member/delete`,
             method: 'POST',
             data: { id: member_id },
             dataType: 'json',
@@ -152,7 +152,7 @@ $(document).on('click', '.delete-member', function() {
 $(document).on('click', '.manage-member', function() {
     let member_id = $(this).data("id");
     $.ajax({
-        url: 'api/member/get',
+        url: `${BASE_URL}/api/member/get`,
         method: 'POST',
         data: { id: member_id },
         dataType: 'json',
@@ -275,8 +275,8 @@ $(document).on('click', '.manage-member', function() {
                         icon.removeClass('fa-eye-slash').addClass('fa-eye');
                     }
                 });
-                initSelect2Remote('#role', 'api/member/filter', { type: 'role' });
-                initSelect2Remote('#status', 'api/member/filter', { type: 'status' });
+                initSelect2Remote('#role', `${BASE_URL}/api/member/filter`, { type: 'role' });
+                initSelect2Remote('#status', `${BASE_URL}/api/member/filter`, { type: 'status' });
                 let member = res.data;
                 $('#member_id').val(member_id || '');
                 $('#first_name').val(member && member.first_name || '');
@@ -370,7 +370,7 @@ $(document).on('blur', '#email', function () {
     }
     let member_id = $('#member_id').val() || '';
     $.ajax({
-        url: 'api/member/check-email',
+        url: `${BASE_URL}/api/member/check-email`,
         method: 'POST',
         data: { email: email, member_id: member_id },
         dataType: 'json',
@@ -403,7 +403,7 @@ function checkUsernameUnique(username) {
     }
     let member_id = $('#member_id').val() || '';
     $.ajax({
-        url: 'api/member/check-username',
+        url: `${BASE_URL}/api/member/check-username`,
         method: 'POST',
         data: { username: username, member_id: member_id },
         dataType: 'json',
@@ -467,7 +467,7 @@ $(document).on('click', '.save-member', function () {
 function saveMember() {
     $(".save-member").attr("disabled", true);
     $.ajax({
-        url: 'api/member/save',
+        url: `${BASE_URL}/api/member/save`,
         method: 'POST',
         data: { 
             member_id: $("#member_id").val(), 

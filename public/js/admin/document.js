@@ -128,14 +128,14 @@ async function initDocument() {
 }
 $(document).ready(function () {
     initDocument();
-    initSelect2Remote('#filter_type', 'api/document/filter', { type: 'type' });
-    initSelect2Remote('#filter_status', 'api/document/filter', { type: 'status' });
+    initSelect2Remote('#filter_type', `${BASE_URL}/api/document/filter`, { type: 'type' });
+    initSelect2Remote('#filter_status', `${BASE_URL}/api/document/filter`, { type: 'status' });
     initDateRangePicker('#filter_date', initDocumentTable);
 });
 $(document).on('click', '.manage-document', function () {
     let document_id = $(this).data("id");
     $.ajax({
-        url: 'api/document/get',
+        url: `${BASE_URL}/api/document/get`,
         method: 'POST',
         data: { id: document_id },
         dataType: 'json',
@@ -211,8 +211,8 @@ $(document).on('click', '.manage-document', function () {
                         </div>
                     </div>
                 `);
-                initSelect2Remote('#type', 'api/document/filter', { type: 'type' });
-                initSelect2Remote('#status', 'api/document/filter', { type: 'status' });
+                initSelect2Remote('#type', `${BASE_URL}/api/document/filter`, { type: 'type' });
+                initSelect2Remote('#status', `${BASE_URL}/api/document/filter`, { type: 'status' });
                 initDatePicker('#document_start');
                 initDatePicker('#document_end');
                 if (docData) {
@@ -434,7 +434,7 @@ $(document).on('click', '.delete-document', function() {
     let document_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: 'api/document/delete',
+            url: `${BASE_URL}api/document/delete`,
             method: 'POST',
             data: { id: document_id },
             dataType: 'json',

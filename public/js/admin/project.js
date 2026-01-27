@@ -25,7 +25,7 @@ function fetchFolders(isNewSearch = false) {
     isLoading = true;
     $('#loadingIndicator').removeClass('d-none'); 
     $.ajax({
-        url: 'api/project/get',
+        url: `${BASE_URL}/api/project/get`,
         method: 'POST',
         data: {
             level: currentLevel,
@@ -209,7 +209,7 @@ $(document).on('click', '.delete-project', function () {
     let id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: 'api/project/delete',
+            url: `${BASE_URL}/api/project/delete`,
             method: 'POST',
             data: { folder_id: id },
             dataType: 'json',
@@ -248,7 +248,7 @@ function manageFolder(folder_id = '') {
     `);
     if(folder_id) {
         $.ajax({
-            url: 'api/project/data',
+            url: `${BASE_URL}/api/project/data`,
             method: 'POST',
             data: { folder_id: folder_id },
             dataType: 'json',
@@ -373,8 +373,8 @@ function manageContent(id) {
         $modal.find(".modal-body").html(getContentForm(d));
         initCoverUpload();
         initTinyMCE();
-        initSelect2Remote('#status', 'api/project/filter', { type: 'status' });
-        initSelect2Remote('#notification', 'api/project/filter', { type: 'notification' });
+        initSelect2Remote('#status', `${BASE_URL}/api/project/filter`, { type: 'status' });
+        initSelect2Remote('#notification', `${BASE_URL}/api/project/filter`, { type: 'notification' });
         let status = (d.status) ? d.status : 'active';
         if (status) {
             let statusName = status.charAt(0).toUpperCase() + status.slice(1);
@@ -397,7 +397,7 @@ function getContentForm(d) {
             <input type="file" id="cover" accept="image/*" hidden>
             <div id="coverPreviewWrapper" class="h-100 d-flex align-items-center justify-content-center">
                 ${d.cover 
-                    ? `<img id="coverPreview" src="${d.cover}" class="img-fluid rounded shadow-sm" style="max-height:150px;">`
+                    ? `<img id="coverPreview" src="${BASE_URL}/${d.cover}" class="img-fluid rounded shadow-sm" style="max-height:150px;">`
                     : `<img id="coverPreview" class="img-fluid rounded shadow-sm d-none" style="max-height:150px;">`
                 }
             </div>
@@ -606,7 +606,7 @@ $(document).on('click', '.delete-content', function () {
     let id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: 'api/project/delete-content',
+            url: `${BASE_URL}/api/project/delete-content`,
             method: 'POST',
             data: { content_id: id },
             dataType: 'json',

@@ -82,11 +82,11 @@ function initWindTable() {
 $(document).ready(function () {
     initWindTable();
     initDateRangePicker('#filter_date', initWindTable);
-    initSelect2Remote('#filter_project', 'api/wind/filter', { type: 'project' });
-    initSelect2Remote('#filter_pole', 'api/wind/filter', { type: 'pole' });
-    initSelect2Remote('#filter_type', 'api/wind/filter', { type: 'type' });
-    initSelect2Remote('#filter_installation', 'api/wind/filter', { type: 'installation' });
-    initSelect2Remote('#filter_height', 'api/wind/filter', { type: 'height' });
+    initSelect2Remote('#filter_project', `${BASE_URL}/api/wind/filter`, { type: 'project' });
+    initSelect2Remote('#filter_pole', `${BASE_URL}/api/wind/filter`, { type: 'pole' });
+    initSelect2Remote('#filter_type', `${BASE_URL}/api/wind/filter`, { type: 'type' });
+    initSelect2Remote('#filter_installation', `${BASE_URL}/api/wind/filter`, { type: 'installation' });
+    initSelect2Remote('#filter_height', `${BASE_URL}/api/wind/filter`, { type: 'height' });
     $(".filter").on("change", () => initWindTable());
 });
 $(document).on('click', '.manage-wind', function () {
@@ -286,7 +286,7 @@ function importWindData() {
 $(document).on('click', '.clear-data', function() {
     showConfirm(langData['confirm'], langData['confirm_clear'], function(){
         $.ajax({
-            url: 'api/wind/clear',
+            url: `${BASE_URL}/api/wind/clear`,
             method: 'POST',
             dataType: 'json',
             success: function(res) {

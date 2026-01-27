@@ -151,7 +151,7 @@ $(document).on('click', '.manage-type', function() {
                         <input type="file" id="type_icon" accept="image/*" hidden>
                         <div id="coverPreviewWrapper" class="h-100 d-flex align-items-center justify-content-center">
                             ${typeData.type_icon 
-                                ? `<img id="coverPreview" src="${typeData.type_icon}" class="img-fluid rounded shadow-sm" style="max-height:150px;">`
+                                ? `<img id="coverPreview" src="${BASE_URL}/${typeData.type_icon}" class="img-fluid rounded shadow-sm" style="max-height:150px;">`
                                 : `<img id="coverPreview" class="img-fluid rounded shadow-sm d-none" style="max-height:150px;">`
                             }
                         </div>

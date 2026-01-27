@@ -798,7 +798,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
         let maxVal = data.max_datetime_val ? new Date(data.max_datetime_val) : null;
         initDatePicker('#startDate', minVal, maxVal);
         initDatePicker('#endDate', minVal, maxVal);
-        initSelect2Remote('#heightSelect', 'api/height', { poles_id: poles_id });
+        initSelect2Remote('#heightSelect', `${BASE_URL}/api/height`, { poles_id: poles_id });
         $('.modal-footer').html(`
             <button class="btn btn-primary py-2" onclick="renderReport(${poles_id}, 'default')">
                 <i class="fas fa-chart-line me-2"></i><span data-i18n="report"></span>

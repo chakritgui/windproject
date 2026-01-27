@@ -4,7 +4,7 @@ let hasMore    = true;
 let currentView = 'list';
 $(document).ready(function () {
     loadDocuments();
-    initSelect2Remote('#filter_type', 'api/document/filter', { type: 'type' });
+    initSelect2Remote('#filter_type', `${BASE_URL}/api/document/filter`, { type: 'type' });
     initMonthYearPicker("#filter_date", function () {
         docPage = 1;
         hasMore = true;
@@ -59,7 +59,7 @@ function loadDocuments() {
     if (isLoading || !hasMore) return;
     isLoading = true;
     $.ajax({
-        url: 'api/document-list',
+        url: `${BASE_URL}/api/document-list`,
         method: 'POST',
         dataType: 'json',
         data: { 
@@ -255,7 +255,7 @@ $(document).on('click', '.btn-download', function (e) {
     const path = btn.data('path');
     if (!id || !path) return;
     $.ajax({
-        url: 'api/document-download',
+        url: `${BASE_URL}/api/document-download`,
         method: 'POST',
         dataType: 'json',
         data: { id: id },
@@ -272,7 +272,7 @@ function loadDownloadHistory() {
     historyLoading = true;
     $('#historyLoading').show();
     $.ajax({
-        url: 'api/document-download-history',
+        url: `${BASE_URL}/api/document-download-history`,
         method: 'POST',
         dataType: 'json',
         data: { page: historyPage },

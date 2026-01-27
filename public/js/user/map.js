@@ -24,7 +24,7 @@ windyInit(options, async api => {
 });
 async function loadWindAreas(map, picker) {
     try {
-        const areas = await fetchData('api/wind-area');
+        const areas = await fetchData(`${BASE_URL}/api/wind-area`);
         areas.forEach(area => {
             const rings = JSON.parse(area.geom);
             const latlngs = rings.map(ring => ring.map(p => [p[1], p[0]]));
@@ -45,7 +45,7 @@ async function loadWindAreas(map, picker) {
 }
 async function loadPoles(map, picker) {
     try {
-        const poles = await fetchData('api/poles-location');
+        const poles = await fetchData(`${BASE_URL}/api/poles-location`);
         poles.forEach(pole => {
             const lat = parseFloat(pole.poles_lat);
             const lng = parseFloat(pole.poles_lng);
@@ -144,7 +144,7 @@ $('#mapFilter').on('click', async function(e) {
     $('#menu1').html('<div class="menu-item" data-i18n="loading">Loading...</div>').show();
     $('#menu2, #menu3').hide();
     try {
-        const projects = await fetchData('api/project');
+        const projects = await fetchData(`${BASE_URL}/api/project`);
         let html = projects.length ? '' : getEmptyStateHTML();
         projects.forEach(p => {
             const isMob = isMobile();
@@ -165,7 +165,7 @@ $('#menu1').on('click', '.project-item', async function(e) {
     e.stopPropagation();
     const $submenu = $(this).next('.submenu');
     if ($submenu.is(':visible')) return $submenu.slideUp();
-    const types = await fetchData('api/type', { project_id: $(this).data('id') });
+    const types = await fetchData(`${BASE_URL}/api/type`, { project_id: $(this).data('id') });
     let html = types.map(t => `
         <div class="menu-item type-item d-flex" data-project="${$(this).data('id')}" data-type="${t.type_id}">
             ${t.type_name} <i class="fa-solid fa-chevron-down ms-auto"></i>
@@ -178,7 +178,7 @@ $('#menu1').on('click', '.type-item', async function(e) {
     e.stopPropagation();
     const $submenu = $(this).next('.submenu');
     if ($submenu.is(':visible')) return $submenu.slideUp();
-    const stations = await fetchData('api/station', { 
+    const stations = await fetchData(`${BASE_URL}/api/station`, { 
         project_id: $(this).data('project'), 
         type_id: $(this).data('type') 
     });
@@ -193,7 +193,7 @@ async function openLevel2(projectId) {
     $(`[data-id="${projectId}"]`).addClass('active');
     $('#menu2').html('<div class="menu-item" data-i18n="loading">Loading...</div>').show();
     $('#menu3').hide();
-    const types = await fetchData('api/type', { project_id: projectId });
+    const types = await fetchData(`${BASE_URL}/api/type`, { project_id: projectId });
     let html = types.map(t => `
         <div class="menu-item d-flex" data-type="${t.type_id}" onclick="openLevel3(${projectId}, '${t.type_id}')">
             ${t.type_name} <i class="fa-solid fa-chevron-right ms-auto"></i>
@@ -204,7 +204,7 @@ async function openLevel3(projectId, typeId) {
     $(`#menu2 .menu-item`).removeClass('active');
     $(`[data-type="${typeId}"]`).addClass('active');
     $('#menu3').html('<div class="menu-item" data-i18n="loading">Loading...</div>').show();
-    const stations = await fetchData('api/station', { project_id: projectId, type_id: typeId });
+    const stations = await fetchData(`${BASE_URL}/api/station`, { project_id: projectId, type_id: typeId });
     let html = stations.map(s => `
         <div class="menu-item station-item" data-lat="${s.poles_lat}" data-lng="${s.poles_lng}">
             ${s.installations_name}

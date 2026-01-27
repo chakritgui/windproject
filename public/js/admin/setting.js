@@ -3,7 +3,7 @@ $(document).ready(function () {
 });
 function initSetting() {
     $.ajax({
-        url: 'api/setting/get',
+        url: `${BASE_URL}/api/setting/get`,
         method: 'POST',
         dataType: 'json',
         success: function(res) {
@@ -73,7 +73,7 @@ $(document).on('click', '.save-setting-3', function () {
     formData.append('languages', languagesStr);
     $(".save-setting-3").attr("disable", true);
     $.ajax({
-        url: 'api/setting/saveLang', 
+        url: `${BASE_URL}/api/setting/saveLang`, 
         type: 'POST',
         data: formData,
         contentType: false,
@@ -99,7 +99,7 @@ function previewLogo(input) {
         const reader = new FileReader();
         reader.onload = function(e) {
             preview.innerHTML = `
-                <img src="${e.target.result}" class="preview-img" alt="Logo Preview">
+                <img src="${BASE_URL}/${e.target.result}" class="preview-img" alt="Logo Preview">
             `;
         };
         reader.readAsDataURL(input.files[0]);
@@ -111,7 +111,7 @@ function previewIcon(input) {
         const reader = new FileReader();
         reader.onload = function(e) {
             preview.innerHTML = `
-                <img src="${e.target.result}" class="preview-img" alt="Icon Preview">
+                <img src="${BASE_URL}/${e.target.result}" class="preview-img" alt="Icon Preview">
             `;
         };
         reader.readAsDataURL(input.files[0]);

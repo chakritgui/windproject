@@ -141,7 +141,7 @@ $(document).on("click", ".manage-news", function () {
         $modal.find(".modal-body").html(getNewsForm(d, publishTime));
         togglePublishControls();
         setMinDateToday();
-        initSelect2Remote('#status', 'api/news/filter', { type: 'status' });
+        initSelect2Remote('#status', `${BASE_URL}/api/news/filter`, { type: 'status' });
         let status = (d.status) ? d.status : 'draft';
         if (status) {
             let statusName = status.charAt(0).toUpperCase() + status.slice(1);
@@ -211,7 +211,7 @@ function getNewsForm(d, publishTime) {
             <input type="file" id="cover" accept="image/*" hidden>
             <div id="coverPreviewWrapper" class="h-100 d-flex align-items-center justify-content-center">
                 ${d.cover 
-                    ? `<img id="coverPreview" src="${d.cover}" class="img-fluid rounded shadow-sm" style="max-height:150px;">`
+                    ? `<img id="coverPreview" src="${BASE_URL}/${d.cover}" class="img-fluid rounded shadow-sm" style="max-height:150px;">`
                     : `<img id="coverPreview" class="img-fluid rounded shadow-sm d-none" style="max-height:150px;">`
                 }
             </div>
@@ -360,7 +360,7 @@ async function initNews() {
 }
 $(document).ready(function () {
     initNews();
-    initSelect2Remote('#filter_status', 'api/news/filter', { type: 'status' });
+    initSelect2Remote('#filter_status', `${BASE_URL}/api/news/filter`, { type: 'status' });
 });
 $(document).on('click', '.save-news', function () {
     $('.is-invalid').removeClass('is-invalid');
@@ -461,7 +461,7 @@ $(document).on('click', '.delete-news', function() {
     let content_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: 'api/news/delete',
+            url: `${BASE_URL}/api/news/delete`,
             method: 'POST',
             data: { id: content_id },
             dataType: 'json',

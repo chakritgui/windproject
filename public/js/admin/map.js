@@ -64,7 +64,7 @@ function setupEvents() {
 }
 function loadMapDataFromServer() {
     $.ajax({
-        url: 'api/mapsetting/load',
+        url: `${BASE_URL}/api/mapsetting/load`,
         method: 'GET',
         dataType: 'json',
         success: function(res) {
@@ -320,7 +320,7 @@ function handleMainSave() {
     if (!payload) return;
     $btn.prop("disabled", true);
     $.ajax({
-        url: 'api/mapsetting/save',
+        url: `${BASE_URL}/api/mapsetting/save`,
         method: 'POST',
         data: { payload: payload },
         dataType: 'json',

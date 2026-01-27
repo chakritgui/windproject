@@ -3,7 +3,7 @@ $(document).ready(function () {
 });
 function initShortcut() {
     $.ajax({
-        url: 'api/setting/shortcut',
+        url: `${BASE_URL}/api/setting/shortcut`,
         method: 'POST',
         dataType: 'json',
         success: function(res) {
@@ -73,7 +73,7 @@ function previewIcon(event, previewId) {
         const reader = new FileReader();
         reader.onload = function(e) {
             const preview = document.getElementById(previewId);
-            preview.innerHTML = `<img src="${e.target.result}" alt="Icon preview">`;
+            preview.innerHTML = `<img src="${BASE_URL}/${e.target.result}" alt="Icon preview">`;
         };
         reader.readAsDataURL(file);
     }
@@ -133,7 +133,7 @@ $('#pwaForm').on('submit', function (e) {
         fd.append('iosIcon', $('#iosIcon')[0].files[0]);
     }
     $.ajax({
-        url: 'api/setting/saveShortcut',
+        url: `${BASE_URL}/api/setting/saveShortcut`,
         method: 'POST',
         data: fd,
         processData: false,

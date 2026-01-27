@@ -23,7 +23,7 @@ function doLogin() {
     if (!username) { showLoginWarning('username'); return; }
     if (!password) { showLoginWarning('password'); return; }
     showPageLoader();
-    $.post('api/auth', {
+    $.post(`${BASE_URL}/api/auth`, {
         username: username,
         password: password,
         timezone: tz
@@ -57,7 +57,7 @@ $(document).on('click', '.login-forgot', function() {
         showLoginWarning('email');
         return;
     }
-    $.post('api/auth/forgot', {
+    $.post(`${BASE_URL}/api/auth/forgot`, {
         email: email
     }, function(res){
         $('#loading').hide();
