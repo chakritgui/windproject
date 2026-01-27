@@ -28,7 +28,8 @@ class PolesModel {
                 t.type_id,
                 t.type_name,
                 i.installations_id,
-                i.installations_name
+                i.installations_name,
+                p.content_id
             FROM wp_poles p
             LEFT JOIN wp_project pj ON pj.project_id = p.project_id
             LEFT JOIN wp_type t ON t.type_id = p.type_id
@@ -306,5 +307,36 @@ class PolesModel {
         }
         $stmt->execute();
         return $stmt->fetchColumn() > 0;
+    }
+    public function gets($id) {
+        $pdo = $this->db;
+        if (!$id) {
+            return [
+                "id" => "", "status" => "active", "cover" => "", "notification_status" => "no",
+                "title" => ["th" => "", "lo" => "", "en" => ""],
+                "content" => ["th" => "", "lo" => "", "en" => ""]
+            ];
+        }
+        $stmt = $pdo->prepare("SELECT content_id, status, cover FROM wp_content WHERE content_id = ?");
+        $stmt->execute([$id]);
+        $n = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$n) return null;
+        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body FROM wp_content_item WHERE content_id = ?");
+        $stmt->execute([$id]);
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $title = ["th" => "", "lo" => "", "en" => ""];
+        $content = ["th" => "", "lo" => "", "en" => ""];
+        foreach ($items as $row) {
+            $lang = $row['content_lang'];
+            $title[$lang] = $row['content_subject'];
+            $content[$lang] = $row['content_body'];
+        }
+        return [
+            "id" => $n['content_id'],
+            "status" => $n['status'],
+            "cover" => $n['cover'],
+            "title" => $title,
+            "content" => $content
+        ];
     }
 }

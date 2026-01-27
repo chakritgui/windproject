@@ -101,7 +101,7 @@ $(document).on('click', '.delete-project', function() {
     let project_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: 'api/projects/delete',
+            url: `${BASE_URL}/api/projects/delete`,
             method: 'POST',
             data: { id: project_id },
             dataType: 'json',
@@ -122,7 +122,7 @@ $(document).on('click', '.delete-project', function() {
 $(document).on('click', '.manage-project', function() {
     let project_id = $(this).data("id");
     $.ajax({
-        url: 'api/projects/get',
+        url: `${BASE_URL}/api/projects/get`,
         method: 'POST',
         data: { id: project_id },
         dataType: 'json',
@@ -171,8 +171,8 @@ $(document).on('click', '.manage-project', function() {
                         </div>
                     </div>
                 `);
-                initSelect2Remote('#status', 'api/projects/filter', { type: 'status' });
-                initSelect2Remote('#contract', 'api/projects/filter', { type: 'contract' });
+                initSelect2Remote('#status', `${BASE_URL}/api/projects/filter`, { type: 'status' });
+                initSelect2Remote('#contract', `${BASE_URL}/api/projects/filter`, { type: 'contract' });
                 initDatePicker('#project_start');
                 initDatePicker('#project_end');
                 if (projectData) {

@@ -59,22 +59,10 @@ class NotificationModel {
                         t.targets_id,
                         t.publish_at,
                         t.read_at,
-                        CASE
-                            WHEN t.notifications_target = 'news' THEN iEn.content_subject
-                            ELSE ''
-                        END AS title_en,
-                        CASE
-                            WHEN t.notifications_target = 'news' THEN iLo.content_subject
-                            ELSE ''
-                        END AS title_lo,
-                        CASE
-                            WHEN t.notifications_target = 'news' THEN iTh.content_subject
-                            ELSE ''
-                        END AS title_th,
-                        CASE
-                            WHEN t.notifications_target = 'news' THEN n.created_at
-                            ELSE NULL
-                        END AS notification_at,
+                        iEn.content_subject AS title_en,
+                        iLo.content_subject AS title_lo,
+                        iTh.content_subject AS title_th,
+                        n.created_at AS notification_at,
                         t.notifications_target,
                         t.notifications_item
                     FROM wp_notification_targets t

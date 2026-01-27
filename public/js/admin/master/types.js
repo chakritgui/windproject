@@ -106,7 +106,7 @@ $(document).on('click', '.delete-type', function() {
     let type_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: 'api/types/delete',
+            url: `${BASE_URL}/api/types/delete`,
             method: 'POST',
             data: { id: type_id },
             dataType: 'json',
@@ -127,7 +127,7 @@ $(document).on('click', '.delete-type', function() {
 $(document).on('click', '.manage-type', function() {
     let type_id = $(this).data("id");
     $.ajax({
-        url: 'api/types/get',
+        url: `${BASE_URL}/api/types/get`,
         method: 'POST',
         data: { id: type_id },
         dataType: 'json',
@@ -176,7 +176,7 @@ $(document).on('click', '.manage-type', function() {
                         </div>
                     </div>
                 `);
-                initSelect2Remote('#status', 'api/types/filter', { type: 'status' });
+                initSelect2Remote('#status', `${BASE_URL}/api/types/filter`, { type: 'status' });
                 if (typeData) {
                     $("#type_id").val(typeData.type_id);
                     $("#type_name").val(typeData.type_name);

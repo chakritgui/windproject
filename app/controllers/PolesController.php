@@ -62,4 +62,9 @@ class PolesController extends BaseController {
             ]);
         }
     }
+    public function gets(){
+        $pole_id = intval($_POST['pole_id'] ?? 0);
+        $content_id = intval($_POST['content_id'] ?? 0);
+        $this->json(['status'=>'success','data'=>$this->model->gets($pole_id, $content_id)]);
+    }
 }

@@ -99,7 +99,7 @@ $(document).on('click', '.delete-contract', function() {
     let contract_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: 'api/contracts/delete',
+            url: `${BASE_URL}/api/contracts/delete`,
             method: 'POST',
             data: { id: contract_id },
             dataType: 'json',
@@ -120,7 +120,7 @@ $(document).on('click', '.delete-contract', function() {
 $(document).on('click', '.manage-contract', function() {
     let contract_id = $(this).data("id");
     $.ajax({
-        url: 'api/contracts/get',
+        url: `${BASE_URL}/api/contracts/get`,
         method: 'POST',
         data: { id: contract_id },
         dataType: 'json',
@@ -165,7 +165,7 @@ $(document).on('click', '.manage-contract', function() {
                         </div>
                     </div>
                 `);
-                initSelect2Remote('#status', 'api/contracts/filter', { type: 'status' });
+                initSelect2Remote('#status', `${BASE_URL}/api/contracts/filter`, { type: 'status' });
                 initDatePicker('#contract_start');
                 initDatePicker('#contract_end');
                 if (contractData) {

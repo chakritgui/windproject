@@ -870,8 +870,7 @@ function initTinyMCE() {
                     } else {
                         reject('Upload failed');
                     }
-                })
-                .catch(() => reject('Upload error'));
+                }).catch(() => reject('Upload error'));
             });
         },
         content_style: `

@@ -425,5 +425,10 @@
     "last_update": "Last Update",
     "project_line1": "Click Create Folder or Content to get started.",
     "create_folder": "Create Folder",
-    "child": "Child"
+    "child": "Child",
+    "drop_here": "Drop here or click to browse",
+    "multiple_upload": "Multiple upload supported",
+    "upload1": "Attachments (PDF, DOC, etc.)",
+    "upload2": "Images",
+    "upload3": "360° Images"
 }
