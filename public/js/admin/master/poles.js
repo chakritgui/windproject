@@ -132,6 +132,29 @@ $(document).on('click', '.delete-pole', function() {
         });
     });
 });
+$(document).on('click', '.delete-content', function() {
+    let poles_id = $(this).data("pole");
+    let content_id = $(this).data("content");
+    showConfirm(langData['confirm'], langData['confirm_delete'], function(){
+        $.ajax({
+            url: `${BASE_URL}/api/poles/delete-content`,
+            method: 'POST',
+            data: { poles_id: poles_id, content_id: content_id },
+            dataType: 'json',
+            success: function(res) {
+                if(res.status === true){
+                    showSuccess('Success', langData['deleted_successfully']);
+                    initPolesTable();
+                } else {
+                    showError('Error', langData['cannot_delete']);
+                }   
+            },
+            error: function(){
+                showError('Error', langData['cannot_delete']);
+            }
+        });
+    });
+});
 $(document).on('click', '.manage-pole', function() {
     let poles_id = $(this).data("id");
     $.ajax({
@@ -317,16 +340,14 @@ function savePole() {
         }
     });
 }
-// Enhanced Content Manager with Multiple Drag & Drop Uploads
 $(document).on('click', '.manage-content', function () {
     let pole = $(this).data("pole");
     let content = $(this).data("content");
     manageContent(pole, content);
 });
-
-function manageContent(pole_id, content_id) {
+function manageContent(poles_id, content_id) {
     $.post("api/poles/gets", {
-        pole_id, content_id
+        poles_id, content_id
     }, function(res) {
         if(res.status !== "success") return;
         let d = res.data;
@@ -340,7 +361,7 @@ function manageContent(pole_id, content_id) {
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
             <button type="button" class="btn btn-primary" id="btnSaveContent" data-i18n="save"></button>
         `);
-        $modal.find(".modal-body").html(getContentForm(d));
+        $modal.find(".modal-body").html(getContentForm(d, poles_id, content_id));
         initCoverUpload();
         initAttachmentsUpload(d.attachments || []);
         initImagesUpload(d.images || []);
@@ -349,77 +370,111 @@ function manageContent(pole_id, content_id) {
         modal.show();
     }, "json");
 }
-function getContentForm(d) {
+function getContentForm(d, poles_id, content_id) {
     return `
         <form id="contentForm">
-            <div id="coverDropArea" class="cover-drop-area text-center mb-3">
-                <input type="file" id="cover" accept="image/*" hidden>
-                <div id="coverPreviewWrapper" class="h-100 d-flex align-items-center justify-content-center">
-                    ${d.cover 
-                        ? `<img id="coverPreview" src="${BASE_URL}/${d.cover}" class="img-fluid rounded shadow-sm" style="max-height:150px;">`
-                        : `<img id="coverPreview" class="img-fluid rounded shadow-sm d-none" style="max-height:150px;">`
-                    }
-                </div>
-                <div id="coverDropLabel" class="${d.cover ? 'd-none' : ''}">
-                    <div class="fw-bold fs-6 mt-2" data-i18n="dropHere"></div>
-                    <div class="text-muted small mb-2">
-                        <span data-i18n="or"></span> <span data-i18n="choose"></span>
+            <ul class="nav nav-pills nav-justified mb-4" id="contentTab" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-basic" type="button">
+                        <i class="fa-solid fa-pen-to-square me-2"></i>Content
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-gallery" type="button">
+                        <i class="fa-solid fa-images me-2"></i><span data-i18n="gallery"></span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-360" type="button">
+                        <i class="fa-solid fa-images me-2"></i><span data-i18n="360°"></span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-files" type="button">
+                        <i class="fa-solid fa-file-arrow-up me-2"></i><span data-i18n="attachments"></span>
+                    </button>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="tab-basic">
+                    <div id="coverDropArea" class="cover-drop-area text-center mb-3">
+                        <input type="file" id="cover" accept="image/*" hidden>
+                        <div id="coverPreviewWrapper" class="h-100 d-flex align-items-center justify-content-center">
+                            ${d.cover 
+                                ? `<img id="coverPreview" src="${BASE_URL}/${d.cover}" class="img-fluid rounded shadow-sm" style="max-height:150px;">`
+                                : `<img id="coverPreview" class="img-fluid rounded shadow-sm d-none" style="max-height:150px;">`
+                            }
+                        </div>
+                        <div id="coverDropLabel" class="${d.cover ? 'd-none' : ''}">
+                            <div class="fw-bold fs-6 mt-2" data-i18n="dropHere"></div>
+                            <div class="text-muted small mb-2">
+                                <span data-i18n="or"></span> <span data-i18n="choose"></span>
+                            </div>
+                        </div>
+                        <div class="text-muted small mt-2" data-i18n="allow_images_only"></div>
+                        <button type="button" id="btnRemoveCover" class="btn btn-sm btn-outline-danger mt-2 ${d.cover ? '' : 'd-none'}" data-i18n="remove"></button>
+                    </div>
+                    <input type="hidden" id="ex_cover" value="${d.cover ? d.cover : ''}">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Content</label>
+                        <ul class="nav nav-tabs" role="tablist">
+                            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#en">English</a></li>
+                            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#lo">ລາວ</a></li>
+                            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#th">ไทย</a></li>
+                        </ul>
+                        <div class="tab-content border border-top-0 p-3">
+                            ${langTab("en", d)}
+                            ${langTab("lo", d)}
+                            ${langTab("th", d)}
+                        </div>
                     </div>
                 </div>
-                <div class="text-muted small mt-2" data-i18n="allow_images_only"></div>
-                <button type="button" id="btnRemoveCover" class="btn btn-sm btn-outline-danger mt-2 ${d.cover ? '' : 'd-none'}" data-i18n="remove"></button>
-            </div>
-            <input type="hidden" id="ex_cover" value="${d.cover ? d.cover : ''}">
-            <div class="mb-3">
-                <label class="form-label fw-bold">Content</label>
-                <ul class="nav nav-tabs" role="tablist">
-                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#en">English</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#lo">ລາວ</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#th">ไทย</a></li>
-                </ul>
-                <div class="tab-content border border-top-0 p-3">
-                    ${langTab("en", d)}
-                    ${langTab("lo", d)}
-                    ${langTab("th", d)}
-                </div>
-            </div>
-            <div class="mb-4">
-                <label class="form-label fw-bold" data-i18n="upload1"></label>
-                <div class="border border-2 border-dashed rounded-3 p-4 text-center" id="attachmentsDropArea" style="cursor: pointer; min-height: 120px;">
-                    <input type="file" id="attachments" name="attachments[]" class="d-none" multiple>
-                    <div id="attachmentsDropLabel">
-                        <i class="fa-solid fa-paperclip fs-1 text-muted"></i>
-                        <p class="mb-0 mt-2 text-muted" data-i18n="drop_here"></p>
-                        <small class="text-muted" data-i18n="multiple_upload"></small>
+                <div class="tab-pane fade" id="tab-gallery">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold" data-i18n="upload2"></label>
+                        <div class="border border-2 border-dashed rounded-3 p-4 text-center" id="imagesDropArea" style="cursor: pointer; min-height: 120px;">
+                            <input type="file" id="images" name="images[]" class="d-none" accept="image/*" multiple>
+                            <div id="imagesDropLabel">
+                                <i class="fa-solid fa-image fs-1 text-muted"></i>
+                                <p class="mb-0 mt-2 text-muted" data-i18n="drop_here"></p>
+                                <small class="text-muted" data-i18n="multiple_upload"></small>
+                            </div>
+                        </div>
+                        <div id="imagesList" class="mt-3 row g-2"></div>
                     </div>
                 </div>
-                <div id="attachmentsList" class="mt-3"></div>
-            </div>
-            <div class="mb-4">
-                <label class="form-label fw-bold" data-i18n="upload2"></label>
-                <div class="border border-2 border-dashed rounded-3 p-4 text-center" id="imagesDropArea" style="cursor: pointer; min-height: 120px;">
-                    <input type="file" id="images" name="images[]" class="d-none" accept="image/*" multiple>
-                    <div id="imagesDropLabel">
-                        <i class="fa-solid fa-image fs-1 text-muted"></i>
-                        <p class="mb-0 mt-2 text-muted" data-i18n="drop_here"></p>
-                        <small class="text-muted" data-i18n="multiple_upload"></small>
+                <div class="tab-pane fade" id="tab-360">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold" data-i18n="upload3"></label>
+                        <div class="border border-2 border-dashed rounded-3 p-4 text-center" 
+                            id="images360DropArea" style="cursor: pointer; min-height: 120px;">
+                            <input type="file" id="images360" name="images360[]" class="d-none" accept="image/*" multiple>
+                            <div id="images360DropLabel">
+                                <i class="fa-solid fa-maximize fs-1 text-muted"></i>
+                                <p class="mb-0 mt-2 text-muted" data-i18n="drop_here"></p>
+                                <small class="text-muted" data-i18n="multiple_upload"></small>
+                            </div>
+                        </div>
+                        <div id="images360List" class="mt-3 row g-2"></div>
                     </div>
                 </div>
-                <div id="imagesList" class="mt-3 row g-2"></div>
-            </div>
-            <div class="mb-4">
-                <label class="form-label fw-bold" data-i18n="upload3"></label>
-                <div class="border border-2 border-dashed rounded-3 p-4 text-center" 
-                     id="images360DropArea" style="cursor: pointer; min-height: 120px;">
-                    <input type="file" id="images360" name="images360[]" class="d-none" accept="image/*" multiple>
-                    <div id="images360DropLabel">
-                        <i class="fa-solid fa-maximize fs-1 text-muted"></i>
-                        <p class="mb-0 mt-2 text-muted" data-i18n="drop_here"></p>
-                        <small class="text-muted" data-i18n="multiple_upload"></small>
+                <div class="tab-pane fade" id="tab-files">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold" data-i18n="upload1"></label>
+                        <div class="border border-2 border-dashed rounded-3 p-4 text-center" id="attachmentsDropArea" style="cursor: pointer; min-height: 120px;">
+                            <input type="file" id="attachments" name="attachments[]" class="d-none" multiple>
+                            <div id="attachmentsDropLabel">
+                                <i class="fa-solid fa-paperclip fs-1 text-muted"></i>
+                                <p class="mb-0 mt-2 text-muted" data-i18n="drop_here"></p>
+                                <small class="text-muted" data-i18n="multiple_upload"></small>
+                            </div>
+                        </div>
+                        <div id="attachmentsList" class="mt-3"></div>
                     </div>
                 </div>
-                <div id="images360List" class="mt-3 row g-2"></div>
             </div>
+            <input type="hidden" id="poles_id" value="${poles_id || ""}">
+            <input type="hidden" id="content_id" value="${content_id || ""}">
         </form>
     `;
 }
@@ -612,10 +667,10 @@ function initImagesUpload(existingImages = []) {
             return;
         }
         list.innerHTML = imagesData.map((img, index) => `
-            <div class="col-6 col-md-4 col-lg-3 sortable-image" data-index="${index}">
+            <div class="col-4 col-md-3 col-lg-2" data-index="${index}">
                 <div class="card">
                     <div class="position-relative">
-                        <img src="${BASE_URL}/${img.preview || img.url}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                        <img src="${img.preview || img.url}" class="card-img-top" style="height: 100px; object-fit: contain;">
                         <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" onclick="removeImage(${index})"><i class="fa-solid fa-x"></i></button>
                     </div>
                     <div class="card-body p-2">
@@ -690,10 +745,10 @@ function init360ImagesUpload(existing360Images = []) {
             return;
         }
         list.innerHTML = images360Data.map((img, index) => `
-            <div class="col-6 col-md-4 col-lg-3 sortable-360" data-index="${index}">
+            <div class="col-4 col-md-3 col-lg-2" data-index="${index}">
                 <div class="card border-info">
                     <div class="position-relative">
-                        <img src="${BASE_URL}/${img.preview || img.url}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                        <img src="${img.preview || img.url}" class="card-img-top" style="height: 100px; object-fit: contain;">
                         <div class="position-absolute top-0 start-0 m-1">
                             <span class="badge bg-info">360°</span>
                         </div>
@@ -761,15 +816,29 @@ $(document).on('click', '#btnSaveContent', function() {
             formData.append('existing_images360[]', img.id);
         }
     });
+    formData.append("poles_id", $("#poles_id").val() || "");
+    formData.append("content_id", $("#content_id").val() || "");
+    formData.append("title_en", $("#title_en").val());
+    formData.append("title_lo", $("#title_lo").val());
+    formData.append("title_th", $("#title_th").val());
+    formData.append("content_en", tinymce.get('content_en')?.getContent() || '');
+    formData.append("content_lo", tinymce.get('content_lo')?.getContent() || '');
+    formData.append("content_th", tinymce.get('content_th')?.getContent() || '');
+    const cover = $("#cover")[0].files[0] || null;
+    if (cover) {
+        formData.append("cover", cover);
+    }
+    formData.append("ex_cover", $("#ex_cover").val());
     $.ajax({
-        url: `${BASE_URL}/api/poles/save`,
+        url: `${BASE_URL}/api/poles/save-content`,
         type: 'POST',
         data: formData,
         processData: false,
         contentType: false,
         success: function(res) {
             if (res.status === 'success') {
-                showSuccess('Success', 'Content saved successfully');
+                showSuccess('Success', langData['saved_successfully']);
+                initPolesTable();
                 $('#windModal').modal('hide');
             }
         }

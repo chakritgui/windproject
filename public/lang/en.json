@@ -430,5 +430,8 @@
     "multiple_upload": "Multiple upload supported",
     "upload1": "Attachments (PDF, DOC, etc.)",
     "upload2": "Images",
-    "upload3": "360° Images"
+    "upload3": "360° Images",
+    "360°": "360°",
+    "gallery": "Gallery",
+    "attachments": "Attachments"
 }

@@ -63,8 +63,35 @@ class PolesController extends BaseController {
         }
     }
     public function gets(){
-        $pole_id = intval($_POST['pole_id'] ?? 0);
+        $poles_id = intval($_POST['poles_id'] ?? 0);
         $content_id = intval($_POST['content_id'] ?? 0);
-        $this->json(['status'=>'success','data'=>$this->model->gets($pole_id, $content_id)]);
+        $this->json(['status'=>'success','data'=>$this->model->gets($poles_id, $content_id)]);
+    }
+    public function saveContent() {
+        $data = [
+            'poles_id'    => intval($_POST['poles_id'] ?? 0),
+            'content_id' => intval($_POST['content_id'] ?? 0),
+            'title_en' => $_POST['title_en'] ?? '',
+            'title_lo' => $_POST['title_lo'] ?? '',
+            'title_th' => $_POST['title_th'] ?? '',
+            'content_en' => $_POST['content_en'] ?? '',
+            'content_lo' => $_POST['content_lo'] ?? '',
+            'content_th' => $_POST['content_th'] ?? '',
+            'ex_cover'   => $_POST['ex_cover'] ?? '',
+            'cover'      => $_FILES['cover'] ?? null,
+            'existing_attachments' => $_POST['existing_attachments'] ?? [],
+            'new_attachments'      => $_FILES['new_attachments'] ?? null,
+            'existing_images'      => $_POST['existing_images'] ?? [],
+            'new_images'           => $_FILES['new_images'] ?? null,
+            'existing_images360'   => $_POST['existing_images360'] ?? [],
+            'new_images360'        => $_FILES['new_images360'] ?? null,
+        ];
+        $result = $this->model->saveContent($data);
+        $this->json(['status' => $result ? 'success' : 'error']);
+    }
+    public function deleteContent() {
+        $poles_id = intval($_POST['poles_id'] ?? 0);
+        $content_id = intval($_POST['content_id'] ?? 0);
+        $this->json(['status'=>$this->model->deleteContent($poles_id, $content_id)]);
     }
 }

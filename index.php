@@ -87,6 +87,8 @@
             $router->post('/api/poles/get', 'PolesController@get');
             $router->post('/api/poles/save', 'PolesController@save');
             $router->post('/api/poles/gets', 'PolesController@gets');
+            $router->post('/api/poles/save-content', 'PolesController@saveContent');
+            $router->post('/api/poles/delete-content', 'PolesController@deleteContent');
             $router->post('/api/installations/list', 'InstallationsController@list');
             $router->post('/api/installations/filter', 'InstallationsController@filter');
             $router->post('/api/installations/delete', 'InstallationsController@delete');
