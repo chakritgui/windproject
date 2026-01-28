@@ -82,8 +82,8 @@ function initMemberTable() {
                 orderable: false,
                 render: function(row){
                     return `
-                        <button class="btn btn-light text-secondary manage-member" data-id="${row.member_id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        ${((row.role || '').toLowerCase() !== 'administrator') ? `<button class="btn btn-light text-secondary text-danger delete-member" data-id="${row.member_id}"><i class="fa-regular fa-trash-can"></i></button>` : ''}
+                        <button class="btn btn-sm btn-light text-secondary manage-member" data-id="${row.member_id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        ${((row.role || '').toLowerCase() !== 'administrator') ? `<button class="btn btn-sm btn-light text-secondary text-danger delete-member" data-id="${row.member_id}"><i class="fa-regular fa-trash-can"></i></button>` : ''}
                     `;
                 }
             }

@@ -152,9 +152,9 @@ function renderPolygonList() {
                     </div>
                 </div>
                 <div class="btn-group btn-group-sm ms-2">
-                    <button class="btn btn-outline-primary" onclick="focusOnLayer(${p.poly_id})"><i class="fa-solid fa-eye"></i></button>
-                    <button class="btn btn-outline-warning" onclick="openEditPopup(${p.poly_id})"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button class="btn btn-outline-danger" onclick="deletePolygon(${p.poly_id})"><i class="fa-solid fa-trash-can"></i></button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="focusOnLayer(${p.poly_id})"><i class="fa-solid fa-eye"></i></button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="openEditPopup(${p.poly_id})"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deletePolygon(${p.poly_id})"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
             </div>
         `);

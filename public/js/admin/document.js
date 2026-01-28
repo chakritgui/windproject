@@ -69,7 +69,7 @@ function initDocumentTable() {
                 className: 'text-end',
                 render: function(data, type, row) {
                     return `
-                        ${data} <button class="btn btn-light text-secondary history-download" data-id="${row.document_id}"><i class="fa-solid fa-clock-rotate-left"></i></button> 
+                        ${data} <button class="btn btn-sm btn-light text-secondary history-download" data-id="${row.document_id}"><i class="fa-solid fa-clock-rotate-left"></i></button> 
                     `;
                 }
             },
@@ -78,9 +78,9 @@ function initDocumentTable() {
                 orderable: false,
                 render: function(row){
                     return `
-                        <a href="${BASE_URL}/${row.document_path}" target="_blank" class="btn btn-light text-secondary" data-id="${row.document_id}"><i class="fa-solid fa-folder-open"></i></a> 
-                        <button class="btn btn-light text-secondary manage-document" data-id="${row.document_id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-light text-secondary text-danger delete-document" data-id="${row.document_id}"><i class="fa-regular fa-trash-can"></i></button>
+                        <a href="${BASE_URL}/${row.document_path}" target="_blank" class="btn btn-sm btn-light text-secondary" data-id="${row.document_id}"><i class="fa-solid fa-folder-open"></i></a> 
+                        <button class="btn btn-sm btn-light text-secondary manage-document" data-id="${row.document_id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-sm btn-light text-secondary text-danger delete-document" data-id="${row.document_id}"><i class="fa-regular fa-trash-can"></i></button>
                     `;
                 }
             }

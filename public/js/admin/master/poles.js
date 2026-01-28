@@ -55,11 +55,11 @@ function initPolesTable() {
                 orderable: false,
                 render: function(row){
                     return (row.content_id) ? `
-                        <button class="btn btn-info view-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-eye"></i></button> 
-                        <button class="btn btn-warning manage-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-pen-to-square"></i></button> 
-                        <button class="btn btn-danger delete-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-trash-can"></i></button> 
+                        <button class="btn btn-sm btn-info view-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-eye"></i></button> 
+                        <button class="btn btn-sm btn-warning manage-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-pen-to-square"></i></button> 
+                        <button class="btn btn-sm btn-danger delete-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-trash-can"></i></button> 
                     ` : `
-                        <button class="btn btn-light manage-content" data-pole="${row.poles_id}" data-content=""><i class="fa-solid fa-plus"></i></button>
+                        <button class="btn btn-sm btn-light manage-content" data-pole="${row.poles_id}" data-content=""><i class="fa-solid fa-plus"></i></button>
                     `;
                 }
             },
@@ -69,8 +69,8 @@ function initPolesTable() {
                 className: "text-end",
                 render: function(row){
                     return `
-                        <button class="btn btn-light text-secondary manage-pole" data-id="${row.poles_id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-light text-secondary text-danger delete-pole" data-id="${row.poles_id}"><i class="fa-regular fa-trash-can"></i></button>
+                        <button class="btn btn-sm btn-light text-secondary manage-pole" data-id="${row.poles_id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-sm btn-light text-secondary text-danger delete-pole" data-id="${row.poles_id}"><i class="fa-regular fa-trash-can"></i></button>
                     `;
                 }
             }

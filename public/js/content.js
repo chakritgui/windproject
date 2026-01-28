@@ -15,6 +15,7 @@ function langTab(lang, d) {
 function initTinyMCE() {
     tinymce.remove();
     let oldImages = [];
+    const fontUrl = 'https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap';
     tinymce.init({
         selector: '#content_en, #content_lo, #content_th',
         height: 450,
@@ -22,26 +23,29 @@ function initTinyMCE() {
         promotion: false,
         plugins: 'image link lists table media code',
         toolbar: `
-            undo redo | styles | bold italic underline |
+            undo redo | styles | fontfamily fontsize | bold italic underline |
             alignleft aligncenter alignright |
             bullist numlist | image media table |
             img25 img50 img100 | code
         `,
+        font_family_formats: "TH Sarabun New=TH Sarabun New, Sarabun, sans-serif; Angsana New=Angsana New, sans-serif; Arial=arial,helvetica,sans-serif; Courier New=courier new,courier,monospace; Akbalthom=Akbalthom;",
+        content_css: [fontUrl],
+        content_style: `
+            @import url('${fontUrl}');
+            body { 
+                font-family: 'TH Sarabun New', 'Sarabun', sans-serif; 
+                font-size: 10pt; 
+            }
+            img { max-width:100%; height:auto; cursor: pointer; transition: 0.3s; }
+            img:hover { outline: 3px solid #6366f1; }
+        `,
         setup: function (editor) {
-            editor.ui.registry.addButton('img25', {
-                text: '25%',
-                onAction: () => resizeImage(editor, '25%')
-            });
-            editor.ui.registry.addButton('img50', {
-                text: '50%',
-                onAction: () => resizeImage(editor, '50%')
-            });
-            editor.ui.registry.addButton('img100', {
-                text: 'Full',
-                onAction: () => resizeImage(editor, '100%')
-            });
+            editor.ui.registry.addButton('img25', { text: '25%', onAction: () => resizeImage(editor, '25%') });
+            editor.ui.registry.addButton('img50', { text: '50%', onAction: () => resizeImage(editor, '50%') });
+            editor.ui.registry.addButton('img100', { text: 'Full', onAction: () => resizeImage(editor, '100%') });
             editor.on('init', function () {
                 oldImages = getImageList(editor);
+                editor.execCommand('FontName', false, 'TH Sarabun New');
             });
             editor.on('change keyup', function () {
                 let newImages = getImageList(editor);
@@ -53,7 +57,6 @@ function initTinyMCE() {
                         body: JSON.stringify({ url: src })
                     });
                 });
-
                 oldImages = newImages;
             });
         },
@@ -70,8 +73,7 @@ function initTinyMCE() {
                     else reject('Upload failed');
                 }).catch(() => reject('Upload error'));
             });
-        },
-        content_style: `img { max-width:100%; height:auto; }`
+        }
     });
 }
 function getImageList(editor) {

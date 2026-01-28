@@ -62,7 +62,7 @@ class NewsModel {
         $pdo = $this->db;
         if (!$id) {
             return [
-                "id" => "", "status" => "draft", "publish_at" => "", "cover" => "",
+                "id" => "", "status" => "published", "publish_at" => date('Y-m-d H:i'), "cover" => "",
                 "attachments" => [],
                 "images" => [],
                 "images360" => [],
@@ -109,7 +109,7 @@ class NewsModel {
             "id" => $n['content_id'],
             "status" => $n['status'],
             "cover" => $n['cover'],
-            "publish_at" => !empty($n['publish_at']) ? convertTimeZone($n['publish_at'], 'Y-m-d\TH:i') : "",
+            "publish_at" => !empty($n['publish_at']) ? convertTimeZone($n['publish_at'], 'Y-m-d H:i') : "",
             "title" => $title,
             "content" => $content,
             "attachments" => $attachments,
@@ -118,6 +118,9 @@ class NewsModel {
         ];
     }
     public function save($data) {
+        ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
         $pdo = $this->db;
         $content_id = $data['content_id'] ?? null;
         $ex_cover = $data['ex_cover'] ?? null;
@@ -257,43 +260,21 @@ class NewsModel {
             $this->db->prepare("UPDATE wp_content SET cover=? WHERE content_id =?")->execute([$dbPath, $content_id]);
         }
     }
-    private function handleFileDelete($content_id){
+    private function handleFileDelete($content_id) {
         $stmt = $this->db->prepare("SELECT cover FROM wp_content WHERE content_id = ?");
         $stmt->execute([$content_id]);
         $old = $stmt->fetchColumn();
-        if (!$old) {
-            return;
-        }
+        if (!$old) return;
         $basePath = realpath(dirname(__DIR__, 2));
-        if ($basePath === false) {
-            error_log("Base path not found");
-            return;
-        }
+        if ($basePath === false) return;
         $old = ltrim($old, '/');
-        if (strpos($old, '..') !== false) {
-            error_log("Invalid file path: " . $old);
-            return;
-        }
         $oldPath = $basePath . '/' . $old;
-        if (!file_exists($oldPath)) {
-            error_log("File not found: " . $oldPath);
-            return;
-        }
-        if (!is_file($oldPath)) {
-            error_log("Not a file: " . $oldPath);
-            return;
-        }
-        $this->db->beginTransaction();
-        try {
-            if (!unlink($oldPath)) {
-                throw new Exception("Cannot delete file: " . $oldPath);
+        if (file_exists($oldPath) && is_file($oldPath)) {
+            if (!@unlink($oldPath)) {
+                error_log("Cannot delete file: " . $oldPath);
             }
-            $this->db->prepare("UPDATE wp_content SET cover = NULL WHERE content_id = ?")->execute([$content_id]);
-            $this->db->commit();
-        } catch (Exception $e) {
-            $this->db->rollBack();
-            error_log($e->getMessage());
         }
+        $this->db->prepare("UPDATE wp_content SET cover = NULL WHERE content_id = ?")->execute([$content_id]);
     }
     public function delete($id) {
         $pdo = $this->db;

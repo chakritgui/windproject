@@ -463,43 +463,21 @@ class ProjectModel {
             $this->db->prepare("UPDATE wp_content SET cover=? WHERE content_id =?")->execute([$dbPath, $content_id]);
         }
     }
-    private function handleFileDelete($content_id){
+    private function handleFileDelete($content_id) {
         $stmt = $this->db->prepare("SELECT cover FROM wp_content WHERE content_id = ?");
         $stmt->execute([$content_id]);
         $old = $stmt->fetchColumn();
-        if (!$old) {
-            return;
-        }
+        if (!$old) return;
         $basePath = realpath(dirname(__DIR__, 2));
-        if ($basePath === false) {
-            error_log("Base path not found");
-            return;
-        }
+        if ($basePath === false) return;
         $old = ltrim($old, '/');
-        if (strpos($old, '..') !== false) {
-            error_log("Invalid file path: " . $old);
-            return;
-        }
         $oldPath = $basePath . '/' . $old;
-        if (!file_exists($oldPath)) {
-            error_log("File not found: " . $oldPath);
-            return;
-        }
-        if (!is_file($oldPath)) {
-            error_log("Not a file: " . $oldPath);
-            return;
-        }
-        $this->db->beginTransaction();
-        try {
-            if (!unlink($oldPath)) {
-                throw new Exception("Cannot delete file: " . $oldPath);
+        if (file_exists($oldPath) && is_file($oldPath)) {
+            if (!@unlink($oldPath)) {
+                error_log("Cannot delete file: " . $oldPath);
             }
-            $this->db->prepare("UPDATE wp_content SET cover = NULL WHERE content_id = ?")->execute([$content_id]);
-            $this->db->commit();
-        } catch (Exception $e) {
-            $this->db->rollBack();
-            error_log($e->getMessage());
         }
+        $this->db->prepare("UPDATE wp_content SET cover = NULL WHERE content_id = ?")->execute([$content_id]);
     }
     public function deleteContent($data) {
         $sql_folder = "UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = :id";

@@ -110,6 +110,7 @@
             $router->post('/api/document-list', 'UserController@documentList');
             $router->post('/api/document-download', 'UserController@documentDownload');
             $router->post('/api/document-download-history', 'UserController@documentDownloadHistory');
+            $router->post('/api/new-list', 'UserController@newsList');
             $router->get('/project', 'UserController@project');
             $router->get('/project?{slug}', 'UserController@projectDetail');
             $router->get('/document', 'UserController@document');

@@ -86,7 +86,8 @@ function initDatePicker(selector, minDate = null, maxDate = null) {
         orientation: "auto",
         language: "en",
         startDate: minDate,
-        endDate: maxDate 
+        endDate: maxDate,
+        forceParse: false,
     });
 }
 function initMonthYearPicker(selector, callback) {

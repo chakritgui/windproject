@@ -7,8 +7,6 @@
     --card-shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 body {
-    background-color: #f1f5f9;
-    font-family: 'Inter', sans-serif;
     color: var(--text-main);
 }
 .header-title {
@@ -43,7 +41,7 @@ body {
     border-left: 5px solid #667eea;
 }
 .news-thumbnail {
-    width: 160px;
+    width: 140px;
     min-height: 140px;
     flex-shrink: 0;
     overflow: hidden;
@@ -63,7 +61,6 @@ body {
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 2.5rem;
 }
 .news-content {
     flex: 1;
@@ -79,7 +76,6 @@ body {
     gap: 15px;
 }
 .news-title {
-    font-size: 1.15rem;
     font-weight: 700;
     line-height: 1.4;
     margin: 0 0 8px 0;
@@ -103,7 +99,6 @@ body {
     flex-wrap: wrap;
 }
 .meta-item {
-    font-size: 0.85rem;
     color: var(--text-muted);
     display: flex;
     align-items: center;
@@ -117,7 +112,6 @@ body {
 .badge-tag {
     padding: 5px 12px;
     border-radius: 12px;
-    font-size: 0.75rem;
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -145,4 +139,10 @@ body {
         border-left: none;
         border-top: 5px solid #667eea;
     }
+}
+#scrollEnd {
+    height: 10px;
+    width: 100%;
+    clear: both;
+    display: block; 
 }

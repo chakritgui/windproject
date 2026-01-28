@@ -171,7 +171,8 @@ $(document).on("click", ".manage-news", function () {
         });
         initDatePicker('#publish_date');
         if (publishDate) {
-            $('#publish_date').datepicker('setDate', publishDate);
+            let d = new Date(publishDate);
+            $('#publish_date').datepicker('setDate', d);
         }
         document.querySelectorAll('.timepicker').forEach(el => {
             if (el.dataset.tdInit) return;

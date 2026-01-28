@@ -22,7 +22,7 @@
         <?php } else { ?>
             <li><a href="<?=BASE_URL?>/" class="sidebar-link <?=($GLOBALS['currentRoute']=='/'?'active':'')?>"><i class="fa-solid fa-map-location-dot"></i> <span data-i18n="map"></span></a></li>
             <li><a href="<?=BASE_URL?>/news" class="sidebar-link <?=($GLOBALS['currentRoute']=='/news'?'active':'')?>"><i class="fa-solid fa-newspaper"></i> <span data-i18n="news"></span></a></li>
-            <li><a href="<?=BASE_URL?>/project" class="sidebar-link <?=($GLOBALS['currentRoute']=='/news'?'active':'')?>"><i class="fa-solid fa-diagram-project"></i> <span data-i18n="project"></span></a></li>
+            <li><a href="<?=BASE_URL?>/project" class="sidebar-link <?=($GLOBALS['currentRoute']=='/project'?'active':'')?>"><i class="fa-solid fa-diagram-project"></i> <span data-i18n="project"></span></a></li>
             <li><a href="<?=BASE_URL?>/document" class="sidebar-link <?=($GLOBALS['currentRoute']=='/document'?'active':'')?>"><i class="fa-regular fa-folder-open"></i> <span data-i18n="document"></span></a></li>
             <li><a href="<?=BASE_URL?>/download" class="sidebar-link <?=($GLOBALS['currentRoute']=='/download'?'active':'')?>"><i class="fa-solid fa-download"></i> <span data-i18n="download"></span></a></li>
         <?php } ?>

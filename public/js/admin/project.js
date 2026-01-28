@@ -112,7 +112,7 @@ function renderTable(data, isNewSearch) {
                 </td>
                 <td style="white-space: nowrap;">
                     ${(item.type === 'content') ? `
-                        <button class="btn btn-light text-secondary view-content" data-id="${item.content_id}">
+                        <button class="btn btn-sm btn-light text-secondary view-content" data-id="${item.content_id}">
                             <i class="fa-solid fa-eye"></i>
                         </button>    
                     ` : ``}
