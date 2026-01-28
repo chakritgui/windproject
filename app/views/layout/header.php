@@ -88,6 +88,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link <?=($GLOBALS['currentRoute']=='/news'?'active':'')?>" href="<?=BASE_URL?>/news">
+                            <i class="fa-solid fa-newspaper"></i> <span data-i18n="news"></span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link <?=($GLOBALS['currentRoute']=='/project'?'active':'')?>" href="<?=BASE_URL?>/project">
                             <i class="fa-solid fa-diagram-project"></i> <span data-i18n="project"></span>
                         </a>

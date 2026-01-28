@@ -20,6 +20,10 @@ class UserController extends Controller {
         ensure_login();
         $this->view('user/download');
     }
+    public function news() {
+        ensure_login();
+        $this->view('user/news');
+    }
     public function projectDetail($slug) {
         ensure_login();
         $project = 1;

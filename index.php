@@ -105,6 +105,7 @@
         } else {
             $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');
+            $router->get('/news', 'UserController@news');
             $router->get('/pole/{slug}', 'UserController@pole');
             $router->post('/api/document-list', 'UserController@documentList');
             $router->post('/api/document-download', 'UserController@documentDownload');
