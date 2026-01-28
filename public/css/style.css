@@ -403,3 +403,22 @@ button {
 .content-view video {
     max-width: 100% !important;
 }
+ #mainTabs {
+    display: flex;
+    flex-wrap: nowrap; 
+    overflow-x: auto;
+    overflow-y: hidden; 
+    white-space: nowrap; 
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 5px; 
+}
+#mainTabs .nav-item {
+    flex: 0 0 auto;  
+}
+#mainTabs::-webkit-scrollbar {
+    display: none;
+}
+#mainTabs {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}

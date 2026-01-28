@@ -1,24 +1,3 @@
-<style>
-    #mainTabs {
-        display: flex;
-        flex-wrap: nowrap; 
-        overflow-x: auto;
-        overflow-y: hidden; 
-        white-space: nowrap; 
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 5px; 
-    }
-    #mainTabs .nav-item {
-        flex: 0 0 auto;  
-    }
-    #mainTabs::-webkit-scrollbar {
-        display: none;
-    }
-    #mainTabs {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
-</style>
 <div class="container-fluid mt-90 mb-3">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm" style="background: #ffffff; border-left: 4px solid #0d6efd;">
         <div class="mb-2 mb-md-0">

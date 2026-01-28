@@ -1,211 +1,391 @@
-
 <style>
-    .profile-img {
-        width: 90px; height: 90px; border-radius: 50%;
-        object-fit: cover; border: 3px solid #fff;
-        box-shadow: 0 0 6px #ccc;
+    :root {
+        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        --primary-color: #667eea;
+        --secondary-color: #6c757d;
+        --success-color: #28a745;
+        --bg-color: #f5f7fa;
+        --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
-    .tab-content {
-        margin-top: 25px;
+    body {
+        background: var(--bg-color);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    .profile-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    .profile-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--card-shadow);
+        overflow: hidden;
+        border: none;
+    }
+    .profile-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 2.5rem 2rem;
+        position: relative;
+    }
+    .profile-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .profile-subtitle {
+        opacity: 0.85;
+        font-size: 1rem;
+    }
+    .nav-pills {
+        background: #f1f3f5;
+        padding: 0.5rem;
+        gap: 0.5rem;
+    }
+    .nav-pills .nav-link {
+        color: var(--secondary-color);
+        border-radius: 10px;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        transition: var(--transition);
+        border: none;
+    }
+    .nav-pills .nav-link.active {
+        background: white;
+        color: var(--primary-color);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .info-section {
+        background: #ffffff;
+        padding: 1rem;
+        margin-bottom: 2rem;
+        transition: var(--transition);
+    }
+    .info-section:hover {
+        border-color: #e0e4e8;
+        transform: translateY(-2px);
     }
     .section-title {
-        font-size: 1.2rem; font-weight: 600;
-        border-left: 4px solid #0d6efd;
-        padding-left: 10px; margin-bottom: 15px;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1a1d23;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #f1f3f5;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+    .info-row {
+        display: flex;
+        align-items: center;
+        padding: 1.2rem 0;
+        border-bottom: 1px solid #f8f9fa;
+        gap: 1.5rem;
+    }
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    .info-label {
+        font-weight: 600;
+        color: #868e96;
+        width: 200px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .info-value {
+        flex: 1;
+        width: 100%; 
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+    .info-text {
+        color: #212529;
+        font-weight: 500;
+        word-break: break-word;
+    }
+    .password-value {
+        letter-spacing: 3px;
+        color: #adb5bd;
+    }
+    .btn-edit {
+        background: #f0f2ff;
+        border: none;
+        color: var(--primary-color);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        white-space: nowrap;
+        transition: var(--transition);
+    }
+    .btn-edit:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+    .edit-mode {
+        display: flex;
+        gap: 0.5rem;
+        width: 100%;
+    }
+    .edit-input {
+        flex: 1;
+        padding: 0.6rem 1rem;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        transition: var(--transition);
+    }
+    .edit-input:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+    .activity-item {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid transparent;
+        transition: var(--transition);
+    }
+    .activity-item:hover {
+        background: white;
+        border-color: var(--primary-color);
+        box-shadow: var(--card-shadow);
+    }
+    .activity-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        color: #6c757d;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+    }
+    @media (max-width: 768px) {
+        body { padding: 1rem 0; }
+        .profile-header {
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        .profile-title { justify-content: center; }
+        .info-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 1.5rem 0;
+        }
+        .info-label {
+            width: 100%;
+            font-size: 0.9rem;
+        }
+        .info-value {
+            width: 100%;
+        }
+        .edit-mode {
+            flex-wrap: wrap;
+        }
+        .edit-input {
+            width: 100%;
+            flex: none;
+        }
+        .btn-save, .btn-cancel {
+            flex: 1;
+            text-align: center;
+        }
+    }
+    .input-group-custom {
+        position: relative;
+        display: flex;
+        flex: 1;
+    }
+    .input-group-custom .edit-input {
+        padding-right: 40px;
+        width: 100%;
+    }
+    .btn-toggle-eye {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #6c757d;
+        cursor: pointer;
+        z-index: 10;
+        padding: 5px;
+    }
+    .btn-toggle-eye:hover {
+        color: var(--primary-color);
+    }
+    #activityHistory {
+        padding: 10px 5px;
+        position: relative;
+    }
+    .activity-timeline-item {
+        position: relative;
+        padding-left: 35px;
+        padding-bottom: 25px;
+    }
+    .activity-line {
+        position: absolute;
+        left: 14px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
+    .activity-timeline-item:last-child .activity-line {
+        display: none;
+    }
+    .activity-dot {
+        position: absolute;
+        left: 8px;
+        top: 5px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #ced4da;
+        border: 3px solid #fff;
+        box-shadow: 0 0 0 1px #dee2e6;
+        z-index: 2;
+    }
+    .activity-dot.active {
+        background: #28a745;
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+    }
+    .activity-card {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid #f0f0f0;
+        padding: 15px;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+    .activity-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .activity-title {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: #333;
+    }
+    .activity-time-text {
+        font-size: 0.8rem;
+        color: #888;
+    }
+    .device-info-box {
+        background: #fcfcfd;
+        border: 1px solid #f1f3f5;
+        border-radius: 8px;
+        padding: 10px;
+        margin-top: 10px;
+    }
+    .device-text, .ip-text {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #495057;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .status-badge.latest {
+        background: linear-gradient(45deg, #28a745, #34ce57);
+        color: white;
+        font-size: 0.7rem;
+        padding: 3px 10px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        font-weight: bold;
+        letter-spacing: 0.5px;
     }
 </style>
-</head>
-<body>
-<div class="container py-5 mt-5">
-    <div class="card shadow-sm mb-4">
-        <div class="card-body d-flex align-items-center">
-            <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="profile-img me-3">
-            <div>
-                <h4 class="mb-1">Heng Like</h4>
-                <div class="text-muted">User Profile Settings</div>
-            </div>
+</style>
+<div class="container py-5 mt-5 profile-container">
+    <div class="profile-card">
+        <div class="profile-header">
+            <h1 class="profile-title">
+                <i class="fa-solid fa-circle-user me-2"></i><span data-i18n="member_profile"></span>
+            </h1>
+            <p class="profile-subtitle mb-0"><span data-i18n="manage_your_personal"></span></p>
         </div>
-    </div>
-    <ul class="nav nav-tabs" id="profileTabs" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#personal" type="button">
-                <i class="fa-regular fa-user me-1"></i> ข้อมูลส่วนตัว
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#contact">
-                <i class="fa-solid fa-mobile-screen me-1"></i> การติดต่อ
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#work">
-                <i class="fa-solid fa-briefcase me-1"></i> การทำงาน
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#username">
-                <i class="fa-solid fa-user-lock me-1"></i> ชื่อผู้ใช้
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#password">
-                <i class="fa-solid fa-key me-1"></i> รหัสผ่าน
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#loginlog">
-                <i class="fa-solid fa-clock-rotate-left me-1"></i> ประวัติการเข้าใช้
-            </button>
-        </li>
-    </ul>
-    <div class="tab-content">
-        <div class="tab-pane fade show active" id="personal">
-            <div class="card shadow-sm mt-3">
-                <div class="card-body">
-                    <div class="section-title">ข้อมูลส่วนตัว</div>
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">ชื่อจริง</label>
-                            <input type="text" class="form-control" placeholder="First name">
+        <div class="profile-body">
+            <ul class="nav nav-pills mb-4" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab"><i class="fa-solid fa-clipboard-user me-2"></i><span data-i18n="personal_information"></span></button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab"><i class="fa-solid fa-clock-rotate-left me-2"></i><span data-i18n="usage_history"></span></button>
+                </li>
+            </ul>
+            <div class="tab-content" id="profileTabContent">
+                <div class="tab-pane fade show active" id="info" role="tabpanel">
+                    <div class="info-section">
+                        <h3 class="section-title"><i class="fa-regular fa-user"></i><span data-i18n="personal_information"></span></h3>
+                        <div class="info-row" id="row-firstName">
+                            <div class="info-label"><i class="fa-solid fa-user"></i><span data-i18n="firstname"></span></div>
+                            <div class="info-value">
+                                <span class="info-text" id="display-firstName"></span>
+                                <button class="btn-edit" onclick="editField('firstName')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">นามสกุล</label>
-                            <input type="text" class="form-control" placeholder="Last name">
+                        <div class="info-row" id="row-lastName">
+                            <div class="info-label"><i class="fa-solid fa-user"></i><span data-i18n="lastname"></span></div>
+                            <div class="info-value">
+                                <span class="info-text" id="display-lastName"></span>
+                                <button class="btn-edit" onclick="editField('lastName')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">วันเกิด</label>
-                            <input type="date" class="form-control">
+                        <div class="info-row" id="row-phone">
+                            <div class="info-label"><i class="fa-solid fa-phone"></i><span data-i18n="mobile"></span></div>
+                            <div class="info-value">
+                                <span class="info-text" id="display-phone"></span>
+                                <button class="btn-edit" onclick="editField('phone')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">เพศ</label>
-                            <select class="form-select">
-                                <option>ชาย</option>
-                                <option>หญิง</option>
-                                <option>ไม่ระบุ</option>
-                            </select>
+                        <div class="info-row" id="row-email">
+                            <div class="info-label"><i class="fa-solid fa-envelope"></i><span data-i18n="email"></span></div>
+                            <div class="info-value">
+                                <span class="info-text" id="display-email"></span>
+                                <button class="btn-edit" onclick="editField('email')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
+                            </div>
                         </div>
                     </div>
-
-                </div>
-            </div>
-        </div>
-        <div class="tab-pane fade" id="contact">
-            <div class="card shadow-sm mt-3">
-                <div class="card-body">
-                    <div class="section-title">ข้อมูลการติดต่อ</div>
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">อีเมล</label>
-                            <input type="email" class="form-control" placeholder="example@mail.com">
+                    <div class="info-section">
+                        <h3 class="section-title"><i class="fa-solid fa-user-shield"></i><span data-i18n="account"></span></h3>
+                        <div class="info-row" id="row-username">
+                            <div class="info-label"><i class="fa-regular fa-circle-user"></i><span data-i18n="username"></span></div>
+                            <div class="info-value">
+                                <span class="info-text" id="display-username"></span>
+                                <button class="btn-edit" onclick="editField('username')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">เบอร์โทรศัพท์</label>
-                            <input type="text" class="form-control" placeholder="0812345678">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">จังหวัด</label>
-                            <select class="form-select">
-                                <option>กรุงเทพมหานคร</option>
-                                <option>เชียงใหม่</option>
-                                <option>ขอนแก่น</option>
-                            </select>
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label">ที่อยู่</label>
-                            <textarea class="form-control" rows="2" placeholder="บ้านเลขที่ / ถนน / แขวง / เขต"></textarea>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-        <div class="tab-pane fade" id="work">
-            <div class="card shadow-sm mt-3">
-                <div class="card-body">
-                    <div class="section-title">ข้อมูลการทำงาน</div>
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">ตำแหน่ง</label>
-                            <input type="text" class="form-control" placeholder="ตำแหน่งงาน">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">แผนก</label>
-                            <input type="text" class="form-control" placeholder="แผนก">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">วันที่เริ่มงาน</label>
-                            <input type="date" class="form-control">
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-        <div class="tab-pane fade" id="username">
-            <div class="card shadow-sm mt-3">
-                <div class="card-body">
-                    <div class="section-title">เปลี่ยนชื่อผู้ใช้</div>
-                    <div class="col-md-4">
-                        <label class="form-label">ชื่อผู้ใช้ใหม่</label>
-                        <input type="text" class="form-control" placeholder="New username">
-                    </div>
-
-                </div>
-            </div>
-        </div>
-        <div class="tab-pane fade" id="password">
-            <div class="card shadow-sm mt-3">
-                <div class="card-body">
-                    <div class="section-title">เปลี่ยนรหัสผ่าน</div>
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">รหัสผ่านเดิม</label>
-                            <input type="password" class="form-control">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">รหัสผ่านใหม่</label>
-                            <input type="password" class="form-control">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">ยืนยันรหัสผ่านใหม่</label>
-                            <input type="password" class="form-control">
+                        <div class="info-row" id="row-password">
+                            <div class="info-label"><i class="fa-solid fa-lock"></i><span data-i18n="password"></span></div>
+                            <div class="info-value">
+                                <span class="info-text password-value" id="display-password">••••••••••••</span>
+                                <button class="btn-edit" onclick="editField('password')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="tab-pane fade" id="loginlog">
-            <div class="card shadow-sm mt-3">
-                <div class="card-body">
-                    <div class="section-title">ประวัติการลงชื่อเข้าใช้</div>
-                    <div class="table-responsive">
-                        <table class="table table-striped align-middle">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>วันที่</th>
-                                    <th>ไอพี</th>
-                                    <th>อุปกรณ์</th>
-                                    <th>สถานะ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>2025-12-10 08:43</td>
-                                    <td>192.168.1.15</td>
-                                    <td>Windows / Chrome</td>
-                                    <td><span class="badge bg-success">สำเร็จ</span></td>
-                                </tr>
-                                <tr>
-                                    <td>2025-12-09 21:15</td>
-                                    <td>10.20.33.41</td>
-                                    <td>iPhone / Safari</td>
-                                    <td><span class="badge bg-danger">ล้มเหลว</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="tab-pane fade" id="history" role="tabpanel">
+                    <div id="activityHistory"></div>
+                    <div id="scrollEnd"></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<script src="<?=BASE_URL?>/public/js/account.js?v=<?=time();?>" defer></script>

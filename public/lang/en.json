@@ -37,6 +37,7 @@
     "admin_tools": "Admin Tools",
     "user_panel": "User Panel",
     "account_settings": "Account Settings",
+    "account": "Account",
     "logout": "Logout",
     "member": "Member",
     "map": "Map",
@@ -336,6 +337,7 @@
     "opacity": "Opacity",
     "border_weight": "Border Weight",
     "save_all_changes": "Save All Changes",
+    "change": "Save All Change",
     "map_layers": "Map Layers",
     "support_json": "Support .json,.geojson,.geojsonl Only.",
     "master_data": "Master Data",
@@ -433,5 +435,11 @@
     "upload3": "360° Images",
     "360°": "360°",
     "gallery": "Gallery",
-    "attachments": "Attachments"
+    "attachments": "Attachments",
+    "member_profile": "Member Profile",
+    "manage_your_personal": "Manage your personal information and view your usage history.",
+    "personal_information": "Personal Information",
+    "usage_history": "Usage History",
+    "new_password": "Enter new password",
+    "latest": "Latest"
 }

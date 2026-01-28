@@ -52,6 +52,7 @@
 </script>
 </head>
 <body>
+<script src="<?=BASE_URL?>/public/js/app.js?v=<?=time();?>" defer></script>
 <div id="pageLoader" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="z-index: 1055; background: rgba(255,255,255,.7);">
     <div class="d-flex justify-content-center align-items-center h-100">
         <div class="spinner-border" role="status" aria-hidden="true"></div>

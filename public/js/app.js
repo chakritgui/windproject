@@ -379,6 +379,13 @@ function refreshAllTables() {
         if (id === 'tb_member') initMemberTable();
         if (id === 'tb_document') initDocumentTable();
         if (id === 'tb_notification') initNotificationTable();
+        if (id === 'tb_contract') initContractsTable();
+        if (id === 'tb_installation') initInstallationsTable();
+        if (id === 'tb_pole') initPolesTable();
+        if (id === 'tb_project') initProjectsTable();
+        if (id === 'tb_type') initTypesTable();
+        if (id === 'tb_news') initNewsTable();
+        if (id === 'tb_wind') initWindTable();
     });
 }
 function getTableLang() {

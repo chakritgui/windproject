@@ -133,6 +133,9 @@
     $router->post('/api/notification/load-list', 'NotificationController@loadlist');
     $router->post('/api/setting/get', 'SettingController@get');
     $router->get('/account', 'AuthController@account');
+    $router->post('/api/account/get', 'AccountControl@get');
+    $router->post('/api/account/update', 'AccountControl@update');
+    $router->post('/api/account/history', 'AccountControl@history');
     $router->get('/logout', 'AuthController@logout');
     $currentRoute = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     $basePath = dirname($_SERVER['SCRIPT_NAME']);

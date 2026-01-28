@@ -1,4 +1,4 @@
-function isIOS() {
+function isIOSx() {
     return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 }
 function parseUA(ua) {
@@ -40,7 +40,7 @@ function navigateTo(url, type) {
     if(type == 'self') {
         window.location.href = url;
     } else {
-        if (isIOS()) {
+        if (isIOSx()) {
             window.location.href = url;
         } else {
             const link = document.createElement('a');
