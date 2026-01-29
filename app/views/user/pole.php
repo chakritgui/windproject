@@ -7,7 +7,7 @@
 <div class="container-fluid mt-5 mb-3" style="margin-top: 100px !important;">
     <div class="row">
         <div class="col-lg-12">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-none d-md-flex justify-content-between align-items-center">
                 <button class="btn btn-secondary btn-sm close-page">
                     <i class="fa-solid fa-chevron-left me-1"></i> 
                     <span data-i18n="back">Back</span>
@@ -15,6 +15,14 @@
                 <button class="btn btn-primary btn-sm open-poles" data-id="<?= htmlspecialchars($id ?? '', ENT_QUOTES, 'UTF-8') ?>">
                     <i class="fa-solid fa-filter me-1"></i> 
                     <span data-i18n="filter">Filter</span>
+                </button>
+            </div>
+            <div class="mobile-fab-container d-md-none">
+                <button class="fab-button btn-sm fab-back close-page">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <button class="fab-button btn-sm fab-filter open-poles" data-id="<?= htmlspecialchars($id ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                    <i class="fa-solid fa-filter"></i>
                 </button>
             </div>
         </div>

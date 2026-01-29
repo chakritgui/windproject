@@ -1,4 +1,11 @@
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/map.css?v=<?=time();?>">
+<div id="wind-loading">
+    <div class="wind-grid">
+        <?php for($i=0;$i<60;$i++): ?>
+            <img src="<?=BASE_URL?>/public/images/iwind.png" alt="wind">
+        <?php endfor; ?>
+    </div>
+</div>
 <div id="ui">
     <div class="wind-toggle-card">
         <div class="wind-icon">

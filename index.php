@@ -123,6 +123,7 @@
     $router->post('/api/poles-location', 'MapController@poleslocation');
     $router->post('/api/pole-details', 'MapController@poledetails');
     $router->post('/api/height', 'MapController@height');
+    $router->post('/api/contracts', 'MapController@contracts');
     $router->post('/api/project', 'MapController@project');
     $router->post('/api/type', 'MapController@type');
     $router->post('/api/station', 'MapController@station');

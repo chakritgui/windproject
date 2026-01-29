@@ -65,9 +65,13 @@
     <div class="container-fluid d-flex justify-content-between align-items-center gx-0 gy-0">
         <div class="d-flex align-items-center">
             <?php if(!empty($_SESSION)) { ?>
-                <button id="mapFilter" class="btn btn-dark btn-sm d-none">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
+                <button id="mapFilter" class="btn btn-sm btn-dark"><i class="fa-solid fa-bars"></i></button>
+                <div class="side-menu-wrapper">
+                    <div id="menu-level-1" class="menu-panel"></div>
+                    <div id="menu-level-2" class="menu-panel"></div>
+                    <div id="menu-level-3" class="menu-panel"></div>
+                    <div id="menu-level-4" class="menu-panel"></div>
+                </div>
                 <button id="sidebarToggle" class="btn btn-light btn-sm me-2 <?= (isset($_SESSION['user']['role']) && in_array($_SESSION['user']['role'], ['admin','administrator'])) ? '' : 'd-lg-none' ?>">
                     <i class="fa-solid fa-bars"></i>
                 </button>

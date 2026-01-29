@@ -442,3 +442,6 @@ a.nav-link.active {
     text-overflow: ellipsis;
     word-break: break-word;
 }
+#mapFilter {
+    display: none;
+}

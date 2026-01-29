@@ -12,22 +12,21 @@ class  MapController extends BaseController {
         $result = $this->model->poleslocation();
         $this->json($result);
     }
+    public function contracts() {
+        $this->json($this->model->contracts());
+    }
     public function project() {
-        $result = $this->model->project();
-        $this->json($result);
+        $contract_id = (int)$this->input('contract_id', 0);
+        $this->json($this->model->project($contract_id));
     }
     public function type() {
-        $input = json_decode(file_get_contents('php://input'), true);
-        $project_id = $input['project_id'] ?? ($_POST['project_id'] ?? 0);
-        $result = $this->model->type($project_id);
-        $this->json($result);
+        $project_id = (int)$this->input('project_id', 0);
+        $this->json($this->model->type($project_id));
     }
     public function station() {
-        $input = json_decode(file_get_contents('php://input'), true);
-        $project_id = $input['project_id'] ?? ($_POST['project_id'] ?? 0);
-        $type_id = $input['type_id'] ?? ($_POST['type_id'] ?? 0);
-        $result = $this->model->station($project_id, $type_id);
-        $this->json($result);
+        $project_id = (int)$this->input('project_id', 0);
+        $type_id    = (int)$this->input('type_id', 0);
+        $this->json($this->model->station($project_id, $type_id));
     }
     public function poledetails() {
         $input = json_decode(file_get_contents('php://input'), true);
@@ -44,5 +43,17 @@ class  MapController extends BaseController {
         $searchTerm = $_POST['searchTerm'] ?? '';
         $poles_id = $_POST['poles_id'] ?? '';
         $this->json(['status'=>true , 'data' => $this->model->height($page, $limit, $searchTerm, $poles_id)]);
+    }
+    protected function input($key = null, $default = null) {
+        static $data = null;
+        if ($data === null) {
+            $json = json_decode(file_get_contents('php://input'), true);
+            $data = is_array($json) ? $json : [];
+            $data = array_merge($_GET, $_POST, $data);
+        }
+        if ($key === null) {
+            return $data;
+        }
+        return $data[$key] ?? $default;
     }
 }

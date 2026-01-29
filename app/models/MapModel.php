@@ -5,9 +5,16 @@ class MapModel{
         $this->db = Database::getInstance()->pdo;
     }
     public function windarea() {
-        $sql = "SELECT * FROM wp_project_area WHERE status = 'active'";
+        $sql = "SELECT * FROM wp_map_polygons WHERE status = 'active'";
         $stmt = $this->db->query($sql);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $polygons = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $sqlMap = "SELECT center_lat, center_lng, zoom_level FROM wp_map_master LIMIT 1";
+        $stmtMap = $this->db->query($sqlMap);
+        $master = $stmtMap->fetch(PDO::FETCH_ASSOC);
+        return [
+            'master' => $master,
+            'polygons' => $polygons
+        ];
     }
     public function poleslocation() {
         $sql = "SELECT 
@@ -19,14 +26,30 @@ class MapModel{
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    public function project() {
-        $sql = "SELECT pj.project_id, pj.project_name 
-                FROM wp_poles p
-                LEFT JOIN wp_project pj on pj.project_id = p.project_id
-                WHERE pj.status = 'active' and p.status = 'online' 
-                GROUP BY pj.project_id 
-                ORDER BY pj.project_id";
+    public function contracts() {
+        $sql = "SELECT contract_id, contract_name 
+                FROM wp_contract
+                WHERE status = 'active' 
+                ORDER BY contract_id ";
         $stmt = $this->db->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    public function project($contract_id){
+        $sql = "SELECT DISTINCT
+                pj.project_id,
+                pj.project_name
+            FROM wp_poles p
+            LEFT JOIN wp_project pj 
+                ON pj.project_id = p.project_id
+            WHERE pj.status = 'active'
+            AND p.status = 'online'
+            AND pj.contract_id = :contract_id
+            ORDER BY pj.project_id
+        ";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':contract_id' => $contract_id
+        ]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function type($project_id) {
@@ -41,7 +64,7 @@ class MapModel{
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function station($project_id, $type_id) {
-        $sql = "SELECT l.installations_id, l.installations_name, p.poles_lat, p.poles_lng
+        $sql = "SELECT l.installations_id, l.installations_name, p.poles_lat, p.poles_lng, p.poles_id
                 FROM wp_poles p
                 LEFT JOIN wp_installations l on l.installations_id = p.installations_id
                 WHERE l.status = 'active' and p.status = 'online' 
