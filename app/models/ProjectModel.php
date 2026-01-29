@@ -321,6 +321,7 @@ class ProjectModel {
         $ex_cover = $data['ex_cover'] ?? null;
         $status = $data['status'] ?? 'active';
         $notification = $data['notification'] ?? 'no';
+        $mediaHelper = new MediaHelper($pdo);
         try {
             $pdo->beginTransaction();
             if ($content_id) {
@@ -346,9 +347,11 @@ class ProjectModel {
                     $stmtItem->execute([':content_id' => $content_id, ':subject' => $subj, ':body' => $body, ':lang' => $lang]);
                 }
             }
-            if(!$ex_cover) $this->handleFileDelete($content_id);
+            if(!$ex_cover) {
+                $mediaHelper->deleteExistingCover($content_id, 'wp_content', 'cover');
+            }
             if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
-                $this->handleFileUpload($content_id, $_FILES['cover']);
+                $mediaHelper->handleSingleUpload($content_id, $_FILES['cover']);
             }
             if ($data['content_id'] > 0) {
                 $sql = "UPDATE wp_folder SET name = :name, updated_at = NOW(), notification_status = :notification WHERE content_id = :id";
@@ -372,12 +375,12 @@ class ProjectModel {
                     ':notification' => $notification
                 ]);
             }
-            $this->syncMedia($content_id, 'attachment', $data['existing_attachments'] ?? []);
-            $this->syncMedia($content_id, 'image', $data['existing_images'] ?? []);
-            $this->syncMedia($content_id, 'image360', $data['existing_images360'] ?? []);
-            $this->handleMultiUpload($content_id, 'attachment', 'new_attachments');
-            $this->handleMultiUpload($content_id, 'image', 'new_images');
-            $this->handleMultiUpload($content_id, 'image360', 'new_images360');
+            $mediaHelper->syncMedia($content_id, 'attachment', $data['existing_attachments'] ?? []);
+            $mediaHelper->syncMedia($content_id, 'image', $data['existing_images'] ?? []);
+            $mediaHelper->syncMedia($content_id, 'image360', $data['existing_images360'] ?? []);
+            $mediaHelper->handleMultiUpload($content_id, 'attachment', 'new_attachments');
+            $mediaHelper->handleMultiUpload($content_id, 'image', 'new_images');
+            $mediaHelper->handleMultiUpload($content_id, 'image360', 'new_images360');
             $this->notification($content_id, $notification);
             $pdo->commit();
             return true;
@@ -385,49 +388,6 @@ class ProjectModel {
             if ($pdo->inTransaction()) $pdo->rollBack();
             error_log($e->getMessage());
             return false;
-        }
-    }
-    private function syncMedia($content_id, $type, $existingIds) {
-        $basePath = realpath(dirname(__DIR__, 2));
-        if ($basePath === false) {
-            error_log("Base path not found");
-            return;
-        }
-        $existingIds = array_map('intval', $existingIds);
-        $stmt = $this->db->prepare("SELECT id, file_path FROM wp_content_media WHERE content_id = ? AND file_type = ?");
-        $stmt->execute([$content_id, $type]);
-        $dbFiles = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        foreach ($dbFiles as $file) {
-            if (!in_array($file['id'], $existingIds)) {
-                $fullPath = $basePath . '/' . ltrim($file['file_path'], '/');
-                if (file_exists($fullPath) && is_file($fullPath)) {
-                    @unlink($fullPath);
-                }
-                $this->db->prepare("UPDATE wp_content_media set status = 'deleted',updated_at = NOW() WHERE id = ?")->execute([$file['id']]);
-            }
-        }
-    }
-    private function handleMultiUpload($content_id, $type, $inputKey) {
-        if (!isset($_FILES[$inputKey]) || empty($_FILES[$inputKey]['name'][0])) return;
-        $files = $_FILES[$inputKey];
-        $baseDir = "uploads/content/media/";
-        $basePath = realpath(dirname(__DIR__, 2));
-        if ($basePath === false) {
-            error_log("Base path not found");
-            return;
-        }
-        $uploadPath = $basePath . '/' . $baseDir;
-        if (!is_dir($uploadPath)) mkdir($uploadPath, 0755, true);
-        foreach ($files['name'] as $i => $originalName) {
-            if ($files['error'][$i] !== UPLOAD_ERR_OK) continue;
-            $ext = pathinfo($originalName, PATHINFO_EXTENSION);
-            $safeName = $type . "_" . $content_id . "_" . bin2hex(random_bytes(8)) . "." . $ext;
-            $dbPath = $baseDir . $safeName;
-
-            if (move_uploaded_file($files['tmp_name'][$i], $uploadPath . $safeName)) {
-                $stmt = $this->db->prepare("INSERT INTO wp_content_media (content_id, file_path, file_name, file_type, file_size, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())");
-                $stmt->execute([$content_id, $dbPath, $originalName, $type, $files['size'][$i]]);
-            }
         }
     }
     public function notification($content_id, $notification) {
@@ -450,34 +410,6 @@ class ProjectModel {
             if (!$isExternalTrans && $pdo->inTransaction()) $pdo->rollBack();
             throw $e;
         }
-    }
-    private function handleFileUpload($content_id, $file) {
-        $this->handleFileDelete($content_id);
-        $dir = "uploads/content/";
-        $fullDir = $dir;
-        if (!is_dir($fullDir)) mkdir($fullDir, 0755, true);
-        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $newName = $content_id . "_" . time() . "." . $ext;
-        $dbPath = $dir . $newName;
-        if (move_uploaded_file($file['tmp_name'], dirname(__DIR__, 2) . '/' . $dir . $newName)) {
-            $this->db->prepare("UPDATE wp_content SET cover=? WHERE content_id =?")->execute([$dbPath, $content_id]);
-        }
-    }
-    private function handleFileDelete($content_id) {
-        $stmt = $this->db->prepare("SELECT cover FROM wp_content WHERE content_id = ?");
-        $stmt->execute([$content_id]);
-        $old = $stmt->fetchColumn();
-        if (!$old) return;
-        $basePath = realpath(dirname(__DIR__, 2));
-        if ($basePath === false) return;
-        $old = ltrim($old, '/');
-        $oldPath = $basePath . '/' . $old;
-        if (file_exists($oldPath) && is_file($oldPath)) {
-            if (!@unlink($oldPath)) {
-                error_log("Cannot delete file: " . $oldPath);
-            }
-        }
-        $this->db->prepare("UPDATE wp_content SET cover = NULL WHERE content_id = ?")->execute([$content_id]);
     }
     public function deleteContent($data) {
         $sql_folder = "UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = :id";

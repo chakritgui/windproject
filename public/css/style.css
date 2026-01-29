@@ -114,6 +114,7 @@ header h1 {
     }
     .logo-container {
         max-width: 100%;
+        margin-top: 50px;
     }
     .feature-icon {
         width: 55px;
@@ -424,4 +425,20 @@ a.nav-link.active {
 #mainTabs {
     -ms-overflow-style: none;
     scrollbar-width: none;
+}
+.notification-list {
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden; 
+}
+.notification-item {
+    white-space: normal !important;
+}
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
 }

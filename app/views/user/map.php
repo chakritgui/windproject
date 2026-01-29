@@ -15,3 +15,4 @@
 <script src="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.js"></script>
 <script src="https://api.windy.com/assets/map-forecast/libBoot.js"></script>
 <script src="<?=BASE_URL?>/public/js/user/map.js?v=<?=time();?>" defer></script>
+<script src="<?=BASE_URL?>/public/js/user/report.js?v=<?=time();?>" defer></script>

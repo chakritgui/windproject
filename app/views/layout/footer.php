@@ -43,5 +43,6 @@
 <script src="<?=BASE_URL?>/public/js/content.js?v=<?=time();?>" defer></script>
 <script src="<?=BASE_URL?>/public/js/alert.js?v=<?=time();?>" defer></script>
 <script src="<?=BASE_URL?>/public/js/object.js?v=<?=time();?>" defer></script>
+<script src="<?=BASE_URL?>/public/js/notification.js?v=<?=time();?>" defer></script>
 </body>
 </html>

@@ -117,20 +117,18 @@
                             <span id="notificationCount">0</span>
                         </span>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow custom-notification-menu" data-bs-auto-close="false">
+                    <ul class="dropdown-menu dropdown-menu-end shadow custom-notification-menu" data-bs-auto-close="outside">
                         <li class="dropdown-header d-flex justify-content-between align-items-center border-bottom pb-2">
-                            <span class="fw-bold"><i class="fa-solid fa-bell me-2"></i><span data-i18n="notification"></span></span>
+                            <span class="fw-bold"><i class="fa-solid fa-bell me-2"></i><span data-i18n="notification">Notifications</span></span>
                             <button class="btn btn-sm btn-light border-0 btn-close-dropdown">
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
                         </li>
                         <li><div class="notification-list"></div></li>
-                        <li class="dropdown-footer text-center border-top pt-2 pb-2">
-                            <small class="text-muted">
-                                <span data-i18n="notifications"></span>
-                                <span class="show-notification-count"></span>
-                                <span data-i18n="item"></span>
-                            </small>
+                        <li class="dropdown-footer text-center border-top pt-2 pb-0">
+                            <div class="d-flex flex-column">
+                                <a href="<?=BASE_URL?>/news" class="btn btn-light btn-sm border-0 w-100 py-2 fw-bold text-primary" data-i18n="view_all_notifications" style="border-radius: 0 0 5px 5px;"></a>
+                            </div>
                         </li>
                     </ul>
                 </div>

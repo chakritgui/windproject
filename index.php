@@ -5,6 +5,7 @@
     require_once __DIR__ . '/app/core/Controller.php';
     require_once __DIR__ . '/app/core/Router.php';
     require_once __DIR__ . '/app/helpers/helpers.php';
+    require_once __DIR__ . '/app/helpers/mediaHelper.php';
     require_once __DIR__ . '/vendor/autoload.php';
     spl_autoload_register(function ($class) {
         $paths = [
