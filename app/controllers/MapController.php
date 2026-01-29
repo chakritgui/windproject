@@ -4,9 +4,11 @@ require_once __DIR__ . '/../models/MapModel.php';
 class  MapController extends BaseController {
     private $model;
     public function __construct(){ $this->model = new MapModel(); }
+    public function master() {
+        $this->json($this->model->master());
+    }
     public function windarea() {
-        $result = $this->model->windarea();
-        $this->json($result);
+        $this->json($this->model->windarea());
     }
     public function poleslocation() {
         $result = $this->model->poleslocation();

@@ -441,5 +441,7 @@
     "personal_information": "Personal Information",
     "usage_history": "Usage History",
     "new_password": "Enter new password",
-    "latest": "Latest"
+    "latest": "Latest",
+    "home": "Home",
+    "outside_the_polygon": "Outside the polygon"
 }

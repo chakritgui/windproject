@@ -143,63 +143,50 @@ class UserModel {
         ];
     }
     public function newsList($page = 1, $limit = 20) {
-    $offset = ($page - 1) * $limit;
-    $member_id = $_SESSION['user']['id'] ?? 0; // ป้องกันกรณี session หลุด
-    
-    $where  = "WHERE c.status = 'published' AND c.type = 'news'";
-    
-    // นับจำนวนทั้งหมด
-    $stmt = $this->db->prepare("SELECT COUNT(*) FROM wp_content c $where");
-    $stmt->execute();
-    $total = (int)$stmt->fetchColumn();
-
-    $sql = "SELECT
-                c.content_id,
-                c.created_at,
-                iEn.content_subject as subject_en,
-                iTh.content_subject as subject_th,
-                iLo.content_subject as subject_lo,
-                c.cover as cover_image,
-                SUM(CASE WHEN m.file_type = 'attachment' THEN 1 ELSE 0 END) as count_attachment,
-                SUM(CASE WHEN m.file_type = 'image' THEN 1 ELSE 0 END) as count_image,
-                SUM(CASE WHEN m.file_type = 'image360' THEN 1 ELSE 0 END) as count_image360,
-                -- ตรวจสอบสถานะการอ่าน
-                MAX(CASE WHEN t.read_at IS NOT NULL THEN 1 ELSE 0 END) as is_read
-            FROM wp_content c
-            LEFT JOIN wp_content_item iEn on iEn.content_id = c.content_id and iEn.content_lang = 'en'
-            LEFT JOIN wp_content_item iTh on iTh.content_id = c.content_id and iTh.content_lang = 'th' 
-            LEFT JOIN wp_content_item iLo on iLo.content_id = c.content_id and iLo.content_lang = 'lo'
-            LEFT JOIN wp_content_media m on m.content_id = c.content_id and m.status = 'active'
-            -- เชื่อมตารางแจ้งเตือนเพื่อดูว่าอ่านหรือยัง
-            LEFT JOIN wp_notification_targets t on t.notifications_item = c.content_id 
-                AND t.notifications_target = 'news' 
-                AND t.member_id = :member_id
-            $where
-            GROUP BY c.content_id
-            ORDER BY c.created_at DESC, c.content_id DESC
-            LIMIT :limit OFFSET :offset";
-
-    $stmt = $this->db->prepare($sql);
-    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-    $stmt->bindValue(':member_id', $member_id, PDO::PARAM_INT);
-    $stmt->execute();
-    
-    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    foreach ($rows as &$row) {
-        // ไม่ต้องสั่ง $row['is_read'] = false; แล้ว เพราะ SQL คืนค่ามาให้แล้ว (0 หรือ 1)
-        $this->formatRow($row); 
+        $offset = ($page - 1) * $limit;
+        $member_id = $_SESSION['user']['id'] ?? 0; 
+        $where  = "WHERE c.status = 'published' AND c.type = 'news'";
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM wp_content c $where");
+        $stmt->execute();
+        $total = (int)$stmt->fetchColumn();
+        $sql = "SELECT
+                    c.content_id,
+                    c.created_at,
+                    iEn.content_subject as subject_en,
+                    iTh.content_subject as subject_th,
+                    iLo.content_subject as subject_lo,
+                    c.cover as cover_image,
+                    SUM(CASE WHEN m.file_type = 'attachment' THEN 1 ELSE 0 END) as count_attachment,
+                    SUM(CASE WHEN m.file_type = 'image' THEN 1 ELSE 0 END) as count_image,
+                    SUM(CASE WHEN m.file_type = 'image360' THEN 1 ELSE 0 END) as count_image360,
+                    MAX(CASE WHEN t.read_at IS NOT NULL THEN 1 ELSE 0 END) as is_read
+                FROM wp_content c
+                LEFT JOIN wp_content_item iEn on iEn.content_id = c.content_id and iEn.content_lang = 'en'
+                LEFT JOIN wp_content_item iTh on iTh.content_id = c.content_id and iTh.content_lang = 'th' 
+                LEFT JOIN wp_content_item iLo on iLo.content_id = c.content_id and iLo.content_lang = 'lo'
+                LEFT JOIN wp_content_media m on m.content_id = c.content_id and m.status = 'active'
+                LEFT JOIN wp_notification_targets t on t.notifications_item = c.content_id AND t.notifications_target = 'news' AND t.member_id = :member_id
+                $where
+                GROUP BY c.content_id
+                ORDER BY c.created_at DESC, c.content_id DESC
+                LIMIT :limit OFFSET :offset";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->bindValue(':member_id', $member_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as &$row) {
+            $this->formatRow($row); 
+        }
+        return [
+            'total'    => $total,
+            'page'     => $page,
+            'limit'    => $limit,
+            'has_more' => ($offset + $limit) < $total,
+            'items'    => $rows
+        ];
     }
-
-    return [
-        'total'    => $total,
-        'page'     => $page,
-        'limit'    => $limit,
-        'has_more' => ($offset + $limit) < $total,
-        'items'    => $rows
-    ];
-}
     private function formatRow(&$row) {
         if (!empty($row['created_at'])) {
             $row['created_at'] = convertTimeZone($row['created_at'], 'd/m/Y H:i:s');

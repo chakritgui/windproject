@@ -119,6 +119,7 @@
         }
     }
     $router->post('/api/document/filter', 'DocumentController@filter');
+    $router->post('/api/master', 'MapController@master');
     $router->post('/api/wind-area', 'MapController@windarea');
     $router->post('/api/poles-location', 'MapController@poleslocation');
     $router->post('/api/pole-details', 'MapController@poledetails');

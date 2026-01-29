@@ -88,7 +88,7 @@
                 <ul class="nav d-none d-lg-flex align-items-center me-3">
                     <li class="nav-item">
                         <a class="nav-link <?=($GLOBALS['currentRoute']=='/'?'active':'')?>" href="<?=BASE_URL?>/">
-                            <i class="fa-solid fa-map-location-dot"></i> <span data-i18n="map"></span>
+                            <i class="fa-solid fa-house"></i> <span data-i18n="home"></span>
                         </a>
                     </li>
                     <li class="nav-item">

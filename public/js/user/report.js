@@ -105,7 +105,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                         </div>
                         <div class="col-md-6 col-lg-4">
                             <div class="sensor-checkbox">
-                                <input type="checkbox" class="form-check-input me-3" id="sensor1" checked>
+                                <input type="checkbox" class="form-check-input me-2" id="sensor1" checked>
                                 <label class="form-check-label" for="sensor1">
                                     <i class="fas fa-wind text-primary me-2"></i><span data-i18n="wind_speed"></span> (m/s)
                                 </label>
@@ -113,7 +113,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                         </div>
                         <div class="col-md-6 col-lg-4">
                             <div class="sensor-checkbox">
-                                <input type="checkbox" class="form-check-input me-3" id="sensor2" checked>
+                                <input type="checkbox" class="form-check-input me-2" id="sensor2" checked>
                                 <label class="form-check-label" for="sensor2">
                                     <i class="fas fa-compass text-success me-2"></i><span data-i18n="wind_direction"></span> (<span data-i18n="degree"></span>)
                                 </label>
@@ -121,7 +121,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                         </div>
                         <div class="col-md-6 col-lg-4">
                             <div class="sensor-checkbox">
-                                <input type="checkbox" class="form-check-input me-3" id="sensor3">
+                                <input type="checkbox" class="form-check-input me-2" id="sensor3">
                                 <label class="form-check-label" for="sensor3">
                                     <i class="fas fa-weight text-info me-2"></i><span data-i18n="air_density"></span> (kg/m³)
                                 </label>
@@ -129,7 +129,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                         </div>
                         <div class="col-md-6 col-lg-4">
                             <div class="sensor-checkbox">
-                                <input type="checkbox" class="form-check-input me-3" id="sensor4">
+                                <input type="checkbox" class="form-check-input me-2" id="sensor4">
                                 <label class="form-check-label" for="sensor4">
                                     <i class="fas fa-tachometer-alt text-warning me-2"></i><span data-i18n="surface_pressure"></span> (hPa)
                                 </label>
@@ -137,7 +137,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                         </div>
                         <div class="col-md-6 col-lg-4">
                             <div class="sensor-checkbox">
-                                <input type="checkbox" class="form-check-input me-3" id="sensor5">
+                                <input type="checkbox" class="form-check-input me-2" id="sensor5">
                                 <label class="form-check-label" for="sensor5">
                                     <i class="fas fa-tint text-primary me-2"></i><span data-i18n="relative_humidity"></span> (%)
                                 </label>
@@ -145,7 +145,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                         </div>
                         <div class="col-md-6 col-lg-4">
                             <div class="sensor-checkbox">
-                                <input type="checkbox" class="form-check-input me-3" id="sensor6">
+                                <input type="checkbox" class="form-check-input me-2" id="sensor6">
                                 <label class="form-check-label" for="sensor6">
                                     <i class="fas fa-temperature-high text-danger me-2"></i><span data-i18n="turbulence_intensity"></span> (°C)
                                 </label>

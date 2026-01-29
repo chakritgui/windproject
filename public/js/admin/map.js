@@ -76,6 +76,10 @@ function loadMapDataFromServer() {
                     const lng = parseFloat(settings.center_lng) || 100.5018;
                     const zoom = parseInt(settings.zoom_level) || 12;
                     map.setView([lat, lng], zoom);
+                    if (settings.polygon_visibility) {
+                        const visibilityValue = settings.polygon_visibility; 
+                        $(`input[name="polygon_visibility"][value="${visibilityValue}"]`).prop('checked', true);
+                    }
                     if (settings.default_style) {
                         currentStyle = typeof settings.default_style === 'string' 
                             ? JSON.parse(settings.default_style) 
@@ -294,13 +298,15 @@ function fitAllLayers() {
 }
 function getMapFullConfigForSave() {
     const center = map.getCenter();
+    const polygonVisibility = document.querySelector('input[name="polygon_visibility"]:checked')?.value || 'close';
     return {
         map_settings: {
             center_lat: center.lat.toFixed(8),
             center_lng: center.lng.toFixed(8),
             zoom_level: map.getZoom(),
             is_locked: isZoomLocked ? 1 : 0, 
-            default_style: JSON.stringify(currentStyle) 
+            default_style: JSON.stringify(currentStyle),
+            polygon_visibility: polygonVisibility 
         },
         polygons: polygons.map(p => {
             const currentLayer = polygonLayers[p.poly_id];

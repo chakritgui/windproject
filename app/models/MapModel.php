@@ -4,17 +4,14 @@ class MapModel{
     public function __construct(){
         $this->db = Database::getInstance()->pdo;
     }
+    public function master() {
+        $sql = "SELECT center_lat, center_lng, zoom_level, polygon_visibility FROM wp_map_master LIMIT 1";
+        return $this->db->query($sql)->fetch(PDO::FETCH_ASSOC);
+    }
     public function windarea() {
-        $sql = "SELECT * FROM wp_map_polygons WHERE status = 'active'";
-        $stmt = $this->db->query($sql);
-        $polygons = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $sqlMap = "SELECT center_lat, center_lng, zoom_level FROM wp_map_master LIMIT 1";
-        $stmtMap = $this->db->query($sqlMap);
-        $master = $stmtMap->fetch(PDO::FETCH_ASSOC);
-        return [
-            'master' => $master,
-            'polygons' => $polygons
-        ];
+        $sql = "SELECT area_name, geo_data, custom_style FROM wp_map_polygons WHERE status = 'active'";
+        $polygons = $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        return ['polygons' => $polygons];
     }
     public function poleslocation() {
         $sql = "SELECT 
