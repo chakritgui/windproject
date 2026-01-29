@@ -14,6 +14,7 @@ class ContractsModel {
                 contract_id, 
                 contract_no,
                 contract_name, 
+                contract_name_display,
                 contract_start, 
                 contract_end, 
                 status
@@ -98,6 +99,7 @@ class ContractsModel {
             return [
                 'contract_id' => '',
                 'contract_name' => '',
+                'contract_name_display' => '',
                 'contract_no' => '',
                 'contract_start' => '',
                 'contract_end' => '',
@@ -122,6 +124,7 @@ class ContractsModel {
         $contract_id = $data['contract_id'] ?? null;
         $contract_no = $data['contract_no'] ?? '';
         $contract_name = $data['contract_name'] ?? '';
+        $contract_name_display = $data['contract_name_display'] ?? '';
         if ($this->isDuplicateContractName($contract_name, $contract_id)) {
             return [
                 'status'  => false,
@@ -135,13 +138,14 @@ class ContractsModel {
         $contract_end   = ($endObj) ? $endObj->format('Y-m-d') : null;
         $pdo = $this->db;
         if ($contract_id) {
-            $sql = "UPDATE wp_contract SET contract_no = :contract_no, contract_name = :contract_name, contract_start = :contract_start, contract_end = :contract_end, status = :status, updated_at = NOW() WHERE contract_id = :contract_id";
+            $sql = "UPDATE wp_contract SET contract_no = :contract_no, contract_name = :contract_name, contract_name_display = :contract_name_display, contract_start = :contract_start, contract_end = :contract_end, status = :status, updated_at = NOW() WHERE contract_id = :contract_id";
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':contract_id', (int)$contract_id, PDO::PARAM_INT);
         } else {
             $sql = "INSERT INTO wp_contract (
                 contract_no,
                 contract_name,
+                contract_name_display,
                 contract_start,
                 contract_end,
                 status,
@@ -150,6 +154,7 @@ class ContractsModel {
             ) VALUES (
                 :contract_no,
                 :contract_name,
+                :contract_name_display,
                 :contract_start,
                 :contract_end,
                 :status,
@@ -160,6 +165,7 @@ class ContractsModel {
         }
         $stmt->bindValue(':contract_no', $contract_no);
         $stmt->bindValue(':contract_name', $contract_name);
+        $stmt->bindValue(':contract_name_display', $contract_name_display);
         $stmt->bindValue(':contract_start', $contract_start);
         $stmt->bindValue(':contract_end', $contract_end);
         $stmt->bindValue(':status', $status);

@@ -13,6 +13,7 @@ class InstallationsModel {
         $sql = "SELECT
                 i.installations_id, 
                 i.installations_name,
+                i.installations_name_display,
                 i.status,
                 p.project_name,
                 t.type_name
@@ -89,12 +90,7 @@ class InstallationsModel {
                 $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_project {$where}");
                 $stmtCount->execute($params);
                 $totalCount = (int)$stmtCount->fetchColumn();
-                $sql = "SELECT project_id AS id, project_name AS text
-                    FROM wp_project
-                    {$where}
-                    ORDER BY project_id DESC
-                    LIMIT :limit OFFSET :offset
-                ";
+                $sql = "SELECT project_id AS id, project_name AS text FROM wp_project {$where} ORDER BY project_id DESC LIMIT :limit OFFSET :offset";
                 $stmt = $this->db->prepare($sql);
                 foreach ($params as $k => $v) {
                     $stmt->bindValue($k, $v);
@@ -112,12 +108,7 @@ class InstallationsModel {
                 $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_poles {$where}");
                 $stmtCount->execute($params);
                 $totalCount = (int)$stmtCount->fetchColumn();
-                $sql = "SELECT poles_id AS id, poles_code AS text
-                    FROM wp_poles
-                    {$where}
-                    ORDER BY poles_id DESC
-                    LIMIT :limit OFFSET :offset
-                ";
+                $sql = "SELECT poles_id AS id, poles_code AS text FROM wp_poles {$where} ORDER BY poles_id DESC LIMIT :limit OFFSET :offset";
                 $stmt = $this->db->prepare($sql);
                 foreach ($params as $k => $v) {
                     $stmt->bindValue($k, $v);
@@ -135,12 +126,7 @@ class InstallationsModel {
                 $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_type {$where}");
                 $stmtCount->execute($params);
                 $totalCount = (int)$stmtCount->fetchColumn();
-                $sql = "SELECT type_id AS id, type_name AS text
-                    FROM wp_type
-                    {$where}
-                    ORDER BY type_id ASC
-                    LIMIT :limit OFFSET :offset
-                ";
+                $sql = "SELECT type_id AS id, type_name AS text FROM wp_type {$where} ORDER BY type_id ASC LIMIT :limit OFFSET :offset";
                 $stmt = $this->db->prepare($sql);
                 foreach ($params as $k => $v) {
                     $stmt->bindValue($k, $v);
@@ -158,12 +144,7 @@ class InstallationsModel {
                 $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_installations {$where}");
                 $stmtCount->execute($params);
                 $totalCount = (int)$stmtCount->fetchColumn();
-                $sql = "SELECT installations_id AS id, installations_name AS text
-                    FROM wp_installations
-                    {$where}
-                    ORDER BY installations_id ASC
-                    LIMIT :limit OFFSET :offset
-                ";
+                $sql = "SELECT installations_id AS id, installations_name AS text FROM wp_installations {$where} ORDER BY installations_id ASC LIMIT :limit OFFSET :offset";
                 $stmt = $this->db->prepare($sql);
                 foreach ($params as $k => $v) {
                     $stmt->bindValue($k, $v);
@@ -189,6 +170,7 @@ class InstallationsModel {
             return [
                 'installations_id' => '',
                 'installations_name' => '',
+                'installations_name_display' => '',
                 'project_id' => '',
                 'project_name' => '',
                 'type_id' => '',
@@ -199,6 +181,7 @@ class InstallationsModel {
             $sql = "SELECT 
                     i.installations_id,
                     i.installations_name,
+                    i.installations_name_display,
                     i.status,
                     p.project_id,
                     p.project_name,
@@ -217,9 +200,10 @@ class InstallationsModel {
     public function save(array $data){
         $installations_id   = !empty($data['installations_id']) ? (int)$data['installations_id'] : null;
         $installations_name = trim($data['installations_name'] ?? '');
+        $installations_name_display = trim($data['installations_name_display'] ?? '');
         $project_id         = (int)($data['project'] ?? 0);
         $type_id            = (int)($data['type'] ?? 0);
-        $status             = (int)($data['status'] ?? 0);
+        $status             = ($data['status'] ?? '');
         if ($installations_name === '') {
             return [
                 'status'  => false,
@@ -234,10 +218,11 @@ class InstallationsModel {
         }
         $pdo = $this->db;
         if ($installations_id) {
-            $sql = "UPDATE wp_installations SET installations_name = :installations_name, project_id = :project_id, type_id = :type_id, status = :status, updated_at = NOW() WHERE installations_id = :installations_id";
+            $sql = "UPDATE wp_installations SET installations_name = :installations_name, installations_name_display = :installations_name_display, project_id = :project_id, type_id = :type_id, status = :status, updated_at = NOW() WHERE installations_id = :installations_id";
         } else {
             $sql = "INSERT INTO wp_installations (
                     installations_name,
+                    installations_name_display,
                     project_id,
                     type_id,
                     status,
@@ -245,6 +230,7 @@ class InstallationsModel {
                     updated_at
                 ) VALUES (
                     :installations_name,
+                    :installations_name_display,
                     :project_id,
                     :type_id,
                     :status,
@@ -258,9 +244,10 @@ class InstallationsModel {
             $stmt->bindValue(':installations_id', $installations_id, PDO::PARAM_INT);
         }
         $stmt->bindValue(':installations_name', $installations_name);
+        $stmt->bindValue(':installations_name_display', $installations_name_display);
         $stmt->bindValue(':project_id', $project_id, PDO::PARAM_INT);
         $stmt->bindValue(':type_id', $type_id, PDO::PARAM_INT);
-        $stmt->bindValue(':status', $status, PDO::PARAM_INT);
+        $stmt->bindValue(':status', $status);
         $result = $stmt->execute();
         if (!$result) {
             return [

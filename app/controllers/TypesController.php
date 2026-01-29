@@ -38,6 +38,7 @@ class TypesController extends BaseController {
         $data = [
             'type_id' => intval($_POST['type_id'] ?? 0),
             'type_name' => $_POST['type_name'] ?? '',
+            'type_name_display' => $_POST['type_name_display'] ?? '',
             'type_icon' => $_FILES['type_icon'] ?? null,
             'ex_type_icon' => $_FILES['ex_type_icon'] ?? null,
             'status' => $_POST['status'] ?? ''

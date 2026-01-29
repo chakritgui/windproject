@@ -14,6 +14,7 @@ class ProjectsModel {
                 p.project_id, 
                 p.project_code, 
                 p.project_name, 
+                p.project_name_display, 
                 p.project_start, 
                 p.project_end, 
                 p.status,
@@ -124,6 +125,7 @@ class ProjectsModel {
                 'project_id' => '',
                 'project_code' => '',
                 'project_name' => '',
+                'project_name_display' => '',
                 'project_start' => '',
                 'project_end' => '',
                 'contract_id' => '',
@@ -154,6 +156,7 @@ class ProjectsModel {
         $contract_id = $data['contract_id'] ?? null;
         $project_code = $data['project_code'] ?? '';
         $project_name = $data['project_name'] ?? '';
+        $project_name_display = $data['project_name_display'] ?? '';
         if ($this->isDuplicateProjectName($project_name, $contract_id, $project_id)) {
             return [
                 'status'  => false,
@@ -167,7 +170,7 @@ class ProjectsModel {
         $project_end   = ($endObj) ? $endObj->format('Y-m-d') : null;
         $pdo = $this->db;
         if ($project_id) {
-            $sql = "UPDATE wp_project SET contract_id = :contract_id, project_code = :project_code, project_name = :project_name, project_start = :project_start, project_end = :project_end, status = :status, updated_at = NOW() WHERE project_id = :project_id";
+            $sql = "UPDATE wp_project SET contract_id = :contract_id, project_code = :project_code, project_name = :project_name, project_name_display = :project_name_display, project_start = :project_start, project_end = :project_end, status = :status, updated_at = NOW() WHERE project_id = :project_id";
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':project_id', (int)$project_id, PDO::PARAM_INT);
         } else {
@@ -175,6 +178,7 @@ class ProjectsModel {
                 contract_id,
                 project_code,
                 project_name,
+                project_name_display,
                 project_start,
                 project_end,
                 status,
@@ -184,6 +188,7 @@ class ProjectsModel {
                 :contract_id,
                 :project_code,
                 :project_name,
+                :project_name_display,
                 :project_start,
                 :project_end,
                 :status,
@@ -195,6 +200,7 @@ class ProjectsModel {
         $stmt->bindValue(':contract_id', $contract_id);
         $stmt->bindValue(':project_code', $project_code);
         $stmt->bindValue(':project_name', $project_name);
+        $stmt->bindValue(':project_name_display', $project_name_display);
         $stmt->bindValue(':project_start', $project_start);
         $stmt->bindValue(':project_end', $project_end);
         $stmt->bindValue(':status', $status);

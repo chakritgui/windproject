@@ -26,7 +26,24 @@ function initInstallationsTable() {
         columns: [      
             { data: "project_name" },
             { data: "type_name" },
-            { data: "installations_name" },
+            { 
+                data: "installations_name",
+                render: function (data, type, row) {
+                    if (data) {
+                        return data.replace(/\r\n|\n/g, '<br />');
+                    }
+                    return data;
+                }
+            },
+            { 
+                data: "installations_name_display",
+                render: function (data, type, row) {
+                    if (data) {
+                        return data.replace(/\r\n|\n/g, '<br />');
+                    }
+                    return data;
+                }
+            },
             { 
                 data: 'status',
                 render: function (status, type, row) {
@@ -145,6 +162,10 @@ $(document).on('click', '.manage-installation', function() {
                         <label class="mb-2 required" data-i18n="installation"></label>
                         <input type="text" class="form-control obj-required" id="installations_name" maxlength="255">
                     </div>
+                    <div class="mb-3">
+                        <label class="mb-2" data-i18n="display"></label>
+                        <textarea class="form-control" id="installations_name_display"></textarea>
+                    </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required" data-i18n="project"></label>
@@ -168,6 +189,7 @@ $(document).on('click', '.manage-installation', function() {
                 if (installationData) {
                     $("#installations_id").val(installationData.installations_id);
                     $("#installations_name").val(installationData.installations_name);
+                    $("#installations_name_display").val(installationData.installations_name_display);
                     if (installationData.status) {
                         let statusName = installationData.status.charAt(0).toUpperCase() + installationData.status.slice(1);
                         var newOptionStatus = new Option(statusName, installationData.status, true, true);
@@ -218,6 +240,7 @@ function saveInstallation() {
     const formData = new FormData();
     formData.append("installations_id", $("#installations_id").val() || "");
     formData.append("installations_name", $("#installations_name").val() || "");
+    formData.append("installations_name_display", $("#installations_name_display").val() || "");
     formData.append("status", $("#status").val());
     formData.append("project", $("#project").val());
     formData.append("type", $("#type").val());

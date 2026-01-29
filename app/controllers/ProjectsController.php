@@ -41,6 +41,7 @@ class ProjectsController extends BaseController {
             'contract_id' => intval($_POST['contract_id'] ?? 0),
             'project_code' => $_POST['project_code'] ?? '',
             'project_name' => $_POST['project_name'] ?? '',
+            'project_name_display' => $_POST['project_name_display'] ?? '',
             'project_start' => $_POST['project_start'] ?? '',
             'project_end' => $_POST['project_end'] ?? '',
             'status' => $_POST['status'] ?? ''

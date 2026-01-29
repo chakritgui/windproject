@@ -24,7 +24,24 @@ function initProjectsTable() {
         },
         columns: [      
             { data: "project_code" },
-            { data: "project_name" },
+            { 
+                data: "project_name",
+                render: function (data, type, row) {
+                    if (data) {
+                        return data.replace(/\r\n|\n/g, '<br />');
+                    }
+                    return data;
+                }
+            },
+            { 
+                data: "project_name_display",
+                render: function (data, type, row) {
+                    if (data) {
+                        return data.replace(/\r\n|\n/g, '<br />');
+                    }
+                    return data;
+                }
+            },
             { data: "contract_name" },
             { data: "project_start" },
             { data: "project_end" },
@@ -151,6 +168,10 @@ $(document).on('click', '.manage-project', function() {
                         <input type="text" class="form-control obj-required" id="project_name" maxlength="255">
                     </div>
                     <div class="mb-3">
+                        <label class="mb-2" data-i18n="display"></label>
+                        <textarea class="form-control" id="project_name_display"></textarea>
+                    </div>
+                    <div class="mb-3">
                         <label class="mb-2" data-i18n="project_code"></label>
                         <input type="text" class="form-control" id="project_code" maxlength="255">
                     </div>
@@ -178,6 +199,7 @@ $(document).on('click', '.manage-project', function() {
                 if (projectData) {
                     $("#project_id").val(projectData.project_id);
                     $("#project_name").val(projectData.project_name);
+                    $("#project_name_display").val(projectData.project_name_display);
                     $("#project_code").val(projectData.project_code);
                     if (projectData.project_start) {
                         let startDate = new Date(projectData.project_start);
@@ -249,16 +271,12 @@ $(document).on('click', '.save-project', function () {
 });
 function saveProject() {
     const btn = $(".save-project");
-    const name = $("#project_name").val();
-    if (!name) {
-        showError('Error', 'Please enter project name');
-        return;
-    }
     btn.prop("disabled", true);
     const formData = new FormData();
     formData.append("project_id", $("#project_id").val() || "");
     formData.append("contract_id", $("#contract").val() || "");
-    formData.append("project_name", name);
+    formData.append("project_name", $("#project_name").val() || "");
+    formData.append("project_name_display", $("#project_name_display").val() || "");
     formData.append("project_code", $("#project_code").val() || "");
     formData.append("project_start", $("#project_start").val());
     formData.append("project_end", $("#project_end").val());

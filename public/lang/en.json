@@ -443,5 +443,6 @@
     "new_password": "Enter new password",
     "latest": "Latest",
     "home": "Home",
-    "outside_the_polygon": "Outside the polygon"
+    "outside_the_polygon": "Outside the polygon",
+    "display": "Display"
 }

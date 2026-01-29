@@ -189,9 +189,9 @@ async function loadMenuLevel(level) {
     let html = `<div class="menu-header">${cfg.title}</div>`;
     data.forEach(item => {
         if (cfg.isLast) {
-            html += `<div class="menu-item station-item" onclick="handleStationClick(${item.poles_lat}, ${item.poles_lng}, ${item.poles_id}, this)"><span>${item[cfg.label]}</span><i class="fa-solid fa-location-dot text-info"></i></div>`;
+            html += `<div class="menu-item station-item" onclick="handleStationClick(${item.poles_lat}, ${item.poles_lng}, ${item.poles_id}, this)"><span>${item[cfg.label].replace(/\r\n|\n/g, '<br />')}</span><i class="fa-solid fa-location-dot text-info"></i></div>`;
         } else {
-            html += `<div class="menu-item" onclick="selectItem(${level}, ${item[cfg.key]}, this)"><span>${item[cfg.label]}</span><i class="fa-solid fa-chevron-right"></i></div>`;
+            html += `<div class="menu-item" onclick="selectItem(${level}, ${item[cfg.key]}, this)"><span>${item[cfg.label].replace(/\r\n|\n/g, '<br />')}</span><i class="fa-solid fa-chevron-right"></i></div>`;
         }
     });
     const panel = $(`#menu-level-${level}`);

@@ -23,7 +23,24 @@ function initContractsTable() {
         },
         columns: [      
             { data: "contract_no" },
-            { data: "contract_name" },
+            { 
+                data: "contract_name",
+                render: function (data, type, row) {
+                    if (data) {
+                        return data.replace(/\r\n|\n/g, '<br />');
+                    }
+                    return data;
+                }
+            },
+            { 
+                data: "contract_name_display",
+                render: function (data, type, row) {
+                    if (data) {
+                        return data.replace(/\r\n|\n/g, '<br />');
+                    }
+                    return data;
+                }
+            },
             { data: "contract_start" },
             { data: "contract_end" },
             { 
@@ -145,6 +162,10 @@ $(document).on('click', '.manage-contract', function() {
                         <input type="text" class="form-control obj-required" id="contract_name" maxlength="255">
                     </div>
                     <div class="mb-3">
+                        <label class="mb-2" data-i18n="display"></label>
+                        <textarea class="form-control" id="contract_name_display"></textarea>
+                    </div>
+                    <div class="mb-3">
                         <label class="mb-2" data-i18n="contract_no"></label>
                         <input type="text" class="form-control" id="contract_no" maxlength="255">
                     </div>
@@ -171,6 +192,7 @@ $(document).on('click', '.manage-contract', function() {
                 if (contractData) {
                     $("#contract_id").val(contractData.contract_id);
                     $("#contract_name").val(contractData.contract_name);
+                    $("#contract_name_display").val(contractData.contract_name_display);
                     $("#contract_no").val(contractData.contract_no);
                     if (contractData.contract_start) {
                         let startDate = new Date(contractData.contract_start);
@@ -238,15 +260,11 @@ $(document).on('click', '.save-contract', function () {
 });
 function saveContract() {
     const btn = $(".save-contract");
-    const name = $("#contract_name").val();
-    if (!name) {
-        showError('Error', 'Please enter contract name');
-        return;
-    }
     btn.prop("disabled", true);
     const formData = new FormData();
     formData.append("contract_id", $("#contract_id").val() || "");
-    formData.append("contract_name", name);
+    formData.append("contract_name", $("#contract_name").val());
+    formData.append("contract_name_display", $("#contract_name_display").val());
     formData.append("contract_no", $("#contract_no").val() || "");
     formData.append("contract_start", $("#contract_start").val());
     formData.append("contract_end", $("#contract_end").val());

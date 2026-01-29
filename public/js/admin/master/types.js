@@ -35,7 +35,24 @@ function initTypesTable() {
                     `;
                 }
             },
-            { data: "type_name" },
+            { 
+                data: "type_name",
+                render: function (data, type, row) {
+                    if (data) {
+                        return data.replace(/\r\n|\n/g, '<br />');
+                    }
+                    return data;
+                }
+            },
+            { 
+                data: "type_name_display",
+                render: function (data, type, row) {
+                    if (data) {
+                        return data.replace(/\r\n|\n/g, '<br />');
+                    }
+                    return data;
+                }
+            },
             { 
                 data: 'status',
                 render: function (status, type, row) {
@@ -169,6 +186,10 @@ $(document).on('click', '.manage-type', function() {
                         <label class="mb-2 required" data-i18n="type_name"></label>
                         <input type="text" class="form-control obj-required" id="type_name" maxlength="255">
                     </div>
+                    <div class="mb-3">
+                        <label class="mb-2" data-i18n="display"></label>
+                        <textarea class="form-control" id="type_name_display"></textarea>
+                    </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required" data-i18n="status"></label>
@@ -277,15 +298,11 @@ $(document).on('click', '.save-type', function () {
 });
 function saveType() {
     const btn = $(".save-type");
-    const name = $("#type_name").val();
-    if (!name) {
-        showError('Error', 'Please enter type name');
-        return;
-    }
     btn.prop("disabled", true);
     const formData = new FormData();
     formData.append("type_id", $("#type_id").val() || "");
-    formData.append("type_name", name);
+    formData.append("type_name", $("#type_name").val() || "");
+    formData.append("type_name_display", $("#type_name_display").val() || "");
     formData.append("status", $("#status").val());
     formData.append("ex_type_icon", $("#ex_type_icon").val());
     const type_icon = $("#type_icon")[0].files[0] || null;

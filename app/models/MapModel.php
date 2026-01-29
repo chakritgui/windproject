@@ -24,7 +24,14 @@ class MapModel{
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function contracts() {
-        $sql = "SELECT contract_id, contract_name 
+        $sql = "SELECT contract_id,
+                CASE 
+                    WHEN contract_name_display IS NOT NULL AND contract_name_display <> '' 
+                        THEN contract_name_display
+                    WHEN contract_name IS NOT NULL AND contract_name <> '' 
+                        THEN contract_name
+                    ELSE '' 
+                END AS contract_name
                 FROM wp_contract
                 WHERE status = 'active' 
                 ORDER BY contract_id ";
@@ -34,7 +41,13 @@ class MapModel{
     public function project($contract_id){
         $sql = "SELECT DISTINCT
                 pj.project_id,
-                pj.project_name
+                CASE 
+                    WHEN pj.project_name_display IS NOT NULL AND pj.project_name_display <> '' 
+                        THEN pj.project_name_display
+                    WHEN pj.project_name IS NOT NULL AND pj.project_name <> '' 
+                        THEN pj.project_name
+                    ELSE '' 
+                END AS project_name
             FROM wp_poles p
             LEFT JOIN wp_project pj 
                 ON pj.project_id = p.project_id
@@ -50,7 +63,14 @@ class MapModel{
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function type($project_id) {
-        $sql = "SELECT t.type_id, t.type_name 
+        $sql = "SELECT t.type_id,  
+                CASE 
+                    WHEN t.type_name_display IS NOT NULL AND t.type_name_display <> '' 
+                        THEN t.type_name_display
+                    WHEN t.type_name IS NOT NULL AND t.type_name <> '' 
+                        THEN t.type_name
+                    ELSE '' 
+                END AS type_name
                 FROM wp_poles p
                 LEFT JOIN wp_type t on t.type_id = p.type_id
                 WHERE t.status = 'active' and p.status = 'online' and p.project_id = :project_id
@@ -61,7 +81,15 @@ class MapModel{
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function station($project_id, $type_id) {
-        $sql = "SELECT l.installations_id, l.installations_name, p.poles_lat, p.poles_lng, p.poles_id
+        $sql = "SELECT l.installations_id, 
+                CASE 
+                    WHEN l.installations_name_display IS NOT NULL AND l.installations_name_display <> '' 
+                        THEN l.installations_name_display
+                    WHEN l.installations_name IS NOT NULL AND l.installations_name <> '' 
+                        THEN l.installations_name
+                    ELSE '' 
+                END AS installations_name,
+                p.poles_lat, p.poles_lng, p.poles_id
                 FROM wp_poles p
                 LEFT JOIN wp_installations l on l.installations_id = p.installations_id
                 WHERE l.status = 'active' and p.status = 'online' 

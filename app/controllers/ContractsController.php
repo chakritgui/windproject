@@ -39,6 +39,7 @@ class ContractsController extends BaseController {
             'contract_id' => intval($_POST['contract_id'] ?? 0),
             'contract_no' => $_POST['contract_no'] ?? '',
             'contract_name' => $_POST['contract_name'] ?? '',
+            'contract_name_display' => $_POST['contract_name_display'] ?? '',
             'contract_start' => $_POST['contract_start'] ?? '',
             'contract_end' => $_POST['contract_end'] ?? '',
             'status' => $_POST['status'] ?? ''

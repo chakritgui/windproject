@@ -79,13 +79,13 @@ function initNewsTable() {
             data: null,
             orderable: false,
             render: (_, __, row) => `
-                <button class="btn btn-light text-secondary view-news" data-id="${row.content_id}">
+                <button class="btn btn-sm btn-light text-secondary view-news" data-id="${row.content_id}">
                     <i class="fa-solid fa-eye"></i>
                 </button>
-                <button class="btn btn-light text-secondary manage-news" data-id="${row.content_id}">
+                <button class="btn btn-sm btn-light text-secondary manage-news" data-id="${row.content_id}">
                     <i class="fa-solid fa-pen-to-square"></i>
                 </button>
-                <button class="btn btn-light text-danger delete-news" data-id="${row.content_id}">
+                <button class="btn btn-sm btn-light text-danger delete-news" data-id="${row.content_id}">
                     <i class="fa-regular fa-trash-can"></i>
                 </button>
             `

@@ -60,6 +60,7 @@
                         <tr>
                             <th data-i18n="contract_no"></th>
                             <th data-i18n="contract_name"></th>
+                            <th data-i18n="display"></th>
                             <th data-i18n="startDate"></th>
                             <th data-i18n="endDate"></th>
                             <th data-i18n="status"></th>
@@ -91,6 +92,7 @@
                         <tr>
                             <th data-i18n="project_code"></th>
                             <th data-i18n="project_name"></th>
+                            <th data-i18n="display"></th>
                             <th data-i18n="contract"></th>
                             <th data-i18n="startDate"></th>
                             <th data-i18n="endDate"></th>
@@ -119,6 +121,7 @@
                         <tr>
                             <th data-i18n="icon"></th>
                             <th data-i18n="type_name"></th>
+                            <th data-i18n="display"></th>
                             <th data-i18n="status"></th>
                             <th></th>
                         </tr>
@@ -153,6 +156,7 @@
                             <th data-i18n="project"></th>
                             <th data-i18n="type"></th>
                             <th data-i18n="installation"></th>
+                            <th data-i18n="display"></th>
                             <th data-i18n="status"></th>
                             <th></th>
                         </tr>

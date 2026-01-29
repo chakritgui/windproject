@@ -40,6 +40,7 @@ class InstallationsController extends BaseController {
         $data = [
             'installations_id' => intval($_POST['installations_id'] ?? 0),
             'installations_name' => $_POST['installations_name'] ?? '',
+            'installations_name_display' => $_POST['installations_name_display'] ?? '',
             'project'      => (int)($_POST['project'] ?? 0),
             'type'         => (int)($_POST['type'] ?? 0),
             'status' => $_POST['status'] ?? ''

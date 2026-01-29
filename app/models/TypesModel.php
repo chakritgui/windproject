@@ -13,6 +13,7 @@ class TypesModel {
         $sql = "SELECT
                 type_id, 
                 type_name,
+                type_name_display,
                 type_icon,
                 status
             FROM wp_type
@@ -84,6 +85,7 @@ class TypesModel {
             return [
                 'type_id' => '',
                 'type_name' => '',
+                'type_name_display' => '',
                 'type_icon' => '',
                 'status' => 'active'
             ];
@@ -98,6 +100,7 @@ class TypesModel {
     public function save($data) {
         $type_id = $data['type_id'] ?? null;
         $type_name = $data['type_name'] ?? '';
+        $type_name_display = $data['type_name_display'] ?? '';
         $type_icon = $data['type_icon'] ?? '';
         $ex_type_icon = $data['ex_type_icon'] ?? '';
         if ($this->isDuplicateContractName($type_name, $type_id)) {
@@ -109,17 +112,19 @@ class TypesModel {
         $status = $data['status'] ?? '';
         $pdo = $this->db;
         if ($type_id) {
-            $sql = "UPDATE wp_type SET type_name = :type_name, status = :status, updated_at = NOW() WHERE type_id = :type_id";
+            $sql = "UPDATE wp_type SET type_name = :type_name, type_name_display = :type_name_display, status = :status, updated_at = NOW() WHERE type_id = :type_id";
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':type_id', (int)$type_id, PDO::PARAM_INT);
         } else {
             $sql = "INSERT INTO wp_type (
                 type_name,
+                type_name_display,
                 status,
                 created_at,
                 updated_at
             ) VALUES (
                 :type_name,
+                :type_name_display,
                 :status,
                 NOW(),
                 NOW()
@@ -127,6 +132,7 @@ class TypesModel {
             $stmt = $pdo->prepare($sql);
         }
         $stmt->bindValue(':type_name', $type_name);
+        $stmt->bindValue(':type_name_display', $type_name_display);
         $stmt->bindValue(':status', $status);
         $result = $stmt->execute();
         if (!$type_id) $type_id = $pdo->lastInsertId();
