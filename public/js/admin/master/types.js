@@ -21,69 +21,65 @@ function initTypesTable() {
                 d.status = $('#filter_type_status').val();
             }
         },
-        columns: [      
-            { 
-                data: "type_icon",
-                orderable: false,
-                searchable: false,
-                render: function(data){
-                    if (!data) {
-                        return `<img src="${BASE_URL}/public/images/noimage.jpg" style="height:60px; border-radius:6px; object-fit:cover;">`;
-                    }
-                    return `
-                        <img src="${BASE_URL}/${data}" style="height:60px; border-radius:6px; object-fit:cover;">
-                    `;
+        columns: [{ 
+            data: "type_icon",
+            orderable: false,
+            searchable: false,
+            render: function(data){
+                if (!data) {
+                    return `<img src="${BASE_URL}/public/images/noimage.jpg" style="height:60px; border-radius:6px; object-fit:cover;">`;
                 }
-            },
-            { 
-                data: "type_name",
-                render: function (data, type, row) {
-                    if (data) {
-                        return data.replace(/\r\n|\n/g, '<br />');
-                    }
-                    return data;
-                }
-            },
-            { 
-                data: "type_name_display",
-                render: function (data, type, row) {
-                    if (data) {
-                        return data.replace(/\r\n|\n/g, '<br />');
-                    }
-                    return data;
-                }
-            },
-            { 
-                data: 'status',
-                render: function (status, type, row) {
-                    let badgeColor = "";
-                    switch(status) {
-                        case 'active':
-                            badgeColor = "success";
-                            break;
-                        case 'inactive':
-                            badgeColor = "secondary";
-                            break;
-                    }
-                    return `
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-${badgeColor}" style="font-weight:400;" data-i18n="${status}"></span>
-                        </div>
-                    `;
-                }
-            },
-            { 
-                data: null,
-                orderable: false,
-                className: "text-end",
-                render: function(row){
-                    return `
-                        <button class="btn btn-sm btn-light text-secondary manage-type" data-id="${row.type_id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-sm btn-light text-secondary text-danger delete-type" data-id="${row.type_id}"><i class="fa-regular fa-trash-can"></i></button>
-                    `;
-                }
+                return `
+                    <img src="${BASE_URL}/${data}" style="height:60px; border-radius:6px; object-fit:cover;">
+                `;
             }
-        ],
+        },{ 
+            data: "type_name",
+            render: function (data, type, row) {
+                if (data) {
+                    return data.replace(/\r\n|\n/g, '<br />');
+                }
+                return data;
+            }
+        },{ 
+            data: "type_name_display",
+            render: function (data, type, row) {
+                if (data) {
+                    return data.replace(/\r\n|\n/g, '<br />');
+                }
+                return data;
+            }
+        },{ 
+            data: 'status',
+            render: function (status, type, row) {
+                let badgeColor = "";
+                switch(status) {
+                    case 'active':
+                        badgeColor = "success";
+                        break;
+                    case 'inactive':
+                        badgeColor = "secondary";
+                        break;
+                }
+                return `
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-${badgeColor}" style="font-weight:400;" data-i18n="${status}"></span>
+                    </div>
+                `;
+            }
+        },{ 
+            data: null,
+            orderable: false,
+            className: "text-end",
+            render: function(row){
+                return `
+                    <div class="btn-group border rounded-3 bg-white">
+                        <button class="btn btn-link text-warning py-1 manage-type" data-id="${row.type_id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-link text-danger py-1 border-start delete-type" data-id="${row.type_id}"><i class="fa-regular fa-trash-can"></i></button>
+                    </div>
+                `;
+            }
+        }],
         pageLength: pageLength,
         lengthMenu: lengthMenu,
         stateLoadParams: function (settings, data) {

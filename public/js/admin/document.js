@@ -86,10 +86,10 @@ function initDocumentTable() {
             render: function(row){
                 return `
                     <div class="btn-group border rounded-3 bg-white">
-                        <button class="btn btn-link text-secondary history-download py-1" title="History" data-id="${row.document_id}"><i class="fa-solid fa-clock-rotate-left"></i></button>
+                        <button class="btn btn-link text-secondary py-1 history-download" title="History" data-id="${row.document_id}"><i class="fa-solid fa-clock-rotate-left"></i></button>
                         <a href="${BASE_URL}/${row.document_path}" target="_blank" class="btn btn-link text-primary py-1 border-start" title="Open"><i class="fa-solid fa-folder-open"></i></a> 
-                        <button class="btn btn-link text-warning manage-document py-1 border-start" title="Edit" data-id="${row.document_id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-link text-danger delete-document py-1 border-start" title="Delete" data-id="${row.document_id}"><i class="fa-regular fa-trash-can"></i></button>
+                        <button class="btn btn-link text-warning py-1 border-start manage-document" title="Edit" data-id="${row.document_id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-link text-danger py-1 border-start delete-document" title="Delete" data-id="${row.document_id}"><i class="fa-regular fa-trash-can"></i></button>
                     </div>`;
             }
         }],

@@ -111,18 +111,21 @@ function renderTable(data, isNewSearch) {
                     ` : ``}
                 </td>
                 <td style="white-space: nowrap;">
+                    <div class="btn-group border rounded-3 bg-white">
                     ${(item.type === 'content') ? `
-                        <button class="btn btn-sm btn-light text-secondary view-content" data-id="${item.content_id}">
+                        <button class="btn btn-link text-info view-content" data-id="${item.content_id}">
                             <i class="fa-solid fa-eye"></i>
                         </button>    
                     ` : ``}
                     ${(item.type !== 'root') ? `
-                        <button class="btn btn-sm btn-light manage-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-link text-warning border-start manage-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-solid fa-pen-to-square"></i></button>
                         ${(item.child_count === 0) ? `
-                           <button class="btn btn-sm btn-light text-danger delete-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-regular fa-trash-can"></i></button> 
-                        ` : ``}
-                        
-                        ` : ``}
+                           <button class="btn btn-link text-danger border-start delete-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-regular fa-trash-can"></i></button> 
+                        ` : `
+                            <button class="btn btn-link text-muted border-start" disabled><i class="fa-regular fa-trash-can"></i></button>
+                        `}
+                    ` : ``}
+                    </div>
                 </td>
             </tr>`;
     });

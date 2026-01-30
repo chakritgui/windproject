@@ -21,62 +21,62 @@ function initContractsTable() {
                 d.status = $('#filter_status').val();
             }
         },
-        columns: [      
-            { data: "contract_no" },
-            { 
-                data: "contract_name",
-                render: function (data, type, row) {
-                    if (data) {
-                        return data.replace(/\r\n|\n/g, '<br />');
-                    }
-                    return data;
+        columns: [{ 
+            data: "contract_no" 
+        },{ 
+            data: "contract_name",
+            render: function (data, type, row) {
+                if (data) {
+                    return data.replace(/\r\n|\n/g, '<br />');
                 }
-            },
-            { 
-                data: "contract_name_display",
-                render: function (data, type, row) {
-                    if (data) {
-                        return data.replace(/\r\n|\n/g, '<br />');
-                    }
-                    return data;
-                }
-            },
-            { data: "contract_start" },
-            { data: "contract_end" },
-            { 
-                data: 'status',
-                render: function (status, type, row) {
-                    let badgeColor = "";
-                    switch(status) {
-                        case 'active':
-                            badgeColor = "success";
-                            break;
-                        case 'inactive':
-                            badgeColor = "secondary";
-                            break;
-                        case 'expired':
-                            badgeColor = "danger";
-                            break;
-                    }
-                    return `
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-${badgeColor}" style="font-weight:400;" data-i18n="${status}"></span>
-                        </div>
-                    `;
-                }
-            },
-            { 
-                data: null,
-                orderable: false,
-                className: "text-end",
-                render: function(row){
-                    return `
-                        <button class="btn btn-sm btn-light text-secondary manage-contract" data-id="${row.contract_id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-sm btn-light text-secondary text-danger delete-contract" data-id="${row.contract_id}"><i class="fa-regular fa-trash-can"></i></button>
-                    `;
-                }
+                return data;
             }
-        ],
+        },{ 
+            data: "contract_name_display",
+            render: function (data, type, row) {
+                if (data) {
+                    return data.replace(/\r\n|\n/g, '<br />');
+                }
+                return data;
+            }
+        },{ 
+            data: "contract_start" 
+        },{ 
+            data: "contract_end" 
+        },{ 
+            data: 'status',
+            render: function (status, type, row) {
+                let badgeColor = "";
+                switch(status) {
+                    case 'active':
+                        badgeColor = "success";
+                        break;
+                    case 'inactive':
+                        badgeColor = "secondary";
+                        break;
+                    case 'expired':
+                        badgeColor = "danger";
+                        break;
+                }
+                return `
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-${badgeColor}" style="font-weight:400;" data-i18n="${status}"></span>
+                    </div>
+                `;
+            }
+        },{ 
+            data: null,
+            orderable: false,
+            className: "text-end",
+            render: function(row){
+                return `
+                    <div class="btn-group border rounded-3 bg-white">
+                        <button class="btn btn-link text-warning py-1 manage-contract" data-id="${row.contract_id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-link text-danger py-1 border-start delete-contract" data-id="${row.contract_id}"><i class="fa-regular fa-trash-can"></i></button>
+                    </div>
+                `;
+            }
+        }],
         pageLength: pageLength,
         lengthMenu: lengthMenu,
         stateLoadParams: function (settings, data) {

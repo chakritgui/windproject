@@ -79,15 +79,11 @@ function initNewsTable() {
             data: null,
             orderable: false,
             render: (_, __, row) => `
-                <button class="btn btn-sm btn-light text-secondary view-news" data-id="${row.content_id}">
-                    <i class="fa-solid fa-eye"></i>
-                </button>
-                <button class="btn btn-sm btn-light text-secondary manage-news" data-id="${row.content_id}">
-                    <i class="fa-solid fa-pen-to-square"></i>
-                </button>
-                <button class="btn btn-sm btn-light text-danger delete-news" data-id="${row.content_id}">
-                    <i class="fa-regular fa-trash-can"></i>
-                </button>
+                <div class="btn-group border rounded-3 bg-white">
+                    <button class="btn btn-link text-info py-1 view-news" data-id="${row.content_id}"><i class="fa-solid fa-eye"></i></button>
+                    <button class="btn btn-link text-warning py-1 border-start manage-news" data-id="${row.content_id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="btn btn-link text-danger py-1 border-start delete-news" data-id="${row.content_id}"><i class="fa-regular fa-trash-can"></i></button>
+                </div>
             `
         }],
         pageLength: pageLength,

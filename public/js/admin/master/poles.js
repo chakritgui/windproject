@@ -24,57 +24,63 @@ function initPolesTable() {
                 d.installation = $('#filter_pole_installation').val();
             }
         },
-        columns: [      
-            { data: "poles_code" },
-            { data: "type_name" },
-            { data: "project_name" },
-            { data: "poles_lat" },
-            { data: "poles_lng" },
-            { data: "installations_name" },
-            { 
-                data: 'status',
-                render: function (status, type, row) {
-                    let badgeColor = "";
-                    switch(status) {
-                        case 'online':
-                            badgeColor = "success";
-                            break;
-                        case 'inactive':
-                            badgeColor = "secondary";
-                            break;
-                    }
-                    return `
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-${badgeColor}" style="font-weight:400;" data-i18n="${status}"></span>
-                        </div>
-                    `;
+        columns: [{ 
+            data: "poles_code" 
+        },{ 
+            data: "type_name" 
+        },{ 
+            data: "project_name" 
+        },{ 
+            data: "poles_lat" 
+        },{ 
+            data: "poles_lng" 
+        },{ 
+            data: "installations_name" 
+        },{ 
+            data: 'status',
+            render: function (status, type, row) {
+                let badgeColor = "";
+                switch(status) {
+                    case 'online':
+                        badgeColor = "success";
+                        break;
+                    case 'inactive':
+                        badgeColor = "secondary";
+                        break;
                 }
-            },
-            { 
-                data: null,
-                orderable: false,
-                render: function(row){
-                    return (row.content_id) ? `
-                        <button class="btn btn-sm btn-info view-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-eye"></i></button> 
-                        <button class="btn btn-sm btn-warning manage-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-pen-to-square"></i></button> 
-                        <button class="btn btn-sm btn-danger delete-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-trash-can"></i></button> 
-                    ` : `
-                        <button class="btn btn-sm btn-light manage-content" data-pole="${row.poles_id}" data-content=""><i class="fa-solid fa-plus"></i></button>
-                    `;
-                }
-            },
-            { 
-                data: null,
-                orderable: false,
-                className: "text-end",
-                render: function(row){
-                    return `
-                        <button class="btn btn-sm btn-light text-secondary manage-pole" data-id="${row.poles_id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-sm btn-light text-secondary text-danger delete-pole" data-id="${row.poles_id}"><i class="fa-regular fa-trash-can"></i></button>
-                    `;
-                }
+                return `
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-${badgeColor}" style="font-weight:400;" data-i18n="${status}"></span>
+                    </div>
+                `;
             }
-        ],
+        },{ 
+            data: null,
+            orderable: false,
+            render: function(row){
+                return (row.content_id) ? `
+                    <div class="btn-group border rounded-3 bg-white">
+                        <button class="btn btn-link text-info py-1 view-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-eye"></i></button> 
+                        <button class="btn btn-link text-warning py-1 border-start manage-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-pen-to-square"></i></button> 
+                        <button class="btn btn-link text-danger py-1 border-start delete-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-trash-can"></i></button> 
+                    </div>
+                ` : `
+                    <button class="btn btn-sm btn-light manage-content" data-pole="${row.poles_id}" data-content=""><i class="fa-solid fa-plus"></i></button>
+                `;
+            }
+        },{ 
+            data: null,
+            orderable: false,
+            className: "text-end",
+            render: function(row){
+                return `
+                    <div class="btn-group border rounded-3 bg-white">
+                        <button class="btn btn-link text-warning py-1 manage-pole" data-id="${row.poles_id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-link text-danger py-1 border-start delete-pole" data-id="${row.poles_id}"><i class="fa-regular fa-trash-can"></i></button>
+                    </div>
+                `;
+            }
+        }],
         pageLength: pageLength,
         lengthMenu: lengthMenu,
         stateLoadParams: function (settings, data) {
