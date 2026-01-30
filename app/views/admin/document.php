@@ -19,39 +19,53 @@
     </div>
 </div>
 <div class="container-fluid mt-3 mb-5">
-    <div class="row g-2 mb-3">
-        <div class="col-sm-2">
-            <p><i class="fa-regular fa-calendar"></i> <span data-i18n="document_date"></span></p>
-            <input type="text" class="form-control filter" id="filter_date">
-        </div>
-        <div class="col-sm-2">
-            <p><i class="fa-solid fa-tags"></i> <span data-i18n="pole_types"></span></p>
-            <select id="filter_type" class="form-select filter"></select>
-        </div>
-        <div class="col-sm-2">
-            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
-            <select id="filter_status" class="form-select filter"></select>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-2 mb-3">
+                <div class="col-sm-2">
+                    <p><i class="fa-regular fa-calendar"></i> <span data-i18n="document_date"></span></p>
+                    <input type="text" class="form-control filter" id="filter_date">
+                </div>
+                <div class="col-sm-2 col-6">
+                    <p><i class="fa-solid fa-file-lines"></i> <span data-i18n="contract"></span></p>
+                    <select id="filter_contract" class="form-select filter"></select>
+                </div>
+                <div class="col-sm-2 col-6">
+                    <p><i class="fa-solid fa-folder-tree"></i> <span data-i18n="project"></span></p>
+                    <select id="filter_project" class="form-select filter"></select>
+                </div>
+                <div class="col-sm-2 col-6">
+                    <p><i class="fa-solid fa-tags"></i> <span data-i18n="pole_types"></span></p>
+                    <select id="filter_type" class="form-select filter"></select>
+                </div>
+                <div class="col-sm-2 col-6">
+                    <p><i class="fa-solid fa-location-dot"></i> <span data-i18n="installation"></span></p>
+                    <select id="filter_installations" class="form-select filter"></select>
+                </div>
+                <div class="col-sm-2 col-6">
+                    <p><i class="fa-solid fa-tower-broadcast"></i> <span data-i18n="poles"></span></p>
+                    <select id="filter_poles" class="form-select filter"></select>
+                </div>
+                <div class="col-sm-2 col-6">
+                    <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                    <select id="filter_status" class="form-select filter"></select>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 <div class="container-fluid mt-3 mb-5">
     <div class="table-responsive">
-        <table class="table table-striped table-hover" id="tb_document">
-            <thead>
+        <table class="table table-hover align-middle" id="tb_document" style="width:100%">
+            <thead class="table-light">
                 <tr>
-                    <th></th>
-                    <th data-i18n="document_name"></th>
-                    <th data-i18n="pole_types"></th>
-                    <th data-i18n="type"></th>
-                    <th data-i18n="date"></th>
-                    <th data-i18n="size"></th>
-                    <th data-i18n="create_at"></th>
-                    <th data-i18n="status"></th>
-                    <th data-i18n="download"></th>
-                    <th></th>
+                    <th data-i18n="document_name" style="width: 45%"></th>
+                    <th data-i18n="file_info"></th>
+                    <th data-i18n="timeline"></th>
+                    <th data-i18n="status" class="text-center"></th>
+                    <th class="text-end"></th>
                 </tr>
             </thead>
-            <tbody></tbody>
         </table>
     </div>
 </div>

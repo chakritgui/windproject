@@ -444,5 +444,6 @@
     "latest": "Latest",
     "home": "Home",
     "outside_the_polygon": "Outside the polygon",
-    "display": "Display"
+    "display": "Display",
+    "range": "Range"
 }

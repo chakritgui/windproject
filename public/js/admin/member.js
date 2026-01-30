@@ -23,71 +23,73 @@ function initMemberTable() {
                 d.status = $('#filter_status').val();
             }
         },
-        columns: [         
-            { 
-                data: null, 
-                orderable: false,
-                className: 'text-center',
-                render: function(row){
-                    let initials = "";
-                    if (row.first_name) initials += row.first_name.charAt(0).toUpperCase();
-                    if (row.last_name)  initials += row.last_name.charAt(0).toUpperCase();
-                    let colors = [
-                        "#A3D8F4", "#F7B5CA", "#C4DFAA", "#F9D390", 
-                        "#B5C7F2", "#E2A9F3", "#F5A7A7", "#A7E9AF"
-                    ];
-                    let bg = colors[Math.floor(Math.random() * colors.length)];
-                    return `
-                        <div class="d-flex align-items-center justify-content-center rounded-circle text-white fw-bold"
-                            style="width:35px; height:35px; background:${bg}; font-size:0.85rem;">
-                            ${initials}
-                        </div>
-                    `;
-                } 
-            }, 
-            { 
-                data: null,
-                render: function(row){
-                    return `${row.first_name} ${row.last_name}`;
-                } 
-            },
-            { data: "email" },
-            { data: "phone" },
-            { data: "role" },
-            { data: "created_at" },
-            { data: "last_login_at" },
-            {
-                data: "status",
-                render: function (status, type, row) {
-                    let badge = '';
-                    switch(status) {
-                        case "active":
-                            badge = "success";
-                            break;
-                        case "banned":
-                            badge = "danger";
-                            break;
-                        default:
-                            badge = "secondary";
-                    }
-                    return `
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-${badge}" style="font-weight:400;" data-i18n="${status}"></span>
-                        </div>
-                    `;
+        columns: [         { 
+            data: null, 
+            orderable: false,
+            className: 'text-center',
+            render: function(row){
+                let initials = "";
+                if (row.first_name) initials += row.first_name.charAt(0).toUpperCase();
+                if (row.last_name)  initials += row.last_name.charAt(0).toUpperCase();
+                let colors = [
+                    "#A3D8F4", "#F7B5CA", "#C4DFAA", "#F9D390", 
+                    "#B5C7F2", "#E2A9F3", "#F5A7A7", "#A7E9AF"
+                ];
+                let bg = colors[Math.floor(Math.random() * colors.length)];
+                return `
+                    <div class="d-flex align-items-center justify-content-center rounded-circle text-white fw-bold"
+                        style="width:35px; height:35px; background:${bg}; font-size:0.85rem;">
+                        ${initials}
+                    </div>
+                `;
+            } 
+        }, { 
+            data: null,
+            render: function(row){
+                return `${row.first_name} ${row.last_name}`;
+            } 
+        },{ 
+            data: "email" 
+        },{ 
+            data: "phone" 
+        },{ 
+            data: "role" 
+        },{ 
+            data: "created_at" 
+        },{ 
+            data: "last_login_at" 
+        },{
+            data: "status",
+            render: function (status, type, row) {
+                let badge = '';
+                switch(status) {
+                    case "active":
+                        badge = "success";
+                        break;
+                    case "banned":
+                        badge = "danger";
+                        break;
+                    default:
+                        badge = "secondary";
                 }
-            },
-            {
-                data: null,
-                orderable: false,
-                render: function(row){
-                    return `
-                        <button class="btn btn-sm btn-light text-secondary manage-member" data-id="${row.member_id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        ${((row.role || '').toLowerCase() !== 'administrator') ? `<button class="btn btn-sm btn-light text-secondary text-danger delete-member" data-id="${row.member_id}"><i class="fa-regular fa-trash-can"></i></button>` : ''}
-                    `;
-                }
+                return `
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;" data-i18n="${status}"></span>
+                    </div>
+                `;
             }
-        ],      
+        },{
+            data: null,
+            orderable: false,
+            render: function(row){
+                return `
+                    <div class="btn-group border rounded-3 bg-white">
+                        <button class="btn btn-link text-warning py-1 manage-member" data-id="${row.member_id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        ${((row.role || '').toLowerCase() !== 'administrator') ? `<button class="btn btn-link py-1 text-danger border-start delete-member" data-id="${row.member_id}"><i class="fa-regular fa-trash-can"></i></button>` : `<button class="btn btn-link py-1 text-danger border-start" disabled><i class="fa-regular fa-trash-can"></i></button>`}
+                    </div>
+                `;
+            }
+        }],      
         pageLength: pageLength,
         lengthMenu: lengthMenu,
         stateLoadParams: function (settings, data) {

@@ -10,6 +10,10 @@ class DocumentController extends BaseController {
         $filters = [
             'date'=> $_POST['date'] ?? '',
             'status'=> $_POST['status'] ?? '',
+            'contract'=> $_POST['contract'] ?? '',
+            'project'=> $_POST['project'] ?? '',
+            'installation'=> $_POST['installation'] ?? '',
+            'pole'=> $_POST['pole'] ?? '',
             'type'=> $_POST['type'] ?? '',
         ];
         $search = $_POST['search']['value'] ?? '';
@@ -32,7 +36,11 @@ class DocumentController extends BaseController {
             'document_start' => $_POST['document_start'] ?? '',
             'document_end' => $_POST['document_end'] ?? '',
             'status' => $_POST['status'] ?? '',
-            'type' => $_POST['type'] ?? '',
+            'contract_id' => $_POST['contract_id'] ?? '',
+            'project_id' => $_POST['project_id'] ?? '',
+            'type_id' => $_POST['type_id'] ?? '',
+            'installations_id' => $_POST['installations_id'] ?? '',
+            'poles_id' => $_POST['poles_id'] ?? '',
             'document_file' => $_FILES['document_file'] ?? null,
         ];
         $this->json(['status'=>$this->model->save($data)]);
@@ -45,8 +53,14 @@ class DocumentController extends BaseController {
         $page = intval($_POST['page'] ?? 0);
         $limit = intval($_POST['limit'] ?? 10);
         $searchTerm = $_POST['searchTerm'] ?? '';
+        $filter = [
+            'contract_id'=> $_POST['contract_id'] ?? '',
+            'project_id'=> $_POST['project_id'] ?? '',
+            'type_id'=> $_POST['type_id'] ?? '',
+            'installation_id'=> $_POST['installation_id'] ?? '',
+        ];
         $type = $_POST['type'] ?? '';
-        $this->json(['status'=>true , 'data' => $this->model->filter($page, $limit, $type, $searchTerm)]);
+        $this->json(['status'=>true , 'data' => $this->model->filter($page, $limit, $type, $searchTerm, $filter)]);
     }
     public function downloadHistory(){
         $start  = intval($_POST['start'] ?? 0);

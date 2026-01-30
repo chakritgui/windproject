@@ -21,9 +21,17 @@ class DocumentModel {
                 d.status, 
                 d.created_at, 
                 d.document_download,
-                t.type_name
+                t.type_name,
+                c.contract_name,
+                p.project_name,
+                i.installations_name,
+                pl.poles_code
             FROM wp_documents d
+            LEFT JOIN wp_contract c on c.contract_id = d.contract_id
+            LEFT JOIN wp_project p on p.project_id = d.project_id
             LEFT JOIN wp_type t on t.type_id = d.type_id
+            LEFT JOIN wp_installations i on i.installations_id = d.installations_id
+            LEFT JOIN wp_poles pl on pl.poles_id = d.poles_id
             {$where}
             ORDER BY d.document_id DESC
         ";
@@ -50,10 +58,6 @@ class DocumentModel {
     }
     public function get($id) {
         if (!$id) {
-            $sql = "SELECT t.type_id,t.type_name FROM wp_type t WHERE t.status = ? order by t.type_id asc LIMIT 1";
-            $stmt = $this->db->prepare($sql);
-            $stmt->execute(['active']);
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
             return [
                 'created_at' => '',
                 'document_download' => 0,
@@ -65,8 +69,16 @@ class DocumentModel {
                 'document_size' => '',
                 'document_start' => convertTimeZone(date('Y-m-d'), 'Y-m-d'),
                 'document_type' => '',
-                'type_id' => $row['type_id'],
-                'type_name' => $row['type_name'],
+                'type_id' => '',
+                'type_name' => '',
+                'contract_id' => '',
+                'contract_name' => '',
+                'project_id' => '',
+                'project_name' => '',
+                'installations_id' => '',
+                'installations_name' => '',
+                'poles_id' => '',
+                'poles_code' => '',
                 'status' => 'public',
                 'updated_at' => ''
             ];
@@ -74,9 +86,20 @@ class DocumentModel {
             $sql = "SELECT 
                 d.*,
                 t.type_id,
-                t.type_name
+                t.type_name,
+                c.contract_id,
+                c.contract_name,
+                p.project_id,
+                p.project_name,
+                i.installations_id,
+                i.installations_name,
+                pl.poles_code
             FROM wp_documents d
+            LEFT JOIN wp_contract c on c.contract_id = d.contract_id
+            LEFT JOIN wp_project p on p.project_id = d.project_id
             LEFT JOIN wp_type t on t.type_id = d.type_id
+            LEFT JOIN wp_installations i on i.installations_id = d.installations_id
+            LEFT JOIN wp_poles pl on pl.poles_id = d.poles_id
             WHERE d.document_id = ?";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([(int)$id]);
@@ -97,15 +120,19 @@ class DocumentModel {
             $document_id    = !empty($data['document_id']) ? $data['document_id'] : null;
             $document_name  = $data['document_name'];
             $status         = $data['status'];
-            $type         = $data['type'];
+            $contract_id           = $data['contract_id'];
+            $project_id           = $data['project_id'];
+            $type_id           = $data['type_id'];
+            $installations_id           = $data['installations_id'];
+            $poles_id           = $data['poles_id'];
             $startObj = DateTime::createFromFormat('d/m/Y', trim($data['document_start']));
             $endObj   = DateTime::createFromFormat('d/m/Y', trim($data['document_end']));
             $document_start = ($startObj) ? $startObj->format('Y-m-d') : null;
             $document_end   = ($endObj) ? $endObj->format('Y-m-d') : null;
             if ($document_id) {
-                $this->updateDocument($document_id, $document_name, $document_start, $document_end, $status, $type);
+                $this->updateDocument($document_id, $document_name, $document_start, $document_end, $status, $type_id, $contract_id, $project_id, $installations_id, $poles_id);
             } else {
-                $document_id = $this->insertDocument($document_name, $document_start, $document_end, $status, $type);
+                $document_id = $this->insertDocument($document_name, $document_start, $document_end, $status, $type_id, $contract_id, $project_id, $installations_id, $poles_id);
             }
             if (isset($_FILES['document_file']) && $_FILES['document_file']['error'] === UPLOAD_ERR_OK) {
                 $this->handleFileUpload($document_id, $_FILES['document_file']);
@@ -155,6 +182,22 @@ class DocumentModel {
             $where .= " AND d.status = :status";
             $params[':status'] = $filters['status'];
         }
+        if (!empty($filters['contract'])) {
+            $where .= " AND d.contract_id = :contract";
+            $params[':contract'] = $filters['contract'];
+        }
+        if (!empty($filters['project'])) {
+            $where .= " AND d.project_id = :project";
+            $params[':project'] = $filters['project'];
+        }
+        if (!empty($filters['installation'])) {
+            $where .= " AND d.installations_id = :installation";
+            $params[':installation'] = $filters['installation'];
+        }
+        if (!empty($filters['pole'])) {
+            $where .= " AND d.poles_id = :pole";
+            $params[':pole'] = $filters['pole'];
+        }
         if (!empty($filters['type'])) {
             $where .= " AND d.type_id = :type";
             $params[':type'] = $filters['type'];
@@ -194,16 +237,16 @@ class DocumentModel {
             }
         }
     }
-    private function insertDocument($name, $start, $end, $status, $type) {
-        $sql = "INSERT INTO wp_documents (document_name, document_start, document_end, status, created_at, updated_at, type_id) VALUES (?, ?, ?, ?, NOW(), NOW(), ?)";
+    private function insertDocument($name, $start, $end, $status, $type, $contract_id, $project_id, $installations_id, $poles_id) {
+        $sql = "INSERT INTO wp_documents (document_name, document_start, document_end, status, created_at, updated_at, type_id, contract_id, project_id, installations_id, poles_id) VALUES (?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$name, $start, $end, $status, $type]);
+        $stmt->execute([$name, $start, $end, $status, $type, $contract_id, $project_id, $installations_id, $poles_id]);
         return $this->db->lastInsertId();
     }
-    private function updateDocument($id, $name, $start, $end, $status, $type) {
-        $sql = "UPDATE wp_documents SET document_name=?, document_start=?, document_end=?, status=?, updated_at=NOW(), type_id=? WHERE document_id=?";
+    private function updateDocument($id, $name, $start, $end, $status, $type, $contract_id, $project_id, $installations_id, $poles_id) {
+        $sql = "UPDATE wp_documents SET document_name=?, document_start=?, document_end=?, status=?, updated_at=NOW(), type_id=?, contract_id=?, project_id=?, installations_id=?, poles_id=? WHERE document_id=?";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$name, $start, $end, $status, $type, $id]);
+        $stmt->execute([$name, $start, $end, $status, $type, $contract_id, $project_id, $installations_id, $poles_id, $id]);
     }
     private function updateStatus($id, $status) {
         if (!$id) return false;
@@ -253,44 +296,95 @@ class DocumentModel {
         }
         return [$where, $params];
     }
-    public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {
+    public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '', $filter = []) {
         $offset = ($page - 1) * $limit;
+        $params = [];
         $items = [];
         $totalCount = 0;
-        switch($type) {
-            case 'type':
-                $where = "WHERE 1=1";
-                $params = [];
-                if (!empty($searchTerm)) {
-                    $where .= " AND (type_name LIKE ?)";
-                    $params[] = "%$searchTerm%";
-                }
-                $sqlCount = "SELECT COUNT(*) as total FROM wp_type $where";
-                $stmtCount = $this->db->prepare($sqlCount);
-                $stmtCount->execute($params);
-                $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
-                $sqlData = "SELECT type_id as id, type_name as text FROM wp_type $where ORDER BY type_id ASC LIMIT $limit OFFSET $offset";
-                $stmtData = $this->db->prepare($sqlData);
-                $stmtData->execute($params);
-                $items = $stmtData->fetchAll(PDO::FETCH_ASSOC);
-                break;
-            case 'status':
-                $staticData = [
-                    ['id' => 'public', 'text' => 'Public'],
-                    ['id' => 'private', 'text' => 'Private']
-                ];
-                if (!empty($searchTerm)) {
-                    $staticData = array_values(array_filter($staticData, function($item) use ($searchTerm) {
-                        return strpos(strtolower($item['text']), strtolower($searchTerm)) !== false;
-                    }));
-                }
-                $totalCount = count($staticData);
-                $items = array_slice($staticData, $offset, $limit);
-                break;
+        if ($type === 'status') {
+            $staticData = [['id' => 'public', 'text' => 'Public'], ['id' => 'private', 'text' => 'Private']];
+            if (!empty($searchTerm)) {
+                $staticData = array_values(array_filter($staticData, fn($i) => stripos($i['text'], $searchTerm) !== false));
+            }
+            return [
+                'items' => array_slice($staticData, $offset, $limit),
+                'total_count' => count($staticData)
+            ];
+        }
+        $config = [
+            'contract' => [
+                'table' => 'wp_contract c',
+                'id'    => 'c.contract_id',
+                'text'  => 'c.contract_name',
+                'where' => "c.status = 'active'"
+            ],
+            'project' => [
+                'table' => 'wp_project p',
+                'id'    => 'p.project_id',
+                'text'  => 'p.project_name',
+                'where' => "p.status = 'active'"
+            ],
+            'type' => [
+                'table' => 'wp_type t',
+                'id'    => 't.type_id',
+                'text'  => 't.type_name',
+                'join'  => "LEFT JOIN wp_project_pole_type pt ON pt.type_id = t.type_id LEFT JOIN wp_project p ON p.project_id = pt.project_id",
+                'where' => "t.status = 'active'"
+            ],
+            'installation' => [
+                'table' => 'wp_installations i',
+                'id'    => 'i.installations_id',
+                'text'  => 'i.installations_name',
+                'join'  => "LEFT JOIN wp_project p ON p.project_id = i.project_id",
+                'where' => "i.status = 'active'"
+            ],
+            'pole' => [
+                'table' => 'wp_poles pl',
+                'id'    => 'pl.poles_id',
+                'text'  => 'pl.poles_code',
+                'join'  => "LEFT JOIN wp_project p ON p.project_id = pl.project_id",
+                'where' => "pl.status <> 'deleted'"
+            ]
+        ];
+        if (!isset($config[$type])) return ['items' => [], 'total_count' => 0];
+        $cfg = $config[$type];
+        $whereClauses = [$cfg['where']];
+        if (!empty($searchTerm)) {
+            $whereClauses[] = "({$cfg['text']} LIKE ?)";
+            $params[] = "%$searchTerm%";
+        }
+        $filterMap = [
+            'contract_id'     => ($type === 'contract') ? 'c.contract_id' : 'p.contract_id',
+            'project_id'      => ($type === 'project')  ? 'p.project_id'  : 'p.project_id',
+            'type_id'         => ($type === 'type')     ? 't.type_id'     : (($type === 'installation') ? 'i.type_id' : 'pl.type_id'),
+            'installation_id' => 'pl.installations_id'
+        ];
+        foreach ($filterMap as $key => $column) {
+            if (!empty($filter[$key])) {
+                $whereClauses[] = "$column = ?";
+                $params[] = $filter[$key];
+            }
+        }
+        $whereSql = "WHERE " . implode(' AND ', $whereClauses);
+        $joinSql  = $cfg['join'] ?? "";
+        try {
+            $sqlCount = "SELECT COUNT(DISTINCT {$cfg['id']}) as total FROM {$cfg['table']} $joinSql $whereSql";
+            $stmtCount = $this->db->prepare($sqlCount);
+            $stmtCount->execute($params);
+            $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
+            $sqlData = "SELECT {$cfg['id']} as id, {$cfg['text']} as text 
+                        FROM {$cfg['table']} $joinSql $whereSql 
+                        GROUP BY {$cfg['id']} 
+                        ORDER BY id ASC LIMIT $limit OFFSET $offset";
+            
+            $stmtData = $this->db->prepare($sqlData);
+            $stmtData->execute($params);
+            $items = $stmtData->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
         }
         return [
             'items' => $items,
-            'total_count' => $totalCount
+            'total_count' => (int)$totalCount
         ];
     }
 }

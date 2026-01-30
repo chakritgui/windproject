@@ -13,78 +13,86 @@ function initDocumentTable() {
         processing: true,
         serverSide: true,
         ordering: false,
-        order: [[6, 'desc']],
+        order: [[2, 'desc']],
         ajax: { 
             url: "api/document/list", 
             type: "POST",
             data: function(d){
                 d.date = $('#filter_date').val();
                 d.status = $('#filter_status').val();
+                d.contract = $('#filter_contract').val();
+                d.project = $('#filter_project').val();
+                d.installation = $('#filter_installations').val();
+                d.pole = $('#filter_poles').val();
                 d.type = $('#filter_type').val();
             }
         },
-        columns: [      
-            { 
-                data: "document_type",
-                className: 'text-center',
-                orderable: false,
-                searchable: false,
-                render: function(data){
-                    const iconClass = getFileIconClass(data);
-                    return `<i class="${iconClass} fa-2x"></i>`;
-                }
-            },
-            { data: "document_name" },
-            { data: "type_name" },
-            { data: "document_type" },
-            { 
-                data: null,
-                render: function(row){
-                    return `
-                        ${row.document_start} - ${row.document_end}
-                    `;
-                }
-            },
-            { 
-                data: "document_size",
-                render: function (data, type, row) {
-                    if (!data) return "-";
-                    return (data / (1024 * 1024)).toFixed(2) + " MB";
-                }
-            },
-            { data: "created_at" },
-            {
-                data: "status",
-                render: function (status, type, row) {
-                    let badgeColor = status === "public" ? "success" : "secondary";
-                    return `
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-${badgeColor}" style="font-weight:400;" data-i18n="${status}"></span>
+        columns: [{ 
+            data: "document_name",
+            className: 'align-middle',
+            render: function (data, type, row) {
+                const iconClass = getFileIconClass(row.document_type);
+                const createBadge = (text, icon, colorClass) => {
+                    if (!text) return '';
+                    return `<span class="badge ${colorClass} fw-normal d-inline-flex align-items-center me-1" style="font-size: 10px; padding: 3px 6px;"><i class="${icon} me-1"></i>${text}</span>`;
+                };
+                return `
+                    <div class="d-flex align-items-start gap-3 py-1">
+                        <div class="mt-1"><i class="${iconClass} fa-2x text-secondary-light"></i></div>
+                        <div class="d-flex flex-column gap-1">
+                            <h6 class="text-truncate fw-bold" style="max-width: 400px;" title="${data}">${data}</h6>
+                            <div class="d-flex flex-wrap gap-1">
+                                ${createBadge(row.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
+                                ${createBadge(row.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
+                                ${createBadge(row.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
+                                ${createBadge(row.installations_name, 'fa-solid fa-location-dot', 'bg-warning-subtle text-warning-emphasis')}
+                                ${createBadge(row.poles_code, 'fa-solid fa-tower-broadcast', 'bg-dark-subtle text-dark')}
+                            </div>
                         </div>
-                    `;
-                }
-            },
-            { 
-                data: "document_download",
-                className: 'text-end',
-                render: function(data, type, row) {
-                    return `
-                        ${data} <button class="btn btn-sm btn-light text-secondary history-download" data-id="${row.document_id}"><i class="fa-solid fa-clock-rotate-left"></i></button> 
-                    `;
-                }
-            },
-            {
-                data: null,
-                orderable: false,
-                render: function(row){
-                    return `
-                        <a href="${BASE_URL}/${row.document_path}" target="_blank" class="btn btn-sm btn-light text-secondary" data-id="${row.document_id}"><i class="fa-solid fa-folder-open"></i></a> 
-                        <button class="btn btn-sm btn-light text-secondary manage-document" data-id="${row.document_id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-sm btn-light text-secondary text-danger delete-document" data-id="${row.document_id}"><i class="fa-regular fa-trash-can"></i></button>
-                    `;
-                }
+                    </div>`;
             }
-        ],
+        },{ 
+            data: "created_at",
+            className: 'align-middle',
+            render: function(data, type, row) {
+                return `<div class="lh-sm">
+                            <small class="text-dark fw-semibold"><i class="fa-regular fa-calendar-check me-1"></i>${data}</small><br>
+                            <small class="text-muted" style="font-size: 11px;"><span data-i18n="range"></span>: ${row.document_start} - ${row.document_end}</small>
+                        </div>`;
+            }
+        },{ 
+            data: "document_size",
+            className: 'align-middle text-nowrap',
+            render: function(data, type, row) {
+                let size = data ? (data / (1024 * 1024)).toFixed(2) + " MB" : "-";
+                return `<div class="lh-sm">
+                            <span class="badge bg-light text-dark border-0 fw-bold">${row.document_type.toUpperCase()}</span> 
+                            <small class="text-muted"><i class="fa-solid fa-database"></i> ${size}</small> <small class="text-muted"><i class="fa-solid fa-download me-1"></i>${row.document_download}</small>
+                        </div>`;
+            }
+        },{
+            data: "status",
+            className: 'align-middle text-center',
+            render: function (status, type, row) {
+                let badgeColor = status === "public" ? "success" : "secondary";
+                return `
+                    <div class="d-flex flex-column align-items-center gap-1">
+                        <span class="badge rounded-pill bg-${badgeColor}-subtle text-${badgeColor}" data-i18n="${status}"></span>
+                    </div>`;
+            }
+        },{
+            data: null,
+            className: 'align-middle text-end',
+            render: function(row){
+                return `
+                    <div class="btn-group border rounded-3 bg-white">
+                        <button class="btn btn-link text-secondary history-download py-1" title="History" data-id="${row.document_id}"><i class="fa-solid fa-clock-rotate-left"></i></button>
+                        <a href="${BASE_URL}/${row.document_path}" target="_blank" class="btn btn-link text-primary py-1 border-start" title="Open"><i class="fa-solid fa-folder-open"></i></a> 
+                        <button class="btn btn-link text-warning manage-document py-1 border-start" title="Edit" data-id="${row.document_id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-link text-danger delete-document py-1 border-start" title="Delete" data-id="${row.document_id}"><i class="fa-regular fa-trash-can"></i></button>
+                    </div>`;
+            }
+        }],
         pageLength: pageLength,
         lengthMenu: lengthMenu,
         stateLoadParams: function (settings, data) {
@@ -128,7 +136,11 @@ async function initDocument() {
 }
 $(document).ready(function () {
     initDocument();
+    initSelect2Remote('#filter_contract', `${BASE_URL}/api/document/filter`, { type: 'contract' });
+    initSelect2Remote('#filter_project', `${BASE_URL}/api/document/filter`, { type: 'project' });
     initSelect2Remote('#filter_type', `${BASE_URL}/api/document/filter`, { type: 'type' });
+    initSelect2Remote('#filter_installations', `${BASE_URL}/api/document/filter`, { type: 'installation' });
+    initSelect2Remote('#filter_poles', `${BASE_URL}/api/document/filter`, { type: 'pole' });
     initSelect2Remote('#filter_status', `${BASE_URL}/api/document/filter`, { type: 'status' });
     initDateRangePicker('#filter_date', initDocumentTable);
 });
@@ -202,8 +214,28 @@ $(document).on('click', '.manage-document', function () {
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="pole_types"></label>
-                            <select id="type" class="form-select obj-required"></select>
+                            <label class="mb-2" data-i18n="contract"></label>
+                            <select id="contract" class="form-select"></select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="mb-2" data-i18n="project"></label>
+                            <select id="project" class="form-select"></select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="mb-2" data-i18n="pole_types"></label>
+                            <select id="type" class="form-select"></select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="mb-2" data-i18n="installation"></label>
+                            <select id="installation" class="form-select"></select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="mb-2" data-i18n="pole"></label>
+                            <select id="pole" class="form-select"></select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required" data-i18n="status"></label>
@@ -211,7 +243,11 @@ $(document).on('click', '.manage-document', function () {
                         </div>
                     </div>
                 `);
+                initSelect2Remote('#contract', `${BASE_URL}/api/document/filter`, { type: 'contract' });
+                initSelect2Remote('#project', `${BASE_URL}/api/document/filter`, { type: 'project' });
                 initSelect2Remote('#type', `${BASE_URL}/api/document/filter`, { type: 'type' });
+                initSelect2Remote('#installation', `${BASE_URL}/api/document/filter`, { type: 'installation' });
+                initSelect2Remote('#pole', `${BASE_URL}/api/document/filter`, { type: 'pole' });
                 initSelect2Remote('#status', `${BASE_URL}/api/document/filter`, { type: 'status' });
                 initDatePicker('#document_start');
                 initDatePicker('#document_end');
@@ -237,9 +273,25 @@ $(document).on('click', '.manage-document', function () {
                         handleFile(fakeFile, 'edit');
                         $("#document_file").removeClass("obj-required");
                     }
+                    if (docData.contract_id) {
+                        var newOptionContract = new Option(docData.contract_name, docData.contract_id, true, true);
+                        $('#contract').append(newOptionContract).trigger('change');
+                    }
+                    if (docData.project_id) {
+                        var newOptionProject = new Option(docData.project_name, docData.project_id, true, true);
+                        $('#project').append(newOptionProject).trigger('change');
+                    }
                     if (docData.type_id) {
                         var newOptionType = new Option(docData.type_name, docData.type_id, true, true);
                         $('#type').append(newOptionType).trigger('change');
+                    }
+                    if (docData.installations_id) {
+                        var newOptionInstallation = new Option(docData.installations_name, docData.installations_id, true, true);
+                        $('#installation').append(newOptionInstallation).trigger('change');
+                    }
+                    if (docData.poles_id) {
+                        var newOptionPole = new Option(docData.poles_code, docData.poles_id, true, true);
+                        $('#pole').append(newOptionPole).trigger('change');
                     }
                     if (docData.status) {
                         let statusName = docData.status.charAt(0).toUpperCase() + docData.status.slice(1);
@@ -255,6 +307,45 @@ $(document).on('click', '.manage-document', function () {
             showError('Error', langData['cannot_load']);
         }
     });
+});
+$(document).on('change', '#contract, #filter_contract, #project, #filter_project, #type, #filter_type, #installation, #filter_installation', function() {
+    const $this = $(this);
+    const id = $this.attr('id');
+    const val = $this.val();
+    const isFilter = id.startsWith('filter_');
+    const prefix = isFilter ? '#filter_' : '#';
+    const getVal = (target) => $(prefix + target).val();
+    if (id.includes('contract')) {
+        $(`${prefix}project, ${prefix}type, ${prefix}installation, ${prefix}pole`).val(null).trigger('change.select2');
+        initSelect2Remote(`${prefix}project`, `${BASE_URL}/api/document/filter`, { 
+            type: 'project', 
+            contract_id: val 
+        });
+    } else if (id.includes('project')) {
+        $(`${prefix}type, ${prefix}installation, ${prefix}pole`).val(null).trigger('change.select2');
+        initSelect2Remote(`${prefix}type`, `${BASE_URL}/api/document/filter`, { 
+            type: 'type', 
+            contract_id: getVal('contract'),
+            project_id: val 
+        });
+    } else if (id.includes('type')) {
+        $(`${prefix}installation, ${prefix}pole`).val(null).trigger('change.select2');
+        initSelect2Remote(`${prefix}installation`, `${BASE_URL}/api/document/filter`, { 
+            type: 'installation', 
+            contract_id: getVal('contract'),
+            project_id: getVal('project'),
+            type_id: val
+        });
+    } else if (id.includes('installation')) {
+        $(`${prefix}pole`).val(null).trigger('change.select2');
+        initSelect2Remote(`${prefix}pole`, `${BASE_URL}/api/document/filter`, { 
+            type: 'pole', 
+            contract_id: getVal('contract'),
+            project_id: getVal('project'),
+            type_id: getVal('type'),
+            installation_id: val
+        });
+    }
 });
 function validateDates() {
     let startStr = $('#document_start').val();
@@ -358,19 +449,19 @@ $(document).on('click', '.save-document', function () {
 });
 function saveDocument() {
     const btn = $(".save-document");
-    const name = $("#document_name").val();
-    if (!name) {
-        showError('Error', 'Please enter document name');
-        return;
-    }
     btn.prop("disabled", true);
     const formData = new FormData();
     formData.append("document_id", $("#document_id").val() || "");
-    formData.append("document_name", name);
+    formData.append("document_name", $("#document_name").val() || "");
     formData.append("document_start", $("#document_start").val());
     formData.append("document_end", $("#document_end").val());
     formData.append("status", $("#status").val());
-    formData.append("type", $("#type").val());
+    formData.append("contract_id", $("#contract").val() || "");
+    formData.append("project_id", $("#project").val() || "");
+    formData.append("type_id", $("#type").val() || "");
+    formData.append("installations_id", $("#installation").val() || "");
+    formData.append("poles_id", $("#pole").val() || "");
+    formData.append("status", $("#status").val() || "");
     const file = $("#document_file")[0].files[0];
     if (file) {
         formData.append("document_file", file);
@@ -514,27 +605,26 @@ function loadDownloadHistory(document_id){
                 d.end_date = $("#filter_end").val();
             }
         },
-        columns: [
-            {
-                data: null,
-                render: function (data, type, row, meta) {
-                    return meta.row + meta.settings._iDisplayStart + 1;
-                }
-            },
-            { data: "member_name" },
-            { data: "download_date" },
-            { 
-                data: "download_device",
-                render: function(d){
-                    d = (d || '').toLowerCase();
-                    if(d.includes("mobile"))
-                        return `<span class="badge bg-success">Mobile</span>`;
-                    if(d.includes("tablet"))
-                        return `<span class="badge bg-warning text-dark">Tablet</span>`;
-                    return `<span class="badge bg-primary">Desktop</span>`;
-                }
+        columns: [{
+            data: null,
+            render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
             }
-        ],
+        },{ 
+            data: "member_name" 
+        },{ 
+            data: "download_date" 
+        },{ 
+            data: "download_device",
+            render: function(d){
+                d = (d || '').toLowerCase();
+                if(d.includes("mobile"))
+                    return `<span class="badge bg-success">Mobile</span>`;
+                if(d.includes("tablet"))
+                    return `<span class="badge bg-warning text-dark">Tablet</span>`;
+                return `<span class="badge bg-primary">Desktop</span>`;
+            }
+        }],
         pageLength: pageLength,
         lengthMenu: lengthMenu,
         language: getTableLang(),
