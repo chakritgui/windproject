@@ -20,6 +20,8 @@ class SettingController extends BaseController {
         $data = [
             'loginInput' => $_FILES['loginInput'] ?? null,
             'loginMobileInput' => $_FILES['loginMobileInput'] ?? null,
+            'oldLoginBg' => $_POST['oldLoginBg'] ?? '',
+            'oldLoginMobileBg' => $_POST['oldLoginMobileBg'] ?? '',
         ];
         $this->json(['status'=>$this->model->saveBgImage($data)]);
     }

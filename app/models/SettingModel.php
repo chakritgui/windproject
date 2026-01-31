@@ -26,6 +26,12 @@ class SettingModel {
     public function saveBgImage($data) {
         $this->db->beginTransaction();
         try {
+            if (empty($data['oldLoginBg']) && (empty($_FILES['loginInput']) || $_FILES['loginInput']['error'] === UPLOAD_ERR_NO_FILE)) {
+                $this->updateSetting('login_bg', null);
+            }
+            if (empty($data['oldLoginMobileBg']) && (empty($_FILES['loginMobileInput']) || $_FILES['loginMobileInput']['error'] === UPLOAD_ERR_NO_FILE)) {
+                $this->updateSetting('login_mobile_bg', null);
+            }
             $this->uploadAndSave('loginInput', 'login_bg');
             $this->uploadAndSave('loginMobileInput', 'login_mobile_bg');
             $this->db->commit();
@@ -79,7 +85,7 @@ class SettingModel {
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
-        $filename = $settingType . "_" . time() . ".webp";
+        $filename = $settingType . ".webp";
         $target   = $dir . $filename;
         switch ($imgInfo['mime']) {
             case 'image/jpeg':

@@ -35,7 +35,7 @@ class MediaHelper {
             }
             $tmp  = $files['tmp_name'][$i];
             $size = $files['size'][$i];
-            $baseName = $type . "_" . $content_id . "_" . bin2hex(random_bytes(8));
+            $baseName = md5($type . '_' . $content_id . '_' . $i);
             if ($type === 'image' && function_exists('imagewebp')) {
                 $imgInfo = @getimagesize($tmp);
                 if ($imgInfo !== false) {
@@ -100,7 +100,7 @@ class MediaHelper {
         }
         $imgInfo = @getimagesize($file['tmp_name']);
         $isImage = ($imgInfo !== false);
-        $baseName = $content_id . "_" . time();
+        $baseName = md5($content_id);
         if ($isImage && function_exists('imagewebp')) {
             switch ($imgInfo['mime']) {
                 case 'image/jpeg':

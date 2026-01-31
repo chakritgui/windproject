@@ -1,265 +1,179 @@
-$(document).ready(function () {
-    initSetting();
-});
-function initSetting() {
-    $.ajax({
-        url: `${BASE_URL}/api/setting/get`,
-        method: 'POST',
-        dataType: 'json',
-        success: function(res) {
-            if(res.status === true){
-                res.data.forEach(item => {
-                    switch(item.setting_type){
-                        case 'logo':
-                            if(item.setting_value !== null && item.setting_value !== ''){
-                                document.getElementById('logoPreview').innerHTML = `
-                                    <img src="${BASE_URL}/${item.setting_value}" class="preview-img">
-                                `;
-                            }
-                            break;
-                        case 'icon':
-                            if(item.setting_value !== null && item.setting_value !== ''){
-                                document.getElementById('iconPreview').innerHTML = `
-                                    <img src="${BASE_URL}/${item.setting_value}" class="preview-img">
-                                `;
-                            }
-                            break;
-                        case 'login_mobile_bg':
-                            if(item.setting_value !== null && item.setting_value !== ''){
-                                document.getElementById('loginMobilePreview').innerHTML = `
-                                    <img src="${BASE_URL}/${item.setting_value}" class="preview-img">
-                                `;
-                            }
-                            break;
-                        case 'login_bg':
-                            if(item.setting_value !== null && item.setting_value !== ''){
-                                document.getElementById('loginPreview').innerHTML = `
-                                    <img src="${BASE_URL}/${item.setting_value}" class="preview-img">
-                                `;
-                            }
-                            break;
-                        case 'website_en':
-                            $('#nameEn').val(item.setting_value);
-                            break;
-                        case 'website_lo':
-                            $('#nameLo').val(item.setting_value);
-                            break;
-                        case 'website_th':
-                            $('#nameTh').val(item.setting_value);
-                            break;
-                        case 'footer':
-                            $('#footerText').val(item.setting_value);
-                            break;
-                        case 'site_assessment':
-                            $('#site_assessment').val(item.setting_value);
-                            break;
-                        case 'language':
-                            let l = item.setting_value;
-                            setLanguagesFromDB(l);
-                            break;
-                    }
-                });
-            } else {
-                showError('Error', langData['cannot_load']);
-            }
-        }
-    });
-}
-function setLanguagesFromDB(languagesStr) {
-    let arr = languagesStr.split(',');
-    document.querySelectorAll('.lang-toggle').forEach(el => {
-        const langId = el.id.replace('lang','').toLowerCase();
-        const icon = el.querySelector('i');
-        if(arr.includes(langId)) {
-            el.classList.add('active');
-            icon.className = 'fa-solid fa-circle-check fs-4';
-        } else {
-            el.classList.remove('active');
-            icon.className = 'fa-regular fa-circle fs-4 text-muted';
-        }
-    });
-}
-$(document).on('click', '.save-setting-3', function () {
-    let activeLangs = [];
-    document.querySelectorAll('.lang-toggle.active').forEach(el => {
-        let langId = el.id.replace('lang','').toLowerCase();
-        activeLangs.push(langId);
-    });
-    if(activeLangs.length === 0){
-        showError('Error', langData['one_language']);
-        return;
-    }
-    let languagesStr = activeLangs.join(',');
-    let formData = new FormData();
-    formData.append('languages', languagesStr);
-    $(".save-setting-3").attr("disable", true);
-    $.ajax({
-        url: `${BASE_URL}/api/setting/saveLang`, 
+const apiPost = (url, data, options = {}) => {
+    return $.ajax({
+        url: `${BASE_URL}${url}`,
         type: 'POST',
-        data: formData,
-        contentType: false,
-        processData: false,
-        success: function(res){
-            if(res.status === true){
-                showSuccess('Success', langData['saved_successfully']);
-                initSetting();
-            } else {
-                showError('Error', langData['cannot_save']);
-            }
-            $(".save-setting-3").attr("disable", false);
-        },
-        error: function(){
-            showError('Error', langData['cannot_save']);
-            $(".save-setting-3").attr("disable", false);
-        }
+        data,
+        dataType: options.dataType || 'json',
+        contentType: options.contentType ?? false,
+        processData: options.processData ?? false,
+        xhr: options.xhr
     });
-});
-function previewImage(input, previewId) {
-    const preview = document.getElementById(previewId);
-    if (!input.files || !input.files[0]) return;
-    const file = input.files[0];
+};
+const toggleButton = (selector, disabled) => {
+    $(selector).prop('disabled', disabled);
+};
+const showUploadProgress = () => {
+    Swal.fire({
+        title: 'Uploading...',
+        html: `
+            <div class="progress mt-2">
+                <div id="swal-progress" class="progress-bar" style="width:0%">0%</div>
+            </div>
+        `,
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+};
+const uploadWithProgress = (url, formData, btnSelector) => {
+    showUploadProgress();
+    toggleButton(btnSelector, true);
+    return apiPost(url, formData, {
+        xhr: () => {
+            const xhr = new XMLHttpRequest();
+            xhr.upload.onprogress = e => {
+                if (!e.lengthComputable) return;
+                const percent = Math.round((e.loaded / e.total) * 100);
+                $('#swal-progress')
+                    .css('width', percent + '%')
+                    .text(percent + '%');
+            };
+            return xhr;
+        }
+    }).always(() => toggleButton(btnSelector, false));
+};
+$(document).ready(initSetting);
+function initSetting() {
+    apiPost('/api/setting/get', null, { contentType: true, processData: true }).done(res => {
+        if (!res.status) {
+            showError('Error', langData['cannot_load']);
+            return;
+        }
+        res.data.forEach(applySetting);
+    });
+}
+const settingHandlers = {
+    logo: v => renderImage('logoPreview', v),
+    icon: v => renderImage('iconPreview', v),
+    login_mobile_bg: v => renderBg('loginMobilePreview', v, 'mobile'),
+    login_bg: v => renderBg('loginPreview', v, 'pc'),
+    website_en: v => $('#nameEn').val(v),
+    website_lo: v => $('#nameLo').val(v),
+    website_th: v => $('#nameTh').val(v),
+    footer: v => $('#footerText').val(v),
+    site_assessment: v => $('#site_assessment').val(v),
+    language: v => setLanguagesFromDB(v)
+};
+function applySetting(item) {
+    if (!item.setting_value) return;
+    settingHandlers[item.setting_type]?.(item.setting_value);
+}
+function renderImage(previewId, path) {
+    $(`#${previewId}`).html(`
+        <img src="${BASE_URL}/${path}" class="preview-img">
+    `);
+}
+function renderBg(previewId, path, type) {
+    renderImage(previewId, path);
+    $(`.btn-remove-${type}`).removeClass('d-none');
+    $(`#oldLogin${type === 'mobile' ? 'Mobile' : ''}Bg`).val(path);
+}
+function previewImage(input, previewId, type) {
+    const file = input.files?.[0];
+    if (!file) return;
     if (!file.type.startsWith('image/')) {
         showError('Error', langData['allow_images_only']);
         input.value = '';
         return;
     }
     const reader = new FileReader();
-    reader.onload = function (e) {
-        preview.innerHTML = `
-            <img src="${e.target.result}" class="preview-img" alt="Preview Image">
-        `;
+    reader.onload = e => {
+        $(`#${previewId}`).html(`
+            <img src="${e.target.result}" class="preview-img">
+        `);
+        $(`.btn-remove-${type}`).removeClass('d-none');
     };
     reader.readAsDataURL(file);
 }
-$(document).on('click', '.save-setting-1', function () {
-    const nameEn = $("#nameEn").val();
-    const nameLo = $("#nameLo").val();
-    const nameTh = $("#nameTh").val();
-    const footerText = $("#footerText").val();
-    const site_assessment = $("#site_assessment").val();
-    const logoInput = $("#logoInput")[0].files[0] || null;
-    const iconInput = $("#iconInput")[0].files[0] || null;
-    const formData = new FormData();
-    formData.append("nameEn", nameEn);
-    formData.append("nameLo", nameLo);
-    formData.append("nameTh", nameTh);
-    formData.append("footerText", footerText);
-    formData.append("site_assessment", site_assessment);
-    formData.append("logoInput", logoInput);
-    formData.append("iconInput", iconInput);
-    Swal.fire({
-        title: 'Uploading...',
-        html: `
-            <div class="progress mt-2">
-                <div id="swal-progress" class="progress-bar" role="progressbar" style="width:0%">0%</div>
-            </div>
-        `,
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-    });
-    $(".save-setting-1").attr("disable", true);
-    $.ajax({
-        url: "api/setting/saveInfo",
-        type: "POST",
-        data: formData,
-        contentType: false,
-        processData: false,
-        xhr: function () {
-            let xhr = new window.XMLHttpRequest();
-            xhr.upload.addEventListener("progress", function (e) {
-                if (e.lengthComputable) {
-                    let percent = Math.round((e.loaded / e.total) * 100);
-                    let bar = document.getElementById("swal-progress");
-                    if (bar) {
-                        bar.style.width = percent + "%";
-                        bar.innerText = percent + "%";
-                    }
-                }
-            });
-            return xhr;
-        },
-        success: function (res) {
-            if (res.status === true) {
-                showSuccess('Success', langData['saved_successfully']);
-                initSetting();
-                $('#windModal').modal('hide');
-            } else {
-                showError('Error', langData['cannot_save']);
-            }
-            $(".save-setting-1").attr("disable", false);
-        },
-        error: function () {
-            showError('Error', langData['cannot_save']);
-            $(".save-setting-1").attr("disable", false);
+function removeImage(previewId, inputId) {
+    $(`#${previewId}`).empty();
+    $(`#${inputId}`).val('');
+    const isMobile = inputId.toLowerCase().includes('mobile');
+    const type = isMobile ? 'mobile' : 'pc';
+    $(`.btn-remove-${type}`).addClass('d-none');
+    $(`#oldLogin${isMobile ? 'Mobile' : ''}Bg`).val('');
+    $(`#${previewId}`).html(getUploadPlaceholder(type));
+}
+function getUploadPlaceholder(type) {
+    const size = type === 'mobile' ? '1080 × 1920px' : '2560 × 1440px';
+    return `
+        <div class="text-center">
+            <i class="fa-solid fa-cloud-arrow-up fs-1 text-muted"></i>
+            <p class="mt-2 text-muted"><span data-i18n="uploadFile"></span></p>
+            <small class="text-muted">
+                <span data-i18n="image"></span>
+                (<span data-i18n="recommend"></span> ${size})
+            </small>
+        </div>
+    `;
+}
+function setLanguagesFromDB(languagesStr) {
+    const langs = languagesStr.split(',');
+    $('.lang-toggle').each(function () {
+        const lang = this.id.replace('lang', '').toLowerCase();
+        const icon = $(this).find('i');
+        if (langs.includes(lang)) {
+            $(this).addClass('active');
+            icon.attr('class', 'fa-solid fa-circle-check fs-4');
+        } else {
+            $(this).removeClass('active');
+            icon.attr('class', 'fa-regular fa-circle fs-4 text-muted');
         }
     });
-});
-$(document).on('click', '.save-setting-2', function () {
-    const loginInput = $("#loginInput")[0].files[0] || null;
-    const loginMobileInput = $("#loginMobileInput")[0].files[0] || null;
-    const formData = new FormData();
-    formData.append("loginInput", loginInput);
-    formData.append("loginMobileInput", loginMobileInput);
-    Swal.fire({
-        title: 'Uploading...',
-        html: `
-            <div class="progress mt-2">
-                <div id="swal-progress" class="progress-bar" role="progressbar" style="width:0%">0%</div>
-            </div>
-        `,
-        allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
-    });
-    $(".save-setting-2").attr("disable", true);
-    $.ajax({
-        url: "api/setting/saveBgImage",
-        type: "POST",
-        data: formData,
-        contentType: false,
-        processData: false,
-        xhr: function () {
-            let xhr = new window.XMLHttpRequest();
-            xhr.upload.addEventListener("progress", function (e) {
-                if (e.lengthComputable) {
-                    let percent = Math.round((e.loaded / e.total) * 100);
-                    let bar = document.getElementById("swal-progress");
-                    if (bar) {
-                        bar.style.width = percent + "%";
-                        bar.innerText = percent + "%";
-                    }
-                }
-            });
-            return xhr;
-        },
-        success: function (res) {
-            if (res.status === true) {
-                showSuccess('Success', langData['saved_successfully']);
-                initSetting();
-                $('#windModal').modal('hide');
-            } else {
-                showError('Error', langData['cannot_save']);
-            }
-            $(".save-setting-2").attr("disable", false);
-        },
-        error: function () {
-            showError('Error', langData['cannot_save']);
-            $(".save-setting-1").attr("disable", false);
-        }
-    });
-});
+}
 function toggleLanguage(lang) {
-    const element = document.getElementById('lang' + lang.charAt(0).toUpperCase() + lang.slice(1));
-    const isActive = element.classList.contains('active');
-    const activeLanguages = document.querySelectorAll('.lang-toggle.active').length;
-    if (isActive && activeLanguages === 1) {
+    const el = $('#lang' + lang.charAt(0).toUpperCase() + lang.slice(1));
+    const isActive = el.hasClass('active');
+    const activeCount = $('.lang-toggle.active').length;
+    if (isActive && activeCount === 1) {
         showError('Error', langData['one_language']);
         return;
     }
-    element.classList.toggle('active');
-    const icon = element.querySelector('i');
-    if (element.classList.contains('active')) {
-        icon.className = 'fa-solid fa-circle-check fs-4';
-    } else {
-        icon.className = 'fa-regular fa-circle fs-4 text-muted';
-    }
+    el.toggleClass('active');
+    el.find('i').attr('class', el.hasClass('active') ? 'fa-solid fa-circle-check fs-4' : 'fa-regular fa-circle fs-4 text-muted');
 }
+$(document).on('click', '.save-setting-3', function () {
+    const langs = $('.lang-toggle.active').map((_, el) => el.id.replace('lang', '').toLowerCase()).get();
+    if (!langs.length) {
+        showError('Error', langData['one_language']);
+        return;
+    }
+    const fd = new FormData();
+    fd.append('languages', langs.join(','));
+    toggleButton('.save-setting-3', true);
+    apiPost('/api/setting/saveLang', fd).done(res => {
+        res.status ? (showSuccess('Success', langData['saved_successfully']), initSetting()) : showError('Error', langData['cannot_save']);
+    }).always(() => toggleButton('.save-setting-3', false));
+});
+$(document).on('click', '.save-setting-1', function () {
+    const fd = new FormData();
+    fd.append('nameEn', $('#nameEn').val());
+    fd.append('nameLo', $('#nameLo').val());
+    fd.append('nameTh', $('#nameTh').val());
+    fd.append('footerText', $('#footerText').val());
+    fd.append('site_assessment', $('#site_assessment').val());
+    fd.append('logoInput', $('#logoInput')[0].files[0] || null);
+    fd.append('iconInput', $('#iconInput')[0].files[0] || null);
+    uploadWithProgress('/api/setting/saveInfo', fd, '.save-setting-1').done(res => {
+        res.status ? (showSuccess('Success', langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError('Error', langData['cannot_save']);
+    }).fail(() => showError('Error', langData['cannot_save']));
+});
+$(document).on('click', '.save-setting-2', function () {
+    const fd = new FormData();
+    fd.append('loginInput', $('#loginInput')[0].files[0] || null);
+    fd.append('loginMobileInput', $('#loginMobileInput')[0].files[0] || null);
+    fd.append('oldLoginBg', $('#oldLoginBg').val());
+    fd.append('oldLoginMobileBg', $('#oldLoginMobileBg').val());
+    uploadWithProgress('/api/setting/saveBgImage', fd, '.save-setting-2').done(res => {
+        res.status ? (showSuccess('Success', langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError('Error', langData['cannot_save']);
+    }).fail(() => showError('Error', langData['cannot_save']));
+});
