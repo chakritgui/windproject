@@ -19,30 +19,34 @@
     </div>
 </div>
 <div class="container-fluid mt-3 mb-5">
-    <div class="row g-2 mb-3">
-        <div class="col-sm-2">
-            <p><i class="fa-regular fa-calendar"></i> <span data-i18n="date"></span></p>
-            <input type="text" class="form-control filter" id="filter_date">
-        </div>
-        <div class="col-sm-2">
-            <p><i class="fa-solid fa-folder-tree"></i> <span data-i18n="project"></span></p>
-            <select id="filter_project" class="form-select filter"></select>
-        </div>
-        <div class="col-sm-2">
-            <p><i class="fa-solid fa-tower-broadcast"></i> <span data-i18n="pole"></span></p>
-            <select id="filter_pole" class="form-select filter"></select>
-        </div>
-        <div class="col-sm-2">
-            <p><i class="fa-solid fa-tags"></i> <span data-i18n="type"></span></p>
-            <select id="filter_type" class="form-select filter"></select>
-        </div>
-        <div class="col-sm-2">
-            <p><i class="fa-solid fa-location-dot"></i> <span data-i18n="installation"></span></p>
-            <select id="filter_installation" class="form-select filter"></select>
-        </div>
-        <div class="col-sm-2">
-            <p><i class="fa-solid fa-text-height"></i> <span data-i18n="height"></span></p>
-            <select id="filter_height" class="form-select filter"></select>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-2 mb-3">
+                <div class="col-sm-2">
+                    <p><i class="fa-regular fa-calendar"></i> <span data-i18n="date"></span></p>
+                    <input type="text" class="form-control filter" id="filter_date">
+                </div>
+                <div class="col-sm-2">
+                    <p><i class="fa-solid fa-folder-tree"></i> <span data-i18n="project"></span></p>
+                    <select id="filter_project" class="form-select filter"></select>
+                </div>
+                <div class="col-sm-2">
+                    <p><i class="fa-solid fa-tower-broadcast"></i> <span data-i18n="pole"></span></p>
+                    <select id="filter_pole" class="form-select filter"></select>
+                </div>
+                <div class="col-sm-2">
+                    <p><i class="fa-solid fa-tags"></i> <span data-i18n="type"></span></p>
+                    <select id="filter_type" class="form-select filter"></select>
+                </div>
+                <div class="col-sm-2">
+                    <p><i class="fa-solid fa-location-dot"></i> <span data-i18n="installation"></span></p>
+                    <select id="filter_installation" class="form-select filter"></select>
+                </div>
+                <div class="col-sm-2">
+                    <p><i class="fa-solid fa-text-height"></i> <span data-i18n="height"></span></p>
+                    <select id="filter_height" class="form-select filter"></select>
+                </div>
+            </div>
         </div>
     </div>
 </div>

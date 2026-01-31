@@ -11,14 +11,32 @@ function initSetting() {
                 res.data.forEach(item => {
                     switch(item.setting_type){
                         case 'logo':
-                            document.getElementById('logoPreview').innerHTML = `
-                                <img src="${BASE_URL}/${item.setting_value}" class="preview-img">
-                            `;
+                            if(item.setting_value !== null && item.setting_value !== ''){
+                                document.getElementById('logoPreview').innerHTML = `
+                                    <img src="${BASE_URL}/${item.setting_value}" class="preview-img">
+                                `;
+                            }
                             break;
                         case 'icon':
-                            document.getElementById('iconPreview').innerHTML = `
-                                <img src="${BASE_URL}/${item.setting_value}" class="preview-img">
-                            `;
+                            if(item.setting_value !== null && item.setting_value !== ''){
+                                document.getElementById('iconPreview').innerHTML = `
+                                    <img src="${BASE_URL}/${item.setting_value}" class="preview-img">
+                                `;
+                            }
+                            break;
+                        case 'login_mobile_bg':
+                            if(item.setting_value !== null && item.setting_value !== ''){
+                                document.getElementById('loginMobilePreview').innerHTML = `
+                                    <img src="${BASE_URL}/${item.setting_value}" class="preview-img">
+                                `;
+                            }
+                            break;
+                        case 'login_bg':
+                            if(item.setting_value !== null && item.setting_value !== ''){
+                                document.getElementById('loginPreview').innerHTML = `
+                                    <img src="${BASE_URL}/${item.setting_value}" class="preview-img">
+                                `;
+                            }
                             break;
                         case 'website_en':
                             $('#nameEn').val(item.setting_value);
@@ -31,6 +49,9 @@ function initSetting() {
                             break;
                         case 'footer':
                             $('#footerText').val(item.setting_value);
+                            break;
+                        case 'site_assessment':
+                            $('#site_assessment').val(item.setting_value);
                             break;
                         case 'language':
                             let l = item.setting_value;
@@ -83,45 +104,39 @@ $(document).on('click', '.save-setting-3', function () {
                 showSuccess('Success', langData['saved_successfully']);
                 initSetting();
             } else {
-                showError('Success', langData['cannot_save']);
+                showError('Error', langData['cannot_save']);
             }
             $(".save-setting-3").attr("disable", false);
         },
         error: function(){
-            showError('Success', langData['cannot_save']);
+            showError('Error', langData['cannot_save']);
             $(".save-setting-3").attr("disable", false);
         }
     });
 });
-function previewLogo(input) {
-    const preview = document.getElementById('logoPreview');
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.innerHTML = `
-                <img src="${BASE_URL}/${e.target.result}" class="preview-img" alt="Logo Preview">
-            `;
-        };
-        reader.readAsDataURL(input.files[0]);
+function previewImage(input, previewId) {
+    const preview = document.getElementById(previewId);
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+        showError('Error', langData['allow_images_only']);
+        input.value = '';
+        return;
     }
-}
-function previewIcon(input) {
-    const preview = document.getElementById('iconPreview');
-    if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            preview.innerHTML = `
-                <img src="${BASE_URL}/${e.target.result}" class="preview-img" alt="Icon Preview">
-            `;
-        };
-        reader.readAsDataURL(input.files[0]);
-    }
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        preview.innerHTML = `
+            <img src="${e.target.result}" class="preview-img" alt="Preview Image">
+        `;
+    };
+    reader.readAsDataURL(file);
 }
 $(document).on('click', '.save-setting-1', function () {
     const nameEn = $("#nameEn").val();
     const nameLo = $("#nameLo").val();
     const nameTh = $("#nameTh").val();
     const footerText = $("#footerText").val();
+    const site_assessment = $("#site_assessment").val();
     const logoInput = $("#logoInput")[0].files[0] || null;
     const iconInput = $("#iconInput")[0].files[0] || null;
     const formData = new FormData();
@@ -129,6 +144,7 @@ $(document).on('click', '.save-setting-1', function () {
     formData.append("nameLo", nameLo);
     formData.append("nameTh", nameTh);
     formData.append("footerText", footerText);
+    formData.append("site_assessment", site_assessment);
     formData.append("logoInput", logoInput);
     formData.append("iconInput", iconInput);
     Swal.fire({
@@ -171,6 +187,59 @@ $(document).on('click', '.save-setting-1', function () {
                 showError('Error', langData['cannot_save']);
             }
             $(".save-setting-1").attr("disable", false);
+        },
+        error: function () {
+            showError('Error', langData['cannot_save']);
+            $(".save-setting-1").attr("disable", false);
+        }
+    });
+});
+$(document).on('click', '.save-setting-2', function () {
+    const loginInput = $("#loginInput")[0].files[0] || null;
+    const loginMobileInput = $("#loginMobileInput")[0].files[0] || null;
+    const formData = new FormData();
+    formData.append("loginInput", loginInput);
+    formData.append("loginMobileInput", loginMobileInput);
+    Swal.fire({
+        title: 'Uploading...',
+        html: `
+            <div class="progress mt-2">
+                <div id="swal-progress" class="progress-bar" role="progressbar" style="width:0%">0%</div>
+            </div>
+        `,
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    $(".save-setting-2").attr("disable", true);
+    $.ajax({
+        url: "api/setting/saveBgImage",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+        xhr: function () {
+            let xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function (e) {
+                if (e.lengthComputable) {
+                    let percent = Math.round((e.loaded / e.total) * 100);
+                    let bar = document.getElementById("swal-progress");
+                    if (bar) {
+                        bar.style.width = percent + "%";
+                        bar.innerText = percent + "%";
+                    }
+                }
+            });
+            return xhr;
+        },
+        success: function (res) {
+            if (res.status === true) {
+                showSuccess('Success', langData['saved_successfully']);
+                initSetting();
+                $('#windModal').modal('hide');
+            } else {
+                showError('Error', langData['cannot_save']);
+            }
+            $(".save-setting-2").attr("disable", false);
         },
         error: function () {
             showError('Error', langData['cannot_save']);

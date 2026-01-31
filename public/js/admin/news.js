@@ -25,75 +25,52 @@ function initNewsTable() {
         columns: [{ 
             data: "cover",
             className: 'text-center',
-            orderable: false,
-            searchable: false,
-            render: function(data){
-                if (!data) {
-                    return `<div style="width: 50px; height: 50px; line-height: 50px; overflow: hidden; margin: 0 auto; border-radius: 4px; border: 1px solid #eee;"><img src="${BASE_URL}/public/images/noimage.jpg" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';"></div>`;
-                }
+            render: data => {
+                const imgUrl = data ? `${BASE_URL}/${data}` : `${BASE_URL}/public/images/noimage.jpg`;
                 return `
-                    <div style="width: 50px; height: 50px; line-height: 50px; overflow: hidden; margin: 0 auto; border-radius: 4px; border: 1px solid #eee;">
-                        <img src="${BASE_URL}/${data}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';">
-                    </div>
-                `;
+                    <div class="news-cover-wrapper mx-auto">
+                        <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" 
+                             onerror="this.src='${BASE_URL}/public/images/noimage.jpg';">
+                    </div>`;
             }
         },{ 
             data: null,
-            render: (_, __, row) => {
-                let title = '';
-                switch(currentLang) {
-                    case 'en':
-                        title = row.title_en;
-                        break;
-                    case 'lo':
-                        title = row.title_lo || row.title_en;
-                        break;
-                    case 'th':
-                        title = row.title_th || row.title_en;
-                        break;
-                }
-                return title;
+            render: (data, type, row) => {
+                let title = row[`title_${currentLang}`] || row.title_en || 'No Title';
+                return `<div class="fw-bold text-dark">${title}</div>`;
             }
         },{
             data: "publish_at",
-            render: function (publish_at, type, row) {
-                return `
-                    ${(row.status === 'published') ? publish_at : ''}
-                `;
+            render: (data, type, row) => {
+                if (row.status !== 'published' || !data) return `<span class="text-muted small">-</span>`;
+                return `<div class="small"><i class="fa-regular fa-calendar-check me-1"></i> ${data}</div>`;
             }
         },{ 
-            data: "created_at" 
+            data: "created_at",
+            render: data => `<div class="small text-muted">${data}</div>`
         },{ 
             data: "content_view", 
-            className: "text-end" 
+            className: "text-end",
+            render: data => `<strong>${Number(data).toLocaleString()}</strong>` 
         },{
             data: "status",
-            render: function (status, type, row) {
-                let badge = '';
-                switch(status) {
-                    case "published":
-                        badge = "success";
-                        break;
-                    default:
-                        badge = "secondary";
-                }
-                return `
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badge}-subtle text-${badge}" data-i18n="${status}"></span>
-                    </div>
-                `
+            render: status => {
+                const isPub = status === "published";
+                const bg = isPub ? "success" : "secondary";
+                return `<span class="badge rounded-pill bg-${bg}-subtle text-${bg}"><span data-i18n="${status}">${status}</span></span>`;
             }
-        },{
+        },
+        {
             data: null,
-            orderable: false,
-            render: (_, __, row) => `
+            className: "text-center",
+            render: (data, type, row) => `
                 <div class="btn-group border rounded-3 bg-white">
-                    <button class="btn btn-link text-info py-1 view-content" data-id="${row.content_id}"><i class="fa-solid fa-eye"></i></button>
-                    <button class="btn btn-link text-warning py-1 border-start manage-news" data-id="${row.content_id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button class="btn btn-link text-danger py-1 border-start delete-news" data-id="${row.content_id}"><i class="fa-regular fa-trash-can"></i></button>
-                </div>
-            `
-        }],
+                    <button class="btn btn-link text-info view-content" data-id="${row.content_id}" title="View"><i class="fa-solid fa-eye"></i></button>
+                    <button class="btn btn-link text-warning py-1 border-start manage-news" data-id="${row.content_id}" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="btn btn-link text-danger py-1 border-start delete-news" data-id="${row.content_id}" title="Delete"><i class="fa-regular fa-trash-can"></i></button>
+                </div>`
+        }
+    ],
         pageLength: pageLength,
         lengthMenu: lengthMenu,
         stateLoadParams: function (settings, data) {

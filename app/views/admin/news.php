@@ -1,9 +1,22 @@
+<style>
+#tb_news tbody td {
+    vertical-align: middle;
+}
+.news-cover-wrapper {
+    width: 60px;
+    height: 40px;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid #eee;
+}
+</style>
 <div class="container-fluid mt-90 mb-5">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm"
         style="background:#fff;border-left:4px solid #0d6efd;">
         <div>
             <h4 class="fw-bold mb-1 d-flex align-items-center">
-                <i class="fa-solid fa-bell me-2 text-primary" style="font-size:1.5rem"></i>
+                <i class="fa-solid fa-newspaper me-2 text-primary" style="font-size:1.5rem"></i>
                 <span data-i18n="news_management"></span>
             </h4>
             <nav aria-label="breadcrumb" style="margin-left: 25px;">
@@ -20,10 +33,14 @@
     </div>
 </div>
 <div class="container-fluid mt-3 mb-5">
-    <div class="row g-2 mb-3">
-        <div class="col-sm-2">
-            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
-            <select id="filter_status" class="form-select filter"></select>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-2 mb-3">
+                <div class="col-sm-2">
+                    <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                    <select id="filter_status" class="form-select filter"></select>
+                </div>
+            </div>
         </div>
     </div>
 </div>

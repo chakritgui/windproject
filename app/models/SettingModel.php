@@ -11,10 +11,23 @@ class SettingModel {
                 'website_en' => $data['nameEn'] ?? null,
                 'website_lo' => $data['nameLo'] ?? null,
                 'website_th' => $data['nameTh'] ?? null,
-                'footer'     => $data['footerText'] ?? null
+                'footer' => $data['footerText'] ?? null,
+                'site_assessment' => $data['site_assessment'] ?? null
             ));
             $this->uploadAndSave('logoInput', 'logo');
             $this->uploadAndSave('iconInput', 'icon');
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            return false;
+        }
+    }
+    public function saveBgImage($data) {
+        $this->db->beginTransaction();
+        try {
+            $this->uploadAndSave('loginInput', 'login_bg');
+            $this->uploadAndSave('loginMobileInput', 'login_mobile_bg');
             $this->db->commit();
             return true;
         } catch (Exception $e) {
@@ -53,21 +66,41 @@ class SettingModel {
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$value, $type]);
     }
-    private function uploadAndSave($inputName, $settingType) {
+    private function uploadAndSave($inputName, $settingType){
         if (empty($_FILES[$inputName]) || $_FILES[$inputName]['error'] !== UPLOAD_ERR_OK) {
             return;
         }
-        $dir = "uploads/website/";
+        $file = $_FILES[$inputName];
+        $imgInfo = getimagesize($file['tmp_name']);
+        if ($imgInfo === false) {
+            return;
+        }
+        $dir = dirname(__DIR__, 2) . "/uploads/website/";
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
-        $file = $_FILES[$inputName];
-        $safeName = preg_replace("/[^A-Za-z0-9_\.-]/", "_", basename($file['name']));
-        $filePath = $dir . $settingType . "_" . $safeName;
-        $target   = dirname(__DIR__, 2) . "/" . $filePath;
-        if (move_uploaded_file($file['tmp_name'], $target)) {
-            $this->updateSetting($settingType, $filePath);
+        $filename = $settingType . "_" . time() . ".webp";
+        $target   = $dir . $filename;
+        switch ($imgInfo['mime']) {
+            case 'image/jpeg':
+                $image = imagecreatefromjpeg($file['tmp_name']);
+                break;
+            case 'image/png':
+                $image = imagecreatefrompng($file['tmp_name']);
+                imagepalettetotruecolor($image);
+                imagealphablending($image, true);
+                imagesavealpha($image, true);
+                break;
+            case 'image/gif':
+                $image = imagecreatefromgif($file['tmp_name']);
+                break;
+            default:
+                return;
         }
+        imagewebp($image, $target, 80);
+        imagedestroy($image);
+        $filePath = "uploads/website/" . $filename;
+        $this->updateSetting($settingType, $filePath);
     }
     public function saveShortcut($data){
         $iconDir = __DIR__ . "/../../public/icons/";

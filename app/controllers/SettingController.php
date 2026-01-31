@@ -10,10 +10,18 @@ class SettingController extends BaseController {
             'nameLo' => $_POST['nameLo'] ?? '',
             'nameTh' => $_POST['nameTh'] ?? '',
             'footerText' => $_POST['footerText'] ?? '',
+            'site_assessment' => $_POST['site_assessment'] ?? '',
             'logoInput' => $_FILES['logoInput'] ?? null,
             'iconInput' => $_FILES['iconInput'] ?? null,
         ];
         $this->json(['status'=>$this->model->saveWebsiteSetting($data)]);
+    }
+    public function saveBgImage() {
+        $data = [
+            'loginInput' => $_FILES['loginInput'] ?? null,
+            'loginMobileInput' => $_FILES['loginMobileInput'] ?? null,
+        ];
+        $this->json(['status'=>$this->model->saveBgImage($data)]);
     }
     public function saveShortcut(){
         $data = [

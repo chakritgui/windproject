@@ -65,6 +65,7 @@
             $router->post('/api/setting/saveInfo', 'SettingController@saveInfo');
             $router->post('/api/setting/saveLang', 'SettingController@saveLang');
             $router->post('/api/setting/saveShortcut', 'SettingController@saveShortcut');
+            $router->post('/api/setting/saveBgImage', 'SettingController@saveBgImage');
             $router->post('/api/mapsetting/save', 'MapSettingController@save');
             $router->get('/api/mapsetting/load', 'MapSettingController@load');
             $router->post('/api/contracts/list', 'ContractsController@list');

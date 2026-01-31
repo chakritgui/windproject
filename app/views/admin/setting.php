@@ -26,6 +26,9 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link" data-bs-toggle="pill" data-bs-target="#languages" type="button"><i class="fa-solid fa-language me-2"></i><span data-i18n="language"></span></button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#background" type="button"><i class="fa-solid fa-images me-2"></i><span data-i18n="background"></span></button>
+        </li>
     </ul>
     <div class="tab-content">
         <div class="tab-pane fade show active" id="general">
@@ -39,10 +42,10 @@
                                 <div class="text-center">
                                     <i class="fa-solid fa-cloud-arrow-up fs-1 text-muted"></i>
                                     <p class="mt-2 text-muted"><span data-i18n="uploadFile"></span></p>
-                                    <small class="text-muted">PNG, JPG (<span data-i18n="recommend"></span> 200x200px)</small>
+                                    <small class="text-muted"><span data-i18n="image"></span> (<span data-i18n="recommend"></span> 200 x 200px)</small>
                                 </div>
                             </div>
-                            <input type="file" id="logoInput" class="d-none" accept="image/*" onchange="previewLogo(this)">
+                            <input type="file" id="logoInput" class="d-none" accept="image/*" onchange="previewImage(this, 'logoPreview')">
                             <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('logoInput').click()"><i class="fa-solid fa-upload me-2"></i><span data-i18n="choose"></span></button>
                         </div>
                         <div class="col-md-4">
@@ -51,10 +54,10 @@
                                 <div class="text-center">
                                     <i class="a-cloud-arrow-up fs-1 text-muted"></i>
                                     <p class="mt-2 text-muted"><span data-i18n="uploadFile"></span></p>
-                                    <small class="text-muted">PNG, JPG (<span data-i18n="recommend"></span> 200x200px)</small>
+                                    <small class="text-muted"><span data-i18n="image"></span> (<span data-i18n="recommend"></span> 200 x 200px)</small>
                                 </div>
                             </div>
-                            <input type="file" id="iconInput" class="d-none" accept="image/*" onchange="previewIcon(this)">
+                            <input type="file" id="iconInput" class="d-none" accept="image/*" onchange="previewImage(this, 'iconPreview')">
                             <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('iconInput').click()"><i class="fa-solid fa-upload me-2"></i><span data-i18n="choose"></span></button>
                         </div>
                     </div>
@@ -87,16 +90,20 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="footer"></span></h5>
                     <div class="row g-3">
                         <div class="col-md-4">
+                            <h5 class="card-title mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="footer"></span></h5>
                             <input type="text" class="form-control" id="footerText">
+                        </div>
+                        <div class="col-md-4">
+                            <h5 class="card-title mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="site_assessment"></span></h5>
+                            <input type="text" class="form-control" id="site_assessment">
                         </div>
                     </div>
                 </div>
             </div>
             <div class="text-end mt-4">
-                <button class="btn btn-lg btn-success save-setting-1">
+                <button class="btn btn-lg btn-primary save-setting-1">
                     <i class="fa-solid fa-floppy-disk me-2"></i><span data-i18n="save"></span>
                 </button>
             </div>
@@ -144,14 +151,51 @@
                             </div>
                         </div>
                     </div>
-                    <div class="alert alert-info mt-4" role="alert">
+                    <div class="alert alert-primary mt-4" role="alert">
                         <i class="fa-solid fa-circle-info me-2"></i>
                         <span data-i18n="language_note"></span>
                     </div>
                 </div>
             </div>
             <div class="text-end mt-4">
-                <button class="btn btn-lg btn-success save-setting-3">
+                <button class="btn btn-lg btn-primary save-setting-3">
+                    <i class="fa-solid fa-floppy-disk me-2"></i><span data-i18n="save"></span>
+                </button>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="background">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="form-label" data-i18n="login_pc"></label>
+                            <div class="preview-box" id="loginPreview">
+                                <div class="text-center">
+                                    <i class="fa-solid fa-cloud-arrow-up fs-1 text-muted"></i>
+                                    <p class="mt-2 text-muted"><span data-i18n="uploadFile"></span></p>
+                                    <small class="text-muted"><span data-i18n="image"></span> (<span data-i18n="recommend"></span> 2560 × 1440px)</small>
+                                </div>
+                            </div>
+                            <input type="file" id="loginInput" class="d-none" accept="image/*" onchange="previewImage(this, 'loginPreview')">
+                            <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('loginInput').click()"><i class="fa-solid fa-upload me-2"></i><span data-i18n="choose"></span></button>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" data-i18n="login_mobile"></label>
+                            <div class="preview-box" id="loginMobilePreview">
+                                <div class="text-center">
+                                    <i class="fa-solid fa-cloud-arrow-up fs-1 text-muted"></i>
+                                    <p class="mt-2 text-muted"><span data-i18n="uploadFile"></span></p>
+                                    <small class="text-muted"><span data-i18n="image"></span> (<span data-i18n="recommend"></span> 1080 × 1920px)</small>
+                                </div>
+                            </div>
+                            <input type="file" id="loginMobileInput" class="d-none" accept="image/*" onchange="previewImage(this, 'loginMobilePreview')">
+                            <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('loginMobileInput').click()"><i class="fa-solid fa-upload me-2"></i><span data-i18n="choose"></span></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-end mt-4">
+                <button class="btn btn-lg btn-primary save-setting-2">
                     <i class="fa-solid fa-floppy-disk me-2"></i><span data-i18n="save"></span>
                 </button>
             </div>

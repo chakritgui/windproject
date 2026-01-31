@@ -19,14 +19,18 @@
     </div>
 </div>
 <div class="container-fluid mt-3 mb-5">
-    <div class="row g-2 mb-3">
-        <div class="col-sm-2">
-            <p><i class="fa-solid fa-user-gear"></i> <span data-i18n="role"></span></p>
-            <select id="filter_role" class="form-select filter"></select>
-        </div>
-        <div class="col-sm-2">
-            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
-            <select id="filter_status" class="form-select filter"></select>
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-2 mb-3">
+                <div class="col-sm-2">
+                    <p><i class="fa-solid fa-user-gear"></i> <span data-i18n="role"></span></p>
+                    <select id="filter_role" class="form-select filter"></select>
+                </div>
+                <div class="col-sm-2">
+                    <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                    <select id="filter_status" class="form-select filter"></select>
+                </div>
+            </div>
         </div>
     </div>
 </div>

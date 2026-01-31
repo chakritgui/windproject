@@ -19,31 +19,118 @@ class MediaHelper {
             }
         }
     }
-    public function handleMultiUpload($content_id, $type, $inputKey) {
-        if (!isset($_FILES[$inputKey]) || empty($_FILES[$inputKey]['name'][0])) return;
+    public function handleMultiUpload($content_id, $type, $inputKey){
+        if (!isset($_FILES[$inputKey]) || empty($_FILES[$inputKey]['name'][0])) {
+            return;
+        }
         $files = $_FILES[$inputKey];
         $baseDir = "uploads/content/media/";
         $uploadPath = $this->basePath . '/' . $baseDir;
-        if (!is_dir($uploadPath)) mkdir($uploadPath, 0755, true);
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0755, true);
+        }
         foreach ($files['name'] as $i => $originalName) {
-            if ($files['error'][$i] !== UPLOAD_ERR_OK) continue;
-            $ext = pathinfo($originalName, PATHINFO_EXTENSION);
-            $safeName = $type . "_" . $content_id . "_" . bin2hex(random_bytes(8)) . "." . $ext;
-            $dbPath = $baseDir . $safeName;
-            if (move_uploaded_file($files['tmp_name'][$i], $uploadPath . $safeName)) {
+            if ($files['error'][$i] !== UPLOAD_ERR_OK) {
+                continue;
+            }
+            $tmp  = $files['tmp_name'][$i];
+            $size = $files['size'][$i];
+            $baseName = $type . "_" . $content_id . "_" . bin2hex(random_bytes(8));
+            if ($type === 'image' && function_exists('imagewebp')) {
+                $imgInfo = @getimagesize($tmp);
+                if ($imgInfo !== false) {
+                    switch ($imgInfo['mime']) {
+                        case 'image/jpeg':
+                            $image = imagecreatefromjpeg($tmp);
+                            break;
+                        case 'image/png':
+                            $image = imagecreatefrompng($tmp);
+                            imagepalettetotruecolor($image);
+                            imagealphablending($image, true);
+                            imagesavealpha($image, true);
+                            break;
+                        case 'image/gif':
+                            $image = imagecreatefromgif($tmp);
+                            break;
+                        default:
+                            $image = false;
+                    }
+                    if ($image) {
+                        $fileName = $baseName . ".webp";
+                        $target   = $uploadPath . $fileName;
+                        imagewebp($image, $target, 80);
+                        imagedestroy($image);
+                        $dbPath = $baseDir . $fileName;
+                        $stmt = $this->db->prepare("INSERT INTO wp_content_media (content_id, file_path, file_name, file_type, file_size, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())");
+                        $stmt->execute([
+                            $content_id,
+                            $dbPath,
+                            $originalName,
+                            $type,
+                            filesize($target)
+                        ]);
+                        continue;
+                    }
+                }
+            }
+            $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+            $fileName = $baseName . "." . $ext;
+            $dbPath   = $baseDir . $fileName;
+            if (move_uploaded_file($tmp, $uploadPath . $fileName)) {
                 $stmt = $this->db->prepare("INSERT INTO wp_content_media (content_id, file_path, file_name, file_type, file_size, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())");
-                $stmt->execute([$content_id, $dbPath, $originalName, $type, $files['size'][$i]]);
+                $stmt->execute([
+                    $content_id,
+                    $dbPath,
+                    $originalName,
+                    $type,
+                    $size
+                ]);
             }
         }
     }
-    public function handleSingleUpload($content_id, $file, $table = 'wp_content', $column = 'cover') {
+    public function handleSingleUpload($content_id, $file, $table = 'wp_content', $column = 'cover'){
         $this->deleteExistingCover($content_id, $table, $column);
+        if (empty($file) || $file['error'] !== UPLOAD_ERR_OK) {
+            return false;
+        }
         $dir = "uploads/content/";
         $uploadPath = $this->basePath . '/' . $dir;
-        if (!is_dir($uploadPath)) mkdir($uploadPath, 0755, true);
-        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $newName = $content_id . "_" . time() . "." . $ext;
-        $dbPath = $dir . $newName;
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0755, true);
+        }
+        $imgInfo = @getimagesize($file['tmp_name']);
+        $isImage = ($imgInfo !== false);
+        $baseName = $content_id . "_" . time();
+        if ($isImage && function_exists('imagewebp')) {
+            switch ($imgInfo['mime']) {
+                case 'image/jpeg':
+                    $image = imagecreatefromjpeg($file['tmp_name']);
+                    break;
+                case 'image/png':
+                    $image = imagecreatefrompng($file['tmp_name']);
+                    imagepalettetotruecolor($image);
+                    imagealphablending($image, true);
+                    imagesavealpha($image, true);
+                    break;
+                case 'image/gif':
+                    $image = imagecreatefromgif($file['tmp_name']);
+                    break;
+                default:
+                    $image = false;
+            }
+            if ($image) {
+                $newName = $baseName . ".webp";
+                $target  = $uploadPath . $newName;
+                imagewebp($image, $target, 80);
+                imagedestroy($image);
+                $dbPath = $dir . $newName;
+                $this->db->prepare("UPDATE $table SET $column = ? WHERE content_id = ?")->execute([$dbPath, $content_id]);
+                return $dbPath;
+            }
+        }
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $newName = $baseName . "." . $ext;
+        $dbPath  = $dir . $newName;
         if (move_uploaded_file($file['tmp_name'], $uploadPath . $newName)) {
             $this->db->prepare("UPDATE $table SET $column = ? WHERE content_id = ?")->execute([$dbPath, $content_id]);
             return $dbPath;

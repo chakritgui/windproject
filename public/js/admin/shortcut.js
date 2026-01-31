@@ -73,7 +73,7 @@ function previewIcon(event, previewId) {
         const reader = new FileReader();
         reader.onload = function(e) {
             const preview = document.getElementById(previewId);
-            preview.innerHTML = `<img src="${BASE_URL}/${e.target.result}" alt="Icon preview">`;
+            preview.innerHTML = `<img src="${e.target.result}" alt="Icon preview">`;
         };
         reader.readAsDataURL(file);
     }

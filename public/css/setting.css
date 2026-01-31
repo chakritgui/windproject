@@ -27,19 +27,17 @@
     transition: all 0.3s;
 }
 .lang-toggle.active {
-    background: #198754;
-    color: white;
-    border-color: #198754;
+    color: #007bff; 
+    background: rgba(13, 110, 253, 0.15); 
+    border-color: rgba(13, 110, 253, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 .lang-toggle:hover {
-    border-color: #667eea;
-}
-.nav-pills .nav-link {
-    color: #667eea;
-    font-weight: 500;
-}
-.nav-pills .nav-link.active {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: rgba(13, 110, 253, 0.08);
+    transition: all 0.3s ease;
 }
 .card {
     border: none;
