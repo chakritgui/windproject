@@ -151,14 +151,12 @@ function renderPolygonList() {
             <div id="item-${p.poly_id}" class="data-item d-flex justify-content-between align-items-center p-2 border-bottom">
                 <div class="d-flex align-items-center" style="cursor:pointer; flex-grow:1" onclick="handleItemClick(${p.poly_id})">
                     <span class="me-2" style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:${fill}; border:1px solid ${border};"></span>
-                    <div>
-                        <div class="fw-bold small text-truncate" style="max-width: 130px;">${p.name}</div>
-                    </div>
+                    <div><div class="fw-bold small text-truncate" style="max-width: 130px;">${p.name}</div></div>
                 </div>
-                <div class="btn-group btn-group-sm ms-2">
-                    <button class="btn btn-sm btn-outline-primary" onclick="focusOnLayer(${p.poly_id})"><i class="fa-solid fa-eye"></i></button>
-                    <button class="btn btn-sm btn-outline-warning" onclick="openEditPopup(${p.poly_id})"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deletePolygon(${p.poly_id})"><i class="fa-solid fa-trash-can"></i></button>
+                <div class="btn-group border rounded-3 bg-white">
+                    <button class="btn btn-link text-info py-1" onclick="focusOnLayer(${p.poly_id})"><i class="fa-solid fa-eye"></i></button>
+                    <button class="btn btn-link text-warning py-1 border-start" onclick="openEditPopup(${p.poly_id})"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="btn btn-link text-danger py-1 border-start" onclick="deletePolygon(${p.poly_id})"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
             </div>
         `);

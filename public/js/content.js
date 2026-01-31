@@ -509,3 +509,33 @@ function renderLangTabs(d) {
         </div>
     `;
 }
+function viewContent(id) {
+    $.post(`${BASE_URL}/api/project/gets`, { id }, function(res) {
+        if(res.status !== "success") return;
+        let d = res.data;
+        let $modal = $("#windModal");
+        let modal = new bootstrap.Modal($modal[0]);
+        $modal.find(".modal-header").html(`
+            <h5 class="modal-title">${d.title.th || d.title.en}</h5>
+            <button class="btn-close" data-bs-dismiss="modal"></button>
+        `);
+        $modal.find(".modal-footer").html(`
+            <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
+        `);
+        $modal.find(".modal-body").html(`
+            <div class="content-view">
+                <ul class="nav nav-tabs mb-3">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#view_en">English</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#view_lo">ລາວ</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#view_th">ไทย</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="view_en">${d.content.en || ''}</div>
+                    <div class="tab-pane fade" id="view_lo">${d.content.lo || ''}</div>
+                    <div class="tab-pane fade" id="view_th">${d.content.th || ''}</div>
+                </div>
+            </div>
+        `);
+        modal.show();
+    }, "json");
+}

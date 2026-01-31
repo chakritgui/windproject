@@ -69,9 +69,17 @@ function initNewsTable() {
         },{
             data: "status",
             render: function (status, type, row) {
+                let badge = '';
+                switch(status) {
+                    case "published":
+                        badge = "success";
+                        break;
+                    default:
+                        badge = "secondary";
+                }
                 return `
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${status === 'published' ? 'success' : 'secondary'}" data-i18n="${status}"></span>
+                        <span class="badge bg-${badge}-subtle text-${badge}" data-i18n="${status}"></span>
                     </div>
                 `
             }
@@ -80,7 +88,7 @@ function initNewsTable() {
             orderable: false,
             render: (_, __, row) => `
                 <div class="btn-group border rounded-3 bg-white">
-                    <button class="btn btn-link text-info py-1 view-news" data-id="${row.content_id}"><i class="fa-solid fa-eye"></i></button>
+                    <button class="btn btn-link text-info py-1 view-content" data-id="${row.content_id}"><i class="fa-solid fa-eye"></i></button>
                     <button class="btn btn-link text-warning py-1 border-start manage-news" data-id="${row.content_id}"><i class="fa-solid fa-pen-to-square"></i></button>
                     <button class="btn btn-link text-danger py-1 border-start delete-news" data-id="${row.content_id}"><i class="fa-regular fa-trash-can"></i></button>
                 </div>
@@ -114,6 +122,10 @@ function initNewsTable() {
         }
     });
 }
+$(document).on('click', '.view-content', function() {
+    let content_id = $(this).data("content");
+    viewContent(content_id);
+});
 $(".filter").on("change", () => initNewsTable());
 $(document).on("click", ".manage-news", function () {
     let id = $(this).data("id") ?? "";

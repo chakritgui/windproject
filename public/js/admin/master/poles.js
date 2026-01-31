@@ -39,18 +39,18 @@ function initPolesTable() {
         },{ 
             data: 'status',
             render: function (status, type, row) {
-                let badgeColor = "";
+                let badge = "";
                 switch(status) {
                     case 'online':
-                        badgeColor = "success";
+                        badge = "success";
                         break;
                     case 'inactive':
-                        badgeColor = "secondary";
+                        badge = "secondary";
                         break;
                 }
                 return `
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badgeColor}" style="font-weight:400;" data-i18n="${status}"></span>
+                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;" data-i18n="${status}"></span>
                     </div>
                 `;
             }
@@ -60,7 +60,7 @@ function initPolesTable() {
             render: function(row){
                 return (row.content_id) ? `
                     <div class="btn-group border rounded-3 bg-white">
-                        <button class="btn btn-link text-info py-1 view-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-eye"></i></button> 
+                        <button class="btn btn-link text-info py-1 view-content" data-content="${row.content_id}"><i class="fa-solid fa-eye"></i></button> 
                         <button class="btn btn-link text-warning py-1 border-start manage-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-pen-to-square"></i></button> 
                         <button class="btn btn-link text-danger py-1 border-start delete-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-trash-can"></i></button> 
                     </div>
@@ -116,6 +116,10 @@ function initPolesTable() {
         }
     });
 }
+$(document).on('click', '.view-content', function() {
+    let content_id = $(this).data("content");
+    viewContent(content_id);
+});
 $(document).on('click', '.delete-pole', function() {
     let poles_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){

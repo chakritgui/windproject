@@ -49,21 +49,21 @@ function initProjectsTable() {
         },{ 
             data: 'status',
             render: function (status, type, row) {
-                let badgeColor = "";
+                let badge = "";
                 switch(status) {
                     case 'active':
-                        badgeColor = "success";
+                        badge = "success";
                         break;
                     case 'inactive':
-                        badgeColor = "secondary";
+                        badge = "secondary";
                         break;
                     case 'expired':
-                        badgeColor = "danger";
+                        badge = "danger";
                         break;
                 }
                 return `
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badgeColor}" style="font-weight:400;" data-i18n="${status}"></span>
+                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;" data-i18n="${status}"></span>
                     </div>
                 `;
             }
@@ -96,10 +96,7 @@ function initProjectsTable() {
                 }
             });
             let $filter = $('#tb_project_filter');
-            let btn = `
-                <button class="btn btn-primary btn-sm manage-project" data-id="">
-                    <i class="fa-solid fa-plus"></i> <span data-i18n="project"></span>
-                </button>
+            let btn = `<button class="btn btn-primary btn-sm manage-project" data-id=""><i class="fa-solid fa-plus"></i> <span data-i18n="project"></span></button>
             `;
             $filter.append(btn);
             var input = $('#tb_project_filter input').unbind();

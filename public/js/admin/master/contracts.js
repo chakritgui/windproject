@@ -46,21 +46,21 @@ function initContractsTable() {
         },{ 
             data: 'status',
             render: function (status, type, row) {
-                let badgeColor = "";
+                let badge = "";
                 switch(status) {
                     case 'active':
-                        badgeColor = "success";
+                        badge = "success";
                         break;
                     case 'inactive':
-                        badgeColor = "secondary";
+                        badge = "secondary";
                         break;
                     case 'expired':
-                        badgeColor = "danger";
+                        badge = "danger";
                         break;
                 }
                 return `
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badgeColor}" style="font-weight:400;" data-i18n="${status}"></span>
+                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;" data-i18n="${status}"></span>
                     </div>
                 `;
             }
