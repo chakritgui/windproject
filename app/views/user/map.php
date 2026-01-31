@@ -1,10 +1,8 @@
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/map.css?v=<?=time();?>">
 <div id="wind-loading">
     <div class="wind-grid">
+        <div class="wind-spacer"></div>
         <?php for($i=0; $i<120; $i++): ?>
-            <?php if($i == 5): ?>
-                <div class="wind-spacer"></div>
-            <?php endif; ?>
             <img src="<?=BASE_URL?>/public/images/iwind.png" alt="wind">
         <?php endfor; ?>
     </div>

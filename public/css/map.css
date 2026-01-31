@@ -460,33 +460,80 @@ header .nav-link {
         rgba(0,0,0,0) 100%
     );
 }
+/* =========================
+   Wind loading overlay
+========================= */
+#wind-loading {
+    position: absolute;
+    top: -15px;
+    left: 0;
+    width: 100%;
+    height: 50vh;
+    z-index: 500;
+    pointer-events: none;
+    overflow: hidden;
+
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        rgba(0,0,0,1) 0%,
+        rgba(0,0,0,1) 30%,
+        rgba(0,0,0,.5) 60%,
+        rgba(0,0,0,0) 100%
+    );
+    mask-image: linear-gradient(
+        to bottom,
+        rgba(0,0,0,1) 0%,
+        rgba(0,0,0,1) 30%,
+        rgba(0,0,0,.5) 60%,
+        rgba(0,0,0,0) 100%
+    );
+}
 .wind-grid {
     width: 100%;
-    max-width: 1200px; 
+    max-width: 1200px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(12, 1fr); 
+    grid-template-columns: repeat(5, 1fr) 150px repeat(5, 1fr);
     gap: 15px;
     padding: 20px;
     justify-items: center;
     align-items: center;
 }
 .wind-spacer {
-    grid-column: span 2; 
-    width: 150px; 
+    grid-column: 6;
+    grid-row: 1;
+    width: 150px;
     height: 75px;
-    display: block;
+    pointer-events: none;
 }
 .wind-grid img {
-    width: 60px; 
+    width: 60px;
     height: 60px;
     object-fit: contain;
+    pointer-events: none;
 }
 @media (max-width: 1024px) {
     .wind-grid {
-        grid-template-columns: repeat(6, 1fr);
+        grid-template-columns: repeat(2, 1fr) 120px repeat(2, 1fr);
     }
     .wind-spacer {
-        display: none;
+        width: 120px;
+    }
+}
+@media (max-width: 700px) {
+    #wind-loading {
+        top: 35px;
+    }
+    .wind-grid {
+        grid-template-columns: repeat(2, 1fr) 90px repeat(2, 1fr);
+        gap: 10px;
+    }
+    .wind-spacer {
+        width: 90px;
+        height: 60px;
+    }
+    .wind-grid img {
+        width: 48px;
+        height: 48px;
     }
 }

@@ -173,6 +173,7 @@ function hideWindLoading() {
     loader.style.transition = 'opacity 0.3s ease-out';
     loader.style.opacity = 0;
     loader.addEventListener('transitionend', () => loader.remove(), { once: true });
+    $("header").show();
 }
 const MENU_LEVELS = {
     1: { title: 'MEASUREMENT STATION', endpoint: `${BASE_URL}/api/contracts`, key: 'contract_id', label: 'contract_name' },
@@ -227,3 +228,6 @@ $('#mapFilter').on('click', function (e) {
 $(document).on('click', function () { $('.menu-panel').fadeOut(); });
 $('.menu-panel').on('click', e => e.stopPropagation());
 function openPoles(poleId) { openFilterModal(poleId); }
+$(document).ready(function () {
+    $("header").hide();
+});

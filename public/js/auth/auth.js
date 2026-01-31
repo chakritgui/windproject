@@ -34,11 +34,9 @@ function doLogin() {
             showError(langData['login_failed'], langData[res.message]);
         }
 
-    }, 'json')
-    .fail(function() {
+    }, 'json').fail(function() {
         showError("Error", "Network error");
-    })
-    .always(function(){
+    }).always(function(){
         hidePageLoader();
     });
 }
@@ -79,3 +77,55 @@ $(document).on('click', '#togglePassword', function () {
         icon.removeClass("fa-solid fa-eye").addClass("fa-solid fa-eye-slash");
     }
 });
+$(document).ready(initAuthApp);
+const authState = {
+    bg: null,
+    mobileBg: null
+};
+async function initAuthApp() {
+    await loadAuthSetting();
+    applyAuthBackground();
+}
+async function loadAuthSetting() {
+    try {
+        const res = await $.ajax({
+            url: `${BASE_URL}/api/setting/get`,
+            type: 'POST',
+            dataType: 'json'
+        });
+        if (!res.status) {
+            showError('Error', langData['cannot_load']);
+            return;
+        }
+        res.data.forEach(parseAuthSetting);
+    } catch (err) {
+        console.error('[AuthSetting]', err);
+    }
+}
+function parseAuthSetting(item) {
+    switch (item.setting_type) {
+        case 'login_bg':
+            authState.bg = item.setting_value ? `${BASE_URL}/${item.setting_value}` : null;
+            break;
+        case 'login_mobile_bg':
+            authState.mobileBg = item.setting_value ? `${BASE_URL}/${item.setting_value}` : null;
+            break;
+        case 'site_assessment':
+            if (item.setting_value) {
+                $('.project-info').html(item.setting_value);
+            }
+            break;
+    }
+}
+function applyAuthBackground() {
+    if (authState.bg) {
+        $('.auth-bg-img-pc').attr('src', authState.bg);
+    } else {
+        $('.auth-bg-img-pc').css('display', 'none');
+    }
+    if (authState.mobileBg) {
+        $('.auth-bg-img-mobile').attr('src', authState.mobileBg);
+    } else {
+        $('.auth-bg-img-mobile').css('display', 'none');
+    }
+}
