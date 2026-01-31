@@ -58,7 +58,7 @@
     }
     .nav-pills .nav-link.active {
         background: white;
-        color: var(--primary-color);
+        color: var(--primary-color) !important;
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
     .info-section {

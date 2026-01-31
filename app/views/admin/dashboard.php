@@ -173,16 +173,11 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <div class="stat-label">จำนวนสมาชิก</div>
-                            <div class="stat-number" id="memberCount">1,234</div>
-                            <div class="mt-2">
-                                <span class="badge badge-custom bg-light text-success">
-                                    <i class="bi bi-arrow-up"></i> +12%
-                                </span>
-                            </div>
+                            <div class="stat-label" data-i18n="member"></div>
+                            <div class="stat-number" id="memberCount">0</div>
                         </div>
                         <div class="icon-box">
-                            <i class="bi bi-people-fill"></i>
+                            <i class="fa-solid fa-users"></i>
                         </div>
                     </div>
                 </div>
@@ -193,16 +188,11 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <div class="stat-label">จำนวนสัญญา</div>
-                            <div class="stat-number" id="contractCount">567</div>
-                            <div class="mt-2">
-                                <span class="badge badge-custom bg-light text-info">
-                                    <i class="bi bi-arrow-up"></i> +8%
-                                </span>
-                            </div>
+                            <div class="stat-label" data-i18n="contract"></div>
+                            <div class="stat-number" id="contractCount">0</div>
                         </div>
                         <div class="icon-box">
-                            <i class="bi bi-file-earmark-text-fill"></i>
+                            <i class="fa-solid fa-file"></i>
                         </div>
                     </div>
                 </div>
@@ -213,16 +203,11 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <div class="stat-label">จำนวนโครงการ</div>
-                            <div class="stat-number" id="projectCount">89</div>
-                            <div class="mt-2">
-                                <span class="badge badge-custom bg-light text-warning">
-                                    <i class="bi bi-arrow-up"></i> +5%
-                                </span>
-                            </div>
+                            <div class="stat-label" data-i18n="project"></div>
+                            <div class="stat-number" id="projectCount">0</div>
                         </div>
                         <div class="icon-box">
-                            <i class="bi bi-building"></i>
+                            <i class="fa-solid fa-diagram-project"></i>
                         </div>
                     </div>
                 </div>
@@ -233,16 +218,11 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <div class="stat-label">จำนวนจุดติดตั้ง</div>
-                            <div class="stat-number" id="installCount">2,456</div>
-                            <div class="mt-2">
-                                <span class="badge badge-custom bg-light text-danger">
-                                    <i class="bi bi-arrow-up"></i> +15%
-                                </span>
-                            </div>
+                            <div class="stat-label" data-i18n="installation"></div>
+                            <div class="stat-number" id="installCount">0</div>
                         </div>
                         <div class="icon-box">
-                            <i class="bi bi-geo-alt-fill"></i>
+                            <i class="fa-solid fa-location-dot"></i>
                         </div>
                     </div>
                 </div>
@@ -252,82 +232,30 @@
     <div class="row mb-4">
         <div class="col-md-3 mb-3">
             <div class="mini-stat">
-                <i class="bi bi-broadcast-pin"></i>
-                <div class="number" id="poleTypeCount">12</div>
-                <div class="label">ประเภทเสา</div>
+                <i class="fa-solid fa-map-pin"></i>
+                <div class="number" id="poleTypeCount">0</div>
+                <div class="label" data-i18n="pole_types"></div>
             </div>
         </div>
         <div class="col-md-3 mb-3">
             <div class="mini-stat">
-                <i class="bi bi-pin-map"></i>
-                <div class="number" id="poleCount">3,789</div>
-                <div class="label">จำนวนเสา</div>
+                <i class="fa-solid fa-tower-broadcast"></i>
+                <div class="number" id="poleCount">0</div>
+                <div class="label" data-i18n="pole"></div>
             </div>
         </div>
         <div class="col-md-3 mb-3">
             <div class="mini-stat">
-                <i class="bi bi-wind"></i>
-                <div class="number" id="windImportCount">45</div>
-                <div class="label">นำเข้าข้อมูลลม</div>
+                <i class="fa-solid fa-folder-open"></i>
+                <div class="number" id="documentCount">0</div>
+                <div class="label" data-i18n="documents"></div>
             </div>
         </div>
         <div class="col-md-3 mb-3">
             <div class="mini-stat">
-                <i class="bi bi-table"></i>
-                <div class="number" id="windRowCount">15,678</div>
-                <div class="label">แถวข้อมูลลม</div>
-            </div>
-        </div>
-    </div>
-    <div class="row mb-4">
-        <div class="col-lg-8 mb-4">
-            <div class="card chart-card">
-                <div class="card-header">
-                    <h5><i class="bi bi-activity text-info"></i> การเข้าใช้งานของผู้ใช้</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="userActivityChart" height="80"></canvas>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 mb-4">
-            <div class="card chart-card">
-                <div class="card-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5><i class="bi bi-bell-fill text-warning"></i> ข่าวสารแจ้งเตือน</h5>
-                        <span class="badge bg-danger" id="notificationCount">24</span>
-                    </div>
-                </div>
-                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
-                    <div class="activity-item">
-                        <div class="d-flex justify-content-between">
-                            <strong>โครงการใหม่เพิ่ม</strong>
-                            <span class="activity-time">5 นาทีที่แล้ว</span>
-                        </div>
-                        <p class="mb-0 text-muted small">มีการเพิ่มโครงการ "สายส่งไฟฟ้า A-01"</p>
-                    </div>
-                    <div class="activity-item">
-                        <div class="d-flex justify-content-between">
-                            <strong>ข้อมูลลมอัพเดท</strong>
-                            <span class="activity-time">1 ชั่วโมงที่แล้ว</span>
-                        </div>
-                        <p class="mb-0 text-muted small">นำเข้าข้อมูลลม 500 แถว</p>
-                    </div>
-                    <div class="activity-item">
-                        <div class="d-flex justify-content-between">
-                            <strong>เอกสารดาวน์โหลด</strong>
-                            <span class="activity-time">2 ชั่วโมงที่แล้ว</span>
-                        </div>
-                        <p class="mb-0 text-muted small">มีการดาวน์โหลดรายงาน Q4</p>
-                    </div>
-                    <div class="activity-item">
-                        <div class="d-flex justify-content-between">
-                            <strong>สมาชิกใหม่</strong>
-                            <span class="activity-time">3 ชั่วโมงที่แล้ว</span>
-                        </div>
-                        <p class="mb-0 text-muted small">มีสมาชิกเข้าระบบ 15 คน</p>
-                    </div>
-                </div>
+                <i class="fa-solid fa-newspaper"></i>
+                <div class="number" id="newsCount">0</div>
+                <div class="label" data-i18n="news"></div>
             </div>
         </div>
     </div>
@@ -335,29 +263,29 @@
         <div class="col-12">
             <div class="card chart-card">
                 <div class="card-header">
-                    <h5><i class="bi bi-wind text-primary"></i> การวิเคราะห์ข้อมูลลม</h5>
+                    <h5><i class="fa-solid fa-wind text-primary"></i> <span data-i18n="wind"></span></h5>
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <div class="border rounded p-3 text-center">
-                                <i class="bi bi-arrow-up-circle text-success" style="font-size: 2rem;"></i>
-                                <h4 class="mt-2 mb-0">45</h4>
-                                <small class="text-muted">ครั้งนำเข้า</small>
+                                <i class="fa-solid fa-file-import text-success" style="font-size: 2rem;"></i>
+                                <h4 class="mt-2 mb-0" id="windImportCount">0</h4>
+                                <small class="text-muted" data-i18n="import"></small>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="border rounded p-3 text-center">
-                                <i class="bi bi-database text-info" style="font-size: 2rem;"></i>
-                                <h4 class="mt-2 mb-0">15,678</h4>
-                                <small class="text-muted">แถวข้อมูล</small>
+                                <i class="fa-solid fa-database text-info" style="font-size: 2rem;"></i>
+                                <h4 class="mt-2 mb-0" id="windRowCount">0</h4>
+                                <small class="text-muted" data-i18n="row"></small>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="border rounded p-3 text-center">
-                                <i class="bi bi-calendar-check text-danger" style="font-size: 2rem;"></i>
-                                <h4 class="mt-2 mb-0">วันนี้</h4>
-                                <small class="text-muted">อัพเดทล่าสุด</small>
+                                <i class="fa-regular fa-calendar text-danger" style="font-size: 2rem;"></i>
+                                <h4 class="mt-2 mb-0" id="windUpdate">-</h4>
+                                <small class="text-muted" data-i18n="last_update"></small>
                             </div>
                         </div>
                     </div>
@@ -366,66 +294,29 @@
             </div>
         </div>
     </div>
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h5><i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="usage_history"></span></h5>
+                </div>
+                <div class="card-body">
+                    <table id="loginHistoryTable" class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Login</th>
+                                <th>Logout</th>
+                                <th>IP</th>
+                                <th>Device</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>            
 </div>
-<script>
-    const userActivityCtx = document.getElementById('userActivityChart').getContext('2d');
-    new Chart(userActivityCtx, {
-        type: 'line',
-        data: {
-            labels: ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัส', 'ศุกร์', 'เสาร์', 'อาทิตย์'],
-            datasets: [{
-                label: 'จำนวนผู้เข้าใช้',
-                data: [65, 78, 90, 81, 95, 45, 30],
-                borderColor: 'rgba(102, 126, 234, 1)',
-                backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                fill: true,
-                tension: 0.4,
-                borderWidth: 3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-    const windDataCtx = document.getElementById('windDataChart').getContext('2d');
-    new Chart(windDataCtx, {
-        type: 'line',
-        data: {
-            labels: ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'],
-            datasets: [{
-                label: 'จำนวนข้อมูลลมที่นำเข้า',
-                data: [1200, 1400, 1100, 1600, 1300, 1500, 1700, 1250, 1450, 1350, 1550, 1650],
-                borderColor: 'rgba(79, 172, 254, 1)',
-                backgroundColor: 'rgba(79, 172, 254, 0.1)',
-                fill: true,
-                tension: 0.4,
-                borderWidth: 3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    position: 'top'
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-</script>
+<script src="<?=BASE_URL?>/public/js/admin/dashboard.js?v=<?=time()?>"></script>

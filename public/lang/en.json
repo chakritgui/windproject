@@ -449,5 +449,6 @@
     "site_assessment": "Site Assessment",
     "login_pc": "Login (Full Site)",
     "login_mobile": "Login (Portrait)",
-    "image": "Image"
+    "image": "Image",
+    "row": "Row"
 }
