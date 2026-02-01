@@ -7,7 +7,7 @@
     --text-muted: #475569;
     --border-color: #e2e8f0;
     --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    --card-shadow-hover: 0 12px 20px -5px rgba(30, 64, 175, 0.15); /* เงาติดโทนน้ำเงิน */
+    --card-shadow-hover: 0 12px 20px -5px rgba(30, 64, 175, 0.15);
     --card-radius: 16px;
 }
 body {

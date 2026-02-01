@@ -1,168 +1,38 @@
-<style>  
-    .category-filter {
-        background: white;
-        border-radius: 15px;
-        padding: 20px;
-        margin-bottom: 30px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    }
-    .category-btn {
-        margin: 5px;
-        border-radius: 25px;
-        padding: 8px 20px;
-        border: 2px solid #667eea;
-        background: white;
-        color: #667eea;
-        transition: all 0.3s;
-    } 
-    .category-btn:hover,.category-btn.active {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    }
-    .project-card {
-        background: white;
-        border-radius: 15px;
-        overflow: hidden;
-        transition: all 0.3s;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        margin-bottom: 30px;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-    .project-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 12px 40px rgba(102, 126, 234, 0.3);
-    }
-    .project-image-container {
-        position: relative;
-        width: 100%;
-        height: 200px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 3rem;
-    }
-    .project-badge {
-        position: absolute;
-        top: 15px;
-        right: 15px;
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 600;
-    }
-    .badge-new {
-        background: #ff6b6b;
-        color: white;
-    }
-    .badge-hot {
-        background: #feca57;
-        color: #333;
-    }
-    .category-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 15px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        margin-right: 5px;
-    }
-    .cat-renewable {
-        background: #48dbfb;
-        color: white;
-    }
-    .cat-weather {
-        background: #ff9ff3;
-        color: white;
-    }
-    .cat-technology {
-        background: #54a0ff;
-        color: white;
-    }
-    .cat-environment {
-        background: #00d2d3;
-        color: white;
-    }
-    .cat-research {
-        background: #ff6348;
-        color: white;
-    }
-    .project-content {
-        padding: 20px;
-        flex-grow: 1;
-        display: flex;
-        flex-direction: column;
-    }
-    .project-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #2d3436;
-        margin-bottom: 10px;
-        line-height: 1.4;
-    }
-    .project-excerpt {
-        color: #636e72;
-        font-size: 0.95rem;
-        margin-bottom: 15px;
-        line-height: 1.6;
-        flex-grow: 1;
-    }
-    .project-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 0.85rem;
-        color: #95a5a6;
-        padding-top: 15px;
-        border-top: 1px solid #ecf0f1;
-    }
-    .search-box {
-        border-radius: 25px;
-        border: 2px solid #667eea;
-        padding: 10px 20px;
-    }
-    .search-box:focus {
-        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-        border-color: #667eea;
-    }
-    .section-title {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 30px;
-        position: relative;
-        padding-bottom: 15px;
-    }
-</style>
-<div class="container py-5 mt-5">
-    <div class="hero-section">
-        <div class="container text-center">
-            <h1 class="display-4 fw-bold mb-3"><i class="fas fa-wind"></i> ข่าวสารเกี่ยวกับลม</h1>
-            <p class="lead">ติดตามข่าวสารพลังงานลม สภาพอากาศ และเทคโนโลยีที่เกี่ยวข้องกับลม</p>
-            <div class="row justify-content-center mt-4">
-                <div class="col-md-6">
-                    <input type="text" class="form-control search-box" placeholder="ค้นหาข่าว..." id="searchInput">
+<link rel="stylesheet" href="<?=BASE_URL?>/public/css/news.css?v=<?=time();?>">
+<link rel="stylesheet" href="<?=BASE_URL?>/public/css/project.css?v=<?=time();?>">
+<div class="container py-5 mt-5">  
+    <div class="header-section mb-5">
+        <div class="header-top">
+            <div class="header-title-wrapper">
+                <div class="header-icon">
+                    <i class="fa-solid fa-diagram-project"></i>
+                </div>
+                <div class="header-text">
+                    <h2 class="header-title-main" data-i18n="project"></h2>
+                    <p class="header-subtitle" data-i18n="header-project-subtitle"></p>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="container">
-        <div class="category-filter">
-            <div class="text-center">
-                <h5 class="mb-3"><i class="fas fa-filter"></i> หมวดหมู่ข่าว</h5>
-                <button class="btn category-btn active" data-category="all">ทั้งหมด</button>
-                <button class="btn category-btn" data-category="renewable">พลังงานหมุนเวียน</button>
-                <button class="btn category-btn" data-category="weather">สภาพอากาศ</button>
-                <button class="btn category-btn" data-category="technology">เทคโนโลยี</button>
-                <button class="btn category-btn" data-category="environment">สิ่งแวดล้อม</button>
-                <button class="btn category-btn" data-category="research">งานวิจัย</button>
-            </div>
+        <div class="header-divider">
+            <div class="divider-line"></div>
+            <div class="divider-dot"></div>
         </div>
-        <div id="projectContainer" class="row"></div>
+    </div>
+    <nav aria-label="breadcrumb" class="breadcrumb-wrapper mb-4">
+        <ol class="breadcrumb mb-0" id="breadcrumb"></ol>
+    </nav>
+    <div id="listView"></div>
+    <div id="loadingIndicator" class="text-center py-4 d-none">
+        <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
+        <span class="ms-2 small text-muted" data-i18n="loading"></span>
+    </div>
+
+    <div id="scrollEnd" style="height: 50px;"></div>
+    <div id="emptyState" class="text-center py-5 d-none animated fadeIn">
+        <i class="fa-solid fa-folder-open fa-4x text-light mb-3"></i>
+        <h5 class="text-muted" data-i18n="no_data_found"></h5>
+        <p class="text-secondary small" data-i18n="project_line1"></p>
     </div>
 </div>
-<script src="<?=BASE_URL?>/public/js/project.js?v=<?=time();?>" defer></script>
+<div id="scrollEnd"></div>
+<script src="<?=BASE_URL?>/public/js/user/project.js?v=<?=time();?>" defer></script>

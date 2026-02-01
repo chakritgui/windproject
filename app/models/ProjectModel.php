@@ -49,20 +49,7 @@ class ProjectModel {
                             'type'        => $row['type'],
                             'level'       => $row['level'],
                             'parent_id'   => $row['parent_id'],
-                            'created_at'  => $row['created_at'],
-                            'child_count' => $this->countChildren($row['id'], $row['level'], $sub['r_id'], $activeProj)
-                        ];
-                        $finalItems[] = [
-                            'id'          => $row['id'],
-                            'ref_id'      => $sub['r_id'],
-                            'project_id'  => $activeProj,
-                            'folder_name' => $sub['r_name'],
-                            'code'        => $row['code'],
-                            'type'        => $row['type'],
-                            'level'       => $row['level'],
-                            'parent_id'   => $row['parent_id'],
-                            'created_at'  => $row['created_at'],
-                            'content_slug'  => $row['content_slug'],
+                            'created_at'  => convertTimeZone($row['created_at'], 'd/m/Y H:i:s'),
                             'child_count' => $this->countChildren($row['id'], $row['level'], $sub['r_id'], $activeProj)
                         ];
                     }
@@ -128,7 +115,7 @@ class ProjectModel {
                     }
                 }
                 $whereStr = " WHERE " . implode(' AND ', $subConditions);
-                $sqlCount = "SELECT COUNT(DISTINCT t.{$cfg['id']}) FROM {$cfg['table']} t {$joinSql} {$whereStr}";
+                $sqlCount = "SELECT COUNT(DISTINCT t.{$cfg['id']}) FROM {$cfg['table']} t {$joinSql} {$whereStr} GROUP BY t.{$cfg['id']}";
                 $stCount = $this->db->prepare($sqlCount);
                 $stCount->execute($params);
                 $totalChild += (int)$stCount->fetchColumn();
@@ -204,7 +191,7 @@ class ProjectModel {
     }
     private function formatRow($row) {
         if (!empty($row['created_at'])) {
-            $row['created_at'] = date('d/m/Y H:i:s', strtotime($row['created_at']));
+            $row['created_at'] = convertTimeZone($row['created_at'], 'd/m/Y H:i:s');
         }
         return $row;
     }

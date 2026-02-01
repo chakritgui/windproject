@@ -97,7 +97,6 @@
             $router->post('/api/installations/delete', 'InstallationsController@delete');
             $router->post('/api/installations/get', 'InstallationsController@get');
             $router->post('/api/installations/save', 'InstallationsController@save');
-            $router->post('/api/project/get', 'ProjectController@get');
             $router->post('/api/project/save', 'ProjectController@save');
             $router->post('/api/project/data', 'ProjectController@data');
             $router->post('/api/project/delete', 'ProjectController@delete');
@@ -144,6 +143,7 @@
     $router->post('/api/account/get', 'AccountControl@get');
     $router->post('/api/account/update', 'AccountControl@update');
     $router->post('/api/account/history', 'AccountControl@history');
+    $router->post('/api/project/get', 'ProjectController@get');
     $router->get('/logout', 'AuthController@logout');
     $currentRoute = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     $basePath = dirname($_SERVER['SCRIPT_NAME']);
