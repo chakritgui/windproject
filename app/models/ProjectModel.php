@@ -322,13 +322,16 @@ class ProjectModel {
         $status = $data['status'] ?? 'active';
         $notification = $data['notification'] ?? 'no';
         $mediaHelper = new MediaHelper($pdo);
+        $content_slug = $mediaHelper->generateSlug('project', $data["title_en"], $content_id);
         try {
             $pdo->beginTransaction();
             if ($content_id) {
-                $stmt = $pdo->prepare("UPDATE wp_content SET status = :status, updated_at = NOW() WHERE content_id = :content_id");
+                $stmt = $pdo->prepare("UPDATE wp_content SET status = :status, content_slug = :content_slug, updated_at = NOW() WHERE content_id = :content_id");
+                $stmt->bindValue(':content_slug', $content_slug);
                 $stmt->bindValue(':content_id', (int)$content_id, PDO::PARAM_INT);
             } else {
-                $stmt = $pdo->prepare("INSERT INTO wp_content (status, created_at, updated_at, type) VALUES (:status, NOW(), NOW(), 'project')");
+                $stmt = $pdo->prepare("INSERT INTO wp_content (status, content_slug, created_at, updated_at, type) VALUES (:status, :content_slug, NOW(), NOW(), 'project')");
+                $stmt->bindValue(':content_slug', $content_slug);
             }
             $stmt->bindValue(':status', $status);
             $stmt->execute();

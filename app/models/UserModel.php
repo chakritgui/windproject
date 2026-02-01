@@ -159,7 +159,8 @@ class UserModel {
                     SUM(CASE WHEN m.file_type = 'attachment' THEN 1 ELSE 0 END) as count_attachment,
                     SUM(CASE WHEN m.file_type = 'image' THEN 1 ELSE 0 END) as count_image,
                     SUM(CASE WHEN m.file_type = 'image360' THEN 1 ELSE 0 END) as count_image360,
-                    MAX(CASE WHEN t.read_at IS NOT NULL THEN 1 ELSE 0 END) as is_read
+                    MAX(CASE WHEN t.read_at IS NOT NULL THEN 1 ELSE 0 END) as is_read,
+                    c.content_slug
                 FROM wp_content c
                 LEFT JOIN wp_content_item iEn on iEn.content_id = c.content_id and iEn.content_lang = 'en'
                 LEFT JOIN wp_content_item iTh on iTh.content_id = c.content_id and iTh.content_lang = 'th' 

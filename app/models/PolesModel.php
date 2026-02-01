@@ -375,13 +375,16 @@ class PolesModel {
         $content_id = $data['content_id'] ?: null;
         $ex_cover = $data['ex_cover'] ?? null;
         $mediaHelper = new MediaHelper($pdo);
+        $content_slug = $mediaHelper->generateSlug('pole', $data["title_en"], $content_id);
         try {
             $pdo->beginTransaction();
             if ($content_id) {
-                $stmt = $pdo->prepare("UPDATE wp_content SET status = 'active', updated_at = NOW() WHERE content_id = :content_id");
+                $stmt = $pdo->prepare("UPDATE wp_content SET status = 'active', content_slug = :content_slug, updated_at = NOW() WHERE content_id = :content_id");
+                $stmt->bindValue(':content_slug', $content_slug);
                 $stmt->bindValue(':content_id', (int)$content_id, PDO::PARAM_INT);
             } else {
-                $stmt = $pdo->prepare("INSERT INTO wp_content (status, type, created_at, updated_at) VALUES ('active', 'pole', NOW(), NOW())");
+                $stmt = $pdo->prepare("INSERT INTO wp_content (status, content_slug, type, created_at, updated_at) VALUES ('active', :content_slug, 'pole', NOW(), NOW())");
+                $stmt->bindValue(':content_slug', $content_slug);
             }
             $stmt->execute();
             if (!$content_id) $content_id = $pdo->lastInsertId();

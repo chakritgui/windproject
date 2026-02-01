@@ -73,7 +73,7 @@ function renderNews(items) {
             badgeHtml += `<span class="badge-tag tag-vr"><i class="fa-solid fa-vr-cardboard"></i> <span data-i18n="vr">${langData['vr'] || 'VR'}</span></span>`;
         const isRead = parseInt(item.is_read) === 1;
         const html = `
-            <a href="${BASE_URL}/news/detail/${item.content_id}" class="news-item ${isRead ? '' : 'unread'}">
+            <a href="${BASE_URL}/content/view/${item.content_slug}" class="news-item ${isRead ? '' : 'unread'}" target="_blank">
                 ${thumbHtml}
                 <div class="news-content">
                     <div class="news-header">

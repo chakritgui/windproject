@@ -35,7 +35,8 @@ class NewsModel {
                     iTh.content_subject AS subject_th,
                     SUM(CASE WHEN m.file_type = 'attachment' THEN 1 ELSE 0 END) as count_attachment,
                     SUM(CASE WHEN m.file_type = 'image' THEN 1 ELSE 0 END) as count_image,
-                    SUM(CASE WHEN m.file_type = 'image360' THEN 1 ELSE 0 END) as count_image360
+                    SUM(CASE WHEN m.file_type = 'image360' THEN 1 ELSE 0 END) as count_image360,
+                    n.content_slug
                 FROM wp_content n
                 LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.content_lang='en'
                 LEFT JOIN wp_content_item iLo ON iLo.content_id = n.content_id AND iLo.content_lang='lo'
@@ -134,6 +135,7 @@ class NewsModel {
         $status = $data['status'] ?? 'draft';
         $publish_at = null;
         $mediaHelper = new MediaHelper($pdo);
+        $content_slug = $mediaHelper->generateSlug('news', $data["title_en"], $content_id);
         if ($status !== 'draft') {
             $tz = new DateTimeZone('Asia/Bangkok');
             if (empty($data['publish_at']) || ($data['publish_now'] ?? false)) {
@@ -148,10 +150,12 @@ class NewsModel {
         try {
             $pdo->beginTransaction();
             if ($content_id) {
-                $stmt = $pdo->prepare("UPDATE wp_content SET status = :status, publish_at = :publish_at, updated_at = NOW() WHERE content_id = :content_id");
+                $stmt = $pdo->prepare("UPDATE wp_content SET status = :status, content_slug = :content_slug, publish_at = :publish_at, updated_at = NOW() WHERE content_id = :content_id");
+                $stmt->bindValue(':content_slug', $content_slug);
                 $stmt->bindValue(':content_id', (int)$content_id, PDO::PARAM_INT);
             } else {
-                $stmt = $pdo->prepare("INSERT INTO wp_content (status, publish_at, created_at, updated_at) VALUES (:status, :publish_at, NOW(), NOW())");
+                $stmt = $pdo->prepare("INSERT INTO wp_content (status, content_slug, publish_at, created_at, updated_at) VALUES (:status, :content_slug, :publish_at, NOW(), NOW())");
+                $stmt->bindValue(':content_slug', $content_slug);
             }
             $stmt->bindValue(':status', $status);
             $stmt->bindValue(':publish_at', $publish_at, $publish_at === null ? PDO::PARAM_NULL : PDO::PARAM_STR);

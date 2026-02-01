@@ -153,4 +153,31 @@ class MediaHelper {
         }
         return false;
     }
+    public function generateSlug($type, $title, $id = 0) {
+        $pdo = $this->db;
+        $title = mb_strtolower($title, 'UTF-8');
+        $slug = preg_replace('/[^\p{L}\p{N}\p{M}]+/u', '-', $title);
+        $slug = preg_replace('/-+/', '-', $slug);
+        $slug = trim($slug, '-');
+        $slug = mb_substr($slug, 0, 150, 'UTF-8');
+        $slug = trim($slug, '-');
+        if (empty($slug)) {
+            $slug = $type . "-" . time();
+        }
+        $checkSql = "SELECT COUNT(*) FROM wp_content WHERE content_slug = :slug AND content_id != :id";
+        $stmt = $pdo->prepare($checkSql);
+        $tempSlug = $slug;
+        $counter = 1;
+        while (true) {
+            $stmt->execute([':slug' => $tempSlug, ':id' => $id]);
+            if ($stmt->fetchColumn() == 0) {
+                $slug = $tempSlug;
+                break;
+            }
+            $suffix = '-' . $counter;
+            $tempSlug = mb_substr($slug, 0, 140, 'UTF-8') . $suffix;
+            $counter++;
+        }
+        return $slug;
+    }
 }

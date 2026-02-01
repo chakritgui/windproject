@@ -28,7 +28,6 @@
         $router->get('/forgot-password', 'AuthController@forgot');
         $router->post('/api/auth', 'AuthController@doLogin');
         $router->post('/api/auth/forgot', 'AuthController@sendReset');
-
     } else {
         if (isset($_SESSION['user']['role']) && ($_SESSION['user']['role'] === 'admin') || ($_SESSION['user']['role'] === 'administrator')) {
             $router->get('/', 'AdminController@index');
@@ -41,7 +40,6 @@
             $router->get('/setting', 'AdminController@setting');
             $router->get('/shortcut', 'AdminController@shortcut');
             $router->get('/master', 'AdminController@master');
-            $router->post('/api/content/get', 'ContentController@get');
             $router->post('/api/member/list', 'MemberController@list');
             $router->post('/api/dashboard/getStats', 'DashboardController@getStats');
             $router->get('/api/dashboard/loginHistory', 'DashboardController@loginHistory');
@@ -117,11 +115,12 @@
             $router->post('/api/document-download-history', 'UserController@documentDownloadHistory');
             $router->post('/api/new-list', 'UserController@newsList');
             $router->get('/project', 'UserController@project');
-            $router->get('/project?{slug}', 'UserController@projectDetail');
             $router->get('/document', 'UserController@document');
             $router->get('/download', 'UserController@download');
         }
     }
+    $router->get('/content/{mode}/{slug}', 'ContentController@content');
+    $router->post('/api/content/get', 'ContentController@get');
     $router->post('/api/document/filter', 'DocumentController@filter');
     $router->post('/api/master', 'MapController@master');
     $router->post('/api/wind-area', 'MapController@windarea');

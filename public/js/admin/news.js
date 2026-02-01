@@ -70,7 +70,7 @@ function initNewsTable() {
             className: "text-center",
             render: (data, type, row) => `
                 <div class="btn-group border rounded-3 bg-white">
-                    <button class="btn btn-link text-info view-content" data-id="${row.content_id}" title="View"><i class="fa-solid fa-eye"></i></button>
+                    <a class="btn btn-link text-info" href="${BASE_URL}/content/preview/${row.content_slug}" target="_blank"><i class="fa-solid fa-eye"></i></a>
                     <button class="btn btn-link text-warning py-1 border-start manage-news" data-id="${row.content_id}" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
                     <button class="btn btn-link text-danger py-1 border-start delete-news" data-id="${row.content_id}" title="Delete"><i class="fa-regular fa-trash-can"></i></button>
                 </div>`
@@ -103,10 +103,6 @@ function initNewsTable() {
         }
     });
 }
-$(document).on('click', '.view-content', function() {
-    let content_id = $(this).data("id");
-    viewContent(content_id);
-});
 $(".filter").on("change", () => initNewsTable());
 $(document).on("click", ".manage-news", function () {
     let id = $(this).data("id") ?? "";
