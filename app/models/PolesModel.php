@@ -29,11 +29,13 @@ class PolesModel {
                 t.type_name,
                 i.installations_id,
                 i.installations_name,
-                p.content_id
+                p.content_id,
+                c.content_slug
             FROM wp_poles p
             LEFT JOIN wp_project pj ON pj.project_id = p.project_id
             LEFT JOIN wp_type t ON t.type_id = p.type_id
             LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
+            LEFT JOIN wp_content c ON c.content_id = p.content_id
             {$where}
             ORDER BY p.poles_id DESC
         ";

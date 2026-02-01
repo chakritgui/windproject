@@ -4,9 +4,9 @@ require_once __DIR__ . '/../models/ContentModel.php';
 class ContentController extends Controller {
     private $model;
     public function __construct(){ $this->model = new ContentModel(); }
-    public function get(){
+    public function getBySlug(){
         $id = intval($_POST['id'] ?? 0);
-        $this->json(['status'=>'success','data'=>$this->model->get($id)]);
+        $this->json(['status'=>'success','data'=>$this->model->getBySlug($id)]);
     }
     public function content($mode, $slug) {
         $decoded_slug = urldecode($slug);

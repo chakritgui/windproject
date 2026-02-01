@@ -9,7 +9,7 @@ class ProjectModel {
         $currentProjectId = $filters['project_id'] ?? null;
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
         $sql = "SELECT 
-            f.id, f.name as folder_name, f.code, f.level, f.parent_id, f.created_at, f.type, f.ref_id as folder_ref_id, f.content_id, f.notification_status, c.cover
+            f.id, f.name as folder_name, f.code, f.level, f.parent_id, f.created_at, f.type, f.ref_id as folder_ref_id, f.content_id, f.notification_status, c.cover, c.content_slug
         FROM wp_folder f 
         LEFT JOIN wp_content c on c.content_id = f.content_id
         {$mainWhere} ORDER BY f.id ASC";
@@ -50,6 +50,19 @@ class ProjectModel {
                             'level'       => $row['level'],
                             'parent_id'   => $row['parent_id'],
                             'created_at'  => $row['created_at'],
+                            'child_count' => $this->countChildren($row['id'], $row['level'], $sub['r_id'], $activeProj)
+                        ];
+                        $finalItems[] = [
+                            'id'          => $row['id'],
+                            'ref_id'      => $sub['r_id'],
+                            'project_id'  => $activeProj,
+                            'folder_name' => $sub['r_name'],
+                            'code'        => $row['code'],
+                            'type'        => $row['type'],
+                            'level'       => $row['level'],
+                            'parent_id'   => $row['parent_id'],
+                            'created_at'  => $row['created_at'],
+                            'content_slug'  => $row['content_slug'],
                             'child_count' => $this->countChildren($row['id'], $row['level'], $sub['r_id'], $activeProj)
                         ];
                     }

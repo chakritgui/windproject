@@ -113,9 +113,7 @@ function renderTable(data, isNewSearch) {
                 <td style="white-space: nowrap;">
                     <div class="btn-group border rounded-3 bg-white">
                     ${(item.type === 'content') ? `
-                        <button class="btn btn-link text-info view-content" data-id="${item.content_id}">
-                            <i class="fa-solid fa-eye"></i>
-                        </button>    
+                        <a href="${BASE_URL}/content/preview/${item.content_slug}" class="btn btn-link text-info view-content" target="_blank"><i class="fa-solid fa-eye"></i></a>    
                     ` : ``}
                     ${(item.type !== 'root') ? `
                         <button class="btn btn-link text-warning border-start manage-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-solid fa-pen-to-square"></i></button>
@@ -568,8 +566,4 @@ $(document).on('click', '.delete-content', function () {
             }
         });
     });
-});
-$(document).on('click', '.view-content', function() {
-    let content_id = $(this).data("id");
-    viewContent(content_id);
 });

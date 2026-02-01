@@ -120,7 +120,7 @@
         }
     }
     $router->get('/content/{mode}/{slug}', 'ContentController@content');
-    $router->post('/api/content/get', 'ContentController@get');
+    $router->post('/api/content/getBySlug', 'ContentController@getBySlug');
     $router->post('/api/document/filter', 'DocumentController@filter');
     $router->post('/api/master', 'MapController@master');
     $router->post('/api/wind-area', 'MapController@windarea');
