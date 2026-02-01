@@ -475,3 +475,76 @@ a.nav-link.active {
     transform: translateY(-3px);
     box-shadow: 0 10px 20px rgba(14, 165, 233, 0.15);
 }
+#vrModal .modal-content {
+    background-color: #000;
+    border: none;
+}
+#panorama-viewer {
+    width: 100%;
+    height: 80vh;
+    background-color: #000;
+}
+#vrModal .btn-dark {
+    pointer-events: auto !important;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+#vrModal .btn-dark:hover {
+    opacity: 1;
+    background-color: #000;
+}
+.pnlm-controls-container {
+    top: 65px !important;
+    z-index: 1000 !important;
+}
+.pnlm-load-button {
+    background-color: var(--bs-primary) !important;
+}
+#vrModal .modal-body {
+    overflow: hidden;
+    height: 80vh;
+}
+@media (max-width: 768px) {
+    #vrModal .modal-body {
+        height: 85vh; 
+    }
+    #panorama-viewer {
+        height: 100% !important;
+    }
+    .pnlm-compass {
+        bottom: 15px !important;
+    }
+}
+.pnlm-controls-container, .pnlm-compass, .pnlm-controls {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 1050 !important;
+}
+.pnlm-compass {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 50px !important;
+    right: 15px !important;
+    bottom: 65px !important;
+    background-size: contain !important;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+.pnlm-control {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    color: #333 !important;
+    margin-bottom: 5px !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2) !important;
+    transition: all 0.2s;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+}
+.pnlm-control:hover {
+    background-color: #fff !important;
+    color: #0ea5e9 !important;
+    transform: scale(1.05);
+}
+.pnlm-zoom-controls {
+    top: 70px !important; 
+    left: 15px !important;
+}

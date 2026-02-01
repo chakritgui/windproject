@@ -5,7 +5,7 @@
     <div class="d-none d-md-flex align-items-center justify-content-between mb-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="<?= BASE_URL ?>/news" class="text-decoration-none">ข่าวสาร</a></li>
+                <li class="breadcrumb-item breadcrumb-item-first"></li>
                 <li class="breadcrumb-item active text-truncate" id="breadcrumbTitle" style="max-width: 250px;">...</li>
             </ol>
         </nav>

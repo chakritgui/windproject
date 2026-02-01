@@ -30,6 +30,8 @@ function renderContent(data) {
     const lang = currentLang || 'th';
     const title = data.title[lang] || data.title['th'] || data.title['en'];
     const body = data.content[lang] || data.content['th'] || data.content['en'];
+    const type = data.type || 'news';
+    $(".breadcrumb-item-first").html(`<a href="${BASE_URL}/${type}">${langData[type] || 'News'}</a>`);
     $('#contentTitle, #breadcrumbTitle').text(title);
     $('#contentBody').html(body);
     $('#contentDate').text(data.created_at);
@@ -54,16 +56,24 @@ function renderContent(data) {
                 ${langData['vr_experience'] || '360° Experience'}
             </h5>
             <div class="row g-3">`;
+            
         data.images360.forEach(vr => {
+            const imageUrl = `${BASE_URL}/${vr.url || data.cover}`;
             extraHtml += `
                 <div class="col-6 col-md-4 col-lg-3">
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100">
-                        <div class="position-relative h-100">
-                            <img src="${BASE_URL}/${vr.url || data.cover}" class="w-100 h-100 object-fit-cover">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 vr-card cursor-pointer" 
+                        onclick="openVRModal('${imageUrl}')">
+                        <div class="position-relative h-100" style="min-height: 150px;">
+                            <img src="${imageUrl}" class="w-100 h-100 object-fit-cover">
+                            <div class="position-absolute top-0 start-0 m-2">
+                                <span class="badge rounded-pill bg-dark bg-opacity-75 fw-light">
+                                    <i class="fa-solid fa-rotate me-1 fa-spin"></i> 360°
+                                </span>
+                            </div>
                             <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-25 d-flex align-items-center justify-content-center">
-                                <a href="${BASE_URL}/vr-viewer/${vr.id}" target="_blank" class="btn btn-light btn-sm rounded-pill shadow-sm fw-bold">
-                                    <i class="fa-solid fa-vr-cardboard me-1"></i> ${langData['view'] || 'View'}
-                                </a>
+                                <div class="btn btn-light btn-sm rounded-pill shadow-sm fw-bold px-3">
+                                    <i class="fa-solid fa-expand me-1"></i> ${langData['view'] || 'View'}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -81,11 +91,15 @@ function renderContent(data) {
                 ${langData['gallery'] || 'Gallery'}
             </h5>
             <div class="row g-2">`;
-        data.images.forEach(img => {
+            
+        data.images.forEach((img, index) => {
             extraHtml += `
                 <div class="col-4 col-md-3 col-lg-2">
-                    <a href="${BASE_URL}/${img.url}" target="_blank" class="d-block ratio ratio-1x1 overflow-hidden rounded-3 border">
-                        <img src="${BASE_URL}/${img.url}" class="img-fluid object-fit-cover hover-zoom">
+                    <a href="${BASE_URL}/${img.url}" 
+                    data-fancybox="gallery" 
+                    data-caption="${data.title[lang] || ''}" 
+                    class="d-block ratio ratio-1x1 overflow-hidden rounded-3 border bg-light">
+                        <img src="${BASE_URL}/${img.url}" class="img-fluid object-fit-cover hover-zoom" loading="lazy">
                     </a>
                 </div>`;
         });
@@ -100,21 +114,23 @@ function renderContent(data) {
                 </span>
                 ${langData['documents'] || 'Documents'}
             </h5>
-            <div class="row row-cols-1 row-cols-md-2 g-3">`;
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">`; 
         data.attachments.forEach(file => {
             const isPdf = file.url.toLowerCase().endsWith('.pdf');
+            const fileName = file.name || file.url.split('/').pop();
             extraHtml += `
-                <div class="col-6 col-md-4 col-lg-3">
-                    <a href="${BASE_URL}/${file.url}" target="_blank" class="text-decoration-none">
-                        <div class="d-flex align-items-center p-3 rounded-4 border bg-white shadow-sm hover-shadow transition-all">
+                <div class="col">
+                    <a href="${BASE_URL}/${file.url}" download="${fileName}" class="text-decoration-none">
+                        <div class="d-flex align-items-center p-3 rounded-4 border bg-white shadow-sm hover-shadow transition-all h-100">
                             <div class="flex-shrink-0 me-3">
                                 <i class="fa-regular ${isPdf ? 'fa-file-pdf text-danger' : 'fa-file-lines text-primary'} fs-2"></i>
                             </div>
                             <div class="flex-grow-1 overflow-hidden">
-                                <div class="text-dark fw-bold text-truncate">${file.name}</div>
-                                <div class="text-muted small">${isPdf ? 'PDF' : 'DOC'}</div>
+                                <div class="text-dark fw-bold text-truncate" title="${file.name}">${file.name}</div>
                             </div>
-                            <div class="ms-2 text-muted"><i class="fa-solid fa-chevron-right"></i></div>
+                            <div class="ms-2 text-muted">
+                                <i class="fa-solid fa-download fa-2x"></i>
+                            </div>
                         </div>
                     </a>
                 </div>`;
@@ -137,3 +153,38 @@ function closeOrRedirect() {
         }, 200);
     }
 }
+Fancybox.bind("[data-fancybox='gallery']", {
+    Hash: false,
+    Thumbs: { autoStart: false },
+    Toolbar: {
+        display: {
+            left: ["infobar"],
+            middle: [],
+            right: ["iterateZoom", "close"],
+        },
+    },
+});
+let vrViewer = null;
+function openVRModal(imgUrl) {
+    const modal = new bootstrap.Modal(document.getElementById('vrModal'));
+    modal.show();
+    if (vrViewer) {
+        vrViewer.destroy();
+    }
+    setTimeout(() => {
+        vrViewer = pannellum.viewer('panorama-viewer', {
+            "type": "equirectangular",
+            "panorama": imgUrl,
+            "autoLoad": true,
+            "autoRotate": -2,
+            "compass": true,
+            "hfov": 110
+        });
+    }, 300);
+}
+$('#vrModal').on('hidden.bs.modal', function () {
+    if (vrViewer) {
+        vrViewer.destroy();
+        vrViewer = null;
+    }
+});

@@ -42,6 +42,10 @@
 <script src="<?=BASE_URL?>/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.th.min.js"></script>
 <script src="<?=BASE_URL?>/vendor/popperjs/dist/umd/popper.min.js"></script>
 <script src="<?=BASE_URL?>/vendor/tempus-dominus/dist/js/tempus-dominus.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
+<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
 <script>
     const BASE_URL = "<?=BASE_URL?>";
 <?php if (file_exists($manifestFile)) { ?>
