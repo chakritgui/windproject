@@ -64,7 +64,8 @@ class NotificationModel {
                         iTh.content_subject AS title_th,
                         n.created_at AS notification_at,
                         t.notifications_target,
-                        t.notifications_item
+                        t.notifications_item,
+                        n.content_slug
                     FROM wp_notification_targets t
                     LEFT JOIN wp_content n on n.content_id = t.notifications_item
                     LEFT JOIN wp_content_item iEn 

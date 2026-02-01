@@ -105,7 +105,7 @@ function handleNotificationItem(items) {
         }
         const html = `
             <li>
-                <a class="dropdown-item py-3 border-bottom notification-item ${isUnread}" data-id="${item.notifications_item}" data-target="${item.notifications_target}">
+                <a href="${BASE_URL}/content/view/${item.content_slug}" class="dropdown-item py-3 border-bottom ${isUnread}" target="_blank">
                     <div class="d-flex align-items-start">
                         <div class="flex-shrink-0 me-3">
                             <div class="bg-${item.notifications_target == 'project' ? `primary` : `warning`} bg-opacity-10 rounded-circle p-2">
@@ -124,51 +124,6 @@ function handleNotificationItem(items) {
                 </a>
             </li>`;
         $list.append(html);
-    });
-}
-$(document).on('click', '.notification-item', function() {
-    let id = $(this).data("id");
-    let target = $(this).data("target");
-    notificatinInfo(id, 'view', target);
-});
-function notificatinInfo(id) {
-    $.ajax({
-        url: "api/news/get",
-        method: "POST",
-        data: { id },
-        dataType: "json",
-        success(res) {
-            let $modal = $("#windModal");
-            let modal = new bootstrap.Modal($modal[0]);
-            $modal.find(".modal-header").html(`
-                <button class="btn-close" data-bs-dismiss="modal"></button>
-            `);
-            let title = '';
-            let content = '';
-            switch(currentLang) {
-                case 'en':
-                    title = res.data.title?.en;
-                    content = res.data.content?.en;
-                    break;
-                case 'lo':
-                    title = res.data.title?.lo || res.data.title?.en;
-                    content = res.data.content?.lo || res.data.content?.en;
-                    break;
-                case 'th':
-                    title = res.data.title?.th || res.data.title?.en;
-                    content = res.data.content?.th || res.data.content?.en;
-                    break;
-            }
-            $modal.find(".modal-body").html(`
-                <h5>${title ?? ""}</h5>
-                <div>${content ?? ""}</div>
-            `);
-            $modal.find(".modal-footer").html(`
-                <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-            `);
-            $modal.find(".modal-body img").addClass("img-fluid");
-            modal.show();
-        }
     });
 }
 $('.notification-list').on('scroll', async function () {
