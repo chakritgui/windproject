@@ -308,7 +308,7 @@ $(document).on('click', '.manage-document', function () {
         }
     });
 });
-$(document).on('change', '#contract, #filter_contract, #project, #filter_project, #type, #filter_type, #installation, #filter_installation', function() {
+$(document).on('change', '#contract, #filter_contract, #project, #filter_project, #type, #filter_type, #installation, #filter_installations', function() {
     const $this = $(this);
     const id = $this.attr('id');
     const val = $this.val();

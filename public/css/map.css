@@ -307,13 +307,18 @@ header button:not(#sidebarToggle) {
     --bs-btn-disabled-border-color: #212529 !important;
 }
 header .nav-link {
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.4);
     color: #ffffff !important;
-    font-weight: 700;
     border-radius: 5px;
     margin-left: 5px;
     height: 27.6px;
     padding: 5px 10px;
+}
+header .nav-link:hover {
+    background: rgba(0, 0, 0, 0.8);
+    color: #0d6efd !important;  
+    transition: all 0.3s ease; 
+    text-decoration: none;
 }
 .leaflet-tooltip.wind-custom-tooltip {
     background: transparent !important;

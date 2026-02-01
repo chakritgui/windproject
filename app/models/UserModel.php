@@ -4,10 +4,26 @@ class UserModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function documentList($page = 1, $limit = 20, $type_id = null, $date = null, $keyword = null) {
+    public function documentList($page = 1, $limit = 20,  $contract_id = null, $project_id = null, $type_id = null, $installations_id = null, $poles_id = null, $date = null, $keyword = null) {
         $offset = ($page - 1) * $limit;
         $where  = "WHERE d.status = 'public'";
         $params = [];
+        if ($contract_id) {
+            $where .= " AND d.contract_id = :contract_id";
+            $params[':contract_id'] = [(int)$contract_id, PDO::PARAM_INT];
+        }
+        if ($project_id) {
+            $where .= " AND d.project_id = :project_id";
+            $params[':project_id'] = [(int)$project_id, PDO::PARAM_INT];
+        }
+        if ($installations_id) {
+            $where .= " AND d.installations_id = :installations_id";
+            $params[':installations_id'] = [(int)$installations_id, PDO::PARAM_INT];
+        }
+        if ($poles_id) {
+            $where .= " AND d.poles_id = :poles_id";
+            $params[':poles_id'] = [(int)$poles_id, PDO::PARAM_INT];
+        }
         if ($type_id) {
             $where .= " AND d.type_id = :type_id";
             $params[':type_id'] = [(int)$type_id, PDO::PARAM_INT];
@@ -43,9 +59,18 @@ class UserModel {
                 d.document_path,
                 d.created_at,
                 d.document_download,
-                COALESCE(t.type_name, '-') AS type_name
+                c.contract_name,
+                p.project_name,
+                t.type_name,
+                i.installations_name,
+                pl.poles_code,
+                d.document_file_name
             FROM wp_documents d
-            LEFT JOIN wp_type t ON t.type_id = d.type_id
+            LEFT JOIN wp_contract c on c.contract_id = d.contract_id
+            LEFT JOIN wp_project p on p.project_id = d.project_id
+            LEFT JOIN wp_type t on t.type_id = d.type_id
+            LEFT JOIN wp_installations i on i.installations_id = d.installations_id
+            LEFT JOIN wp_poles pl on pl.poles_id = d.poles_id
             $where
             ORDER BY d.created_at DESC, d.document_id DESC
             LIMIT :limit OFFSET :offset
@@ -117,10 +142,19 @@ class UserModel {
                 d.document_name,
                 t.type_name,
                 d.document_type,
-                d.document_size
+                d.document_size,
+                c.contract_name,
+                p.project_name,
+                t.type_name,
+                i.installations_name,
+                pl.poles_code
             FROM wp_documents_download_logs l
             LEFT JOIN wp_documents d ON d.document_id = l.document_id
-            LEFT JOIN wp_type t ON t.type_id = d.type_id
+            LEFT JOIN wp_contract c on c.contract_id = d.contract_id
+            LEFT JOIN wp_project p on p.project_id = d.project_id
+            LEFT JOIN wp_type t on t.type_id = d.type_id
+            LEFT JOIN wp_installations i on i.installations_id = d.installations_id
+            LEFT JOIN wp_poles pl on pl.poles_id = d.poles_id
             $where
             ORDER BY l.download_date DESC
             LIMIT :limit OFFSET :offset

@@ -2,9 +2,52 @@ let docPage     = 1;
 let isLoading  = false;
 let hasMore    = true;
 let currentView = 'list';
+$(document).on('change', '#filter_contract, #filter_project, #filter_type, #filter_installations', function() {
+    const $this = $(this);
+    const id = $this.attr('id');
+    const val = $this.val();
+    const isFilter = id.startsWith('filter_');
+    const prefix = isFilter ? '#filter_' : '#';
+    const getVal = (target) => $(prefix + target).val();
+    if (id.includes('contract')) {
+        $(`${prefix}project, ${prefix}type, ${prefix}installation, ${prefix}pole`).val(null).trigger('change.select2');
+        initSelect2Remote(`${prefix}project`, `${BASE_URL}/api/document/filter`, { 
+            type: 'project', 
+            contract_id: val 
+        });
+    } else if (id.includes('project')) {
+        $(`${prefix}type, ${prefix}installation, ${prefix}pole`).val(null).trigger('change.select2');
+        initSelect2Remote(`${prefix}type`, `${BASE_URL}/api/document/filter`, { 
+            type: 'type', 
+            contract_id: getVal('contract'),
+            project_id: val 
+        });
+    } else if (id.includes('type')) {
+        $(`${prefix}installation, ${prefix}pole`).val(null).trigger('change.select2');
+        initSelect2Remote(`${prefix}installation`, `${BASE_URL}/api/document/filter`, { 
+            type: 'installation', 
+            contract_id: getVal('contract'),
+            project_id: getVal('project'),
+            type_id: val
+        });
+    } else if (id.includes('installation')) {
+        $(`${prefix}pole`).val(null).trigger('change.select2');
+        initSelect2Remote(`${prefix}pole`, `${BASE_URL}/api/document/filter`, { 
+            type: 'pole', 
+            contract_id: getVal('contract'),
+            project_id: getVal('project'),
+            type_id: getVal('type'),
+            installation_id: val
+        });
+    }
+});
 $(document).ready(function () {
     loadDocuments();
+    initSelect2Remote('#filter_contract', `${BASE_URL}/api/document/filter`, { type: 'contract' });
+    initSelect2Remote('#filter_project', `${BASE_URL}/api/document/filter`, { type: 'project' });
     initSelect2Remote('#filter_type', `${BASE_URL}/api/document/filter`, { type: 'type' });
+    initSelect2Remote('#filter_installations', `${BASE_URL}/api/document/filter`, { type: 'installation' });
+    initSelect2Remote('#filter_poles', `${BASE_URL}/api/document/filter`, { type: 'pole' });
     initMonthYearPicker("#filter_date", function () {
         docPage = 1;
         hasMore = true;
@@ -41,10 +84,10 @@ function resetAndLoad() {
     $('#gridView, #listView').empty();
     loadDocuments();
 }
-function triggerDownload(url) {
+function triggerDownload(url, fileName='') {
     const a = document.createElement('a');
     a.href = url;
-    a.setAttribute('download', '');
+    a.setAttribute('download', fileName || '');
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -64,7 +107,11 @@ function loadDocuments() {
         dataType: 'json',
         data: { 
             page: docPage,
+            contract: $("#filter_contract").val(),
+            project: $("#filter_project").val(),
             type: $("#filter_type").val(),
+            installations: $("#filter_installations").val(),
+            poles: $("#filter_poles").val(),
             date: $("#filter_date").val(),
             keyword: $("#filter_keyword").val()
         },
@@ -102,17 +149,23 @@ function renderDocuments(items) {
         renderListView(items);
     }
 }
+const createBadge = (text, icon, colorClass) => {
+    if (!text) return '';
+    return `<span class="badge ${colorClass} fw-normal d-inline-flex align-items-center me-1 mb-1" style="font-size: 8px; padding: 4px 8px; border-radius: 50rem;">
+                <i class="${icon} me-1"></i>${text}
+            </span>`;
+};
 function renderGridView(items) {
     let html = '';
     items.forEach(item => {
         const icon = getDocIcon(item.document_type);
         const size = formatFileSize(item.document_size);
         html += `
-        <div class="col-6 col-md-4">
+        <div class="col-12 col-md-4">
             <div class="doc-card card h-100">
                 <div class="card-body text-center p-3">
                     <div class="doc-icon mx-auto mb-2">
-                        <i class="bi ${icon} text-white"></i>
+                        <i class="bi ${icon}"></i>
                     </div>
                     <h6 class="card-title doc-title">
                         ${item.document_name}
@@ -126,13 +179,15 @@ function renderGridView(items) {
                         <div class="mb-1" style="font-size: 10px;">
                             <i class="fa-solid fa-hard-drive"></i> ${size} · <i class="fa-regular fa-file"></i> ${item.document_type.toUpperCase()}
                         </div>
+                        ${createBadge(item.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
+                        ${createBadge(item.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
+                        ${createBadge(item.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
+                        ${createBadge(item.installations_name, 'fa-solid fa-location-dot', 'bg-warning-subtle text-warning-emphasis')}
+                        ${createBadge(item.poles_code, 'fa-solid fa-tower-broadcast', 'bg-dark-subtle text-dark')}
                     </div>
-                    <span class="badge source-badge bg-${(item.type_name === 'Met Mast') ? 'warning' : 'error'}">
-                        ${item.type_name}
-                    </span>
-                    <button class="btn btn-download w-100 mt-2" data-id="${item.document_id}" data-path="${item.document_path}">
+                    <button class="btn btn-outline-primary download-btn w-100 mt-2" data-id="${item.document_id}" data-path="${item.document_path}" data-file-name="${item.document_file_name}">
                         <i class="fa-solid fa-download"></i>
-                        <span class="btn-text" data-i18n="download"></span>
+                        <span class="btn-text" data-i18n="download">${langData['download'] || 'Download'}</span>
                     </button>
                 </div>
             </div>
@@ -150,7 +205,7 @@ function renderListView(items) {
             <div class="row align-items-center g-2">
                 <div class="col-auto">
                     <div class="doc-icon">
-                        <i class="bi ${icon} text-white"></i>
+                        <i class="bi ${icon}"></i>
                     </div>
                 </div>
                 <div class="col">
@@ -164,15 +219,17 @@ function renderListView(items) {
                         <div class="mb-1" style="font-size: 10px;">
                             <i class="fa-solid fa-hard-drive"></i> ${size} · <i class="fa-regular fa-file"></i> ${item.document_type.toUpperCase()}
                         </div>
+                        ${createBadge(item.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
+                        ${createBadge(item.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
+                        ${createBadge(item.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
+                        ${createBadge(item.installations_name, 'fa-solid fa-location-dot', 'bg-warning-subtle text-warning-emphasis')}
+                        ${createBadge(item.poles_code, 'fa-solid fa-tower-broadcast', 'bg-dark-subtle text-dark')}
                     </div>
-                    <span class="badge source-badge bg-${(item.type_name === 'Met Mast') ? 'warning' : 'error'}">
-                        ${item.type_name}
-                    </span>
                 </div>
                 <div class="col-12 col-md-auto text-end">
-                    <button class="btn btn-download w-100 w-md-auto" data-id="${item.document_id}" data-path="${item.document_path}">
+                    <button class="btn btn-outline-primary download-btn w-100 w-md-auto" data-id="${item.document_id}" data-path="${item.document_path}" data-file-name="${item.document_file_name}">
                         <i class="fa-solid fa-download"></i>
-                        <span class="btn-text" data-i18n="download"></span>
+                        <span class="btn-text" data-i18n="download">${langData['download'] || 'Download'}</span>
                     </button>
                 </div>
             </div>
@@ -202,11 +259,11 @@ function setView(view) {
 }
 function getDocIcon(type) {
     type = (type || '').toLowerCase();
-    if (type === 'pdf') return 'fa-solid fa-file-pdf';
-    if (['doc','docx'].includes(type)) return 'fa-solid fa-file-word';
-    if (['xls','xlsx'].includes(type)) return 'fa-solid fa-file-excel';
-    if (['png','jpg','jpeg'].includes(type)) return 'fa-solid fa-images';
-    return 'fa-regular fa-file';
+    if (type === 'pdf') return 'fa-solid fa-file-pdf text-danger';
+    if (['doc','docx'].includes(type)) return 'fa-solid fa-file-word text-primary';
+    if (['xls','xlsx'].includes(type)) return 'fa-solid fa-file-excel text-success';
+    if (['png','jpg','jpeg'].includes(type)) return 'fa-solid fa-images text-warning';
+    return 'fa-regular fa-file text-muted';
 }
 function formatFileSize(bytes) {
     if (!bytes) return '-';
@@ -248,11 +305,12 @@ $(document).on('click', '.history-download', function (e) {
     `);
     loadDownloadHistory();
 });
-$(document).on('click', '.btn-download', function (e) {
+$(document).on('click', '.download-btn', function (e) {
     e.preventDefault();
     const btn  = $(this);
     const id   = btn.data('id');
     const path = btn.data('path');
+    const fileName = btn.data('file-name') || '';
     if (!id || !path) return;
     $.ajax({
         url: `${BASE_URL}/api/document-download`,
@@ -260,10 +318,10 @@ $(document).on('click', '.btn-download', function (e) {
         dataType: 'json',
         data: { id: id },
         success: function (res) {
-            triggerDownload(path);
+            triggerDownload(path, fileName);
         },
         error: function () {
-            triggerDownload(path);
+            triggerDownload(path, fileName);
         }
     });
 });
@@ -298,14 +356,18 @@ function renderHistoryRows(items) {
         html += `
         <div class="card shadow-sm mb-3">
             <div class="card-body py-3">
-                <h6 class="card-title mb-2 text-truncate text-primary">
+                <h6 class="card-title mb-2 text-truncate">
                     <i class="bi ${icon} me-1"></i>
                     ${row.document_name}
                 </h6>
                 <div class="small text-muted mb-1 d-flex flex-wrap gap-2 align-items-center">
-                    <span class="badge bg-${(row.type_name === 'Met Mast') ? 'warning' : 'error'}-subtle text-${(row.type_name === 'Met Mast') ? 'warning' : 'error'}">
-                        ${row.type_name}
-                    </span>
+                    ${createBadge(row.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
+                    ${createBadge(row.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
+                    ${createBadge(row.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
+                    ${createBadge(row.installations_name, 'fa-solid fa-location-dot', 'bg-warning-subtle text-warning-emphasis')}
+                    ${createBadge(row.poles_code, 'fa-solid fa-tower-broadcast', 'bg-dark-subtle text-dark')}
+                </div>
+                <div class="small text-muted mb-1 d-flex flex-wrap gap-2 align-items-center">
                     <span>
                         <i class="fa-regular fa-file"></i>
                         ${row.document_type.toUpperCase()}

@@ -4,7 +4,7 @@ class ContentModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function getBySlug($slug) {
+    public function getBySlug($slug, $mode = 'preview') {
         $pdo = $this->db;
         $stmt = $pdo->prepare("SELECT content_id, status, cover, created_at, type FROM wp_content WHERE content_slug = ? AND status != 'deleted'");
         $stmt->execute([$slug]);
@@ -33,6 +33,10 @@ class ContentModel {
             if ($m['file_type'] === 'image') $images[] = $m;
             elseif ($m['file_type'] === 'image360') $images360[] = $m;
             elseif ($m['file_type'] === 'attachment') $attachments[] = $m;
+        }
+        if($mode === 'view') {
+            $stmt = $pdo->prepare("UPDATE wp_content SET content_view = content_view + 1 WHERE content_id = ?");
+            $stmt->execute([$contentId]);
         }
         return [
             "id" => $contentId,

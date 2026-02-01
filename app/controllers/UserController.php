@@ -89,7 +89,11 @@ class UserController extends Controller {
     }
     public function documentList() {
         $page     = max(1, (int)($_POST['page'] ?? 1));
-        $type_id  = ($_POST['type_id'] !== '') ? (int)$_POST['type_id'] : null;
+        $contract_id  = ($_POST['contract'] !== '') ? (int)$_POST['contract'] : null;
+        $project_id  = ($_POST['project'] !== '') ? (int)$_POST['project'] : null;
+        $type_id  = ($_POST['type'] !== '') ? (int)$_POST['type'] : null;
+        $installations_id  = ($_POST['installations'] !== '') ? (int)$_POST['installations'] : null;
+        $poles_id  = ($_POST['poles'] !== '') ? (int)$_POST['poles'] : null;
         $date     = trim($_POST['date'] ?? '');
         $keyword  = trim($_POST['keyword'] ?? '');
         $view     = $_POST['view'] ?? 'grid';
@@ -97,7 +101,11 @@ class UserController extends Controller {
         $data = $this->model->documentList(
             $page,
             $limit,
+            $contract_id,
+            $project_id,
             $type_id,
+            $installations_id,
+            $poles_id,
             $date ?: null,
             $keyword ?: null
         );

@@ -1,5 +1,5 @@
 <div class="container py-5 mt-5 position-relative">
-    <a href="<?= BASE_URL ?>/news" class="btn btn-white shadow-sm rounded-circle d-md-none position-fixed start-0 top-0 m-3 z-3" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
+    <a href="<?= BASE_URL ?>/news" class="btn btn-white shadow-sm rounded-circle d-md-none position-fixed start-0 m-3 z-3" style="width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; margin-top: -40px !important; box-shadow: 0 .5rem 1.5rem rgba(0,0,0,.1) !important; z-index: 1060;">
         <i class="fa-solid fa-chevron-left"></i>
     </a>
     <div class="d-none d-md-flex align-items-center justify-content-between mb-4">
@@ -16,7 +16,7 @@
     <div id="previewBadge" class="d-none bg-warning text-dark text-center py-2 sticky-top shadow-sm fw-bold" style="z-index: 1060; font-size: 0.9rem;">
         <i class="fa-solid fa-eye me-2"></i> PREVIEW MODE : ข้อมูลนี้ยังไม่ได้เผยแพร่สู่สาธารณะ
     </div>
-    <article class="news-full-content bg-white p-3 p-md-0 rounded-4" id="contentArea" style="opacity: 0; transition: opacity 0.3s ease;">
+    <article class="news-full-content bg-white p-md-0 rounded-4" id="contentArea" style="opacity: 0; transition: opacity 0.3s ease;">
         <div id="contentCover"></div>
         <h4 class="fw-bolder mb-3" id="contentTitle"></h4>
         <div class="me-3">
