@@ -38,11 +38,5 @@
 <div id="menu1" class="menu-panel"></div>
 <div id="menu2" class="menu-panel"></div>
 <div id="menu3" class="menu-panel"></div>
-<script src="<?=BASE_URL?>/vendor/sweetalert2/dist/sweetalert2.all.min.js"></script>
-<script src="<?=BASE_URL?>/public/js/helper.js?v=<?=time();?>" defer></script>
-<script src="<?=BASE_URL?>/public/js/content.js?v=<?=time();?>" defer></script>
-<script src="<?=BASE_URL?>/public/js/alert.js?v=<?=time();?>" defer></script>
-<script src="<?=BASE_URL?>/public/js/object.js?v=<?=time();?>" defer></script>
-<script src="<?=BASE_URL?>/public/js/notification.js?v=<?=time();?>" defer></script>
 </body>
 </html>

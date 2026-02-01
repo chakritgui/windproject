@@ -450,5 +450,12 @@
     "login_pc": "Login (Full Site)",
     "login_mobile": "Login (Portrait)",
     "image": "Image",
-    "row": "Row"
+    "row": "Row",
+    "refresh": "Refresh",
+    "no_items": "No Updates Available",
+    "no_items_subtitle": "We don't have anything to show you right now. Stay tuned for updates!",
+    "no_title": "No Title",
+    "vr": "VR",
+    "header-news-subtitle": "Our Latest Updates & Important Announcements",
+    "items": "Items"
 }

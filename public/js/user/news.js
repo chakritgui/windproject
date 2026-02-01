@@ -1,9 +1,8 @@
+let pages     = 'news';
 let newsPage     = 1;
 let isLoading  = false;
 let hasMore    = true;
-$(document).ready(function() {
-    initNews();
-});
+$(document).ready(initNews);
 function initNews() {
     if (isLoading || !hasMore) return;
     isLoading = true;
@@ -32,38 +31,46 @@ function initNews() {
         }
     });
 }
-
 function renderNews(items) {
     const $container = $('#listView');
-    if (newsPage === 1) $container.empty();
-
-    if (!items.length && newsPage === 1) {
-        $container.html('<div class="text-center py-5 text-muted">ไม่พบข้อมูลข่าวสาร</div>');
-        return;
+    if (newsPage === 1) {
+        $container.empty();
+        if (!items || items.length === 0) {
+            const emptyHtml = `
+                <div class="empty-state-container animated fadeIn">
+                    <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
+                    <h3 class="empty-title" data-i18n="no_items">${langData['no_items'] || 'No items'}</h3>
+                    <p class="empty-subtitle" data-i18n="no_items_subtitle">${langData['no_items_subtitle'] || 'No items available.'}</p>
+                    <button onclick="location.reload()" class="btn-refresh">
+                        <i class="fa-solid fa-rotate-right"></i> <span data-i18n="refresh">${langData['refresh'] || 'Refresh'}</span>
+                    </button>
+                </div>
+            `;
+            $container.html(emptyHtml);
+            return;
+        }
     }
-
     items.forEach(item => {
-        // 1. จัดการเรื่องหัวข้อข่าว (เลือกภาษาตามความเหมาะสม)
-        const subject = item.subject_th || item.subject_en || 'ไม่มีหัวข้อ';
-        
-        // 2. จัดการรูปภาพ (ถ้าไม่มีให้ใช้คลาส no-image)
+        const lang = sessionStorage.getItem('lang') || 'th';
+        const fallback = {
+            'en': item.subject_en || item.subject_lo || item.subject_th,
+            'lo': item.subject_lo || item.subject_th || item.subject_en,
+            'th': item.subject_th || item.subject_lo || item.subject_en
+        };
+        const subject = fallback[lang] || langData['no_title'];
         let thumbHtml = '';
         if (item.cover_image) {
             thumbHtml = `<div class="news-thumbnail"><img src="${item.cover_image}" alt="cover"></div>`;
         } else {
             thumbHtml = `<div class="news-thumbnail no-image"><i class="bi bi-newspaper"></i></div>`;
         }
-
-        // 3. เตรียม Badge ไฟล์แนบต่างๆ
         let badgeHtml = '';
         if (parseInt(item.count_attachment) > 0) 
-            badgeHtml += `<span class="badge-tag tag-pdf"><i class="fa-solid fa-file-pdf"></i> เอกสาร</span>`;
+            badgeHtml += `<span class="badge-tag tag-pdf"><i class="fa-solid fa-file-pdf"></i> <span data-i18n="document">${langData['document'] || 'Document'}</span></span>`;
         if (parseInt(item.count_image) > 0) 
-            badgeHtml += `<span class="badge-tag tag-img"><i class="fa-solid fa-images"></i> รูปภาพ</span>`;
+            badgeHtml += `<span class="badge-tag tag-img"><i class="fa-solid fa-images"></i> <span data-i18n="image">${langData['image'] || 'Image'}</span></span>`;
         if (parseInt(item.count_image360) > 0) 
-            badgeHtml += `<span class="badge-tag tag-vr"><i class="fa-solid fa-vr-cardboard"></i> 360°</span>`;
-
-        // 4. สร้างโครงสร้าง HTML (สังเกตคลาส unread)
+            badgeHtml += `<span class="badge-tag tag-vr"><i class="fa-solid fa-vr-cardboard"></i> <span data-i18n="vr">${langData['vr'] || 'VR'}</span></span>`;
         const isRead = parseInt(item.is_read) === 1;
         const html = `
             <a href="${BASE_URL}/news/detail/${item.content_id}" class="news-item ${isRead ? '' : 'unread'}">

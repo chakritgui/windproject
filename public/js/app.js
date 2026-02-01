@@ -174,6 +174,11 @@ function refreshAllTables() {
         if (id === 'tb_news') initNewsTable();
         if (id === 'tb_wind') initWindTable();
     });
+    if (pages === 'news' || $('#listView').length) {
+        newsPage = 1;
+        hasMore = true;
+        initNews();
+    }
 }
 function getTableLang() {
     return {

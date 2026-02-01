@@ -59,8 +59,7 @@ function initNewsTable() {
                 const bg = isPub ? "success" : "secondary";
                 return `<span class="badge rounded-pill bg-${bg}-subtle text-${bg}"><span data-i18n="${status}">${status}</span></span>`;
             }
-        },
-        {
+        },{
             data: null,
             className: "text-center",
             render: (data, type, row) => `
@@ -69,8 +68,7 @@ function initNewsTable() {
                     <button class="btn btn-link text-warning py-1 border-start manage-news" data-id="${row.content_id}" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
                     <button class="btn btn-link text-danger py-1 border-start delete-news" data-id="${row.content_id}" title="Delete"><i class="fa-regular fa-trash-can"></i></button>
                 </div>`
-        }
-    ],
+        }],
         pageLength: pageLength,
         lengthMenu: lengthMenu,
         stateLoadParams: function (settings, data) {
