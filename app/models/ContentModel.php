@@ -6,7 +6,7 @@ class ContentModel {
     }
     public function getBySlug($slug) {
         $pdo = $this->db;
-        $stmt = $pdo->prepare("SELECT content_id, status, cover FROM wp_content WHERE content_slug = ? AND status != 'deleted'");
+        $stmt = $pdo->prepare("SELECT content_id, status, cover, created_at FROM wp_content WHERE content_slug = ? AND status != 'deleted'");
         $stmt->execute([$slug]);
         $n = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$n) return null;
@@ -36,6 +36,7 @@ class ContentModel {
         }
         return [
             "id" => $contentId,
+            "created_at" => convertTimeZone($n['created_at'], 'd/m/Y H:i:s'),
             "status" => $n['status'],
             "cover" => $n['cover'],
             "title" => $title,

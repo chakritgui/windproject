@@ -179,6 +179,9 @@ function refreshAllTables() {
         hasMore = true;
         initNews();
     }
+    if (typeof pages !== 'undefined' && pages === 'viewContent') {
+        initViewContent();
+    }
 }
 function getTableLang() {
     return {
