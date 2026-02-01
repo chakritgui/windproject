@@ -6,7 +6,7 @@ class NewsModel {
     }
     public function list($start = 0, $length = 10, $filters = [], $search = '') {
         $pdo = $this->db;
-        $where = " WHERE n.status != 'deleted' ";
+        $where = " WHERE n.status != 'deleted' AND n.type = 'news' ";
         $params = [];
         if (!empty($filters['status'])) {
             $where .= " AND n.status = :status ";
@@ -24,20 +24,25 @@ class NewsModel {
                         LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.content_lang='en' 
                         LEFT JOIN wp_content_item iLo ON iLo.content_id = n.content_id AND iLo.content_lang='lo' 
                         LEFT JOIN wp_content_item iTh ON iTh.content_id = n.content_id AND iTh.content_lang='th' 
-                        $where and n.type = 'news'";
+                        $where";
         $stmtFiltered = $pdo->prepare($sqlFiltered);
         $stmtFiltered->execute($params);
         $totalFiltered = $stmtFiltered->fetchColumn();
         $sql = "SELECT 
-                    n.content_id, n.publish_at, n.created_at, n.status, n.content_view, n.cover,
-                    iEn.content_subject AS title_en,
-                    iLo.content_subject AS title_lo,
-                    iTh.content_subject AS title_th
+                    n.content_id, n.publish_at, n.created_at, n.status, n.content_view, n.cover as cover_image,
+                    iEn.content_subject AS subject_en,
+                    iLo.content_subject AS subject_lo,
+                    iTh.content_subject AS subject_th,
+                    SUM(CASE WHEN m.file_type = 'attachment' THEN 1 ELSE 0 END) as count_attachment,
+                    SUM(CASE WHEN m.file_type = 'image' THEN 1 ELSE 0 END) as count_image,
+                    SUM(CASE WHEN m.file_type = 'image360' THEN 1 ELSE 0 END) as count_image360
                 FROM wp_content n
                 LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.content_lang='en'
                 LEFT JOIN wp_content_item iLo ON iLo.content_id = n.content_id AND iLo.content_lang='lo'
                 LEFT JOIN wp_content_item iTh ON iTh.content_id = n.content_id AND iTh.content_lang='th'
-                $where and n.type = 'news'
+                LEFT JOIN wp_content_media m on m.content_id = n.content_id and m.status = 'active'
+                $where
+                GROUP BY n.content_id
                 ORDER BY n.content_id DESC
                 LIMIT :start, :length";
         $stmt = $pdo->prepare($sql);
@@ -49,9 +54,14 @@ class NewsModel {
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($rows as &$r) {
-            if (!empty($r['created_at'])) $r['created_at'] = convertTimeZone($r['created_at'], 'd/m/Y H:i:s');
-            if (!empty($r['publish_at'])) $r['publish_at'] = convertTimeZone($r['publish_at'], 'd/m/Y H:i:s');
-            $r['content_view'] = number_format((int)$r['content_view']);
+            if (!empty($r['created_at'])) $r['created_at'] = convertTimeZone($r['created_at'], 'd/m/Y H:i');
+            if (!empty($r['publish_at'])) $r['publish_at'] = convertTimeZone($r['publish_at'], 'd/m/Y H:i');
+            $r['count_attachment'] = (int)$r['count_attachment'];
+            $r['count_image'] = (int)$r['count_image'];
+            $r['count_image360'] = (int)$r['count_image360'];
+            $r['subject_en'] = $r['subject_en'] ?? '';
+            $r['subject_lo'] = $r['subject_lo'] ?? '';
+            $r['subject_th'] = $r['subject_th'] ?? '';
         }
         return [
             "total" => (int)$totalFiltered,

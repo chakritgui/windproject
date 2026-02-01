@@ -394,22 +394,22 @@ function renderTabs() {
         <ul class="nav nav-pills nav-justified mb-4" id="contentTab" role="tablist">
             <li class="nav-item">
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-basic" type="button">
-                    <i class="fa-solid fa-pen-to-square me-2"></i>Content
+                    <i class="fa-solid fa-pen-to-square me-2"></i><span data-i18n="content">${langData['content'] || 'Content'}</span>
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-gallery" type="button">
-                    <i class="fa-solid fa-images me-2"></i><span data-i18n="gallery"></span>
+                    <i class="fa-solid fa-images me-2"></i><span data-i18n="gallery">${langData['gallery'] || 'Gallery'}</span>
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-360" type="button">
-                    <i class="fa-solid fa-images me-2"></i><span data-i18n="360°"></span>
+                    <i class="fa-solid fa-images me-2"></i><span data-i18n="360°">${langData['360°'] || '360°'}</span>
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-files" type="button">
-                    <i class="fa-solid fa-file-arrow-up me-2"></i><span data-i18n="attachments"></span>
+                    <i class="fa-solid fa-file-arrow-up me-2"></i><span data-i18n="attachments">${langData['attachments'] || 'Attachments'}</span>
                 </button>
             </li>
         </ul>
@@ -510,32 +510,115 @@ function renderLangTabs(d) {
     `;
 }
 function viewContent(id) {
-    $.post(`${BASE_URL}/api/project/gets`, { id }, function(res) {
+    $.post(`${BASE_URL}/api/content/get`, { id: id }, function(res) {
         if(res.status !== "success") return;
         let d = res.data;
         let $modal = $("#windModal");
         let modal = new bootstrap.Modal($modal[0]);
-        $modal.find(".modal-header").html(`
-            <h5 class="modal-title">${d.title.th || d.title.en}</h5>
-            <button class="btn-close" data-bs-dismiss="modal"></button>
-        `);
-        $modal.find(".modal-footer").html(`
-            <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-        `);
-        $modal.find(".modal-body").html(`
-            <div class="content-view">
-                <ul class="nav nav-tabs mb-3">
-                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#view_en">English</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#view_lo">ລາວ</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#view_th">ไทย</a></li>
+        const currentLang = sessionStorage.getItem('lang') || 'th';
+        const navHtml = `
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <ul class="nav nav-pills modal-header-pills border-0">
+                    <li class="nav-item"><button class="nav-link ${currentLang === 'en' ? 'active' : ''}" data-bs-toggle="tab" href="#view_en">EN</button></li>
+                    <li class="nav-item"><button class="nav-link ${currentLang === 'lo' ? 'active' : ''}" data-bs-toggle="tab" href="#view_lo">LA</button></li>
+                    <li class="nav-item"><button class="nav-link ${currentLang === 'th' ? 'active' : ''}" data-bs-toggle="tab" href="#view_th">TH</button></li>
                 </ul>
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="view_en">${d.content.en || ''}</div>
-                    <div class="tab-pane fade" id="view_lo">${d.content.lo || ''}</div>
-                    <div class="tab-pane fade" id="view_th">${d.content.th || ''}</div>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+        `;
+        let mediaHtml = d.cover 
+            ? `<div class="content-cover-wrapper mb-4">
+                <img src="${BASE_URL}/${d.cover}" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 400px; object-fit: cover;">
+               </div>` 
+            : '';
+        const getTitle = (lang) => d.title[lang] || d.title.th || d.title.en || '';
+        let galleryHtml = (d.images && d.images.length > 0) ? `
+            <div class="mt-4 pt-4 border-top">
+                <h6 class="fw-bold text-dark mb-3"><i class="fa-solid fa-images me-2"></i>${langData['gallery'] || 'Gallery'}</h6>
+                <div class="row g-2">
+                    ${d.images.map(img => `
+                        <div class="col-4 col-md-3">
+                            <a href="${BASE_URL}/${img.url}" target="_blank" class="gallery-item">
+                                <img src="${BASE_URL}/${img.url}" class="img-fluid rounded-3 shadow-sm border">
+                            </a>
+                        </div>
+                    `).join('')}
                 </div>
+            </div>` : '';
+        let vrHtml = (d.images360 && d.images360.length > 0) ? `
+            <div class="mt-4 pt-4 border-top">
+                <h6 class="fw-bold text-dark mb-3">
+                    <i class="fa-solid fa-vr-cardboard me-2 text-info"></i>${langData['vr_experience'] || '360° Experience'}
+                </h6>
+                <div class="row g-3">
+                    ${d.images360.map(vr => `
+                        <div class="col-12 col-sm-6">
+                            <div class="vr-card">
+                                <div class="vr-preview-wrapper">
+                                    <img src="${BASE_URL}/${vr.url || d.cover}" class="vr-blur-bg">
+                                    <div class="vr-overlay">
+                                        <i class="fa-solid fa-street-view vr-icon-spin"></i>
+                                        <a href="${BASE_URL}/vr-viewer/${vr.id}" target="_blank" class="btn btn-light btn-sm rounded-pill px-3 fw-bold shadow-sm">
+                                            <i class="fa-solid fa-eye me-1"></i> ${langData['view'] || 'View'} 360°
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>` : '';
+        let attachmentHtml = (d.attachments && d.attachments.length > 0) ? `
+            <div class="mt-4 pt-4 border-top">
+                <h6 class="fw-bold text-dark mb-3">
+                    <i class="fa-solid fa-paperclip me-2 text-primary"></i>${langData['documents'] || 'Documents'}
+                </h6>
+                <div class="row g-3">
+                    ${d.attachments.map(file => {
+                        const isPdf = file.url.toLowerCase().endsWith('.pdf');
+                        const iconClass = isPdf ? 'fa-file-pdf text-danger' : 'fa-file-lines text-primary';
+                        return `
+                        <div class="col-12 col-md-6">
+                            <a href="${BASE_URL}/${file.url}" target="_blank" class="attachment-card">
+                                <div class="d-flex align-items-center">
+                                    <div class="file-icon-box">
+                                        <i class="fa-regular ${iconClass} fs-4"></i>
+                                    </div>
+                                    <div class="ms-3 overflow-hidden">
+                                        <div class="file-name text-truncate">${file.name}</div>
+                                        <div class="file-action">
+                                            <span class="small text-primary fw-semibold">
+                                                <i class="fa-solid fa-download me-1"></i> ${langData['download'] || 'Download'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>`;
+                    }).join('')}
+                </div>
+            </div>` : '';
+        const buildTabPane = (lang) => `
+            <div class="tab-pane fade ${currentLang === lang ? 'show active' : ''}" id="view_${lang}">
+                <h3 class="fw-bold mb-3 text-dark article-title">${getTitle(lang)}</h3>
+                <div class="article-body text-secondary">${d.content[lang] || `<p class="italic">No content available in this language.</p>`}</div>
+            </div>
+        `;
+        $modal.find(".modal-header").addClass('bg-white border-0 py-3').html(navHtml);
+        $modal.find(".modal-body").addClass('pt-0').html(`
+            <div class="news-detail-view px-lg-3">
+                ${mediaHtml}
+                <div class="tab-content">
+                    ${buildTabPane('en')}
+                    ${buildTabPane('lo')}
+                    ${buildTabPane('th')}
+                </div>
+                ${galleryHtml}
+                ${vrHtml}
+                ${attachmentHtml}
             </div>
         `);
+        $modal.find(".modal-footer").html(`<button class="btn btn-secondary" data-bs-dismiss="modal"> ${langData['close'] || 'Close'}</button>`);
         modal.show();
     }, "json");
 }

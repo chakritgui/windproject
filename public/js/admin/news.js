@@ -23,21 +23,27 @@ function initNewsTable() {
             }
         },
         columns: [{ 
-            data: "cover",
+            data: "cover_image",
             className: 'text-center',
             render: data => {
                 const imgUrl = data ? `${BASE_URL}/${data}` : `${BASE_URL}/public/images/noimage.jpg`;
                 return `
                     <div class="news-cover-wrapper mx-auto">
-                        <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" 
-                             onerror="this.src='${BASE_URL}/public/images/noimage.jpg';">
+                        <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';">
                     </div>`;
             }
         },{ 
             data: null,
             render: (data, type, row) => {
-                let title = row[`title_${currentLang}`] || row.title_en || 'No Title';
-                return `<div class="fw-bold text-dark">${title}</div>`;
+                let title = row[`subject_${currentLang}`] || row.subject_en || 'No Title';
+                let badgeHtml = '';
+                if (parseInt(row.count_attachment) > 0) 
+                    badgeHtml += `<span class="badge rounded-pill bg-danger-subtle text-danger me-1"><i class="fa-solid fa-file-pdf"></i> <span data-i18n="document">${langData['document'] || 'Document'}</span></span>`;
+                if (parseInt(row.count_image) > 0) 
+                    badgeHtml += `<span class="badge rounded-pill bg-primary-subtle text-primary me-1"><i class="fa-solid fa-images"></i> <span data-i18n="image">${langData['image'] || 'Image'}</span></span>`;
+                if (parseInt(row.count_image360) > 0) 
+                    badgeHtml += `<span class="badge rounded-pill bg-success-subtle text-success me-1"><i class="fa-solid fa-vr-cardboard"></i> <span data-i18n="vr">${langData['vr'] || 'VR'}</span></span>`;
+                return `<div class="fw-bold text-dark">${title}</div> <div class="mt-1">${badgeHtml}</div>`;
             }
         },{
             data: "publish_at",
@@ -98,7 +104,7 @@ function initNewsTable() {
     });
 }
 $(document).on('click', '.view-content', function() {
-    let content_id = $(this).data("content");
+    let content_id = $(this).data("id");
     viewContent(content_id);
 });
 $(".filter").on("change", () => initNewsTable());

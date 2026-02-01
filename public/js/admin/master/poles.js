@@ -60,7 +60,7 @@ function initPolesTable() {
             render: function(row){
                 return (row.content_id) ? `
                     <div class="btn-group border rounded-3 bg-white">
-                        <button class="btn btn-link text-info py-1 view-content" data-content="${row.content_id}"><i class="fa-solid fa-eye"></i></button> 
+                        <button class="btn btn-link text-info py-1 view-content" data-id="${row.content_id}"><i class="fa-solid fa-eye"></i></button> 
                         <button class="btn btn-link text-warning py-1 border-start manage-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-pen-to-square"></i></button> 
                         <button class="btn btn-link text-danger py-1 border-start delete-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-trash-can"></i></button> 
                     </div>
@@ -117,7 +117,7 @@ function initPolesTable() {
     });
 }
 $(document).on('click', '.view-content', function() {
-    let content_id = $(this).data("content");
+    let content_id = $(this).data("id");
     viewContent(content_id);
 });
 $(document).on('click', '.delete-pole', function() {

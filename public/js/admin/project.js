@@ -570,6 +570,6 @@ $(document).on('click', '.delete-content', function () {
     });
 });
 $(document).on('click', '.view-content', function() {
-    let content_id = $(this).data("content");
+    let content_id = $(this).data("id");
     viewContent(content_id);
 });
