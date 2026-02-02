@@ -462,5 +462,6 @@
     "items": "Items",
     "vr_experience": "360° Experience",
     "please_do_not_close_this_page": "Please do not close this page.",
-    "auto_translate": "Auto Translate"
+    "auto_translate": "Auto Translate",
+    "default": "Default"
 }

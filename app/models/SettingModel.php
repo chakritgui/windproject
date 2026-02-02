@@ -47,6 +47,9 @@ class SettingModel {
             if (!empty($data['languages'])) {
                 $this->updateSetting('language', $data['languages']);
             }
+            if (!empty($data['language_default'])) {
+                $this->updateSetting('language_default', $data['language_default']);
+            }
             $this->db->commit();
             return true;
         } catch (Exception $e) {

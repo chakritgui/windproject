@@ -241,7 +241,7 @@ class ProjectModel {
         $stmt->execute([$id]);
         $n = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$n) return null;
-        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body, status, response FROM wp_content_item WHERE content_id = ?");
+        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body, status, response, translate_with FROM wp_content_item WHERE content_id = ?");
         $stmt->execute([$id]);
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $title = ["th" => "", "lo" => "", "en" => ""];

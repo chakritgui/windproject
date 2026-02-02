@@ -33,9 +33,7 @@ const uploadWithProgress = (url, formData, btnSelector) => {
             xhr.upload.onprogress = e => {
                 if (!e.lengthComputable) return;
                 const percent = Math.round((e.loaded / e.total) * 100);
-                $('#swal-progress')
-                    .css('width', percent + '%')
-                    .text(percent + '%');
+                $('#swal-progress').css('width', percent + '%').text(percent + '%');
             };
             return xhr;
         }
@@ -61,7 +59,8 @@ const settingHandlers = {
     website_th: v => $('#nameTh').val(v),
     footer: v => $('#footerText').val(v),
     site_assessment: v => $('#site_assessment').val(v),
-    language: v => setLanguagesFromDB(v)
+    language: v => setLanguagesFromDB(v),
+    language_default: v => setLanguagesDefaultFromDB(v)
 };
 function applySetting(item) {
     if (!item.setting_value) return;
@@ -130,8 +129,29 @@ function setLanguagesFromDB(languagesStr) {
         }
     });
 }
+function setLanguagesDefaultFromDB(defaultValue = 'en') {
+    $("input[name=language_default]").each(function() {
+        const lang = $(this).val();
+        const parentToggle = $('#lang' + lang.charAt(0).toUpperCase() + lang.slice(1));
+        if (!parentToggle.hasClass('active')) {
+            $(this).prop('disabled', true);
+        } else {
+            $(this).prop('disabled', false);
+        }
+    });
+    const targetRadio = $(`#language_default_${defaultValue.toLowerCase()}`);
+    if (targetRadio.length && !targetRadio.prop('disabled')) {
+        targetRadio.prop('checked', true);
+    } else {
+        const firstEnabled = $("input[name=language_default]:not(:disabled)").first();
+        if (firstEnabled.length) {
+            firstEnabled.prop('checked', true);
+        }
+    }
+}
 function toggleLanguage(lang) {
     const el = $('#lang' + lang.charAt(0).toUpperCase() + lang.slice(1));
+    const radio = $('#language_default_' + lang.toLowerCase());
     const isActive = el.hasClass('active');
     const activeCount = $('.lang-toggle.active').length;
     if (isActive && activeCount === 1) {
@@ -139,7 +159,17 @@ function toggleLanguage(lang) {
         return;
     }
     el.toggleClass('active');
-    el.find('i').attr('class', el.hasClass('active') ? 'fa-solid fa-circle-check fs-4' : 'fa-regular fa-circle fs-4 text-muted');
+    const nowActive = el.hasClass('active');
+    el.find('i').attr('class', nowActive ? 'fa-solid fa-circle-check fs-4' : 'fa-regular fa-circle fs-4 text-muted');
+    if (!nowActive) {
+        radio.prop('disabled', true);
+        if (radio.is(':checked')) {
+            const firstActive = $('.lang-toggle.active').first().attr('id').replace('lang', '').toLowerCase();
+            $('#language_default_' + firstActive).prop('checked', true);
+        }
+    } else {
+        radio.prop('disabled', false);
+    }
 }
 $(document).on('click', '.save-setting-3', function () {
     const langs = $('.lang-toggle.active').map((_, el) => el.id.replace('lang', '').toLowerCase()).get();
@@ -149,6 +179,7 @@ $(document).on('click', '.save-setting-3', function () {
     }
     const fd = new FormData();
     fd.append('languages', langs.join(','));
+    fd.append("language_default", $("input[name=language_default]:checked").val() || 'en');
     toggleButton('.save-setting-3', true);
     apiPost('/api/setting/saveLang', fd).done(res => {
         res.status ? (showSuccess('Success', langData['saved_successfully']), initSetting()) : showError('Error', langData['cannot_save']);

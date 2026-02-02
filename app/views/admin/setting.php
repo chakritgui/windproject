@@ -125,6 +125,9 @@
                                 </div>
                                 <small class="d-block mt-2 opacity-75">English Language</small>
                             </div>
+                            <label class="mt-3" for="language_default_en">
+                                <input type="radio" name="language_default" id="language_default_en" value="en" checked> <span data-i18n="default"></span>
+                            </label>
                         </div>
                         <div class="col-md-4">
                             <div class="lang-toggle" id="langLo" onclick="toggleLanguage('lo')">
@@ -137,6 +140,9 @@
                                 </div>
                                 <small class="d-block mt-2 opacity-75">Lao Language</small>
                             </div>
+                            <label class="mt-3" for="language_default_lo">
+                                <input type="radio" name="language_default" id="language_default_lo" value="lo"> <span data-i18n="default"></span>
+                            </label>
                         </div>
                         <div class="col-md-4">
                             <div class="lang-toggle" id="langTh" onclick="toggleLanguage('th')">
@@ -149,6 +155,9 @@
                                 </div>
                                 <small class="d-block mt-2 opacity-75">Thai Language</small>
                             </div>
+                            <label class="mt-3" for="language_default_th">
+                                <input type="radio" name="language_default" id="language_default_th" value="th"> <span data-i18n="default"></span>
+                            </label>
                         </div>
                     </div>
                     <div class="alert alert-primary mt-4" role="alert">

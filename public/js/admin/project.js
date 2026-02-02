@@ -77,9 +77,9 @@ function renderTable(data, isNewSearch) {
     data.forEach((item, index) => {
         let statusHtml = `
             <div class="mt-1">
-                ${renderLangStatus('en', row.en_status)}
-                ${renderLangStatus('th', row.th_status)}
-                ${renderLangStatus('lo', row.lo_status)}
+                ${renderLangStatus('en', item.en_status)}
+                ${renderLangStatus('th', item.th_status)}
+                ${renderLangStatus('lo', item.lo_status)}
             </div>
         `;
         const globalIndex = cachedData.length - data.length + index;
