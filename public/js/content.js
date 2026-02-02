@@ -1,6 +1,13 @@
 function langTab(lang, d) {
+    const status   = d.status_translate?.[lang] || '';
+    const response = d.response?.[lang] || '';
     return `
         <div class="tab-pane fade ${lang === 'en' ? 'show active' : ''}" id="tab-${lang}">
+            <div class="mb-2 d-flex align-items-center gap-2">
+                <strong>${lang.toUpperCase()}</strong>
+                ${renderStatusBadge(status)}
+            </div>
+            ${status === 'failed' && response ? `<div class="alert alert-danger py-2">${response}</div>` : ''}
             <div class="mb-3">
                 <label class="form-label">Title</label>
                 <input type="text" class="form-control" id="title_${lang}" value="${d.title?.[lang] || ''}">

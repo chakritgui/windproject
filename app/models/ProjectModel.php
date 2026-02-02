@@ -231,22 +231,28 @@ class ProjectModel {
                 "images" => [],
                 "images360" => [],
                 "title" => ["th" => "", "lo" => "", "en" => ""],
-                "content" => ["th" => "", "lo" => "", "en" => ""]
+                "content" => ["th" => "", "lo" => "", "en" => ""],
+                "status_translate" => ["th" => "", "lo" => "", "en" => ""],
+                "response" => ["th" => "", "lo" => "", "en" => ""]
             ];
         }
         $stmt = $pdo->prepare("SELECT content_id, status, cover FROM wp_content WHERE content_id = ?");
         $stmt->execute([$id]);
         $n = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$n) return null;
-        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body FROM wp_content_item WHERE content_id = ?");
+        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body, status, response FROM wp_content_item WHERE content_id = ?");
         $stmt->execute([$id]);
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $title = ["th" => "", "lo" => "", "en" => ""];
         $content = ["th" => "", "lo" => "", "en" => ""];
+        $status_translate = ["th" => "", "lo" => "", "en" => ""];
+        $response = ["th" => "", "lo" => "", "en" => ""];
         foreach ($items as $row) {
             $lang = $row['content_lang'];
             $title[$lang] = $row['content_subject'];
             $content[$lang] = $row['content_body'];
+            $status_translate[$lang] = $row['status'];
+            $response[$lang] = $row['response'];
         }
         $stmt2 = $pdo->prepare("SELECT notification_status FROM wp_folder WHERE content_id = ? LIMIT 1");
         $stmt2->execute([$id]);
@@ -278,6 +284,8 @@ class ProjectModel {
             "cover" => $n['cover'],
             "title" => $title,
             "content" => $content,
+            "status_translate" => $status_translate,
+            "response" => $response,
             "notification_status" => $row_folder ? $row_folder['notification_status'] : "no",
             "attachments" => $attachments,
             "images" => $images,

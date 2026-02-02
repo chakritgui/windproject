@@ -326,6 +326,8 @@ class PolesModel {
                 "cover" => "", 
                 "title" => ["th" => "", "lo" => "", "en" => ""],
                 "content" => ["th" => "", "lo" => "", "en" => ""],
+                "status_translate" => ["th" => "", "lo" => "", "en" => ""],
+                "response" => ["th" => "", "lo" => "", "en" => ""],
                 "attachments" => [],
                 "images" => [],
                 "images360" => []
@@ -335,15 +337,19 @@ class PolesModel {
         $stmt->execute([$id]);
         $n = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$n) return null;
-        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body FROM wp_content_item WHERE content_id = ?");
+        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body, status, response FROM wp_content_item WHERE content_id = ?");
         $stmt->execute([$id]);
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $title = ["th" => "", "lo" => "", "en" => ""];
         $content = ["th" => "", "lo" => "", "en" => ""];
+        $status_translate = ["th" => "", "lo" => "", "en" => ""];
+        $response = ["th" => "", "lo" => "", "en" => ""];
         foreach ($items as $row) {
             $lang = $row['content_lang'];
             $title[$lang] = $row['content_subject'];
             $content[$lang] = $row['content_body'];
+            $status_translate[$lang] = $row['status'];
+            $response[$lang] = $row['response'];
         }
         $stmt = $pdo->prepare("SELECT id, file_path, file_name, file_type, file_size FROM wp_content_media WHERE content_id = ? and status = 'active'");
         $stmt->execute([$id]);
@@ -373,6 +379,8 @@ class PolesModel {
             "cover" => $n['cover'],
             "title" => $title,
             "content" => $content,
+            "status_translate" => $status_translate,
+            "response" => $response,
             "attachments" => $attachments,
             "images" => $images,
             "images360" => $images360

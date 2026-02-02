@@ -77,3 +77,18 @@ function renderLangStatus(lang, status) {
         </span>
     `;
 }
+function renderStatusBadge(status) {
+    if (!status) return '';
+    const map = {
+        ready:   { cls: 'success', text: 'Ready',   icon: 'fa-check' },
+        wait:    { cls: 'warning',   text: 'Waiting', icon: 'fa-spinner fa-spin' },
+        success: { cls: 'success',   text: 'Success', icon: 'fa-check' },
+        failed:  { cls: 'danger',    text: 'Failed',  icon: 'fa-xmark' }
+    };
+    const s = map[status] || map.ready;
+    return `
+        <span class="badge rounded-pill bg-${s.cls}-subtle text-${s.cls}">
+            <i class="fa-solid ${s.icon}"></i> ${s.text}
+        </span>
+    `;
+}
