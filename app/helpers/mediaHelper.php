@@ -205,7 +205,7 @@ class MediaHelper {
     }
     public function autoTranslate($content_id){
         $pdo = $this->db;
-        $stmt = $pdo->prepare("SELECT content_lang FROM wp_content_item WHERE content_id = ? AND status = 'ready' AND content_lang IN ('th','lo')");
+        $stmt = $pdo->prepare("SELECT content_lang FROM wp_content_item WHERE content_id = ? AND content_lang IN ('th','lo')");
         $stmt->execute([$content_id]);
         $targets = $stmt->fetchAll(PDO::FETCH_COLUMN);
         if (!$targets) return false;
@@ -228,7 +228,7 @@ class MediaHelper {
                     $lang,
                     $content_id
                 );
-                $pdo->prepare("UPDATE wp_content_item SET content_subject = ?, content_body = ?, status = 'success',response = NULL,updated_at = NOW() WHERE content_id = ? AND content_lang = ?")->execute([
+                $pdo->prepare("UPDATE wp_content_item SET content_subject = ?, content_body = ?, status = 'success',response = NULL,updated_at = NOW(), translate_with = 'ai' WHERE content_id = ? AND content_lang = ?")->execute([
                     $subject,
                     $body,
                     $content_id,

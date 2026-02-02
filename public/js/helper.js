@@ -62,11 +62,11 @@ function hidePageLoader() {
 function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
-function renderLangStatus(lang, status) {
+function renderLangStatus(lang, status, translate_with) {
     if (!status) return '';
     const map = {
         ready:   { cls: 'success', icon: 'fa-check' },
-        wait:    { cls: 'warning',   icon: 'fa-spinner fa-spin' },
+        wait:    { cls: 'warning',   icon: 'fa-hourglass-half' },
         success: { cls: 'success',   icon: 'fa-check' },
         failed:  { cls: 'danger',    icon: 'fa-xmark' }
     };

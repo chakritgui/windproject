@@ -367,9 +367,16 @@ function saveNews() {
     formData.append("ex_cover", $("#ex_cover").val());
     formData.append("title_th", $("#title_th").val());
     formData.append("auto_translate", $("#auto_translate").is(":checked") ? 'yes' : 'no');
-    formData.append("content_en", tinymce.get('content_en')?.getContent() || '');
-    formData.append("content_lo", tinymce.get('content_lo')?.getContent() || '');
-    formData.append("content_th", tinymce.get('content_th')?.getContent() || '');
+    const getCleanContent = (lang) => {
+        const editor = tinymce.get(`content_${lang}`);
+        if (!editor) return '';
+        const content = editor.getContent().trim();
+        const plainText = content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim();
+        return plainText === '' ? '' : content;
+    };
+    formData.append("content_en", getCleanContent('en'));
+    formData.append("content_lo", getCleanContent('lo'));
+    formData.append("content_th", getCleanContent('th'));
     const cover = $("#cover")[0].files[0] || null;
     if (cover) {
         formData.append("cover", cover);

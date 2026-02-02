@@ -233,7 +233,8 @@ class ProjectModel {
                 "title" => ["th" => "", "lo" => "", "en" => ""],
                 "content" => ["th" => "", "lo" => "", "en" => ""],
                 "status_translate" => ["th" => "", "lo" => "", "en" => ""],
-                "response" => ["th" => "", "lo" => "", "en" => ""]
+                "response" => ["th" => "", "lo" => "", "en" => ""],
+                "translate_with" => ["th" => "", "lo" => "", "en" => ""]
             ];
         }
         $stmt = $pdo->prepare("SELECT content_id, status, cover FROM wp_content WHERE content_id = ?");
@@ -247,12 +248,14 @@ class ProjectModel {
         $content = ["th" => "", "lo" => "", "en" => ""];
         $status_translate = ["th" => "", "lo" => "", "en" => ""];
         $response = ["th" => "", "lo" => "", "en" => ""];
+        $translate_with = ["th" => "", "lo" => "", "en" => ""];
         foreach ($items as $row) {
             $lang = $row['content_lang'];
             $title[$lang] = $row['content_subject'];
             $content[$lang] = $row['content_body'];
             $status_translate[$lang] = $row['status'];
             $response[$lang] = $row['response'];
+            $translate_with[$lang] = $row['translate_with'];
         }
         $stmt2 = $pdo->prepare("SELECT notification_status FROM wp_folder WHERE content_id = ? LIMIT 1");
         $stmt2->execute([$id]);
@@ -286,6 +289,7 @@ class ProjectModel {
             "content" => $content,
             "status_translate" => $status_translate,
             "response" => $response,
+            "translate_with" => $translate_with,
             "notification_status" => $row_folder ? $row_folder['notification_status'] : "no",
             "attachments" => $attachments,
             "images" => $images,
@@ -353,26 +357,38 @@ class ProjectModel {
             if (!$content_id) {
                 $content_id = $pdo->lastInsertId();
             }
-            $sqlItem = "INSERT INTO wp_content_item (content_id, content_subject, content_body, content_lang, created_at, updated_at) VALUES (:content_id, :subject, :body, :lang, NOW(), NOW()) ON DUPLICATE KEY UPDATE content_subject = VALUES(content_subject), content_body = VALUES(content_body), updated_at = NOW()";
+            $sqlItem = "INSERT INTO wp_content_item 
+                        (content_id, content_subject, content_body, content_lang, translate_with, created_at, updated_at) 
+                        VALUES (:content_id, :subject, :body, :lang, 'self', NOW(), NOW()) 
+                        ON DUPLICATE KEY UPDATE 
+                            translate_with = IF(content_subject <=> VALUES(content_subject) AND content_body <=> VALUES(content_body), translate_with, 'self'),
+                            content_subject = VALUES(content_subject), 
+                            content_body = VALUES(content_body), 
+                            updated_at = NOW()";
             $stmtItem = $pdo->prepare($sqlItem);
             $langs = ['en', 'th', 'lo'];
             foreach ($langs as $lang) {
                 $subj = trim($data["title_$lang"] ?? '');
-                $body = trim($data["content_$lang"] ?? '');
-                if ($subj !== '' || $body !== '') {
-                    $stmtItem->execute([
-                        ':content_id' => $content_id,
-                        ':subject'    => $subj,
-                        ':body'       => $body,
-                        ':lang'       => $lang
-                    ]);
-                    $sqlStatus = "UPDATE wp_content_item SET status = 'ready', response = NULL WHERE content_id = :content_id AND content_lang = :lang";
-                    $stmtStatus = $pdo->prepare($sqlStatus);
-                    $stmtStatus->execute([
-                        ':content_id' => $content_id,
-                        ':lang' => $lang
-                    ]);
-                }
+                $bodyRaw = $data["content_$lang"] ?? '';
+                $cleanBody = trim(strip_tags($bodyRaw, '<img><iframe>'));
+                $cleanBody = str_replace('&nbsp;', '', $cleanBody);
+                $cleanBody = trim($cleanBody);
+                $body = ($cleanBody === '' && !str_contains($bodyRaw, '<img')) ? null : $bodyRaw;
+                $subj = ($subj === '') ? null : $subj;
+                $stmtItem->execute([
+                    ':content_id' => $content_id,
+                    ':subject'    => $subj,
+                    ':body'       => $body,
+                    ':lang'       => $lang
+                ]);
+                $status = ($body === null && $subj === null) ? 'wait' : 'ready';
+                $sqlStatus = "UPDATE wp_content_item SET status = :status, response = NULL WHERE content_id = :content_id AND content_lang = :lang";
+                $stmtStatus = $pdo->prepare($sqlStatus);
+                $stmtStatus->execute([
+                    ':status'     => $status,
+                    ':content_id' => $content_id,
+                    ':lang'       => $lang
+                ]);
             }
             if(!$ex_cover) {
                 $mediaHelper->deleteExistingCover($content_id, 'wp_content', 'cover');

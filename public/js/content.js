@@ -1,63 +1,82 @@
 function langTab(lang, d) {
-    const status   = d.status_translate?.[lang] || '';
+    const status = d.status_translate?.[lang] || '';
     const response = d.response?.[lang] || '';
+    const translate_with = d.translate_with?.[lang] || '';
+    let rawContent = d.content?.[lang] || '';
+    const cleanCheck = rawContent.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim();
+    if (cleanCheck === '' && !rawContent.includes('<img')) {
+        rawContent = '';
+    }
+    const renderTranslateMethod = (method) => {
+        if (status === 'wait') return ''; 
+        if (method === 'ai') {
+            return `<span class="badge bg-warning-subtle text-warning border border-warning-subtle" title="AI">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> AI
+                    </span>`;
+        } else if (method === 'self') {
+            return `<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" title="Manual">
+                        <i class="fa-solid fa-language"></i> Self
+                    </span>`;
+        }
+        return '';
+    };
     return `
         <div class="tab-pane fade ${lang === 'en' ? 'show active' : ''}" id="tab-${lang}">
-            <div class="mb-2 d-flex align-items-center gap-2">
-                <strong>${lang.toUpperCase()}</strong>
-                ${renderStatusBadge(status)}
+            <div class="mb-3 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <strong class="fs-5">${lang.toUpperCase()}</strong>
+                    ${renderLangStatus(lang, status, translate_with)}
+                    ${renderTranslateMethod(translate_with)}
+                </div>
             </div>
-            ${status === 'failed' && response ? `<div class="alert alert-danger py-2">${response}</div>` : ''}
+            ${status === 'failed' && response ? `<div class="alert alert-danger py-2 small">${response}</div>` : ''}
             <div class="mb-3">
-                <label class="form-label">Title</label>
+                <label class="form-label fw-bold">Title</label>
                 <input type="text" class="form-control" id="title_${lang}" value="${d.title?.[lang] || ''}">
             </div>
             <div class="mb-3">
-                <label class="form-label">Content</label>
-                <textarea class="form-control tinymce" id="content_${lang}" rows="10">${d.content?.[lang] || ''}</textarea>
+                <label class="form-label fw-bold">Content</label>
+                <textarea class="form-control tinymce" id="content_${lang}" rows="10">${rawContent}</textarea>
             </div>
         </div>
     `;
 }
 function initTinyMCE() {
     tinymce.remove();
-    let oldImages = [];
     const fontUrl = 'https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap';
     tinymce.init({
-        selector: '#content_en, #content_lo, #content_th',
+        selector: '.tinymce',
         height: 450,
         branding: false,
         promotion: false,
         plugins: 'image link lists table media code',
-        toolbar: `
-            undo redo | styles | fontfamily fontsize | bold italic underline |
-            alignleft aligncenter alignright |
-            bullist numlist | image media table |
-            img25 img50 img100 | code
-        `,
-        font_family_formats: "TH Sarabun New=TH Sarabun New, Sarabun, sans-serif; Angsana New=Angsana New, sans-serif; Arial=arial,helvetica,sans-serif; Courier New=courier new,courier,monospace; Akbalthom=Akbalthom;",
+        toolbar: 'undo redo | styles | fontfamily fontsize | bold italic underline | alignleft aligncenter alignright | bullist numlist | image media table | img25 img50 img100 | code',
+        newline_behavior: 'block',
+        forced_root_block: 'p',
+        entity_encoding: 'raw',
+        font_family_formats: "TH Sarabun New='TH Sarabun New', Sarabun, sans-serif; Arial=Arial, sans-serif;",
         content_css: [fontUrl],
         content_style: `
             @import url('${fontUrl}');
-            body { 
-                font-family: 'TH Sarabun New', 'Sarabun', sans-serif; 
-                font-size: 10pt; 
-            }
+            body { font-family: 'TH Sarabun New', 'Sarabun', sans-serif; font-size: 10pt; line-height: 1.6; }
+            p { margin: 0; padding: 0; }
             img { max-width:100%; height:auto; cursor: pointer; transition: 0.3s; }
             img:hover { outline: 3px solid #6366f1; }
         `,
         setup: function (editor) {
-            editor.oldImages = []; 
+            editor.on('init', function () {
+                const content = editor.getContent().trim();
+                if (content === '' || content === '<p>&nbsp;</p>') {
+                    editor.setContent(''); 
+                }
+                editor.oldImages = getImageList(editor);
+            });
             editor.ui.registry.addButton('img25', { text: '25%', onAction: () => resizeImage(editor, '25%') });
             editor.ui.registry.addButton('img50', { text: '50%', onAction: () => resizeImage(editor, '50%') });
             editor.ui.registry.addButton('img100', { text: 'Full', onAction: () => resizeImage(editor, '100%') });
-            editor.on('init', function () {
-                editor.oldImages = getImageList(editor);
-                editor.execCommand('FontName', false, 'TH Sarabun New');
-            });
             editor.on('change keyup', function () {
                 let newImages = getImageList(editor);
-                let removed = editor.oldImages.filter(src => !newImages.includes(src));
+                let removed = (editor.oldImages || []).filter(src => !newImages.includes(src));
                 removed.forEach(src => {
                     if (!src || src.startsWith('blob:')) return;
                     fetch(BASE_URL + '/public/uploads/delete_content_image.php', {
@@ -77,10 +96,13 @@ function initTinyMCE() {
                 fetch(BASE_URL + '/public/uploads/upload_content_image.php', {
                     method: 'POST',
                     body: formData
-                }).then(r => r.json()).then(result => {
+                })
+                .then(r => r.json())
+                .then(result => {
                     if (result && result.url) resolve(result.url);
                     else reject('Upload failed');
-                }).catch(() => reject('Upload error'));
+                })
+                .catch(() => reject('Upload error'));
             });
         }
     });
