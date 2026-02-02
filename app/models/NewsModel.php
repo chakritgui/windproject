@@ -36,7 +36,10 @@ class NewsModel {
                     SUM(CASE WHEN m.file_type = 'attachment' THEN 1 ELSE 0 END) as count_attachment,
                     SUM(CASE WHEN m.file_type = 'image' THEN 1 ELSE 0 END) as count_image,
                     SUM(CASE WHEN m.file_type = 'image360' THEN 1 ELSE 0 END) as count_image360,
-                    n.content_slug
+                    n.content_slug,
+                    iEn.status as en_status,
+                    iLo.status as lo_status,
+                    iTh.status as th_status
                 FROM wp_content n
                 LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.content_lang='en'
                 LEFT JOIN wp_content_item iLo ON iLo.content_id = n.content_id AND iLo.content_lang='lo'

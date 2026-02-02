@@ -30,12 +30,18 @@ class PolesModel {
                 i.installations_id,
                 i.installations_name,
                 p.content_id,
-                c.content_slug
+                c.content_slug,
+                iEn.status as en_status,
+                iLo.status as lo_status,
+                iTh.status as th_status
             FROM wp_poles p
             LEFT JOIN wp_project pj ON pj.project_id = p.project_id
             LEFT JOIN wp_type t ON t.type_id = p.type_id
             LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
             LEFT JOIN wp_content c ON c.content_id = p.content_id
+            LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang='en'
+            LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang='lo'
+            LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang='th'
             {$where}
             ORDER BY p.poles_id DESC
         ";

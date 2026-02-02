@@ -62,3 +62,18 @@ function hidePageLoader() {
 function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
+function renderLangStatus(lang, status) {
+    if (!status) return '';
+    const map = {
+        ready:   { cls: 'success', icon: 'fa-check' },
+        wait:    { cls: 'warning',   icon: 'fa-spinner fa-spin' },
+        success: { cls: 'success',   icon: 'fa-check' },
+        failed:  { cls: 'danger',    icon: 'fa-xmark' }
+    };
+    const s = map[status] || map.ready;
+    return `
+        <span class="badge rounded-pill bg-${s.cls}-subtle text-${s.cls} me-1">
+            <i class="fa-solid ${s.icon}"></i> ${lang.toUpperCase()}
+        </span>
+    `;
+}

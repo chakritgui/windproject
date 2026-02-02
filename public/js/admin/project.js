@@ -75,6 +75,13 @@ function renderTable(data, isNewSearch) {
     $tableHeader.removeClass('d-none');
     let html = '';
     data.forEach((item, index) => {
+        let statusHtml = `
+            <div class="mt-1">
+                ${renderLangStatus('en', item.en_status)}
+                ${renderLangStatus('th', item.th_status)}
+                ${renderLangStatus('lo', item.lo_status)}
+            </div>
+        `;
         const globalIndex = cachedData.length - data.length + index;
         let icon = 'fa-folder-open text-warning';
         if (item.type === 'root') icon = 'fa-folder-open text-secondary';
@@ -95,8 +102,11 @@ function renderTable(data, isNewSearch) {
                     </div>
                 </td>
                 <td>
-                    <div class="fw-bold">${item.folder_name || '-'} ${badge}</div>
+                    <div class="fw-bold">
+                        ${item.folder_name || '-'} ${badge}
+                    </div>
                     <small class="text-muted">${item.type ? item.type.toUpperCase() : 'FOLDER'}</small>
+                    ${(item.type === 'content') ? statusHtml : ``}
                 </td>
                 <td>${item.created_at || '-'}</td>
                 <td>

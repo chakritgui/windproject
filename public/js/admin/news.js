@@ -36,14 +36,43 @@ function initNewsTable() {
             data: null,
             render: (data, type, row) => {
                 let title = row[`subject_${currentLang}`] || row.subject_en || 'No Title';
+                let statusHtml = `
+                    <div class="mt-1">
+                        ${renderLangStatus('en', row.en_status)}
+                        ${renderLangStatus('th', row.th_status)}
+                        ${renderLangStatus('lo', row.lo_status)}
+                    </div>
+                `;
                 let badgeHtml = '';
-                if (parseInt(row.count_attachment) > 0) 
-                    badgeHtml += `<span class="badge rounded-pill bg-danger-subtle text-danger me-1"><i class="fa-solid fa-file-pdf"></i> <span>${langData['document'] || 'Document'}</span></span>`;
-                if (parseInt(row.count_image) > 0) 
-                    badgeHtml += `<span class="badge rounded-pill bg-primary-subtle text-primary me-1"><i class="fa-solid fa-images"></i> <span>${langData['image'] || 'Image'}</span></span>`;
-                if (parseInt(row.count_image360) > 0) 
-                    badgeHtml += `<span class="badge rounded-pill bg-success-subtle text-success me-1"><i class="fa-solid fa-vr-cardboard"></i> <span>${langData['vr'] || 'VR'}</span></span>`;
-                return `<div class="fw-bold text-dark">${title}</div> <div class="mt-1">${badgeHtml}</div>`;
+                if (parseInt(row.count_attachment) > 0) {
+                    badgeHtml += `
+                        <span class="badge rounded-pill bg-danger-subtle text-danger me-1">
+                            <i class="fa-solid fa-file-pdf"></i>
+                            ${langData['document'] || 'Document'}
+                        </span>
+                    `;
+                }
+                if (parseInt(row.count_image) > 0) {
+                    badgeHtml += `
+                        <span class="badge rounded-pill bg-primary-subtle text-primary me-1">
+                            <i class="fa-solid fa-images"></i>
+                            ${langData['image'] || 'Image'}
+                        </span>
+                    `;
+                }
+                if (parseInt(row.count_image360) > 0) {
+                    badgeHtml += `
+                        <span class="badge rounded-pill bg-success-subtle text-success me-1">
+                            <i class="fa-solid fa-vr-cardboard"></i>
+                            ${langData['vr'] || 'VR'}
+                        </span>
+                    `;
+                }
+                return `
+                    <div class="fw-bold text-dark">${title}</div>
+                    <div class="mt-1">${badgeHtml}</div>
+                    ${statusHtml}
+                `;
             }
         },{
             data: "publish_at",
