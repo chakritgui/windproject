@@ -17,33 +17,36 @@ class PolesModel {
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = (int)$stmt->fetchColumn();
+        $stmtSet = $this->db->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_default')");
+        $stmtSet->execute();
+        $settings = $stmtSet->fetchAll(PDO::FETCH_KEY_PAIR);
         $sql = "SELECT
-                p.poles_id,
-                p.poles_code,
-                p.poles_lat,
-                p.poles_lng,
-                p.status,
-                pj.project_id,
-                pj.project_name,
-                t.type_id,
-                t.type_name,
-                i.installations_id,
-                i.installations_name,
-                p.content_id,
-                c.content_slug,
-                iEn.status as en_status,
-                iLo.status as lo_status,
-                iTh.status as th_status
-            FROM wp_poles p
-            LEFT JOIN wp_project pj ON pj.project_id = p.project_id
-            LEFT JOIN wp_type t ON t.type_id = p.type_id
-            LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
-            LEFT JOIN wp_content c ON c.content_id = p.content_id
-            LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang='en'
-            LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang='lo'
-            LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang='th'
-            {$where}
-            ORDER BY p.poles_id DESC
+                    p.poles_id,
+                    p.poles_code,
+                    p.poles_lat,
+                    p.poles_lng,
+                    p.status,
+                    pj.project_id,
+                    pj.project_name,
+                    t.type_id,
+                    t.type_name,
+                    i.installations_id,
+                    i.installations_name,
+                    p.content_id,
+                    c.content_slug,
+                    iEn.status as en_status,
+                    iLo.status as lo_status,
+                    iTh.status as th_status
+                FROM wp_poles p
+                LEFT JOIN wp_project pj ON pj.project_id = p.project_id
+                LEFT JOIN wp_type t ON t.type_id = p.type_id
+                LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
+                LEFT JOIN wp_content c ON c.content_id = p.content_id
+                LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang='en'
+                LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang='lo'
+                LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang='th'
+                {$where}
+                ORDER BY p.poles_id DESC
         ";
         if ($length != -1) {
             $sql .= " LIMIT :start, :length";
@@ -57,9 +60,13 @@ class PolesModel {
             $stmt->bindValue(':length', (int)$length, PDO::PARAM_INT);
         }
         $stmt->execute();
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($data as &$r) {
+            $r['settings'] = $settings;
+        }
         return [
-            'total' => $total,
-            'data'  => $stmt->fetchAll(PDO::FETCH_ASSOC)
+            'total'    => $total,
+            'data'     => $data
         ];
     }
     private function buildListWhere($filters, $search) {
@@ -318,6 +325,9 @@ class PolesModel {
     }
     public function gets($poles_id, $id) {
         $pdo = $this->db;
+        $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_default')");
+        $stmt->execute();
+        $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         if (!$id) {
             return [
                 "id" => "", 
@@ -331,7 +341,8 @@ class PolesModel {
                 "response" => ["th" => "", "lo" => "", "en" => ""],
                 "attachments" => [],
                 "images" => [],
-                "images360" => []
+                "images360" => [],
+                "settings" => $settings
             ];
         }
         $stmt = $pdo->prepare("SELECT content_id, status, cover FROM wp_content WHERE content_id = ?");
@@ -387,7 +398,8 @@ class PolesModel {
             "translate_with" => $translate_with,
             "attachments" => $attachments,
             "images" => $images,
-            "images360" => $images360
+            "images360" => $images360,
+            "settings" => $settings
         ];
     }
     public function saveContent($data) {
@@ -411,10 +423,14 @@ class PolesModel {
             if (!$content_id) {
                 $content_id = $pdo->lastInsertId();
             }
+            $stmt = $pdo->prepare("SELECT setting_value FROM wp_setting WHERE setting_type = 'language_default' LIMIT 1");
+            $stmt->execute();
+            $dbDefaultLang = $stmt->fetchColumn() ?: 'en';
             $sqlItem = "INSERT INTO wp_content_item 
-                        (content_id, content_subject, content_body, content_lang, translate_with, created_at, updated_at) 
-                        VALUES (:content_id, :subject, :body, :lang, 'self', NOW(), NOW()) 
+                        (content_id, content_subject, content_body, content_lang, is_default, translate_with, created_at, updated_at) 
+                        VALUES (:content_id, :subject, :body, :lang, :is_default, 'self', NOW(), NOW()) 
                         ON DUPLICATE KEY UPDATE 
+                            is_default = VALUES(is_default),
                             translate_with = IF(content_subject <=> VALUES(content_subject) AND content_body <=> VALUES(content_body), translate_with, 'self'),
                             content_subject = VALUES(content_subject), 
                             content_body = VALUES(content_body), 
@@ -429,11 +445,13 @@ class PolesModel {
                 $cleanBody = trim($cleanBody);
                 $body = ($cleanBody === '' && !str_contains($bodyRaw, '<img')) ? null : $bodyRaw;
                 $subj = ($subj === '') ? null : $subj;
+                $isDefaultFlag = ($lang === $dbDefaultLang) ? 'yes' : 'no';
                 $stmtItem->execute([
                     ':content_id' => $content_id,
                     ':subject'    => $subj,
                     ':body'       => $body,
-                    ':lang'       => $lang
+                    ':lang'       => $lang,
+                    ':is_default' => $isDefaultFlag
                 ]);
                 $status = ($body === null && $subj === null) ? 'wait' : 'ready';
                 $sqlStatus = "UPDATE wp_content_item SET status = :status, response = NULL WHERE content_id = :content_id AND content_lang = :lang";

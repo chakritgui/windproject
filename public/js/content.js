@@ -1,4 +1,4 @@
-function langTab(lang, d) {
+function langTab(lang, d, isDefault = false) {
     const status = d.status_translate?.[lang] || '';
     const response = d.response?.[lang] || '';
     const translate_with = d.translate_with?.[lang] || '';
@@ -10,34 +10,30 @@ function langTab(lang, d) {
     const renderTranslateMethod = (method) => {
         if (status === 'wait') return ''; 
         if (method === 'ai') {
-            return `<span class="badge bg-warning-subtle text-warning border border-warning-subtle" title="AI">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> AI
-                    </span>`;
+            return `<span class="badge bg-warning-subtle text-warning border border-warning-subtle" title="AI"><i class="fa-solid fa-wand-magic-sparkles"></i> AI</span>`;
         } else if (method === 'self') {
-            return `<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" title="Manual">
-                        <i class="fa-solid fa-language"></i> Self
-                    </span>`;
+            return `<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" title="Manual"><i class="fa-solid fa-language"></i> Self</span>`;
         }
         return '';
     };
+    const requiredAttr = isDefault ? 'obj-required' : '';
+    const labelSuffix = isDefault ? 'required' : '';
     return `
-        <div class="tab-pane fade ${lang === 'en' ? 'show active' : ''}" id="tab-${lang}">
-            <div class="mb-3 d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center gap-2">
-                    <strong class="fs-5">${lang.toUpperCase()}</strong>
-                    ${renderLangStatus(lang, status, translate_with)}
-                    ${renderTranslateMethod(translate_with)}
-                </div>
+        <div class="mb-3 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <strong class="fs-5">${lang.toUpperCase()}</strong>
+                ${typeof renderLangStatus === 'function' ? renderLangStatus(lang, status, translate_with) : ''}
+                ${renderTranslateMethod(translate_with)}
             </div>
-            ${status === 'failed' && response ? `<div class="alert alert-danger py-2 small">${response}</div>` : ''}
-            <div class="mb-3">
-                <label class="form-label fw-bold">Title</label>
-                <input type="text" class="form-control" id="title_${lang}" value="${d.title?.[lang] || ''}">
-            </div>
-            <div class="mb-3">
-                <label class="form-label fw-bold">Content</label>
-                <textarea class="form-control tinymce" id="content_${lang}" rows="10">${rawContent}</textarea>
-            </div>
+        </div>
+        ${status === 'failed' && response ? `<div class="alert alert-danger py-2 small">${response}</div>` : ''}
+        <div class="mb-3">
+            <label class="form-label fw-bold ${labelSuffix}">${currentLang['title'] || 'Title'}</label>
+            <input type="text" class="form-control ${requiredAttr}" id="title_${lang}" value="${d.title?.[lang] || ''}">
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">${currentLang['content'] || 'Content'}</label>
+            <textarea class="form-control tinymce" id="content_${lang}" rows="10">${rawContent}</textarea>
         </div>
     `;
 }
@@ -524,18 +520,33 @@ function renderCover(d) {
     `;
 }
 function renderLangTabs(d) {
+    const defaultLang = d.settings?.language_default || 'en';
+    const allLangs = d.settings?.language ? d.settings.language.split(',').map(s => s.trim()) : ['en'];
+    const sortedLangs = allLangs.sort((a, b) => {
+        if (a === defaultLang) return -1;
+        if (b === defaultLang) return 1;
+        return 0;
+    });
     return `
         <div class="mb-3">
-            <label class="form-label fw-bold">Content</label>
+            <label class="form-label fw-bold">Localization Content</label>
             <ul class="nav nav-tabs" role="tablist">
-                <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#tab-en">English</a></li>
-                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-lo">ລາວ</a></li>
-                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#tab-th">ไทย</a></li>
+                ${sortedLangs.map(lang => `
+                    <li class="nav-item">
+                        <a class="nav-link ${lang === defaultLang ? 'active' : ''}" 
+                           data-bs-toggle="tab" href="#tab-${lang}">
+                           ${langInfo[lang]?.full || lang.toUpperCase()}
+                           ${lang === defaultLang ? ' <i class="fa-solid fa-star text-warning small"></i>' : ''}
+                        </a>
+                    </li>
+                `).join('')}
             </ul>
             <div class="tab-content border border-top-0 p-3">
-                ${langTab("en", d)}
-                ${langTab("lo", d)}
-                ${langTab("th", d)}
+                ${sortedLangs.map(lang => `
+                    <div class="tab-pane fade ${lang === defaultLang ? 'show active' : ''}" id="tab-${lang}">
+                        ${langTab(lang, d, lang === defaultLang)}
+                    </div>
+                `).join('')}
             </div>
         </div>
     `;

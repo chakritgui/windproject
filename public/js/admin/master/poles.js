@@ -58,15 +58,17 @@ function initPolesTable() {
             data: null,
             orderable: false,
             render: function(row){
+                const activeLangs = row.settings?.language ? row.settings.language.split(',') : ['en'];
+                const defaultLang = row.settings?.language_default || 'en';
                 let statusHtml = `
-                    <div class="mt-1">
-                        ${renderLangStatus('en', row.en_status)}
-                        ${renderLangStatus('th', row.th_status)}
-                        ${renderLangStatus('lo', row.lo_status)}
-                    </div>
-                `;
+                    <div class="mt-1 d-flex gap-1 flex-wrap">
+                        ${activeLangs.map(lang => {
+                            const status = row[`${lang}_status`]; 
+                            return renderLangStatus(lang, status);
+                        }).join('')}
+                    </div>`;
                 return (row.content_id) ? `
-                    <div class="btn-group border rounded-3 bg-white">
+                    <div class="btn-group border rounded-3 bg-white mb-3">
                         <a href="${BASE_URL}/content/preview/${row.content_slug}" class="btn btn-link text-info py-1" target="_blank"><i class="fa-solid fa-eye"></i></a> 
                         <button class="btn btn-link text-warning py-1 border-start manage-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-pen-to-square"></i></button> 
                         <button class="btn btn-link text-danger py-1 border-start delete-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-trash-can"></i></button> 
@@ -419,6 +421,25 @@ function getContentForm(d, poles_id, content_id) {
     `;
 }
 $(document).on('click', '#btnSaveContent', function() {
+    $('.is-invalid').removeClass('is-invalid');
+    let errors = [];
+    $('.obj-required').each(function () {
+        let value = $(this).val()?.trim() || '';
+        if (!value) {
+            $(this).addClass('is-invalid');
+            errors.push(this.name || this.id);
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+    if (errors.length) {
+        showWarning(
+            langData['validation_error'] || 'Validation Error',
+            langData['required_star_message'] || 'Please fill all fields marked with *'
+        );
+        $('.is-invalid').first().focus();
+        return;
+    }
     const formData = new FormData($('#contentForm')[0]);
     const attachments = window.getAttachmentsData();
     attachments.forEach((att, index) => {

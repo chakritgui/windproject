@@ -20,6 +20,9 @@ class NewsModel {
             )";
             $params[':search'] = "%{$search}%";
         }
+        $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_default')");
+        $stmt->execute();
+        $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         $sqlFiltered = "SELECT COUNT(DISTINCT n.content_id) FROM wp_content n 
                         LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.content_lang='en' 
                         LEFT JOIN wp_content_item iLo ON iLo.content_id = n.content_id AND iLo.content_lang='lo' 
@@ -66,6 +69,7 @@ class NewsModel {
             $r['subject_en'] = $r['subject_en'] ?? '';
             $r['subject_lo'] = $r['subject_lo'] ?? '';
             $r['subject_th'] = $r['subject_th'] ?? '';
+            $r['settings'] = $settings;
         }
         return [
             "total" => (int)$totalFiltered,
@@ -74,6 +78,9 @@ class NewsModel {
     }
     public function get($id) {
         $pdo = $this->db;
+        $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_default')");
+        $stmt->execute();
+        $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         if (!$id) {
             return [
                 "id" => "", "status" => "published", "publish_at" => date('Y-m-d H:i'), "cover" => "",
@@ -84,7 +91,8 @@ class NewsModel {
                 "content" => ["th" => "", "lo" => "", "en" => ""],
                 "status_translate" => ["th" => "", "lo" => "", "en" => ""],
                 "translate_with" => ["th" => "", "lo" => "", "en" => ""],
-                "response" => ["th" => "", "lo" => "", "en" => ""]
+                "response" => ["th" => "", "lo" => "", "en" => ""],
+                "settings" => $settings
             ];
         }
         $stmt = $pdo->prepare("SELECT content_id, status, publish_at, cover FROM wp_content WHERE content_id = ?");
@@ -140,7 +148,8 @@ class NewsModel {
             "translate_with" => $translate_with,
             "attachments" => $attachments,
             "images" => $images,
-            "images360" => $images360
+            "images360" => $images360,
+            "settings" => $settings
         ];
     }
     public function save($data) {
@@ -179,10 +188,14 @@ class NewsModel {
             if (!$content_id) {
                 $content_id = $pdo->lastInsertId();
             }
+            $stmt = $pdo->prepare("SELECT setting_value FROM wp_setting WHERE setting_type = 'language_default' LIMIT 1");
+            $stmt->execute();
+            $dbDefaultLang = $stmt->fetchColumn() ?: 'en';
             $sqlItem = "INSERT INTO wp_content_item 
-                        (content_id, content_subject, content_body, content_lang, translate_with, created_at, updated_at) 
-                        VALUES (:content_id, :subject, :body, :lang, 'self', NOW(), NOW()) 
+                        (content_id, content_subject, content_body, content_lang, is_default, translate_with, created_at, updated_at) 
+                        VALUES (:content_id, :subject, :body, :lang, :is_default, 'self', NOW(), NOW()) 
                         ON DUPLICATE KEY UPDATE 
+                            is_default = VALUES(is_default),
                             translate_with = IF(content_subject <=> VALUES(content_subject) AND content_body <=> VALUES(content_body), translate_with, 'self'),
                             content_subject = VALUES(content_subject), 
                             content_body = VALUES(content_body), 
@@ -197,11 +210,13 @@ class NewsModel {
                 $cleanBody = trim($cleanBody);
                 $body = ($cleanBody === '' && !str_contains($bodyRaw, '<img')) ? null : $bodyRaw;
                 $subj = ($subj === '') ? null : $subj;
+                $isDefaultFlag = ($lang === $dbDefaultLang) ? 'yes' : 'no';
                 $stmtItem->execute([
                     ':content_id' => $content_id,
                     ':subject'    => $subj,
                     ':body'       => $body,
-                    ':lang'       => $lang
+                    ':lang'       => $lang,
+                    ':is_default' => $isDefaultFlag
                 ]);
                 $status = ($body === null && $subj === null) ? 'wait' : 'ready';
                 $sqlStatus = "UPDATE wp_content_item SET status = :status, response = NULL WHERE content_id = :content_id AND content_lang = :lang";

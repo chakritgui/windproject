@@ -75,13 +75,15 @@ function renderTable(data, isNewSearch) {
     $tableHeader.removeClass('d-none');
     let html = '';
     data.forEach((item, index) => {
+        const activeLangs = item.settings?.language ? item.settings.language.split(',') : ['en'];
+        const defaultLang = item.settings?.language_default || 'en';
         let statusHtml = `
-            <div class="mt-1">
-                ${renderLangStatus('en', item.en_status)}
-                ${renderLangStatus('th', item.th_status)}
-                ${renderLangStatus('lo', item.lo_status)}
-            </div>
-        `;
+            <div class="mt-1 d-flex gap-1 flex-wrap">
+                ${activeLangs.map(lang => {
+                    const status = item[`${lang}_status`]; 
+                    return renderLangStatus(lang, status);
+                }).join('')}
+            </div>`;
         const globalIndex = cachedData.length - data.length + index;
         let icon = 'fa-folder-open text-warning';
         if (item.type === 'root') icon = 'fa-folder-open text-secondary';
@@ -106,9 +108,13 @@ function renderTable(data, isNewSearch) {
                         ${item.folder_name || '-'} ${badge}
                     </div>
                     <small class="text-muted">${item.type ? item.type.toUpperCase() : 'FOLDER'}</small>
-                    ${(item.type === 'content') ? statusHtml : ``}
                 </td>
                 <td>${item.created_at || '-'}</td>
+                <td>
+                    ${(item.type === 'content') ? `
+                        ${statusHtml}
+                    ` : ``}
+                </td>
                 <td>
                     ${(item.type === 'content') ? `
                         <div class="d-flex align-items-center gap-2 mt-1">

@@ -35,14 +35,8 @@ function initNewsTable() {
         },{ 
             data: null,
             render: (data, type, row) => {
-                let title = row[`subject_${currentLang}`] || row.subject_en || 'No Title';
-                let statusHtml = `
-                    <div class="mt-1">
-                        ${renderLangStatus('en', row.en_status)}
-                        ${renderLangStatus('th', row.th_status)}
-                        ${renderLangStatus('lo', row.lo_status)}
-                    </div>
-                `;
+                const defaultLang = row.settings?.language_default || 'en';
+                let title = row[`subject_${currentLang}`] || row[`subject_${defaultLang}`] || row.subject_en || 'No Title';
                 let badgeHtml = '';
                 if (parseInt(row.count_attachment) > 0) {
                     badgeHtml += `
@@ -69,8 +63,22 @@ function initNewsTable() {
                     `;
                 }
                 return `
-                    <div class="fw-bold text-dark">${title}</div>
-                    <div class="mt-1">${badgeHtml}</div>
+                    <div class="fw-bold text-dark mb-2">${title}</div>
+                    <div class="mb-2">${badgeHtml}</div>
+                `;
+            }
+        },{ 
+            data: null,
+            render: (data, type, row) => {
+                const activeLangs = row.settings?.language ? row.settings.language.split(',') : ['en'];
+                let statusHtml = `
+                    <div class="mt-1 d-flex gap-1 flex-wrap">
+                        ${activeLangs.map(lang => {
+                            const status = row[`${lang}_status`]; 
+                            return renderLangStatus(lang, status);
+                        }).join('')}
+                    </div>`;
+                return `
                     ${statusHtml}
                 `;
             }

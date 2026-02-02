@@ -203,43 +203,54 @@ class MediaHelper {
             throw $e;
         }
     }
-    public function autoTranslate($content_id){
+    public function autoTranslate($content_id) {
         $pdo = $this->db;
-        $stmt = $pdo->prepare("SELECT content_lang FROM wp_content_item WHERE content_id = ? AND content_lang IN ('th','lo')");
-        $stmt->execute([$content_id]);
-        $targets = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        $stmtSet = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_default')");
+        $stmtSet->execute();
+        $settings = $stmtSet->fetchAll(PDO::FETCH_KEY_PAIR);
+        $enabledLangs = explode(',', $settings['language'] ?? 'en');
+        $defaultLang = $settings['language_default'] ?? 'en';
+        $stmtSource = $pdo->prepare("SELECT content_lang, content_subject, content_body FROM wp_content_item WHERE content_id = ? AND is_default = 'yes' LIMIT 1");
+        $stmtSource->execute([$content_id]);
+        $source = $stmtSource->fetch(PDO::FETCH_ASSOC);
+        if (!$source || empty($source['content_subject'])) return false;
+        $sourceLang = $source['content_lang'];
+        $stmtTargets = $pdo->prepare("SELECT content_lang FROM wp_content_item WHERE content_id = ? AND content_lang != ?");
+        $stmtTargets->execute([$content_id, $sourceLang]);
+        $allTargets = $stmtTargets->fetchAll(PDO::FETCH_COLUMN);
+        $targets = array_intersect($allTargets, $enabledLangs);
         if (!$targets) return false;
-        $stmt = $pdo->prepare("SELECT content_subject, content_body FROM wp_content_item WHERE content_id = ? AND content_lang = 'en' LIMIT 1");
-        $stmt->execute([$content_id]);
-        $source = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$source) return false;
         foreach ($targets as $lang) {
             try {
-                $pdo->prepare("UPDATE wp_content_item SET status = 'wait' WHERE content_id = ? AND content_lang = ?")->execute([$content_id, $lang]);
-                $subject = $this->translatePlainText(
-                    $source['content_subject'],
-                    'en',
-                    $lang,
-                    $content_id
-                );
-                $body = $this->translateTinyMCEHtml(
-                    $source['content_body'],
-                    'en',
-                    $lang,
-                    $content_id
-                );
-                $pdo->prepare("UPDATE wp_content_item SET content_subject = ?, content_body = ?, status = 'success',response = NULL,updated_at = NOW(), translate_with = 'ai' WHERE content_id = ? AND content_lang = ?")->execute([
-                    $subject,
-                    $body,
-                    $content_id,
-                    $lang
-                ]);
+                $subject = $this->translatePlainText($source['content_subject'], $sourceLang, $lang, $content_id);
+                $body = $this->translateTinyMCEHtml($source['content_body'], $sourceLang, $lang, $content_id);
+                $subject = trim($subject ?? '');
+                $subject = ($subject === '') ? null : $subject;
+                $cleanBody = trim(strip_tags($body ?? '', '<img><iframe>'));
+                $cleanBody = str_replace('&nbsp;', '', $cleanBody);
+                $cleanBody = trim($cleanBody);
+                $body = ($cleanBody === '' && !str_contains($body ?? '', '<img')) ? null : $body;
+                $status = ($subject === null && $body === null) ? 'wait' : 'ready';
+                $translateWith = ($status === 'ready') ? 'ai' : null;
+                $pdo->prepare("UPDATE wp_content_item SET 
+                                content_subject = ?, 
+                                content_body = ?, 
+                                status = ?, 
+                                response = NULL, 
+                                updated_at = NOW(), 
+                                translate_with = ? 
+                            WHERE content_id = ? AND content_lang = ?")
+                    ->execute([
+                        $subject, 
+                        $body, 
+                        $status, 
+                        $translateWith, 
+                        $content_id, 
+                        $lang
+                    ]);
             } catch (\Throwable $e) {
-                $pdo->prepare("UPDATE wp_content_item SET status = 'failed',response = ? WHERE content_id = ? AND content_lang = ?")->execute([
-                    $e->getMessage(),
-                    $content_id,
-                    $lang
-                ]);
+                $pdo->prepare("UPDATE wp_content_item SET status = 'failed', response = ? WHERE content_id = ? AND content_lang = ?")
+                            ->execute([$e->getMessage(), $content_id, $lang]);
             }
         }
         return true;

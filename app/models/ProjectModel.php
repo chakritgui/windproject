@@ -30,6 +30,9 @@ class ProjectModel {
             'type'         => ['table' => 'wp_type',          'id' => 'type_id',          'name' => 'type_name'],
             'installation' => ['table' => 'wp_installations', 'id' => 'installations_id', 'name' => 'installations_name']
         ];
+        $stmt = $this->db->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_default')");
+        $stmt->execute();
+        $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         foreach ($folderRows as $row) {
             if (empty($row['code'])) {
                 if (!empty($search) && stripos($row['folder_name'], $search) === false) continue;
@@ -38,6 +41,7 @@ class ProjectModel {
                 $item['ref_id'] = $activeRef;
                 $item['project_id'] = $currentProjectId;
                 $item['child_count'] = $this->countChildren($row['id'], $row['level'], $activeRef, $currentProjectId);
+                $item['settings'] = $settings;
                 $finalItems[] = $item;
             } else {
                 $code = strtolower($row['code']);
@@ -56,7 +60,8 @@ class ProjectModel {
                             'level'       => $row['level'],
                             'parent_id'   => $row['parent_id'],
                             'created_at'  => convertTimeZone($row['created_at'], 'd/m/Y H:i:s'),
-                            'child_count' => $this->countChildren($row['id'], $row['level'], $sub['r_id'], $activeProj)
+                            'child_count' => $this->countChildren($row['id'], $row['level'], $sub['r_id'], $activeProj),
+                            'settings' => $settings
                         ];
                     }
                 }
@@ -121,7 +126,7 @@ class ProjectModel {
                     }
                 }
                 $whereStr = " WHERE " . implode(' AND ', $subConditions);
-                $sqlCount = "SELECT COUNT(DISTINCT t.{$cfg['id']}) FROM {$cfg['table']} t {$joinSql} {$whereStr} GROUP BY t.{$cfg['id']}";
+                $sqlCount = "SELECT COUNT(DISTINCT t.{$cfg['id']}) FROM {$cfg['table']} t {$joinSql} {$whereStr}";
                 $stCount = $this->db->prepare($sqlCount);
                 $stCount->execute($params);
                 $totalChild += (int)$stCount->fetchColumn();
@@ -224,6 +229,9 @@ class ProjectModel {
     }
     public function gets($id) {
         $pdo = $this->db;
+        $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_default')");
+        $stmt->execute();
+        $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         if (!$id) {
             return [
                 "id" => "", "status" => "active", "cover" => "", "notification_status" => "no",
@@ -234,7 +242,8 @@ class ProjectModel {
                 "content" => ["th" => "", "lo" => "", "en" => ""],
                 "status_translate" => ["th" => "", "lo" => "", "en" => ""],
                 "response" => ["th" => "", "lo" => "", "en" => ""],
-                "translate_with" => ["th" => "", "lo" => "", "en" => ""]
+                "translate_with" => ["th" => "", "lo" => "", "en" => ""],
+                "settings" => $settings
             ];
         }
         $stmt = $pdo->prepare("SELECT content_id, status, cover FROM wp_content WHERE content_id = ?");
@@ -293,7 +302,8 @@ class ProjectModel {
             "notification_status" => $row_folder ? $row_folder['notification_status'] : "no",
             "attachments" => $attachments,
             "images" => $images,
-            "images360" => $images360
+            "images360" => $images360,
+            "settings" => $settings
         ];
     }
     public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {
@@ -357,10 +367,14 @@ class ProjectModel {
             if (!$content_id) {
                 $content_id = $pdo->lastInsertId();
             }
+            $stmt = $pdo->prepare("SELECT setting_value FROM wp_setting WHERE setting_type = 'language_default' LIMIT 1");
+            $stmt->execute();
+            $dbDefaultLang = $stmt->fetchColumn() ?: 'en';
             $sqlItem = "INSERT INTO wp_content_item 
-                        (content_id, content_subject, content_body, content_lang, translate_with, created_at, updated_at) 
-                        VALUES (:content_id, :subject, :body, :lang, 'self', NOW(), NOW()) 
+                        (content_id, content_subject, content_body, content_lang, is_default, translate_with, created_at, updated_at) 
+                        VALUES (:content_id, :subject, :body, :lang, :is_default, 'self', NOW(), NOW()) 
                         ON DUPLICATE KEY UPDATE 
+                            is_default = VALUES(is_default),
                             translate_with = IF(content_subject <=> VALUES(content_subject) AND content_body <=> VALUES(content_body), translate_with, 'self'),
                             content_subject = VALUES(content_subject), 
                             content_body = VALUES(content_body), 
@@ -375,11 +389,13 @@ class ProjectModel {
                 $cleanBody = trim($cleanBody);
                 $body = ($cleanBody === '' && !str_contains($bodyRaw, '<img')) ? null : $bodyRaw;
                 $subj = ($subj === '') ? null : $subj;
+                $isDefaultFlag = ($lang === $dbDefaultLang) ? 'yes' : 'no';
                 $stmtItem->execute([
                     ':content_id' => $content_id,
                     ':subject'    => $subj,
                     ':body'       => $body,
-                    ':lang'       => $lang
+                    ':lang'       => $lang,
+                    ':is_default' => $isDefaultFlag
                 ]);
                 $status = ($body === null && $subj === null) ? 'wait' : 'ready';
                 $sqlStatus = "UPDATE wp_content_item SET status = :status, response = NULL WHERE content_id = :content_id AND content_lang = :lang";
