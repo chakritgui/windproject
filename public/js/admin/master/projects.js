@@ -152,8 +152,8 @@ $(document).on('click', '.manage-project', function() {
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 `);
                 modalEl.find(".modal-footer").html(`
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-                    <button type="submit" class="btn btn-primary save-project" data-i18n="save"></button>
+                    <button type="submit" class="btn btn-primary me-2 save-project">${langData['save'] || "Save"}</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
                 `);
                 modalEl.find(".modal-body").html(`
                     <input type="hidden" name="project_id" id="project_id" value="${project_id ?? ''}">

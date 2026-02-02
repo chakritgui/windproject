@@ -295,7 +295,7 @@ $(document).on('click', '.history-download', function (e) {
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     `);
     modalEl.find(".modal-footer").html(`
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
     `);
     modalEl.find(".modal-body").html(`
         <div id="downloadHistoryList" class="d-flex flex-column gap-3"></div>

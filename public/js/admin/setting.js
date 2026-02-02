@@ -108,10 +108,10 @@ function getUploadPlaceholder(type) {
     return `
         <div class="text-center">
             <i class="fa-solid fa-cloud-arrow-up fs-1 text-muted"></i>
-            <p class="mt-2 text-muted"><span data-i18n="uploadFile"></span></p>
+            <p class="mt-2 text-muted"><span>${langData['uploadFile'] || "Upload File"}</span></p>
             <small class="text-muted">
-                <span data-i18n="image"></span>
-                (<span data-i18n="recommend"></span> ${size})
+                <span>${langData['image'] || "Image"}</span>
+                (<span>${langData['recommend'] || "Recommend"}</span> ${size})
             </small>
         </div>
     `;

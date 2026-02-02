@@ -74,7 +74,7 @@ function initMemberTable() {
                 }
                 return `
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;" data-i18n="${status}"></span>
+                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
                     </div>
                 `;
             }
@@ -101,7 +101,7 @@ function initMemberTable() {
             let $filter = $('#tb_member_filter');
             let btn = `
                 <button class="btn btn-primary btn-sm manage-member" data-id="">
-                    <i class="fa-solid fa-plus"></i> <span data-i18n="member"></span>
+                    <i class="fa-solid fa-plus"></i> <span>${langData['member'] || 'Member'}</span>
                 </button>
             `;
             $filter.append(btn);
@@ -164,54 +164,54 @@ $(document).on('click', '.manage-member', function() {
                 let modal = new bootstrap.Modal(modalEl[0]);
                 modal.show();
                 modalEl.find(".modal-header").html(`
-                    <h5 class="modal-title" data-i18n="${(member_id) ? 'manageMember' : 'newMember'}"></h5>
+                    <h5 class="modal-title">${langData['manageMember'] || "Manage Member"}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 `);
                 modalEl.find(".modal-footer").html(`
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-                    <button type="submit" class="btn btn-primary save-member" data-i18n="save"></button>
+                    <button type="submit" class="btn btn-primary me-2 save-member">${langData['save'] || "Save"}</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
                 `);
                 modalEl.find(".modal-body").html(`
                     <input type="hidden" id="member_id">
                     <h6 class="fw-bold mb-3">
                         <i class="fa-solid fa-user-gear me-1"></i>
-                        <span data-i18n="general"></span>
+                        <span>${langData['general'] || "General"}</span>
                     </h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="firstname"></label>
+                            <label class="mb-2 required">${langData['firstname'] || "Firstname"}</label>
                             <input type="text" class="form-control obj-required" id="first_name" maxlength="150">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="lastname"></label>
+                            <label class="mb-2 required">${langData['lastname'] || "Lastname"}</label>
                             <input type="text" class="form-control obj-required" id="last_name" maxlength="150">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="role"></label>
+                            <label class="mb-2 required">${langData['role'] || "Role"}</label>
                             <select class="form-select obj-required" id="role"></select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="status"></label>
+                            <label class="mb-2 required">${langData['status'] || "Status"}</label>
                             <select class="form-select obj-required" id="status"></select>
                         </div>
                     </div>
                     <hr>
                     <h6 class="fw-bold mb-3">
                         <i class="fa-solid fa-address-book me-1"></i>
-                        <span data-i18n="contact"></span>
+                        <span>${langData['contact'] || "Contact"}</span>
                     </h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="email"></label>
+                            <label class="mb-2 required">${langData['email'] || "Email"}</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fa-regular fa-envelope"></i></span>
                                 <input type="email" class="form-control obj-required" id="email" maxlength="200">
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="mobile"></label>
+                            <label class="mb-2 required">${langData['mobile'] || "Mobile"}</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
                                 <input type="text" class="form-control obj-required" id="phone" maxlength="20">
@@ -221,26 +221,26 @@ $(document).on('click', '.manage-member', function() {
                     <hr>
                     <h6 class="fw-bold mb-3">
                         <i class="fa-solid fa-lock me-1"></i>
-                        <span data-i18n="password"></span>
+                        <span>${langData['password'] || "Password"}</span>
                     </h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="username"></label>
+                            <label class="mb-2 required">${langData['username'] || "Username"}</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fa-solid fa-user-lock"></i></span>
                                 <input type="text" class="form-control obj-required" id="username_" maxlength="50">
                             </div>
                             <ul id="user-rules" class="mt-2 list-unstyled">
                                 <li><input type="checkbox" class="form-check-input me-1 pwc" id="user_len" disabled>
-                                    <span data-i18n="user_line1"></span>
+                                    <span>${langData['user_line1'] || "8–50 Characters"}</span>
                                 </li>
                                 <li><input type="checkbox" class="form-check-input me-1 pwc" id="user_only" disabled>
-                                    <span data-i18n="user_line2"></span>
+                                    <span>${langData['user_line2'] || "English letters or numbers only or email format or special characters @ _ - . & ! +"}</span>
                                 </li>
                             </ul>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="password"></label>
+                            <label class="mb-2 required">${langData['password'] || "Password"}</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fa-solid fa-key"></i></span>
                                 <input type="password" class="form-control obj-required" id="password_" maxlength="20">
@@ -250,16 +250,16 @@ $(document).on('click', '.manage-member', function() {
                             </div>
                             <ul id="pw-rules" class="mt-2 list-unstyled">
                                 <li><input type="checkbox" class="form-check-input me-1 pwc" id="pw_len" disabled>
-                                    <span data-i18n="pw_line1"></span>
+                                    <span>${langData['pw_line1'] || "4–20 Characters"}</span>
                                 </li>
                                 <li><input type="checkbox" class="form-check-input me-1 pwc" id="pw_only" disabled>
-                                    <span data-i18n="pw_line2"></span>
+                                    <span>${langData['pw_line2'] || "English letters or numbers only"}</span>
                                 </li>
                                 <li><input type="checkbox" class="form-check-input me-1 pwc" id="pw_upper" disabled>
-                                    <span data-i18n="pw_line3"></span>
+                                    <span>${langData['pw_line3'] || "At least 1 uppercase letter"}</span>
                                 </li>
                                 <li><input type="checkbox" class="form-check-input me-1 pwc" id="pw_lower" disabled>
-                                    <span data-i18n="pw_line4"></span>
+                                    <span>${langData['pw_line4'] || "t least 1 lowercase letter"}</span>
                                 </li>
                             </ul>
                         </div>

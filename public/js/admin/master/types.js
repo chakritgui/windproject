@@ -63,7 +63,7 @@ function initTypesTable() {
                 }
                 return `
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;" data-i18n="${status}"></span>
+                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
                     </div>
                 `;
             }
@@ -98,7 +98,7 @@ function initTypesTable() {
             let $filter = $('#tb_type_filter');
             let btn = `
                 <button class="btn btn-primary btn-sm manage-type" data-id="">
-                    <i class="fa-solid fa-plus"></i> <span data-i18n="pole_types"></span>
+                    <i class="fa-solid fa-plus"></i> <span>${langData['pole_types'] || 'Pole Types'}</span>
                 </button>
             `;
             $filter.append(btn);
@@ -151,12 +151,12 @@ $(document).on('click', '.manage-type', function() {
                 let modal = new bootstrap.Modal(modalEl[0]);
                 modal.show();
                 modalEl.find(".modal-header").html(`
-                    <h5 class="modal-title" data-i18n="${(type_id) ? 'manageType' : 'newType'}"></h5>
+                    <h5 class="modal-title">${langData['manageType'] || 'Manage Type'}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 `);
                 modalEl.find(".modal-footer").html(`
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-                    <button type="submit" class="btn btn-primary save-type" data-i18n="save"></button>
+                    <button type="submit" class="btn btn-primary me-2 save-type">${langData['save'] || 'Save'}</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || 'Close'}</button>
                 `);
                 modalEl.find(".modal-body").html(`
                     <input type="hidden" name="type_id" id="type_id" value="${type_id ?? ''}">
@@ -169,26 +169,26 @@ $(document).on('click', '.manage-type', function() {
                             }
                         </div>
                         <div id="coverDropLabel" class="${typeData.type_icon ? 'd-none' : ''}">
-                            <div class="fw-bold fs-6 mt-2" data-i18n="dropHere"></div>
+                            <div class="fw-bold fs-6 mt-2">${langData['dropHere'] || 'Drag & Drop file here'}</div>
                             <div class="text-muted small mb-2">
-                                <span data-i18n="or"></span> <span data-i18n="choose"></span>
+                                <span>${langData['or'] || 'Or'}</span> <span>${langData['choose'] || 'Choose'}</span>
                             </div>
                         </div>
-                        <div class="text-muted small mt-2" data-i18n="allow_images_only"></div>
-                        <button type="button" id="btnRemoveCover" class="btn btn-sm btn-outline-danger mt-2 ${typeData.type_icon ? '' : 'd-none'}" data-i18n="remove"></button>
+                        <div class="text-muted small mt-2">${langData['allow_images_only'] || 'Allow images only (jpg, jpeg, png, gif, webp)'}</div>
+                        <button type="button" id="btnRemoveCover" class="btn btn-sm btn-outline-danger mt-2 ${typeData.type_icon ? '' : 'd-none'}">${langData['remove'] || 'Remove'}</button>
                     </div>
                     <input type="hidden" id="ex_type_icon" value="${typeData.type_icon ? typeData.type_icon : ''}">
                     <div class="mb-3">
-                        <label class="mb-2 required" data-i18n="type_name"></label>
+                        <label class="mb-2 required">${langData['type_name'] || 'Type Name'}</label>
                         <input type="text" class="form-control obj-required" id="type_name" maxlength="255">
                     </div>
                     <div class="mb-3">
-                        <label class="mb-2" data-i18n="display"></label>
+                        <label class="mb-2">${langData['display'] || 'Display'}</label>
                         <textarea class="form-control" id="type_name_display"></textarea>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="status"></label>
+                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
                             <select id="status" class="form-select obj-required"></select>
                         </div>
                     </div>
@@ -308,7 +308,7 @@ function saveType() {
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
-            <p data-i18n="do_not_close"></p>
+            <p>${langData['please_do_not_close_this_page'] || 'Please do not close this page.'}</p>
             <div class="progress mt-2">
                 <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
             </div>

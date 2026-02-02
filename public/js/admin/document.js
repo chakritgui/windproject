@@ -162,8 +162,8 @@ $(document).on('click', '.manage-document', function () {
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 `);
                 modalEl.find(".modal-footer").html(`
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-                    <button type="submit" class="btn btn-primary save-document" data-i18n="save"></button>
+                    <button type="submit" class="btn btn-primary me-2 save-document">${langData['save'] || "Save"}</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
                 `);
                 modalEl.find(".modal-body").html(`
                     <input type="hidden" id="mode" value="${document_id ? 'edit' : 'new'}">
@@ -582,7 +582,7 @@ $(document).on('click', '.history-download', function(){
         </table>
     `);
     modalEl.find(".modal-footer").html(`
-        <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
     `);
     loadDownloadHistory(document_id);
     $(document).off("click", "#btnFilter").on("click", "#btnFilter", function(){

@@ -62,7 +62,7 @@ function initWindTable() {
             let $filter = $('#tb_wind_filter');
             let btn = `
                 <button class="btn btn-primary btn-sm manage-wind" data-id="">
-                    <i class="fa-solid fa-plus"></i> <span data-i18n="import"></span>
+                    <i class="fa-solid fa-plus"></i> <span>${langData['import'] || "Import"}</span>
                 </button>
             `;
             $filter.append(btn);
@@ -94,34 +94,34 @@ $(document).on('click', '.manage-wind', function () {
     let modal = new bootstrap.Modal(modalEl[0]);
     modal.show();
     modalEl.find(".modal-header").html(`
-        <h5 class="modal-title" data-i18n="wind_management"></h5>
+        <h5 class="modal-title">${langData['wind_management'] || 'Wind Management'}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     `);
     modalEl.find(".modal-footer").html(`
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-        <button type="submit" class="btn btn-primary btn-import" data-i18n="import"></button>
+        <button type="submit" class="btn btn-primary me-2 btn-import">${langData['import'] || "Import"}</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
     `);
     modalEl.find(".modal-body").html(`
         <div class="mb-3">
-            <label class="mb-2 required" data-i18n="uploadFile"></label>
+            <label class="mb-2 required">${langData['uploadFile'] || "Upload File"}</label>
             <div id="drop_zone" class="border rounded-3 p-4 text-center" style="cursor:pointer; border-style:dashed;">
                 <div id="drop_text">
                     <i class="fa-solid fa-folder-open fa-4x text-warning"></i>
-                    <div data-i18n="dropHere"></div>
-                    <div>— <span data-i18n="or"></span> —</div>
+                    <div>${langData['dropHere'] || "Drag & Drop file here"}</div>
+                    <div>— <span>${langData['or'] || "Or"}</span> —</div>
                 </div>
                 <div id="file_preview" class="mt-3 d-none"></div>
                 <div id="drop_button">
-                    <button class="btn btn-primary mt-2" type="button" id="btn_select_file" data-i18n="choose"></button>
+                    <button class="btn btn-primary mt-2" type="button" id="btn_select_file">${langData['choose'] || "Choose"}</button>
                     <input type="file" class="d-none obj-required" id="wind_file" accept=".xlsx,.csv">
                 </div>
             </div>
             <div class="alert alert-info rounded-3 mt-3">
-                <h6 class="fw-bold mb-2" data-i18n="uploadGuideline"></h6>
+                <h6 class="fw-bold mb-2">${langData['uploadGuideline'] || "Upload Guideline"}</h6>
                 <ul class="mb-0 small">
-                    <li data-i18n="uploadFormat1"></li>
-                    <li data-i18n="uploadFormat2"></li>
-                    <li data-i18n="uploadFormat3"></li>
+                    <li>${langData['uploadFormat1'] || "Supports .xlsx and .csv files."}</li>
+                    <li>${langData['uploadFormat2'] || "In Excel, use only the first sheet."}</li>
+                    <li>${langData['uploadFormat3'] || "Old data will not be deleted until you press Import."}</li>
                 </ul>
             </div>
         </div>
@@ -175,9 +175,9 @@ function handleFile(file) {
                 <br><small>${readableSize(file.size)}</small>
             </div>
             <div class="mt-2">
-                <button class="btn btn-primary btn-sm" type="button" id="btn_select_file" data-i18n="choose"></button>
+                <button class="btn btn-primary btn-sm" type="button" id="btn_select_file">${langData['choose'] || "Choose"}</button>
                 <button type="button" class="btn btn-sm btn-danger" id="remove_file">
-                    <span data-i18n="remove"></span>
+                    <span>${langData['remove'] || "Remove"}</span>
                 </button>
             </div>
         </div>
@@ -214,7 +214,7 @@ function importWindData() {
     Swal.fire({
         title: langData['uploading'] || 'Uploading...',
         html: `
-            <div id="import-status-text" class="mb-2">Uploading file...</div>
+            <div id="import-status-text" class="mb-2">${langData['uploading'] || 'Uploading...'}</div>
             <div class="progress">
                 <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
             </div>
@@ -313,22 +313,22 @@ $(document).on('click', '.import-history', function() {
     let modal = new bootstrap.Modal(modalEl[0]);
     modal.show();
     modalEl.find(".modal-header").html(`
-        <h5 class="modal-title"data-i18n="import_history"></h5>
+        <h5 class="modal-title">${langData['import_history'] || "Import History"}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     `);
     modalEl.find(".modal-footer").html(`
-        <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
+        <button class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
     `);
     modalEl.find(".modal-body").html(`
         <table id="tb_history" class="table table-striped w-100">
             <thead>
                 <tr>
-                    <th data-i18n="no."></th>
-                    <th data-i18n="import_start"></th>
-                    <th data-i18n="import_end"></th>
-                    <th data-i18n="record"></th>
-                    <th data-i18n="status"></th>
-                    <th data-i18n="result"></th>
+                    <th>${langData['no.'] || "No."}</th>
+                    <th>${langData['import_start'] || "Import Start"}</th>
+                    <th>${langData['import_end'] || "Import End"}</th>
+                    <th>${langData['record'] || "Record"}</th>
+                    <th>${langData['status'] || "Status"}</th>
+                    <th>${langData['result'] || "Result"}</th>
                 </tr>
             </thead>
         </table>
@@ -355,29 +355,30 @@ function loadImportHistory(){
             url: "api/wind/history",
             type: "POST",
         },
-        columns: [
-            {
-                data: null,
-                render: function (data, type, row, meta) {
-                    return meta.row + meta.settings._iDisplayStart + 1;
-                }
-            },
-            { data: "import_start" },
-            { data: "import_end" },
-            { data: "import_record" },
-            {
-                data: "status",
-                render: function (status, type, row) {
-                    let badgeColor = status === "complete" ? "success" : "danger";
-                    return `
-                        <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-${badgeColor}" style="font-weight:400;" data-i18n="${status}"></span>
-                        </div>
-                    `;
-                }
-            },
-            { data: "remark" },
-        ],
+        columns: [{
+            data: null,
+            render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+            }
+        },{ 
+            data: "import_start" 
+        },{ 
+            data: "import_end" 
+        },{ 
+            data: "import_record" 
+        },{
+            data: "status",
+            render: function (status, type, row) {
+                let badgeColor = status === "complete" ? "success" : "danger";
+                return `
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-${badgeColor}" style="font-weight:400;">${langData[status] || status}</span>
+                    </div>
+                `;
+            }
+        },{ 
+            data: "remark" 
+        },],
         language: getTableLang(),
         initComplete: function(){
             var input = $('#tb_history_filter input').unbind();

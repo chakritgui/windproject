@@ -141,7 +141,7 @@ function renderPolygons() {
 function renderPolygonList() {
     const $list = $('#polygonList').empty();
     if (!polygons.length) {
-        $list.append('<p class="text-muted small text-center p-3" data-i18n="no_areas"></p>');
+        $list.append(`<p class="text-muted small text-center p-3">${langData['no_areas'] || "No areas"}</p>`);
         return;
     }
     polygons.forEach(p => {
@@ -202,7 +202,7 @@ function openEditPopup(id) {
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content shadow border-0">
                 <div class="modal-header bg-light py-2">
-                    <h6 class="modal-title small fw-bold"><span data-i18n="edit"></span>: ${poly.name}</h6>
+                    <h6 class="modal-title small fw-bold"><span>${langData['edit'] || "Edit"}</span>: ${poly.name}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-3">
@@ -219,8 +219,8 @@ function openEditPopup(id) {
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0 d-flex gap-2">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnResetIndividual" data-i18n="reset"></button>
-                    <button type="button" class="btn btn-sm btn-primary" id="btnSaveIndividual" data-i18n="save"></button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnResetIndividual">${langData['reset'] || "Reset"}</button>
+                    <button type="button" class="btn btn-sm btn-primary" id="btnSaveIndividual">${langData['save'] || "Save"}</button>
                 </div>
             </div>
         </div>

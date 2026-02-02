@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="d-none d-md-flex justify-content-between align-items-center">
-                <button class="btn btn-secondary btn-sm close-page">
+                <button class="btn btn-outline-secondary btn-sm close-page">
                     <i class="fa-solid fa-chevron-left me-1"></i> 
                     <span data-i18n="back">Back</span>
                 </button>
