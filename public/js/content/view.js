@@ -29,7 +29,9 @@ function initViewContent() {
 function renderContent(data) {
     const lang = currentLang || 'th';
     const title = data.title[lang] || data.title['th'] || data.title['en'];
-    const body = data.content[lang] || data.content['th'] || data.content['en'];
+    let body = data.content[lang] || data.content['th'] || data.content['en'] || '';
+    const fullBaseUrl = BASE_URL.endsWith('/') ? BASE_URL : `${BASE_URL}/`;
+    body = body.replace(/src="(?!(http|https|\/\/))/g, `src="${fullBaseUrl}`);
     const type = data.type || 'news';
     $(".breadcrumb-item-first").html(`<a href="${BASE_URL}/${type}">${langData[type] || 'News'}</a>`);
     $('#contentTitle, #breadcrumbTitle').text(title);

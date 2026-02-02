@@ -103,10 +103,7 @@ function renderTable(data, isNewSearch) {
                     ${(item.type === 'content') ? `
                         <div class="d-flex align-items-center gap-2 mt-1">
                             <i class="fa-solid fa-bell${item.notification_status === 'yes' ? '' : '-slash'} ${item.notification_status === 'yes' ? 'text-warning' : 'text-muted'}" style="font-size: 0.8rem;"></i> 
-                            <span class="badge bg-${item.notification_status === 'yes' ? 'warning' : 'secondary'}" 
-                                data-i18n="${item.notification_status}">
-                                ${item.notification_status === 'yes' ? 'Yes' : 'No'}
-                            </span>
+                            <span class="badge bg-${item.notification_status === 'yes' ? 'warning' : 'secondary'}">${langData[item.notification_status] || item.notification_status}</span>
                         </div>
                     ` : ``}
                 </td>
@@ -233,17 +230,17 @@ function manageFolder(folder_id = '') {
     let modal = new bootstrap.Modal(modalEl[0]);
     modal.show();
     modalEl.find(".modal-header").html(`
-        <h5 class="modal-title" data-i18n="create_folder"></h5>
+        <h5 class="modal-title">${langData['create_folder'] || 'Create Folder'}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     `);
     modalEl.find(".modal-footer").html(`
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-        <button type="button" class="btn btn-primary save-folder" data-i18n="save"></button>
+        <button type="button" class="btn btn-primary me-2 save-folder">${langData['save'] || 'Save'}</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || 'Close'}</button>
     `);
     modalEl.find(".modal-body").html(`
         <input type="hidden" name="folder_id" id="folder_id" value="${folder_id ?? ''}">
         <div class="mb-3">
-            <label class="mb-2 required" data-i18n="name"></label>
+            <label class="mb-2 required">${langData['name'] || 'Name'}</label>
             <input type="text" class="form-control obj-required" id="folder_name" maxlength="255">
         </div>
     `);
@@ -301,7 +298,7 @@ function saveFolder() {
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
-            <p data-i18n="do_not_close"></p>
+            <p>${langData['please_do_not_close_this_page'] || 'Please do not close this page.'}</p>
             <div class="progress mt-2">
                 <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
             </div>
@@ -364,12 +361,28 @@ function manageContent(id) {
         let $modal = $("#windModal");
         let modal = new bootstrap.Modal($modal[0]);
         $modal.find(".modal-header").html(`
-            <h5 class="modal-title" data-i18n="content"></h5>
+            <h5 class="modal-title">${langData['content'] || 'Content'}</h5>
             <button class="btn-close" data-bs-dismiss="modal"></button>
         `);
         $modal.find(".modal-footer").html(`
-            <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-            <button class="btn btn-primary save-content" data-i18n="save"></button>
+            <div class="row w-100"> 
+                <div class="col-6 d-flex align-items-center">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" id="auto_translate" value="yes">
+                        <label class="form-check-label" for="auto_translate">
+                            ${langData['auto_translate'] || 'Auto Translate'}
+                        </label>
+                    </div>
+                </div>
+                <div class="col-6 text-end">
+                    <button type="button" class="btn btn-primary me-2 save-content">
+                        ${langData['save'] || 'Save'}
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        ${langData['close'] || 'Close'}
+                    </button>
+                </div>
+            </div>
         `);
         $modal.find(".modal-body").html(getContentForm(d));
         initSelect2Remote('#status', `${BASE_URL}/api/project/filter`, { type: 'status' });
@@ -405,11 +418,11 @@ function getContentForm(d) {
                     ${renderLangTabs(d)}
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="mb-2 mt-3 required" data-i18n="status"></label>
+                            <label class="mb-2 mt-3 required">${langData['status'] || 'Status'}</label>
                             <select id="status" class="form-select obj-required"></select>
                         </div>
                         <div class="col-md-4">
-                            <label class="mb-2 mt-3 required" data-i18n="notification"></label>
+                            <label class="mb-2 mt-3 required">${langData['notification'] || 'Notification'}</label>
                             <select id="notification" class="form-select obj-required"></select>
                         </div>
                     </div>
@@ -486,6 +499,7 @@ function saveContent() {
     formData.append("content_en", tinymce.get('content_en')?.getContent() || '');
     formData.append("content_lo", tinymce.get('content_lo')?.getContent() || '');
     formData.append("content_th", tinymce.get('content_th')?.getContent() || '');
+    formData.append("auto_translate", $("#auto_translate").is(":checked") ? 'yes' : 'no');
     const cover = $("#cover")[0].files[0] || null;
     if (cover) {
         formData.append("cover", cover);

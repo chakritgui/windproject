@@ -321,6 +321,7 @@ class ProjectModel {
         $ex_cover = $data['ex_cover'] ?? null;
         $status = $data['status'] ?? 'active';
         $notification = $data['notification'] ?? 'no';
+        $auto_translate = $data['auto_translate'] ?? 'no';
         $mediaHelper = new MediaHelper($pdo);
         $content_slug = $mediaHelper->generateSlug('project', $data["title_en"], $content_id);
         try {
@@ -335,19 +336,28 @@ class ProjectModel {
             }
             $stmt->bindValue(':status', $status);
             $stmt->execute();
-            if (!$content_id) $content_id = $pdo->lastInsertId();
-            $sqlItem = "INSERT INTO wp_content_item (content_id, content_subject, content_body, content_lang, created_at, updated_at) 
-                        VALUES (:content_id, :subject, :body, :lang, NOW(), NOW()) 
-                        ON DUPLICATE KEY UPDATE content_subject = VALUES(content_subject), content_body = VALUES(content_body), updated_at = NOW()";
+            if (!$content_id) {
+                $content_id = $pdo->lastInsertId();
+            }
+            $sqlItem = "INSERT INTO wp_content_item (content_id, content_subject, content_body, content_lang, created_at, updated_at) VALUES (:content_id, :subject, :body, :lang, NOW(), NOW()) ON DUPLICATE KEY UPDATE content_subject = VALUES(content_subject), content_body = VALUES(content_body), updated_at = NOW()";
             $stmtItem = $pdo->prepare($sqlItem);
-            $langs = ['en', 'lo', 'th'];
-            $all_html_content = "";
+            $langs = ['en', 'th', 'lo'];
             foreach ($langs as $lang) {
-                $subj = $data["title_$lang"] ?? '';
-                $body = $data["content_$lang"] ?? '';
-                $all_html_content .= $body;
+                $subj = trim($data["title_$lang"] ?? '');
+                $body = trim($data["content_$lang"] ?? '');
                 if ($subj !== '' || $body !== '') {
-                    $stmtItem->execute([':content_id' => $content_id, ':subject' => $subj, ':body' => $body, ':lang' => $lang]);
+                    $stmtItem->execute([
+                        ':content_id' => $content_id,
+                        ':subject'    => $subj,
+                        ':body'       => $body,
+                        ':lang'       => $lang
+                    ]);
+                    $sqlStatus = "UPDATE wp_content_item SET status = 'ready', response = NULL WHERE content_id = :content_id AND content_lang = :lang";
+                    $stmtStatus = $pdo->prepare($sqlStatus);
+                    $stmtStatus->execute([
+                        ':content_id' => $content_id,
+                        ':lang' => $lang
+                    ]);
                 }
             }
             if(!$ex_cover) {
@@ -384,34 +394,21 @@ class ProjectModel {
             $mediaHelper->handleMultiUpload($content_id, 'attachment', 'new_attachments');
             $mediaHelper->handleMultiUpload($content_id, 'image', 'new_images');
             $mediaHelper->handleMultiUpload($content_id, 'image360', 'new_images360');
-            $this->notification($content_id, $notification);
+            $status = '';
+            if($notification == 'yes') {
+                $status = 'published';
+            }
+            $publish_at = convertTimeZoneUTC(date('Y-m-d H:i:s'), 'Y-m-d H:i:s');
+            $mediaHelper->notification($content_id, $status, $publish_at, 'project');
+            if($auto_translate == 'yes') {
+                $mediaHelper->autoTranslate($content_id);
+            }
             $pdo->commit();
             return true;
         } catch (Exception $e) {
             if ($pdo->inTransaction()) $pdo->rollBack();
             error_log($e->getMessage());
             return false;
-        }
-    }
-    public function notification($content_id, $notification) {
-        $pdo = $this->db;
-        $isExternalTrans = $pdo->inTransaction();
-        try {
-            if (!$isExternalTrans) $pdo->beginTransaction();
-            if ($notification == 'yes') {
-                $sql = "INSERT INTO wp_notification_targets (notifications_target, notifications_item, member_id, publish_at, status)
-                        SELECT 'project', :nid, member_id, NOW(), 'published' 
-                        FROM wp_members WHERE status = 'active'
-                        ON DUPLICATE KEY UPDATE status = 'published', read_at = NULL";
-                $pdo->prepare($sql)->execute([':nid' => $content_id]);
-            } else {
-                $stmt = $pdo->prepare("UPDATE wp_notification_targets SET status = :status, publish_at = NULL, read_at = NULL WHERE notifications_item = :id AND notifications_target = 'project'");
-                $stmt->execute([':status' => 'draft', ':id' => $content_id]);
-            }
-            if (!$isExternalTrans) $pdo->commit();
-        } catch (Exception $e) {
-            if (!$isExternalTrans && $pdo->inTransaction()) $pdo->rollBack();
-            throw $e;
         }
     }
     public function deleteContent($data) {

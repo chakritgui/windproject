@@ -11,7 +11,7 @@ class ContentModel {
         $n = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$n) return null;
         $contentId = $n['content_id'];
-        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body FROM wp_content_item WHERE content_id = ?");
+        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body FROM wp_content_item WHERE content_id = ? and status in ('ready', 'success')");
         $stmt->execute([$contentId]);
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $title = ["th" => "", "lo" => "", "en" => ""];

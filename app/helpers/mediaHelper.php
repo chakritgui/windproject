@@ -2,9 +2,11 @@
 class MediaHelper {
     private $db;
     private $basePath;
+    private string $translateEndpoint;
     public function __construct($db) {
         $this->db = $db;
         $this->basePath = realpath(dirname(__DIR__, 2)); 
+        $this->translateEndpoint = TRANSLATE_ENDPOINT;
     }
     public function syncMedia($content_id, $type, $existingIds = []) {
         if ($this->basePath === false) return;
@@ -179,5 +181,120 @@ class MediaHelper {
             $counter++;
         }
         return $slug;
+    }
+    public function notification($content_id, $status, $publish_at, $target) {
+        $pdo = $this->db;
+        $isExternalTrans = $pdo->inTransaction();
+        try {
+            if (!$isExternalTrans) $pdo->beginTransaction();
+            if ($status == 'published') {
+                $sql = "INSERT INTO wp_notification_targets (notifications_target, notifications_item, member_id, publish_at, status)
+                        SELECT :target, :nid, member_id, :pub, 'published' 
+                        FROM wp_members WHERE status = 'active'
+                        ON DUPLICATE KEY UPDATE status = 'published', publish_at = :pub";
+                $pdo->prepare($sql)->execute([':target' => $target, ':nid' => $content_id, ':pub' => $publish_at]);
+            } else {
+                $stmt = $pdo->prepare("UPDATE wp_notification_targets SET status = :status, publish_at = NULL WHERE notifications_item = :id AND notifications_target = :target");
+                $stmt->execute([':status' => $status, ':id' => $content_id, ':target' => $target]);
+            }
+            if (!$isExternalTrans) $pdo->commit();
+        } catch (Exception $e) {
+            if (!$isExternalTrans && $pdo->inTransaction()) $pdo->rollBack();
+            throw $e;
+        }
+    }
+    public function autoTranslate($content_id){
+        $pdo = $this->db;
+        $stmt = $pdo->prepare("SELECT content_lang FROM wp_content_item WHERE content_id = ? AND status = 'ready' AND content_lang IN ('th','lo')");
+        $stmt->execute([$content_id]);
+        $targets = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        if (!$targets) {
+            return false;
+        }
+        $stmt = $pdo->prepare("SELECT content_subject, content_body FROM wp_content_item WHERE content_id = ? AND content_lang = 'en' LIMIT 1");
+        $stmt->execute([$content_id]);
+        $source = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$source) {
+            return false;
+        }
+        foreach ($targets as $lang) {
+            try {
+                $pdo->prepare("UPDATE wp_content_item SET status = 'wait' WHERE content_id = ? AND content_lang = ?")->execute([$content_id, $lang]);
+                $subject = $this->translatePlainText(
+                    $source['content_subject'], 'en', $lang
+                );
+                $body = $this->translateTinyMCEHtml(
+                    $source['content_body'], 'en', $lang
+                );
+                $pdo->prepare("UPDATE wp_content_item SET content_subject = ?, content_body = ?, status = 'success', response = NULL, updated_at = NOW() WHERE content_id = ? AND content_lang = ?")->execute([
+                    $subject,
+                    $body,
+                    $content_id,
+                    $lang
+                ]);
+            } catch (\Throwable $e) {
+                $pdo->prepare("UPDATE wp_content_item SET status = 'failed', response = ? WHERE content_id = ? AND content_lang = ?")->execute([
+                    $e->getMessage(),
+                    $content_id,
+                    $lang
+                ]);
+            }
+        }
+        return true;
+    }
+    private function translatePlainText($text, $source, $target){
+        if (trim($text) === '') return '';
+        return $this->callTranslateApi($text, $source, $target);
+    }
+    private function translateTinyMCEHtml($html, $source, $target){
+        if (trim($html) === '') return '';
+        libxml_use_internal_errors(true);
+        $dom = new DOMDocument('1.0', 'UTF-8');
+        $dom->loadHTML(
+            '<meta charset="utf-8">'.$html,
+            LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+        );
+        $xpath = new DOMXPath($dom);
+        $skipTags = [
+            'script','style','img','video','audio',
+            'iframe','object','embed','source',
+            'track','link','a'
+        ];
+        foreach ($xpath->query('//text()') as $node) {
+            $parent = $node->parentNode;
+            if (!$parent) continue;
+            if (in_array($parent->nodeName, $skipTags)) continue;
+            $text = trim($node->nodeValue);
+            if ($text === '') continue;
+            $node->nodeValue = $this->callTranslateApi(
+                $text, $source, $target
+            );
+            usleep(150000);
+        }
+        return $dom->saveHTML();
+    }
+    private function callTranslateApi($text, $source, $target){
+        $ch = curl_init($this->translateEndpoint);
+        curl_setopt_array($ch, [
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => http_build_query([
+                'q' => $text,
+                'source' => $source,
+                'target' => $target,
+                'format' => 'text'
+            ]),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 20
+        ]);
+        $response = curl_exec($ch);
+        if ($response === false) {
+            throw new Exception('CURL error: '.curl_error($ch));
+        }
+        curl_close($ch);
+        $json = json_decode($response, true);
+        if (!isset($json['translatedText'])) {
+            throw new Exception('Translate API error: '.$response);
+        }
+        return $json['translatedText'];
     }
 }

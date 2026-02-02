@@ -50,7 +50,7 @@ function initPolesTable() {
                 }
                 return `
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;" data-i18n="${status}"></span>
+                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
                     </div>
                 `;
             }
@@ -99,7 +99,7 @@ function initPolesTable() {
             let $filter = $('#tb_pole_filter');
             let btn = `
                 <button class="btn btn-primary btn-sm manage-pole" data-id="">
-                    <i class="fa-solid fa-plus"></i> <span data-i18n="poles"></span>
+                    <i class="fa-solid fa-plus"></i> <span>${langData['poles'] || 'Poles'}</span>
                 </button>
             `;
             $filter.append(btn);
@@ -175,46 +175,46 @@ $(document).on('click', '.manage-pole', function() {
                 let modal = new bootstrap.Modal(modalEl[0]);
                 modal.show();
                 modalEl.find(".modal-header").html(`
-                    <h5 class="modal-title" data-i18n="${(poles_id) ? 'managePole' : 'newPole'}"></h5>
+                    <h5 class="modal-title">${langData['managePole'] || 'Manage Pole'}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 `);
                 modalEl.find(".modal-footer").html(`
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-                    <button type="submit" class="btn btn-primary save-pole" data-i18n="save"></button>
+                    <button type="submit" class="btn btn-primary me-2 save-pole">${langData['save'] || 'Save'}</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || 'Close'}</button>
                 `);
                 modalEl.find(".modal-body").html(`
                     <input type="hidden" name="poles_id" id="poles_id" value="${poles_id ?? ''}">
                     <div class="mb-3">
-                        <label class="mb-2 required" data-i18n="pole_code"></label>
+                        <label class="mb-2 required">${langData['pole_code'] || 'Pole Code'}</label>
                         <input type="text" class="form-control obj-required" id="poles_code" maxlength="255">
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="project"></label>
+                            <label class="mb-2 required">${langData['project'] || 'Project'}</label>
                             <select id="project" class="form-select obj-required"></select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="type"></label>
+                            <label class="mb-2 required">${langData['type'] || 'Type'}</label>
                             <select id="type" class="form-select obj-required"></select>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="latitude"></label>
+                            <label class="mb-2 required">${langData['latitude'] || 'Latitude'}</label>
                             <input type="text" class="form-control obj-required" id="latitude" maxlength="255">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="longitude"></label>
+                            <label class="mb-2 required">${langData['longitude'] || 'Longitude'}</label>
                             <input type="text" class="form-control obj-required" id="longitude" maxlength="255">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="installation"></label>
+                            <label class="mb-2 required">${langData['installation'] || 'Installation'}</label>
                             <select id="installation" class="form-select obj-required"></select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="status"></label>
+                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
                             <select id="status" class="form-select obj-required"></select>
                         </div>
                     </div>
@@ -293,7 +293,7 @@ function savePole() {
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
-            <p data-i18n="do_not_close"></p>
+            <p>${langData['please_do_not_close_this_page'] || 'Please do not close this page.'}</p>
             <div class="progress mt-2">
                 <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
             </div>
@@ -360,12 +360,28 @@ function manageContent(poles_id, content_id) {
         let $modal = $("#windModal");
         let modal = new bootstrap.Modal($modal[0]);
         $modal.find(".modal-header").html(`
-            <h5 class="modal-title" data-i18n="content"></h5>
+            <h5 class="modal-title">${langData['content'] || 'Content'}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         `);
         $modal.find(".modal-footer").html(`
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-            <button type="button" class="btn btn-primary" id="btnSaveContent" data-i18n="save"></button>
+            <div class="row w-100"> 
+                <div class="col-6 d-flex align-items-center">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" id="auto_translate" value="yes">
+                        <label class="form-check-label" for="auto_translate">
+                            ${langData['auto_translate'] || 'Auto Translate'}
+                        </label>
+                    </div>
+                </div>
+                <div class="col-6 text-end">
+                    <button type="button" class="btn btn-primary me-2" id="btnSaveContent">
+                        ${langData['save'] || 'Save'}
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        ${langData['close'] || 'Close'}
+                    </button>
+                </div>
+            </div>
         `);
         $modal.find(".modal-body").html(getContentForm(d, poles_id, content_id));
         initCoverUpload();
@@ -428,6 +444,7 @@ $(document).on('click', '#btnSaveContent', function() {
     formData.append("content_en", tinymce.get('content_en')?.getContent() || '');
     formData.append("content_lo", tinymce.get('content_lo')?.getContent() || '');
     formData.append("content_th", tinymce.get('content_th')?.getContent() || '');
+    formData.append("auto_translate", $("#auto_translate").is(":checked") ? 'yes' : 'no');
     const cover = $("#cover")[0].files[0] || null;
     if (cover) {
         formData.append("cover", cover);

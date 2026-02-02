@@ -1,168 +1,167 @@
-สำหรับ **Import ข้อมูลหลักล้านแถว (XLSX / CSV) ด้วย PHP 8 + MySQL**
-รองรับทั้ง **XAMPP (Local)** และ **HostAtom (Production)**
+# 🚀 สรุปขั้นตอนขึ้น Ubuntu Server (Production)
 
-# 📦 Excel / CSV Import (High Performance)
+## 🔧 สภาพแวดล้อมที่แนะนำ
 
-ระบบ Import ข้อมูลจาก **XLSX / CSV** รองรับข้อมูลระดับ **หลักล้านแถว**
-โดยใช้แนวทาง **XLSX → CSV → LOAD DATA LOCAL INFILE** เพื่อให้ได้ประสิทธิภาพสูงสุด
+* Ubuntu **20.04 / 22.04**
+* RAM **อย่างน้อย 2GB** (แนะนำ 4GB)
+* สิทธิ์ `sudo`
+* เปิดพอร์ตที่จำเป็น
 
----
-
-## 🔥 แนวคิดหลัก (Core Concept)
-
-* รองรับไฟล์ **XLSX และ CSV**
-* แปลง XLSX เป็น CSV แบบ streaming (ไม่กิน RAM)
-* ใช้ MySQL `LOAD DATA LOCAL INFILE`
-* import เข้าตารางชั่วคราว (temp table)
-* map ค่า code → id ด้วย SQL JOIN
-* รองรับ PHP 8+, MySQL 5.7+
+  * **MySQL** (ภายใน)
+  * **5000** (LibreTranslate ถ้าเรียกจากภายนอก)
 
 ---
 
-## ⚙️ Requirements
+## 1️⃣ เตรียมระบบพื้นฐาน
 
-* PHP >= 8.0
-* MySQL >= 5.7
-* PDO MySQL
-* Composer
-* MySQL `local_infile = ON`
-
----
-
-# 🖥 Local Setup (XAMPP - Windows)
-
-### 1) ตรวจสอบ PHP
-
-```
-C:\xampp-vonconnect\php\php -v
+```bash
+sudo apt update
+sudo apt upgrade -y
 ```
 
 ---
 
-### 2) ติดตั้ง Composer
+## 2️⃣ ติดตั้ง Docker + Docker Compose
 
-ดาวน์โหลด:
-
-```
-https://getcomposer.org/Composer-Setup.exe
-```
-
-ระหว่างติดตั้ง เลือก:
-
-```
-C:\xampp-vonconnect\php\php.exe
+```bash
+sudo apt install -y docker.io docker-compose
 ```
 
 ตรวจสอบ:
 
-```
-composer -V
-```
-
----
-
-### 3) ติดตั้ง Library
-
-```
-cd C:\xampp-vonconnect\htdocs\windproject
-composer require box/spout
+```bash
+docker --version
+docker-compose --version
 ```
 
----
+เปิด Docker อัตโนมัติ:
 
-### 4) เปิด MySQL LOCAL INFILE
-
-แก้ไฟล์:
-
-```
-C:\xampp-vonconnect\mysql\bin\my.ini
+```bash
+sudo systemctl enable docker
+sudo systemctl start docker
 ```
 
-เพิ่ม:
+(ถ้าไม่อยากพิมพ์ sudo ทุกครั้ง)
 
-```
-[mysqld]
-local-infile=1
-
-[mysql]
-local-infile=1
-```
-
-Restart MySQL
-
-ตรวจสอบ:
-
-```sql
-SHOW VARIABLES LIKE 'local_infile';
-```
-
-ต้องเป็น:
-
-```
-ON
+```bash
+sudo usermod -aG docker $USER
+newgrp docker
 ```
 
 ---
 
-### 5) PDO Connection
+## 3️⃣ ติดตั้ง LibreTranslate (แนะนำใช้ Docker)
 
-```php
-$pdo = new PDO(
-    "mysql:host=localhost;dbname=wind;charset=utf8mb4",
-    "root",
-    "",
-    [
-        PDO::MYSQL_ATTR_LOCAL_INFILE => true,
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-    ]
-);
+```bash
+mkdir -p ~/libretranslate
+cd ~/libretranslate
+```
+
+สร้างไฟล์:
+
+```bash
+nano docker-compose.yml
+```
+
+ใส่เนื้อหา:
+
+```yaml
+version: "3.8"
+
+services:
+  libretranslate:
+    image: libretranslate/libretranslate:latest
+    container_name: libretranslate
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - LT_LOAD_ONLY=en,th,lo
+      - LT_DISABLE_WEB_UI=true
+      - LT_UPDATE_MODELS=true
+```
+
+รัน:
+
+```bash
+docker-compose up -d
+```
+
+ดู log:
+
+```bash
+docker logs -f libretranslate
+```
+
+ถ้าเห็น:
+
+```
+Running on http://0.0.0.0:5000
+```
+
+= พร้อมใช้งาน ✅
+
+---
+
+## 4️⃣ ทดสอบ LibreTranslate
+
+ดูภาษาที่รองรับ:
+
+```bash
+curl http://127.0.0.1:5000/languages
+```
+
+ทดสอบแปล:
+
+```bash
+curl -X POST http://127.0.0.1:5000/translate \
+  -d "q=Hello world" \
+  -d "source=en" \
+  -d "target=th"
+```
+
+ผลลัพธ์:
+
+```json
+{"translatedText":"สวัสดีชาวโลก"}
 ```
 
 ---
 
-# 🌍 Production Setup (HostAtom)
+## 5️⃣ เตรียม PHP + Composer (สำหรับ Import ล้านแถว)
 
-### 1) ตรวจสอบ PHP
+ตรวจ PHP:
 
-```
+```bash
 php -v
 ```
 
----
+ติดตั้ง Composer:
 
-### 2) ติดตั้ง Composer (ผ่าน SSH)
-
-```
+```bash
 cd ~
 curl -sS https://getcomposer.org/installer | php
-mv composer.phar /usr/local/bin/composer
-```
-
-ตรวจสอบ:
-
-```
+sudo mv composer.phar /usr/local/bin/composer
 composer -V
 ```
 
----
+ติดตั้ง library:
 
-### 3) ติดตั้ง Library
-
-```
+```bash
 cd public_html/windproject
 composer require box/spout
 ```
 
-> หากไม่สามารถใช้ SSH ได้ ให้ติดตั้งที่ local แล้ว upload โฟลเดอร์ `/vendor`
+> ❗ ถ้าไม่มี SSH → ติดตั้งที่ local แล้ว upload `/vendor`
 
 ---
 
-### 4) เปิด MySQL LOCAL INFILE
+## 6️⃣ MySQL (สำคัญมากสำหรับ Import ล้านแถว)
 
-ติดต่อ Support HostAtom เพื่อขอเปิด:
+* ขอ Host เปิดค่า:
 
 ```
-local_infile
+local_infile = ON
 ```
 
 ตรวจสอบ:
@@ -171,102 +170,67 @@ local_infile
 SHOW VARIABLES LIKE 'local_infile';
 ```
 
----
-
-### 5) PDO Connection (Production)
+PDO ต้องมี:
 
 ```php
-$pdo = new PDO(
-    "mysql:host=localhost;dbname=wind;charset=utf8mb4",
-    "db_user",
-    "db_pass",
-    [
-        PDO::MYSQL_ATTR_LOCAL_INFILE => true,
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-    ]
-);
+PDO::MYSQL_ATTR_LOCAL_INFILE => true
 ```
 
 ---
 
-# 🗄 Database Structure (แนะนำ)
+## ✅ สรุปสั้นมาก (Checklist)
 
-```sql
-CREATE TABLE wind_import_temp (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    col1 VARCHAR(100),
-    col2 VARCHAR(100),
-    wind_code VARCHAR(50),
-    wind_id INT,
-    KEY (wind_code),
-    KEY (wind_id)
-) ENGINE=InnoDB;
-```
+* [x] Ubuntu พร้อม sudo
+* [x] Docker + Docker Compose
+* [x] LibreTranslate รันที่ port 5000
+* [x] PHP 8 + Composer
+* [x] box/spout
+* [x] MySQL เปิด `local_infile`
+* [x] พร้อม Import ข้อมูลระดับล้านแถว 🚀
 
 ---
 
-# 🚀 Import Flow
+เปิดใช้งานแปลงภาพเป็น WebP (Ubuntu + PHP)
+🔑 สิ่งที่ต้องมี
 
-1. ผู้ใช้อัปโหลด XLSX หรือ CSV
-2. ถ้าเป็น XLSX → แปลงเป็น CSV
-3. LOAD DATA CSV เข้า temp table
-4. UPDATE JOIN เพื่อ map code → id
-5. ย้ายข้อมูลเข้า table หลัก
+เลือกอย่างใดอย่างหนึ่ง (หรือมีทั้งคู่ก็ดี)
 
----
+✅ ทางที่ 1 (แนะนำ): GD รองรับ WebP
 
-# ⚡ LOAD DATA ตัวอย่าง
+1️⃣ ตรวจสอบ PHP รองรับ WebP ไหม (GD)
+php -i | grep -i webp
 
-```sql
-LOAD DATA LOCAL INFILE '/tmp/import.csv'
-INTO TABLE wind_import_temp
-FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n'
-IGNORE 1 LINES;
-```
 
----
+ถ้าเห็น:
 
-# 🏎 Performance Tips
+WebP Support => enabled
 
-* ใช้ CSV แทน XLSX โดยตรง
-* ใช้ temp table เสมอ
-* ทำ mapping ด้วย SQL JOIN
-* ใส่ index เฉพาะ column ที่ใช้ join
-* ปิด autocommit ระหว่าง import
 
-```sql
-SET autocommit = 0;
-COMMIT;
-```
+= ผ่าน ✅
 
----
+ถ้าไม่ขึ้น → ต้องติดตั้งเพิ่ม
 
-# 📊 Performance Comparison
+2️⃣ ติดตั้ง PHP-GD (พร้อม WebP)
+sudo apt install -y php-gd
+sudo systemctl restart apache2
+# หรือ php-fpm
+sudo systemctl restart php8.1-fpm
 
-| วิธี            | 1,000,000 แถว  |
-| --------------- | -------------- |
-| PHP Loop Insert | ❌ 30–60 นาที   |
-| XLSX Insert     | ❌ 15–30 นาที   |
-| CSV + LOAD DATA | ✅ 30–90 วินาที |
 
----
+ตรวจสอบซ้ำ:
 
-# ✅ Summary
+php -i | grep -i webp
 
-* รองรับไฟล์ใหญ่ระดับล้านแถว
-* ใช้งานได้ทั้ง Local และ Production
-* เร็ว ปลอดภัย ขยายระบบง่าย
-* เหมาะกับงาน Data Import ขนาดใหญ่
+3️⃣ ตัวอย่างแปลงภาพเป็น WebP ด้วย PHP (GD)
+$image = imagecreatefromjpeg("input.jpg");
+imagewebp($image, "output.webp", 80);
+imagedestroy($image);
 
----
 
-หากต้องการเพิ่ม:
+รองรับ:
 
-* progress bar
-* import แบบ queue
-* รองรับหลาย sheet แยก table
-* resume / rollback
+jpg
 
-สามารถต่อยอดจาก README นี้ได้ทันที 🚀
+png
+
+gif

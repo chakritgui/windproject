@@ -13,29 +13,25 @@
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mime  = finfo_file($finfo, $field['tmp_name']);
     finfo_close($finfo);
-    $allowed = ['image/jpeg','image/png','image/gif','image/webp'];
+    $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!in_array($mime, $allowed)) {
         echo json_encode(['error' => ['message' => 'Invalid file type']]);
         exit;
     }
-    $filenameBase = uniqid("notif_", true);
-    $targetFile   = null;
+    $filenameBase = "notif_" . date('Ymd_His') . "_" . bin2hex(random_bytes(4));
+    $targetFile = null;
+    $filename   = "";
     if (function_exists('imagewebp') && $mime !== 'image/webp') {
         switch ($mime) {
-            case 'image/jpeg':
-                $img = imagecreatefromjpeg($field['tmp_name']);
-                break;
+            case 'image/jpeg': $img = imagecreatefromjpeg($field['tmp_name']); break;
             case 'image/png':
                 $img = imagecreatefrompng($field['tmp_name']);
                 imagepalettetotruecolor($img);
                 imagealphablending($img, true);
                 imagesavealpha($img, true);
                 break;
-            case 'image/gif':
-                $img = imagecreatefromgif($field['tmp_name']);
-                break;
-            default:
-                $img = false;
+            case 'image/gif':  $img = imagecreatefromgif($field['tmp_name']); break;
+            default: $img = false;
         }
         if ($img) {
             $filename   = $filenameBase . ".webp";
@@ -46,6 +42,10 @@
     }
     if (!$targetFile) {
         $ext = strtolower(pathinfo($field['name'], PATHINFO_EXTENSION));
+        if (empty($ext)) {
+            $extMap = ['image/jpeg'=>'jpg', 'image/png'=>'png', 'image/gif'=>'gif', 'image/webp'=>'webp'];
+            $ext = $extMap[$mime] ?? 'bin';
+        }
         $filename   = $filenameBase . "." . $ext;
         $targetFile = $uploadDir . $filename;
         if (!move_uploaded_file($field['tmp_name'], $targetFile)) {
@@ -53,10 +53,9 @@
             exit;
         }
     }
-    $fileUrl = $publicBase . $filename;
     header('Content-Type: application/json');
     echo json_encode([
         "uploaded" => 1,
         "fileName" => $filename,
-        "url"      => $fileUrl
+        "url"      => $publicBase . $filename
     ]);

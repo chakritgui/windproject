@@ -38,11 +38,11 @@ function initNewsTable() {
                 let title = row[`subject_${currentLang}`] || row.subject_en || 'No Title';
                 let badgeHtml = '';
                 if (parseInt(row.count_attachment) > 0) 
-                    badgeHtml += `<span class="badge rounded-pill bg-danger-subtle text-danger me-1"><i class="fa-solid fa-file-pdf"></i> <span data-i18n="document">${langData['document'] || 'Document'}</span></span>`;
+                    badgeHtml += `<span class="badge rounded-pill bg-danger-subtle text-danger me-1"><i class="fa-solid fa-file-pdf"></i> <span>${langData['document'] || 'Document'}</span></span>`;
                 if (parseInt(row.count_image) > 0) 
-                    badgeHtml += `<span class="badge rounded-pill bg-primary-subtle text-primary me-1"><i class="fa-solid fa-images"></i> <span data-i18n="image">${langData['image'] || 'Image'}</span></span>`;
+                    badgeHtml += `<span class="badge rounded-pill bg-primary-subtle text-primary me-1"><i class="fa-solid fa-images"></i> <span>${langData['image'] || 'Image'}</span></span>`;
                 if (parseInt(row.count_image360) > 0) 
-                    badgeHtml += `<span class="badge rounded-pill bg-success-subtle text-success me-1"><i class="fa-solid fa-vr-cardboard"></i> <span data-i18n="vr">${langData['vr'] || 'VR'}</span></span>`;
+                    badgeHtml += `<span class="badge rounded-pill bg-success-subtle text-success me-1"><i class="fa-solid fa-vr-cardboard"></i> <span>${langData['vr'] || 'VR'}</span></span>`;
                 return `<div class="fw-bold text-dark">${title}</div> <div class="mt-1">${badgeHtml}</div>`;
             }
         },{
@@ -63,7 +63,7 @@ function initNewsTable() {
             render: status => {
                 const isPub = status === "published";
                 const bg = isPub ? "success" : "secondary";
-                return `<span class="badge rounded-pill bg-${bg}-subtle text-${bg}"><span data-i18n="${status}">${status}</span></span>`;
+                return `<span class="badge rounded-pill bg-${bg}-subtle text-${bg}"><span>${langData[status] || 'status'}</span></span>`;
             }
         },{
             data: null,
@@ -86,7 +86,7 @@ function initNewsTable() {
             let $filter = $('#tb_news_filter');
             let btn = `
                 <button class="btn btn-primary btn-sm manage-news" data-id="">
-                    <i class="fa-solid fa-plus"></i> <span data-i18n="news"></span>
+                    <i class="fa-solid fa-plus"></i> <span>${langData['news'] || 'News'}</span>
                 </button>
             `;
             $filter.append(btn);
@@ -112,12 +112,28 @@ $(document).on("click", ".manage-news", function () {
         let $modal = $("#windModal");
         let modal = new bootstrap.Modal($modal[0]);
         $modal.find(".modal-header").html(`
-            <h5 class="modal-title" data-i18n="news_management"></h5>
+            <h5 class="modal-title">${langData['news_management'] || 'News Management'}</h5>
             <button class="btn-close" data-bs-dismiss="modal"></button>
         `);
         $modal.find(".modal-footer").html(`
-            <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-            <button class="btn btn-primary save-news" data-i18n="save"></button>
+            <div class="row w-100"> 
+                <div class="col-6 d-flex align-items-center">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" id="auto_translate" value="yes">
+                        <label class="form-check-label" for="auto_translate">
+                            ${langData['auto_translate'] || 'Auto Translate'}
+                        </label>
+                    </div>
+                </div>
+                <div class="col-6 text-end">
+                    <button type="button" class="btn btn-primary save-news me-2">
+                        ${langData['save'] || 'Save'}
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        ${langData['close'] || 'Close'}
+                    </button>
+                </div>
+            </div>
         `);
         const publishAt = d.publish_at ? new Date(d.publish_at) : null;
         const publishDate = publishAt ? publishAt.toISOString().slice(0,10) : '';
@@ -202,19 +218,19 @@ function getContentForm(d, publishTime) {
                     ${renderLangTabs(d)}
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="mb-2 mt-3 required" data-i18n="status"></label>
+                            <label class="mb-2 mt-3 required">${langData['status'] || 'Status'}</label>
                             <select id="status" class="form-select obj-required"></select>
                         </div>
                         <div class="col-md-4">
-                            <label class="mb-2 mt-3 required" data-i18n="publish_date"></label>
+                            <label class="mb-2 mt-3 required">${langData['publish_date'] || 'Publish Date'}</label>
                             <input type="text" id="publish_date" class="form-control obj-required">
                             <div class="form-check mt-2">
                                 <input class="form-check-input" type="checkbox" id="publish_now">
-                                <label class="form-check-label" for="publish_now"  data-i18n="publish_now"></label>
+                                <label class="form-check-label" for="publish_now">${langData['publish_now'] || 'Publish Now'}</label>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <label class="mb-2 mt-3 required" data-i18n="publish_time"></label>
+                            <label class="mb-2 mt-3 required">${langData['publish_time'] || 'Publish Time'}</label>
                             <input type="text" id="publish_time" class="form-control timepicker obj-required" value="${publishTime}" placeholder="HH:mm">
                         </div>
                     </div>
@@ -321,6 +337,7 @@ function saveNews() {
     formData.append("title_lo", $("#title_lo").val());
     formData.append("ex_cover", $("#ex_cover").val());
     formData.append("title_th", $("#title_th").val());
+    formData.append("auto_translate", $("#auto_translate").is(":checked") ? 'yes' : 'no');
     formData.append("content_en", tinymce.get('content_en')?.getContent() || '');
     formData.append("content_lo", tinymce.get('content_lo')?.getContent() || '');
     formData.append("content_th", tinymce.get('content_th')?.getContent() || '');
@@ -331,7 +348,7 @@ function saveNews() {
     Swal.fire({
         title: langData['saving'] || 'Saving News...',
         html: `
-            <p>Please do not close this page.</p>
+            <p>${langData['please_do_not_close_this_page'] || 'Please do not close this page.'}</p>
             <div class="progress mt-2">
                 <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
             </div>
@@ -410,37 +427,3 @@ $(document).on('click', '.delete-news', function() {
         });
     });
 });
-$(document).on("click", ".view-news", function () {
-    const id = $(this).data("id");
-    viewNews(id);
-});
-function viewNews(id) {
-    $.post("api/project/gets", { id }, function(res) {
-        if(res.status !== "success") return;
-        let d = res.data;
-        let $modal = $("#windModal");
-        let modal = new bootstrap.Modal($modal[0]);
-        $modal.find(".modal-header").html(`
-            <h5 class="modal-title">${d.title.th || d.title.en}</h5>
-            <button class="btn-close" data-bs-dismiss="modal"></button>
-        `);
-        $modal.find(".modal-footer").html(`
-            <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-        `);
-        $modal.find(".modal-body").html(`
-            <div class="content-view">
-                <ul class="nav nav-tabs mb-3">
-                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#view_en">English</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#view_lo">ລາວ</a></li>
-                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#view_th">ไทย</a></li>
-                </ul>
-                <div class="tab-content">
-                    <div class="tab-pane fade show active" id="view_en">${d.content.en || ''}</div>
-                    <div class="tab-pane fade" id="view_lo">${d.content.lo || ''}</div>
-                    <div class="tab-pane fade" id="view_th">${d.content.th || ''}</div>
-                </div>
-            </div>
-        `);
-        modal.show();
-    }, "json");
-}

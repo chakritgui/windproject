@@ -95,6 +95,7 @@ class ProjectController extends BaseController {
             'new_images'           => $_FILES['new_images'] ?? null,
             'existing_images360'   => $_POST['existing_images360'] ?? [],
             'new_images360'        => $_FILES['new_images360'] ?? null,
+            'auto_translate' => $_POST['auto_translate'] ?? 'no'
         ];
         $this->json(['status' => $this->model->saveContent($data)]);
     }

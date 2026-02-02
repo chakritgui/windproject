@@ -196,9 +196,9 @@ class UserModel {
                     MAX(CASE WHEN t.read_at IS NOT NULL THEN 1 ELSE 0 END) as is_read,
                     c.content_slug
                 FROM wp_content c
-                LEFT JOIN wp_content_item iEn on iEn.content_id = c.content_id and iEn.content_lang = 'en'
-                LEFT JOIN wp_content_item iTh on iTh.content_id = c.content_id and iTh.content_lang = 'th' 
-                LEFT JOIN wp_content_item iLo on iLo.content_id = c.content_id and iLo.content_lang = 'lo'
+                LEFT JOIN wp_content_item iEn on iEn.content_id = c.content_id and iEn.content_lang = 'en' and iEn.status in ('ready', 'success')
+                LEFT JOIN wp_content_item iTh on iTh.content_id = c.content_id and iTh.content_lang = 'th' and iTh.status in ('ready', 'success')
+                LEFT JOIN wp_content_item iLo on iLo.content_id = c.content_id and iLo.content_lang = 'lo' and iLo.status in ('ready', 'success')
                 LEFT JOIN wp_content_media m on m.content_id = c.content_id and m.status = 'active'
                 LEFT JOIN wp_notification_targets t on t.notifications_item = c.content_id AND t.notifications_target = 'news' AND t.member_id = :member_id
                 $where

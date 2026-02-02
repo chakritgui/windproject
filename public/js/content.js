@@ -40,24 +40,26 @@ function initTinyMCE() {
             img:hover { outline: 3px solid #6366f1; }
         `,
         setup: function (editor) {
+            editor.oldImages = []; 
             editor.ui.registry.addButton('img25', { text: '25%', onAction: () => resizeImage(editor, '25%') });
             editor.ui.registry.addButton('img50', { text: '50%', onAction: () => resizeImage(editor, '50%') });
             editor.ui.registry.addButton('img100', { text: 'Full', onAction: () => resizeImage(editor, '100%') });
             editor.on('init', function () {
-                oldImages = getImageList(editor);
+                editor.oldImages = getImageList(editor);
                 editor.execCommand('FontName', false, 'TH Sarabun New');
             });
             editor.on('change keyup', function () {
                 let newImages = getImageList(editor);
-                let removed = oldImages.filter(src => !newImages.includes(src));
+                let removed = editor.oldImages.filter(src => !newImages.includes(src));
                 removed.forEach(src => {
+                    if (!src || src.startsWith('blob:')) return;
                     fetch(BASE_URL + '/public/uploads/delete_content_image.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ url: src })
                     });
                 });
-                oldImages = newImages;
+                editor.oldImages = newImages;
             });
         },
         automatic_uploads: true,

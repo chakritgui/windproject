@@ -376,6 +376,7 @@ class PolesModel {
         $pdo = $this->db;
         $content_id = $data['content_id'] ?: null;
         $ex_cover = $data['ex_cover'] ?? null;
+        $auto_translate = $data['auto_translate'] ?? 'no';
         $mediaHelper = new MediaHelper($pdo);
         $content_slug = $mediaHelper->generateSlug('pole', $data["title_en"], $content_id);
         try {
@@ -389,17 +390,28 @@ class PolesModel {
                 $stmt->bindValue(':content_slug', $content_slug);
             }
             $stmt->execute();
-            if (!$content_id) $content_id = $pdo->lastInsertId();
-            $sqlItem = "INSERT INTO wp_content_item (content_id, content_subject, content_body, content_lang, created_at, updated_at) 
-                        VALUES (:content_id, :subject, :body, :lang, NOW(), NOW()) 
-                        ON DUPLICATE KEY UPDATE content_subject = VALUES(content_subject), content_body = VALUES(content_body), updated_at = NOW()";
+            if (!$content_id) {
+                $content_id = $pdo->lastInsertId();
+            }
+            $sqlItem = "INSERT INTO wp_content_item (content_id, content_subject, content_body, content_lang, created_at, updated_at) VALUES (:content_id, :subject, :body, :lang, NOW(), NOW()) ON DUPLICATE KEY UPDATE content_subject = VALUES(content_subject), content_body = VALUES(content_body), updated_at = NOW()";
             $stmtItem = $pdo->prepare($sqlItem);
-            $langs = ['en', 'lo', 'th'];
+            $langs = ['en', 'th', 'lo'];
             foreach ($langs as $lang) {
-                $subj = $data["title_$lang"] ?? '';
-                $body = $data["content_$lang"] ?? '';
+                $subj = trim($data["title_$lang"] ?? '');
+                $body = trim($data["content_$lang"] ?? '');
                 if ($subj !== '' || $body !== '') {
-                    $stmtItem->execute([':content_id' => $content_id, ':subject' => $subj, ':body' => $body, ':lang' => $lang]);
+                    $stmtItem->execute([
+                        ':content_id' => $content_id,
+                        ':subject'    => $subj,
+                        ':body'       => $body,
+                        ':lang'       => $lang
+                    ]);
+                    $sqlStatus = "UPDATE wp_content_item SET status = 'ready', response = NULL WHERE content_id = :content_id AND content_lang = :lang";
+                    $stmtStatus = $pdo->prepare($sqlStatus);
+                    $stmtStatus->execute([
+                        ':content_id' => $content_id,
+                        ':lang' => $lang
+                    ]);
                 }
             }
             if (!$ex_cover && !isset($_FILES['cover'])) {
@@ -416,6 +428,9 @@ class PolesModel {
             $mediaHelper->handleMultiUpload($content_id, 'image360', 'new_images360');
             $stmtFolder = $pdo->prepare("UPDATE wp_poles SET content_id = :content_id WHERE poles_id = :id");
             $stmtFolder->execute([':content_id' => $content_id, ':id' => $data['poles_id']]);
+            if($auto_translate == 'yes') {
+                $mediaHelper->autoTranslate($content_id);
+            }
             $pdo->commit();
             return true;
         } catch (Exception $e) {
