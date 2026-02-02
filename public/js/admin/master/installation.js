@@ -60,7 +60,7 @@ function initInstallationsTable() {
                 }
                 return `
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;" data-i18n="${status}"></span>
+                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
                     </div>
                 `;
             }
@@ -95,7 +95,7 @@ function initInstallationsTable() {
             let $filter = $('#tb_installation_filter');
             let btn = `
                 <button class="btn btn-primary btn-sm manage-installation" data-id="">
-                    <i class="fa-solid fa-plus"></i> <span data-i18n="installation"></span>
+                    <i class="fa-solid fa-plus"></i> <span>${langData['installation'] || 'Installation'}</span>
                 </button>
             `;
             $filter.append(btn);
@@ -148,7 +148,7 @@ $(document).on('click', '.manage-installation', function() {
                 let modal = new bootstrap.Modal(modalEl[0]);
                 modal.show();
                 modalEl.find(".modal-header").html(`
-                    <h5 class="modal-title" data-i18n="${(installations_id) ? 'manageInstallation' : 'newInstallation'}"></h5>
+                    <h5 class="modal-title">${langData['manageInstallation'] || 'Manage Installation'}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 `);
                 modalEl.find(".modal-footer").html(`
@@ -158,26 +158,26 @@ $(document).on('click', '.manage-installation', function() {
                 modalEl.find(".modal-body").html(`
                     <input type="hidden" name="installations_id" id="installations_id" value="${installations_id ?? ''}">
                     <div class="mb-3">
-                        <label class="mb-2 required" data-i18n="installation"></label>
+                        <label class="mb-2 required">${langData['installation'] || 'Installation'}</label>
                         <input type="text" class="form-control obj-required" id="installations_name" maxlength="255">
                     </div>
                     <div class="mb-3">
-                        <label class="mb-2" data-i18n="display"></label>
+                        <label class="mb-2">${langData['display'] || 'Display'}</label>
                         <textarea class="form-control" id="installations_name_display"></textarea>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="project"></label>
+                            <label class="mb-2 required">${langData['project'] || 'Project'}</label>
                             <select id="project" class="form-select obj-required"></select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="type"></label>
+                            <label class="mb-2 required">${langData['type'] || 'Type'}</label>
                             <select id="type" class="form-select obj-required"></select>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="status"></label>
+                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
                             <select id="status" class="form-select obj-required"></select>
                         </div>
                     </div>
@@ -246,7 +246,7 @@ function saveInstallation() {
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
-            <p data-i18n="do_not_close"></p>
+            <p>${langData['do_not_close'] || 'Please do not close this window.'}</p>
             <div class="progress mt-2">
                 <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
             </div>

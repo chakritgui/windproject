@@ -81,7 +81,7 @@ function handleNotificationItem(items) {
                 <li class="text-center py-4 text-muted">
                     <div class="d-flex flex-column align-items-center">
                         <i class="fa-solid fa-bell-slash fs-2 mb-2"></i>
-                        <div data-i18n="no_notification"></div>
+                        <div>${langData['no_notification'] || 'No notification'}</div>
                     </div>
                 </li>`;
             $list.append(emptyHtml);
@@ -114,12 +114,12 @@ function handleNotificationItem(items) {
                         </div>
                         <div class="flex-grow-1" style="min-width: 0;">
                             <div class="mb-1 fw-semibold line-clamp-2">${title}</div>
-                            <p class="mb-1 small text-muted" data-i18n="${item.notifications_target}"></p>
+                            <p class="mb-1 small text-muted">${langData[item.notifications_target] || item.notifications_target}</p>
                             <small class="text-muted">
                                 <i class="fa-solid fa-clock me-1"></i>${item.notification_at}
                             </small>
                         </div>
-                        ${!item.read_at ? `<span class="badge bg-danger rounded-pill ms-2" data-i18n="new"></span>` : ''}
+                        ${!item.read_at ? `<span class="badge bg-danger rounded-pill ms-2">${langData['new'] || 'New'}</span>` : ''}
                     </div>
                 </a>
             </li>`;

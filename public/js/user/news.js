@@ -39,10 +39,10 @@ function renderNews(items) {
             const emptyHtml = `
                 <div class="empty-state-container animated fadeIn">
                     <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
-                    <h3 class="empty-title" data-i18n="no_items">${langData['no_items'] || 'No items'}</h3>
-                    <p class="empty-subtitle" data-i18n="no_items_subtitle">${langData['no_items_subtitle'] || 'No items available.'}</p>
+                    <h3 class="empty-title">${langData['no_items'] || 'No items'}</h3>
+                    <p class="empty-subtitle"${langData['no_items_subtitle'] || 'No items available.'}</p>
                     <button onclick="location.reload()" class="btn-refresh">
-                        <i class="fa-solid fa-rotate-right"></i> <span data-i18n="refresh">${langData['refresh'] || 'Refresh'}</span>
+                        <i class="fa-solid fa-rotate-right"></i> <span>${langData['refresh'] || 'Refresh'}</span>
                     </button>
                 </div>
             `;
@@ -66,11 +66,11 @@ function renderNews(items) {
         }
         let badgeHtml = '';
         if (parseInt(item.count_attachment) > 0) 
-            badgeHtml += `<span class="badge-tag tag-pdf"><i class="fa-solid fa-file-pdf"></i> <span data-i18n="document">${langData['document'] || 'Document'}</span></span>`;
+            badgeHtml += `<span class="badge-tag tag-pdf"><i class="fa-solid fa-file-pdf"></i> <span>${langData['document'] || 'Document'}</span></span>`;
         if (parseInt(item.count_image) > 0) 
-            badgeHtml += `<span class="badge-tag tag-img"><i class="fa-solid fa-images"></i> <span data-i18n="image">${langData['image'] || 'Image'}</span></span>`;
+            badgeHtml += `<span class="badge-tag tag-img"><i class="fa-solid fa-images"></i> <span>${langData['image'] || 'Image'}</span></span>`;
         if (parseInt(item.count_image360) > 0) 
-            badgeHtml += `<span class="badge-tag tag-vr"><i class="fa-solid fa-vr-cardboard"></i> <span data-i18n="vr">${langData['vr'] || 'VR'}</span></span>`;
+            badgeHtml += `<span class="badge-tag tag-vr"><i class="fa-solid fa-vr-cardboard"></i> <span>${langData['vr'] || 'VR'}</span></span>`;
         const isRead = parseInt(item.is_read) === 1;
         const html = `
             <a href="${BASE_URL}/content/view/${item.content_slug}" class="news-item ${isRead ? '' : 'unread'}" target="_blank">

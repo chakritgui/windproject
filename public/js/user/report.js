@@ -74,25 +74,25 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
             </div>
             <div class="filter-card" id="filterCard">
                 <div class="filter-toggle" id="filterToggle">
-                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i><span data-i18n="filter"></h5>
+                    <h5 class="mb-0"><i class="fas fa-filter me-2"></i><span>${langData['filter'] || 'Filter'}</h5>
                 </div>
                 <div class="filter-content" id="filterContent">
                     <div class="row">
                         <div class="col-md-6 col-lg-4 mb-3">
                             <label class="form-label required">
-                                <i class="fas fa-calendar-day me-2"></i><span data-i18n="startDate"></span>
+                                <i class="fas fa-calendar-day me-2"></i><span>${langData['startDate'] || 'Start Date'}</span>
                             </label>
                             <input type="text" class="form-control obj-required" id="startDate" value="${data.min_datetime}">
                         </div>
                         <div class="col-md-6 col-lg-4 mb-3">
                             <label class="form-label required">
-                                <i class="fas fa-calendar-day me-2"></i><span data-i18n="endDate"></span>
+                                <i class="fas fa-calendar-day me-2"></i><span>${langData['endDate'] || 'End Date'}</span>
                             </label>
                             <input type="text" class="form-control obj-required" id="endDate" value="${data.max_datetime}">
                         </div>
                         <div class="col-md-6 col-lg-4 mb-3">
                             <label class="form-label required">
-                                <i class="fas fa-arrows-alt-v me-2"></i><span data-i18n="height"></span>
+                                <i class="fas fa-arrows-alt-v me-2"></i><span>${langData['height'] || 'Height'}</span>
                             </label>
                             <select class="form-select obj-required" id="heightSelect"></select>
                         </div>
@@ -100,14 +100,14 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                     <div class="row mt-3">
                         <div class="col-12">
                             <label class="form-label required">
-                                <i class="fas fa-sensor me-2"></i><span data-i18n="sensor"></span>
+                                <i class="fas fa-sensor me-2"></i><span>${langData['sensor'] || 'Sensor'}</span>
                             </label>
                         </div>
                         <div class="col-md-6 col-lg-4">
                             <div class="sensor-checkbox">
                                 <input type="checkbox" class="form-check-input me-2" id="sensor1" checked>
                                 <label class="form-check-label" for="sensor1">
-                                    <i class="fas fa-wind text-primary me-2"></i><span data-i18n="wind_speed"></span> (m/s)
+                                    <i class="fas fa-wind text-primary me-2"></i><span>${langData['wind_speed'] || 'Wind Speed'}</span> (m/s)
                                 </label>
                             </div>
                         </div>
@@ -115,7 +115,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                             <div class="sensor-checkbox">
                                 <input type="checkbox" class="form-check-input me-2" id="sensor2" checked>
                                 <label class="form-check-label" for="sensor2">
-                                    <i class="fas fa-compass text-success me-2"></i><span data-i18n="wind_direction"></span> (<span data-i18n="degree"></span>)
+                                    <i class="fas fa-compass text-success me-2"></i><span>${langData['wind_direction'] || 'Wind Direction'}</span> (<span>${langData['degree'] || 'Degree'}</span>)
                                 </label>
                             </div>
                         </div>
@@ -123,7 +123,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                             <div class="sensor-checkbox">
                                 <input type="checkbox" class="form-check-input me-2" id="sensor3">
                                 <label class="form-check-label" for="sensor3">
-                                    <i class="fas fa-weight text-info me-2"></i><span data-i18n="air_density"></span> (kg/m³)
+                                    <i class="fas fa-weight text-info me-2"></i><span>${langData['air_density'] || 'Air Density'}</span> (kg/m³)
                                 </label>
                             </div>
                         </div>
@@ -131,7 +131,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                             <div class="sensor-checkbox">
                                 <input type="checkbox" class="form-check-input me-2" id="sensor4">
                                 <label class="form-check-label" for="sensor4">
-                                    <i class="fas fa-tachometer-alt text-warning me-2"></i><span data-i18n="surface_pressure"></span> (hPa)
+                                    <i class="fas fa-tachometer-alt text-warning me-2"></i><span>${langData['surface_pressure'] || 'Surface Pressure'}</span> (hPa)
                                 </label>
                             </div>
                         </div>
@@ -139,7 +139,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                             <div class="sensor-checkbox">
                                 <input type="checkbox" class="form-check-input me-2" id="sensor5">
                                 <label class="form-check-label" for="sensor5">
-                                    <i class="fas fa-tint text-primary me-2"></i><span data-i18n="relative_humidity"></span> (%)
+                                    <i class="fas fa-tint text-primary me-2"></i><span>${langData['relative_humidity'] || 'Relative Humidity'}</span> (%)
                                 </label>
                             </div>
                         </div>
@@ -147,7 +147,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                             <div class="sensor-checkbox">
                                 <input type="checkbox" class="form-check-input me-2" id="sensor6">
                                 <label class="form-check-label" for="sensor6">
-                                    <i class="fas fa-temperature-high text-danger me-2"></i><span data-i18n="turbulence_intensity"></span> (°C)
+                                    <i class="fas fa-temperature-high text-danger me-2"></i><span>${langData['turbulence_intensity'] || 'Turbulence Intensity'}</span> (°C)
                                 </label>
                             </div>
                         </div>
@@ -164,7 +164,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
         initSelect2Remote('#heightSelect', `${BASE_URL}/api/height`, { poles_id: poles_id });
         $('.modal-footer').html(`
             <button class="btn btn-primary py-2" onclick="renderReport(${poles_id}, 'default')">
-                <i class="fas fa-chart-line me-2"></i><span data-i18n="report"></span>
+                <i class="fas fa-chart-line me-2"></i><span>${langData['report'] || 'Report'}</span>
             </button>
         `);
         if (data.levels_name && data.levels_id) {

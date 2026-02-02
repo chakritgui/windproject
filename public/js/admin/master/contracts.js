@@ -60,7 +60,7 @@ function initContractsTable() {
                 }
                 return `
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;" data-i18n="${status}"></span>
+                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
                     </div>
                 `;
             }
@@ -95,7 +95,7 @@ function initContractsTable() {
             let $filter = $('#tb_contract_filter');
             let btn = `
                 <button class="btn btn-primary btn-sm manage-contract" data-id="">
-                    <i class="fa-solid fa-plus"></i> <span data-i18n="contract"></span>
+                    <i class="fa-solid fa-plus"></i> <span>${langData['contract'] || 'Contract'}</span>
                 </button>
             `;
             $filter.append(btn);
@@ -148,7 +148,7 @@ $(document).on('click', '.manage-contract', function() {
                 let modal = new bootstrap.Modal(modalEl[0]);
                 modal.show();
                 modalEl.find(".modal-header").html(`
-                    <h5 class="modal-title" data-i18n="${(contract_id) ? 'manageContract' : 'newContract'}"></h5>
+                    <h5 class="modal-title">${langData['manageContract'] || 'Manage Contract'}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 `);
                 modalEl.find(".modal-footer").html(`
@@ -158,30 +158,30 @@ $(document).on('click', '.manage-contract', function() {
                 modalEl.find(".modal-body").html(`
                     <input type="hidden" name="contract_id" id="contract_id" value="${contract_id ?? ''}">
                     <div class="mb-3">
-                        <label class="mb-2 required" data-i18n="contract_name"></label>
+                        <label class="mb-2 required">${langData['contract_name'] || 'Contract Name'}</label>
                         <input type="text" class="form-control obj-required" id="contract_name" maxlength="255">
                     </div>
                     <div class="mb-3">
-                        <label class="mb-2" data-i18n="display"></label>
+                        <label class="mb-2">${langData['display'] || 'Display'}</label>
                         <textarea class="form-control" id="contract_name_display"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="mb-2" data-i18n="contract_no"></label>
+                        <label class="mb-2">${langData['contract_no'] || 'Contract No'}</label>
                         <input type="text" class="form-control" id="contract_no" maxlength="255">
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2" data-i18n="startDate"></label>
+                            <label class="mb-2">${langData['startDate'] || 'Start Date'}</label>
                             <input type="text" class="form-control" id="contract_start">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2" data-i18n="endDate"></label>
+                            <label class="mb-2">${langData['endDate'] || 'End Date'}</label>
                             <input type="text" class="form-control" id="contract_end">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="status"></label>
+                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
                             <select id="status" class="form-select obj-required"></select>
                         </div>
                     </div>
@@ -272,7 +272,7 @@ function saveContract() {
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
-            <p data-i18n="do_not_close"></p>
+            <p>${langData['do_not_close'] || 'Please do not close this window.'}</p>
             <div class="progress mt-2">
                 <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
             </div>

@@ -425,22 +425,22 @@ function renderTabs() {
         <ul class="nav nav-pills nav-justified mb-4" id="contentTab" role="tablist">
             <li class="nav-item">
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-basic" type="button">
-                    <i class="fa-solid fa-pen-to-square me-2"></i><span data-i18n="content">${langData['content'] || 'Content'}</span>
+                    <i class="fa-solid fa-pen-to-square me-2"></i><span>${langData['content'] || 'Content'}</span>
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-gallery" type="button">
-                    <i class="fa-solid fa-images me-2"></i><span data-i18n="gallery">${langData['gallery'] || 'Gallery'}</span>
+                    <i class="fa-solid fa-images me-2"></i><span>${langData['gallery'] || 'Gallery'}</span>
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-360" type="button">
-                    <i class="fa-solid fa-images me-2"></i><span data-i18n="360°">${langData['360°'] || '360°'}</span>
+                    <i class="fa-solid fa-images me-2"></i><span>${langData['360°'] || '360°'}</span>
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-files" type="button">
-                    <i class="fa-solid fa-file-arrow-up me-2"></i><span data-i18n="attachments">${langData['attachments'] || 'Attachments'}</span>
+                    <i class="fa-solid fa-file-arrow-up me-2"></i><span>${langData['attachments'] || 'Attachments'}</span>
                 </button>
             </li>
         </ul>
@@ -450,13 +450,13 @@ function renderGallery() {
     return `
         <div class="tab-pane fade" id="tab-gallery">
             <div class="mb-4">
-                <label class="form-label fw-bold" data-i18n="upload2"></label>
+                <label class="form-label fw-bold">${langData['upload2'] || 'Images'}</label>
                 <div class="border border-2 border-dashed rounded-3 p-4 text-center" id="imagesDropArea" style="cursor: pointer; min-height: 120px;">
                     <input type="file" id="images" name="images[]" class="d-none" accept="image/*" multiple>
                     <div id="imagesDropLabel">
                         <i class="fa-solid fa-image fs-1 text-muted"></i>
-                        <p class="mb-0 mt-2 text-muted" data-i18n="drop_here"></p>
-                        <small class="text-muted" data-i18n="multiple_upload"></small>
+                        <p class="mb-0 mt-2 text-muted">${langData['drop_here'] || 'Drop here or click to browse'}</p>
+                        <small class="text-muted">${langData['multiple_upload'] || 'Multiple upload supported'}</small>
                     </div>
                 </div>
                 <div id="imagesList" class="mt-3 row g-2"></div>
@@ -468,14 +468,14 @@ function render360() {
     return `
         <div class="tab-pane fade" id="tab-360">
             <div class="mb-4">
-                <label class="form-label fw-bold" data-i18n="upload3"></label>
+                <label class="form-label fw-bold">${langData['upload3'] || '360° Images'}</label>
                 <div class="border border-2 border-dashed rounded-3 p-4 text-center" 
                     id="images360DropArea" style="cursor: pointer; min-height: 120px;">
                     <input type="file" id="images360" name="images360[]" class="d-none" accept="image/*" multiple>
                     <div id="images360DropLabel">
                         <i class="fa-solid fa-maximize fs-1 text-muted"></i>
-                        <p class="mb-0 mt-2 text-muted" data-i18n="drop_here"></p>
-                        <small class="text-muted" data-i18n="multiple_upload"></small>
+                        <p class="mb-0 mt-2 text-muted">${langData['drop_here'] || 'Drop here or click to browse'}</p>
+                        <small class="text-muted">${langData['multiple_upload'] || 'Multiple upload supported'}</small>
                     </div>
                 </div>
                 <div id="images360List" class="mt-3 row g-2"></div>
@@ -487,13 +487,13 @@ function renderFiles() {
     return `
         <div class="tab-pane fade" id="tab-files">
             <div class="mb-4">
-                <label class="form-label fw-bold" data-i18n="upload1"></label>
+                <label class="form-label fw-bold">${langData['upload1'] || 'Attachments (PDF, DOC, etc.)'}</label>
                 <div class="border border-2 border-dashed rounded-3 p-4 text-center" id="attachmentsDropArea" style="cursor: pointer; min-height: 120px;">
                     <input type="file" id="attachments" name="attachments[]" class="d-none" multiple>
                     <div id="attachmentsDropLabel">
                         <i class="fa-solid fa-paperclip fs-1 text-muted"></i>
-                        <p class="mb-0 mt-2 text-muted" data-i18n="drop_here"></p>
-                        <small class="text-muted" data-i18n="multiple_upload"></small>
+                        <p class="mb-0 mt-2 text-muted">${langData['drop_here'] || 'Drop here or click to browse'}</p>
+                        <small class="text-muted">${langData['multiple_upload'] || 'Multiple upload supported'}</small>
                     </div>
                 </div>
                 <div id="attachmentsList" class="mt-3"></div>
@@ -512,13 +512,13 @@ function renderCover(d) {
                 }
             </div>
             <div id="coverDropLabel" class="${d.cover ? 'd-none' : ''}">
-                <div class="fw-bold fs-6 mt-2" data-i18n="dropHere"></div>
+                <div class="fw-bold fs-6 mt-2">${langData['drop_here'] || 'Drop here or click to browse'}</div>
                 <div class="text-muted small mb-2">
-                    <span data-i18n="or"></span> <span data-i18n="choose"></span>
+                    <span>${langData['or'] || 'Or'}</span> <span>${langData['choose'] || 'Choose'}</span>
                 </div>
             </div>
-            <div class="text-muted small mt-2" data-i18n="allow_images_only"></div>
-            <button type="button" id="btnRemoveCover" class="btn btn-sm btn-outline-danger mt-2 ${d.cover ? '' : 'd-none'}" data-i18n="remove"></button>
+            <div class="text-muted small mt-2">${langData['allow_images_only'] || 'Allow images only (jpg, jpeg, png, gif, webp)'}</div>
+            <button type="button" id="btnRemoveCover" class="btn btn-sm btn-outline-danger mt-2 ${d.cover ? '' : 'd-none'}">${langData['remove'] || 'Remove'}</button>
         </div>
         <input type="hidden" id="ex_cover" value="${d.cover ? d.cover : ''}">
     `;

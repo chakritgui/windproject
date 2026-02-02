@@ -111,16 +111,16 @@ function editField(fieldName) {
     if (fieldName === 'username') {
         editHTML += `
             <ul id="username-rules" class="list-unstyled rules-container">
-                <li><input type="checkbox" class="form-check-input me-2 pwc" id="un_len" disabled><span data-i18n="user_line1"></span></li>
-                <li><input type="checkbox" class="form-check-input me-2 pwc" id="un_char" disabled><span data-i18n="user_line2">Lower case, numbers, or _ . @ only</span></li>
+                <li><input type="checkbox" class="form-check-input me-2 pwc" id="un_len" disabled><span>${langData['user_line1'] || '8–50 Characters'}</span></li>
+                <li><input type="checkbox" class="form-check-input me-2 pwc" id="un_char" disabled><span>${langData['user_line2'] || 'English letters or numbers only or email format or special characters @ _ - . & ! +'}</span></li>
             </ul>`;
     } else if (fieldName === 'password') {
         editHTML += `
             <ul id="pw-rules" class="list-unstyled rules-container">
-                <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_len" disabled><span data-i18n="pw_line1"></span></li>
-                <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_only" disabled><span data-i18n="pw_line2"></span></li>
-                <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_upper" disabled><span data-i18n="pw_line3"></span></li>
-                <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_lower" disabled><span data-i18n="pw_line4"></span></li>
+                <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_len" disabled><span>${langData['pw_line1'] || '4–20 Characters'}</span></li>
+                <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_only" disabled><span>${langData['pw_line2'] || 'English letters or numbers only'}</span></li>
+                <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_upper" disabled><span>${langData['pw_line3'] || 'At least 1 uppercase letter'}</span></li>
+                <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_lower" disabled><span>${langData['pw_line4'] || 'At least 1 lowercase letter'}</span></li>
             </ul>`;
     }
     editHTML += `</div>`;
@@ -191,7 +191,7 @@ function updateDisplay(fieldName) {
     valueDiv.innerHTML = `
         <span class="info-text ${fieldName === 'password' ? 'password-value' : ''}" id="display-${fieldName}">${(fieldName === 'password') ? "••••••••••••" : displayValue}</span>
         <button class="btn-edit" onclick="editField('${fieldName}')">
-            <i class="fa-solid fa-pen-to-square me-1"></i> <span data-i18n="edit"></span>
+            <i class="fa-solid fa-pen-to-square me-1"></i> <span>${langData['edit'] || 'Edit'}</span>
         </button>
     `;
     if (typeof updateText === 'function') updateText(valueDiv);
@@ -309,7 +309,7 @@ function loadUsageHistory() {
                                         <i class="fa-regular fa-clock ms-2 me-1"></i> ${displayTime}
                                     </div>
                                 </div>
-                                ${historyOffset === 0 && index === 0 ? '<span class="status-badge latest" data-i18n="latest"></span>' : ''}
+                                ${historyOffset === 0 && index === 0 ? `<span class="status-badge latest">${langData['latest'] || 'Latest'}</span>` : ``}
                             </div>
                             <div class="activity-body mt-3">
                                 <div class="device-info-box">
@@ -318,7 +318,7 @@ function loadUsageHistory() {
                                             <div class="d-flex align-items-center">
                                                 <i class="fa-solid fa-laptop-code fa-lg text-primary me-2"></i>
                                                 <div style="overflow: hidden;">
-                                                    <small class="text-muted d-block" style="font-size: 0.7rem;" data-i18n="device"></small>
+                                                    <small class="text-muted d-block" style="font-size: 0.7rem;">${langData['device'] || 'Device'}</small>
                                                     <span class="device-text" title="${log.login_device}">${log.browser_info}</span>
                                                 </div>
                                             </div>
@@ -339,7 +339,7 @@ function loadUsageHistory() {
                 hasMoreHistory = res.has_more;
             } else {
                 hasMoreHistory = false;
-                if (historyOffset === 0) $('#activityHistory').html('<p class="text-center p-4" data-i18n=""></p>');
+                if (historyOffset === 0) $('#activityHistory').html(`<p class="text-center p-4">${langData['no_data_found'] || 'No data found'}</p>`);
             }
         },
         complete: function() {

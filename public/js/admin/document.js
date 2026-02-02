@@ -57,7 +57,7 @@ function initDocumentTable() {
             render: function(data, type, row) {
                 return `<div class="lh-sm">
                             <small class="text-dark fw-semibold"><i class="fa-regular fa-calendar-check me-1"></i>${data}</small><br>
-                            <small class="text-muted" style="font-size: 11px;"><span data-i18n="range"></span>: ${row.document_start} - ${row.document_end}</small>
+                            <small class="text-muted" style="font-size: 11px;"><span>${langData['range'] || 'Range'}</span>: ${row.document_start} - ${row.document_end}</small>
                         </div>`;
             }
         },{ 
@@ -77,7 +77,7 @@ function initDocumentTable() {
                 let badgeColor = status === "public" ? "success" : "secondary";
                 return `
                     <div class="d-flex flex-column align-items-center gap-1">
-                        <span class="badge rounded-pill bg-${badgeColor}-subtle text-${badgeColor}" data-i18n="${status}"></span>
+                        <span class="badge rounded-pill bg-${badgeColor}-subtle text-${badgeColor}">${langData[status] || status}</span>
                     </div>`;
             }
         },{
@@ -111,7 +111,7 @@ function initDocumentTable() {
             let $filter = $('#tb_document_filter');
             let btn = `
                 <button class="btn btn-primary btn-sm manage-document" data-id="">
-                    <i class="fa-solid fa-plus"></i> <span data-i18n="document"></span>
+                    <i class="fa-solid fa-plus"></i> <span>${langData['document'] || 'Document'}</span>
                 </button>
             `;
             $filter.append(btn);
@@ -158,7 +158,7 @@ $(document).on('click', '.manage-document', function () {
                 let modal = new bootstrap.Modal(modalEl[0]);
                 modal.show();
                 modalEl.find(".modal-header").html(`
-                    <h5 class="modal-title" data-i18n="${(document_id) ? 'manageDocument' : 'newDocument'}"></h5>
+                    <h5 class="modal-title">${langData['manageDocument'] || 'Manage Document'}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 `);
                 modalEl.find(".modal-footer").html(`
@@ -169,76 +169,76 @@ $(document).on('click', '.manage-document', function () {
                     <input type="hidden" id="mode" value="${document_id ? 'edit' : 'new'}">
                     <input type="hidden" name="document_id" id="document_id" value="${document_id ?? ''}">
                     <div class="mb-3">
-                        <label class="mb-2 required" data-i18n="uploadFile"></label>
+                        <label class="mb-2 required">${langData['uploadFile'] || 'Upload File'}</label>
                         <div id="drop_zone" class="border rounded-3 p-4 text-center" style="cursor:pointer; border-style:dashed;">
                             <div id="drop_text">
                                 <i class="fa-solid fa-folder-open fa-4x text-warning"></i>
-                                <div data-i18n="dropHere"></div>
-                                <div>— <span data-i18n="or"></span> —</div>
+                                <div>${langData['dropHere'] || 'Drag & Drop file here'}</div>
+                                <div>— <span>${langData['or'] || 'Or'}</span> —</div>
                             </div>
                             <div id="file_preview" class="mt-3 d-none"></div>
                             <div id="drop_button">
-                                <button class="btn btn-primary mt-2" type="button" id="btn_select_file" data-i18n="choose"></button>
+                                <button class="btn btn-primary mt-2" type="button" id="btn_select_file">${langData['choose'] || 'Choose'}</button>
                                 <input type="file" class="d-none obj-required" id="document_file">
                             </div>
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="mb-2 required" data-i18n="documentName"></label>
+                        <label class="mb-2 required">${langData['documentName'] || 'Document Name'}</label>
                         <input type="text" class="form-control obj-required" id="document_name" maxlength="255">
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="fileType"></label>
+                            <label class="mb-2 required">${langData['fileType'] || 'File Type'}</label>
                             <input type="text" class="form-control obj-required" id="document_type" readonly>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="fileSize"></label>
+                            <label class="mb-2 required">${langData['fileSize'] || 'File Size'}</label>
                             <input type="text" class="form-control obj-required" id="document_size" readonly>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-12 mb-3">
-                            <small class="text-muted" data-i18n="file_remark"></small>
+                            <small class="text-muted">${langData['file_remark'] || 'File Remark'}</small>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="startDate"></label>
+                            <label class="mb-2 required">${langData['startDate'] || 'Start Date'}</label>
                             <input type="text" class="form-control obj-required" id="document_start">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="endDate"></label>
+                            <label class="mb-2 required">${langData['endDate'] || 'End Date'}</label>
                             <input type="text" class="form-control obj-required" id="document_end">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2" data-i18n="contract"></label>
+                            <label class="mb-2">${langData['contract'] || 'Contract'}</label>
                             <select id="contract" class="form-select"></select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2" data-i18n="project"></label>
+                            <label class="mb-2">${langData['project'] || 'Project'}</label>
                             <select id="project" class="form-select"></select>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2" data-i18n="pole_types"></label>
+                            <label class="mb-2">${langData['pole_types'] || 'Pole Types'}</label>
                             <select id="type" class="form-select"></select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2" data-i18n="installation"></label>
+                            <label class="mb-2">${langData['installation'] || 'Installation'}</label>
                             <select id="installation" class="form-select"></select>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2" data-i18n="pole"></label>
+                            <label class="mb-2">${langData['pole'] || 'Pole'}</label>
                             <select id="pole" class="form-select"></select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="status"></label>
+                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
                             <select id="status" class="form-select obj-required"></select>
                         </div>
                     </div>
@@ -392,9 +392,9 @@ function handleFile(file, mode = 'edit') {
                 <br><small>${readableSize(file.size)}</small>
             </div>
             <div class="mt-2">
-                <button class="btn btn-primary btn-sm" type="button" id="btn_select_file" data-i18n="choose"></button>
+                <button class="btn btn-primary btn-sm" type="button" id="btn_select_file">${langData['choose'] || 'Choose'}</button>
                 <button type="button" class="btn btn-sm btn-danger" id="remove_file">
-                    <span data-i18n="remove"></span>
+                    <span>${langData['remove'] || 'Remove'}</span>
                 </button>
             </div>
         </div>
@@ -469,7 +469,7 @@ function saveDocument() {
     Swal.fire({
         title: langData['uploading'] || 'Uploading...',
         html: `
-            <p data-i18n="do_not_close"></p>
+            <p>${langData['do_not_close'] || 'Please do not close this window.'}</p>
             <div class="progress mt-2">
                 <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
             </div>
@@ -549,34 +549,34 @@ $(document).on('click', '.history-download', function(){
     let modal = new bootstrap.Modal(modalEl[0]);
     modal.show();
     modalEl.find(".modal-header").html(`
-        <h5 class="modal-title"data-i18n="download_history"></h5>
+        <h5 class="modal-title">${langData['download_history'] || 'Download History'}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     `);
     modalEl.find(".modal-body").html(`
         <div class="row mb-3">
             <div class="col-md-4">
-                <label data-i18n="start_date"></label>
+                <label>${langData['startDate'] || 'Start Date'}</label>
                 <input type="date" id="filter_start" class="form-control">
             </div>
             <div class="col-md-4">
-                <label data-i18n="end_date"></label>
+                <label>${langData['endDate'] || 'End Date'}</label>
                 <input type="date" id="filter_end" class="form-control">
             </div>
             <div class="col-md-4">
                 <label>&nbsp;</label>
-                <button id="btnFilter" class="btn btn-primary w-100" data-i18n="filter"></button>
+                <button id="btnFilter" class="btn btn-primary w-100">${langData['filter'] || 'Filter'}</button>
             </div>
         </div>
         <div class="alert alert-info">
-            <span data-i18n="total_downloads"></span>: <strong id="total_downloads">0</strong>
+            <span>${langData['total_downloads'] || 'Total Downloads'}</span>: <strong id="total_downloads">0</strong>
         </div>
         <table id="downloadHistoryTable" class="table table-striped w-100">
             <thead>
                 <tr>
                     <th>#</th>
-                    <th data-i18n="member"></th>
-                    <th data-i18n="date"></th>
-                    <th data-i18n="device"></th>
+                    <th>${langData['member'] || 'Member'}</th>
+                    <th>${langData['date'] || 'Date'}</th>
+                    <th>${langData['device'] || 'Device'}</th>
                 </tr>
             </thead>
         </table>

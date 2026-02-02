@@ -63,7 +63,7 @@ function initProjectsTable() {
                 }
                 return `
                     <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;" data-i18n="${status}"></span>
+                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
                     </div>
                 `;
             }
@@ -96,7 +96,7 @@ function initProjectsTable() {
                 }
             });
             let $filter = $('#tb_project_filter');
-            let btn = `<button class="btn btn-primary btn-sm manage-project" data-id=""><i class="fa-solid fa-plus"></i> <span data-i18n="project"></span></button>
+            let btn = `<button class="btn btn-primary btn-sm manage-project" data-id=""><i class="fa-solid fa-plus"></i> <span>${langData['project'] || 'Project'}</span></button>
             `;
             $filter.append(btn);
             var input = $('#tb_project_filter input').unbind();
@@ -148,7 +148,7 @@ $(document).on('click', '.manage-project', function() {
                 let modal = new bootstrap.Modal(modalEl[0]);
                 modal.show();
                 modalEl.find(".modal-header").html(`
-                    <h5 class="modal-title" data-i18n="${(project_id) ? 'manageProject' : 'newProject'}"></h5>
+                    <h5 class="modal-title">${langData['manageProject'] || 'Manage Project'}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 `);
                 modalEl.find(".modal-footer").html(`
@@ -158,34 +158,34 @@ $(document).on('click', '.manage-project', function() {
                 modalEl.find(".modal-body").html(`
                     <input type="hidden" name="project_id" id="project_id" value="${project_id ?? ''}">
                     <div class="mb-3">
-                        <label class="mb-2 required" data-i18n="contracts"></label>
+                        <label class="mb-2 required">${langData['contracts'] || 'Contracts'}</label>
                         <select class="form-select obj-required" id="contract"></select>
                     </div>
                     <div class="mb-3">
-                        <label class="mb-2 required" data-i18n="project_name"></label>
+                        <label class="mb-2 required">${langData['project_name'] || 'Project Name'}</label>
                         <input type="text" class="form-control obj-required" id="project_name" maxlength="255">
                     </div>
                     <div class="mb-3">
-                        <label class="mb-2" data-i18n="display"></label>
+                        <label class="mb-2">${langData['display'] || 'Display'}</label>
                         <textarea class="form-control" id="project_name_display"></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="mb-2" data-i18n="project_code"></label>
+                        <label class="mb-2">${langData['project_code'] || 'Project Code'}</label>
                         <input type="text" class="form-control" id="project_code" maxlength="255">
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2" data-i18n="startDate"></label>
+                            <label class="mb-2">${langData['startDate'] || 'Start Date'}</label>
                             <input type="text" class="form-control" id="project_start">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2" data-i18n="endDate"></label>
+                            <label class="mb-2">${langData['endDate'] || 'End Date'}</label>
                             <input type="text" class="form-control" id="project_end">
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required" data-i18n="status"></label>
+                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
                             <select id="status" class="form-select obj-required"></select>
                         </div>
                     </div>
@@ -282,7 +282,7 @@ function saveProject() {
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
-            <p data-i18n="do_not_close"></p>
+            <p>${langData['do_not_close'] || 'Please do not close this window.'}</p>
             <div class="progress mt-2">
                 <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
             </div>
