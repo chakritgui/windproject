@@ -2,11 +2,11 @@
 class MediaHelper {
     private $db;
     private $basePath;
-    private string $translateEndpoint;
+    private string $GOOGLE_API_KEY;
     public function __construct($db) {
         $this->db = $db;
         $this->basePath = realpath(dirname(__DIR__, 2)); 
-        $this->translateEndpoint = TRANSLATE_ENDPOINT;
+        $this->GOOGLE_API_KEY = GOOGLE_API_KEY;
     }
     public function syncMedia($content_id, $type, $existingIds = []) {
         if ($this->basePath === false) return;
@@ -208,32 +208,34 @@ class MediaHelper {
         $stmt = $pdo->prepare("SELECT content_lang FROM wp_content_item WHERE content_id = ? AND status = 'ready' AND content_lang IN ('th','lo')");
         $stmt->execute([$content_id]);
         $targets = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        if (!$targets) {
-            return false;
-        }
+        if (!$targets) return false;
         $stmt = $pdo->prepare("SELECT content_subject, content_body FROM wp_content_item WHERE content_id = ? AND content_lang = 'en' LIMIT 1");
         $stmt->execute([$content_id]);
         $source = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$source) {
-            return false;
-        }
+        if (!$source) return false;
         foreach ($targets as $lang) {
             try {
                 $pdo->prepare("UPDATE wp_content_item SET status = 'wait' WHERE content_id = ? AND content_lang = ?")->execute([$content_id, $lang]);
                 $subject = $this->translatePlainText(
-                    $source['content_subject'], 'en', $lang
+                    $source['content_subject'],
+                    'en',
+                    $lang,
+                    $content_id
                 );
                 $body = $this->translateTinyMCEHtml(
-                    $source['content_body'], 'en', $lang
+                    $source['content_body'],
+                    'en',
+                    $lang,
+                    $content_id
                 );
-                $pdo->prepare("UPDATE wp_content_item SET content_subject = ?, content_body = ?, status = 'success', response = NULL, updated_at = NOW() WHERE content_id = ? AND content_lang = ?")->execute([
+                $pdo->prepare("UPDATE wp_content_item SET content_subject = ?, content_body = ?, status = 'success',response = NULL,updated_at = NOW() WHERE content_id = ? AND content_lang = ?")->execute([
                     $subject,
                     $body,
                     $content_id,
                     $lang
                 ]);
             } catch (\Throwable $e) {
-                $pdo->prepare("UPDATE wp_content_item SET status = 'failed', response = ? WHERE content_id = ? AND content_lang = ?")->execute([
+                $pdo->prepare("UPDATE wp_content_item SET status = 'failed',response = ? WHERE content_id = ? AND content_lang = ?")->execute([
                     $e->getMessage(),
                     $content_id,
                     $lang
@@ -242,59 +244,103 @@ class MediaHelper {
         }
         return true;
     }
-    private function translatePlainText($text, $source, $target){
+    private function translatePlainText($text, $source, $target, $content_id){
         if (trim($text) === '') return '';
+        $this->logTranslateUsage(
+            $content_id,
+            'subject',
+            $source,
+            $target,
+            $text
+        );
         return $this->callTranslateApi($text, $source, $target);
     }
-    private function translateTinyMCEHtml($html, $source, $target){
+    private function translateTinyMCEHtml($html, $source, $target, $content_id){
         if (trim($html) === '') return '';
         libxml_use_internal_errors(true);
+        $html = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
+        $wrapper = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>'
+                . $html .
+                '</body></html>';
         $dom = new DOMDocument('1.0', 'UTF-8');
-        $dom->loadHTML(
-            '<meta charset="utf-8">'.$html,
-            LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
-        );
+        $dom->loadHTML($wrapper);
         $xpath = new DOMXPath($dom);
         $skipTags = [
-            'script','style','img','video','audio',
-            'iframe','object','embed','source',
-            'track','link','a'
+            'script','style',
+            'img','video','audio',
+            'iframe','object','embed',
+            'source','track'
         ];
-        foreach ($xpath->query('//text()') as $node) {
+        foreach ($xpath->query('//body//text()') as $node) {
             $parent = $node->parentNode;
             if (!$parent) continue;
             if (in_array($parent->nodeName, $skipTags)) continue;
-            $text = trim($node->nodeValue);
+            $text = trim(html_entity_decode($node->nodeValue, ENT_QUOTES, 'UTF-8'));
             if ($text === '') continue;
-            $node->nodeValue = $this->callTranslateApi(
-                $text, $source, $target
+            $this->logTranslateUsage(
+                $content_id,
+                'body',
+                $source,
+                $target,
+                $text
             );
-            usleep(150000);
+            $translated = $this->callTranslateApi(
+                $text,
+                $source,
+                $target
+            );
+            $node->nodeValue = htmlspecialchars(
+                $translated,
+                ENT_NOQUOTES | ENT_HTML5,
+                'UTF-8'
+            );
+            usleep(120000);
         }
-        return $dom->saveHTML();
+        $body = $dom->getElementsByTagName('body')->item(0);
+        $result = '';
+        foreach ($body->childNodes as $child) {
+            $result .= $dom->saveHTML($child);
+        }
+        return html_entity_decode($result, ENT_QUOTES, 'UTF-8');
     }
     private function callTranslateApi($text, $source, $target){
-        $ch = curl_init($this->translateEndpoint);
+        $url = 'https://translation.googleapis.com/language/translate/v2?key=' . $this->GOOGLE_API_KEY;
+        $payload = [
+            'q'      => $text,
+            'source' => $source,
+            'target' => $target,
+            'format' => 'text'
+        ];
+        $ch = curl_init($url);
         curl_setopt_array($ch, [
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => http_build_query([
-                'q' => $text,
-                'source' => $source,
-                'target' => $target,
-                'format' => 'text'
-            ]),
+            CURLOPT_POST           => true,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 20
+            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+            CURLOPT_POSTFIELDS     => json_encode($payload),
+            CURLOPT_TIMEOUT        => 30
         ]);
         $response = curl_exec($ch);
         if ($response === false) {
-            throw new Exception('CURL error: '.curl_error($ch));
+            throw new Exception('CURL error: ' . curl_error($ch));
         }
         curl_close($ch);
         $json = json_decode($response, true);
-        if (!isset($json['translatedText'])) {
-            throw new Exception('Translate API error: '.$response);
+        if (!isset($json['data']['translations'][0]['translatedText'])) {
+            throw new Exception('Google Translate API error: ' . $response);
         }
-        return $json['translatedText'];
+        return $json['data']['translations'][0]['translatedText'];
+    }
+    private function logTranslateUsage($content_id, $part, $source, $target, $text){
+        $chars = mb_strlen($text, 'UTF-8');
+        $words = count(preg_split('/\s+/u', trim($text)));
+        $stmt = $this->db->prepare("INSERT INTO translate_usage_log (content_id, part, source_lang, target_lang, char_count, word_count) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([
+            $content_id,
+            $part,
+            $source,
+            $target,
+            $chars,
+            $words
+        ]);
     }
 }
