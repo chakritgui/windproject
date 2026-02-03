@@ -188,45 +188,7 @@ class NewsModel {
             if (!$content_id) {
                 $content_id = $pdo->lastInsertId();
             }
-            $stmt = $pdo->prepare("SELECT setting_value FROM wp_setting WHERE setting_type = 'language_default' LIMIT 1");
-            $stmt->execute();
-            $dbDefaultLang = $stmt->fetchColumn() ?: 'en';
-            $sqlItem = "INSERT INTO wp_content_item 
-                        (content_id, content_subject, content_body, content_lang, is_default, translate_with, created_at, updated_at) 
-                        VALUES (:content_id, :subject, :body, :lang, :is_default, 'self', NOW(), NOW()) 
-                        ON DUPLICATE KEY UPDATE 
-                            is_default = VALUES(is_default),
-                            translate_with = IF(content_subject <=> VALUES(content_subject) AND content_body <=> VALUES(content_body), translate_with, 'self'),
-                            content_subject = VALUES(content_subject), 
-                            content_body = VALUES(content_body), 
-                            updated_at = NOW()";
-            $stmtItem = $pdo->prepare($sqlItem);
-            $langs = ['en', 'th', 'lo'];
-            foreach ($langs as $lang) {
-                $subj = trim($data["title_$lang"] ?? '');
-                $bodyRaw = $data["content_$lang"] ?? '';
-                $cleanBody = trim(strip_tags($bodyRaw, '<img><iframe>'));
-                $cleanBody = str_replace('&nbsp;', '', $cleanBody);
-                $cleanBody = trim($cleanBody);
-                $body = ($cleanBody === '' && !str_contains($bodyRaw, '<img')) ? null : $bodyRaw;
-                $subj = ($subj === '') ? null : $subj;
-                $isDefaultFlag = ($lang === $dbDefaultLang) ? 'yes' : 'no';
-                $stmtItem->execute([
-                    ':content_id' => $content_id,
-                    ':subject'    => $subj,
-                    ':body'       => $body,
-                    ':lang'       => $lang,
-                    ':is_default' => $isDefaultFlag
-                ]);
-                $status = ($body === null && $subj === null) ? 'wait' : 'ready';
-                $sqlStatus = "UPDATE wp_content_item SET status = :status, response = NULL WHERE content_id = :content_id AND content_lang = :lang";
-                $stmtStatus = $pdo->prepare($sqlStatus);
-                $stmtStatus->execute([
-                    ':status'     => $status,
-                    ':content_id' => $content_id,
-                    ':lang'       => $lang
-                ]);
-            }
+            $mediaHelper->handleContent($data, $content_id);
             if(!$ex_cover) {
                 $mediaHelper->deleteExistingCover($content_id, 'wp_content', 'cover');
             }

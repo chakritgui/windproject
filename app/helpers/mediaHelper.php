@@ -3,10 +3,12 @@ class MediaHelper {
     private $db;
     private $basePath;
     private string $GOOGLE_API_KEY;
+    private string $TRANSLATE_LIMIT;
     public function __construct($db) {
         $this->db = $db;
         $this->basePath = realpath(dirname(__DIR__, 2)); 
         $this->GOOGLE_API_KEY = GOOGLE_API_KEY;
+        $this->TRANSLATE_LIMIT = TRANSLATE_LIMIT;
     }
     public function syncMedia($content_id, $type, $existingIds = []) {
         if ($this->basePath === false) return;
@@ -203,13 +205,57 @@ class MediaHelper {
             throw $e;
         }
     }
+    public function handleContent($data, $content_id) {
+        $pdo = $this->db;
+        $stmt = $pdo->prepare("SELECT setting_value FROM wp_setting WHERE setting_type = 'language_default' LIMIT 1");
+        $stmt->execute();
+        $dbDefaultLang = $stmt->fetchColumn() ?: 'en';
+        $sqlItem = "INSERT INTO wp_content_item 
+                    (content_id, content_subject, content_body, content_lang, is_default, translate_with, created_at, updated_at) 
+                    VALUES (:content_id, :subject, :body, :lang, :is_default, 'self', NOW(), NOW()) 
+                    ON DUPLICATE KEY UPDATE 
+                        is_default = VALUES(is_default),
+                        translate_with = IF(content_subject <=> VALUES(content_subject) AND content_body <=> VALUES(content_body), translate_with, 'self'),
+                        content_subject = VALUES(content_subject), 
+                        content_body = VALUES(content_body), 
+                        updated_at = NOW()";
+        $stmtItem = $pdo->prepare($sqlItem);
+        $langs = ['en', 'th', 'lo'];
+        foreach ($langs as $lang) {
+            $subj = trim($data["title_$lang"] ?? '');
+            $bodyRaw = $data["content_$lang"] ?? '';
+            $cleanBody = trim(strip_tags($bodyRaw, '<img><iframe>'));
+            $cleanBody = str_replace('&nbsp;', '', $cleanBody);
+            $cleanBody = trim($cleanBody);
+            $body = ($cleanBody === '' && !str_contains($bodyRaw, '<img')) ? null : $bodyRaw;
+            $subj = ($subj === '') ? null : $subj;
+            $isDefaultFlag = ($lang === $dbDefaultLang) ? 'yes' : 'no';
+            $stmtItem->execute([
+                ':content_id' => $content_id,
+                ':subject'    => $subj,
+                ':body'       => $body,
+                ':lang'       => $lang,
+                ':is_default' => $isDefaultFlag
+            ]);
+            $status = ($body === null && $subj === null) ? 'wait' : 'ready';
+            $sqlStatus = "UPDATE wp_content_item SET status = :status, response = NULL WHERE content_id = :content_id AND content_lang = :lang";
+            $stmtStatus = $pdo->prepare($sqlStatus);
+            $stmtStatus->execute([
+                ':status'     => $status,
+                ':content_id' => $content_id,
+                ':lang'       => $lang
+            ]);
+        }
+    }
     public function autoTranslate($content_id) {
         $pdo = $this->db;
+        if (date('j') === '1') {
+            $this->archiveOldLogs();
+        }
         $stmtSet = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_default')");
         $stmtSet->execute();
         $settings = $stmtSet->fetchAll(PDO::FETCH_KEY_PAIR);
         $enabledLangs = explode(',', $settings['language'] ?? 'en');
-        $defaultLang = $settings['language_default'] ?? 'en';
         $stmtSource = $pdo->prepare("SELECT content_lang, content_subject, content_body FROM wp_content_item WHERE content_id = ? AND is_default = 'yes' LIMIT 1");
         $stmtSource->execute([$content_id]);
         $source = $stmtSource->fetch(PDO::FETCH_ASSOC);
@@ -217,10 +263,19 @@ class MediaHelper {
         $sourceLang = $source['content_lang'];
         $stmtTargets = $pdo->prepare("SELECT content_lang FROM wp_content_item WHERE content_id = ? AND content_lang != ?");
         $stmtTargets->execute([$content_id, $sourceLang]);
-        $allTargets = $stmtTargets->fetchAll(PDO::FETCH_COLUMN);
-        $targets = array_intersect($allTargets, $enabledLangs);
-        if (!$targets) return false;
-        foreach ($targets as $lang) {
+        $allTargetLangsInDb = $stmtTargets->fetchAll(PDO::FETCH_COLUMN);
+        $targetsToProcess = array_intersect($allTargetLangsInDb, $enabledLangs);
+        if (empty($targetsToProcess)) return false;
+        $charsPerLanguage = mb_strlen($source['content_subject'] ?? '', 'UTF-8') + mb_strlen($source['content_body'] ?? '', 'UTF-8');
+        $estimatedTotalChars = $charsPerLanguage * count($targetsToProcess);
+        if (!$this->isUsageAllowed($estimatedTotalChars)) {
+            $errorMsg = "Quota exceeded: Estimated usage (" . number_format($estimatedTotalChars) . " chars) exceeds daily average limit.";
+            foreach ($targetsToProcess as $lang) {
+                $pdo->prepare("UPDATE wp_content_item SET status = 'failed', response = ? WHERE content_id = ? AND content_lang = ?")->execute([$errorMsg, $content_id, $lang]);
+            }
+            return false;
+        }
+        foreach ($targetsToProcess as $lang) {
             try {
                 $subject = $this->translatePlainText($source['content_subject'], $sourceLang, $lang, $content_id);
                 $body = $this->translateTinyMCEHtml($source['content_body'], $sourceLang, $lang, $content_id);
@@ -233,24 +288,24 @@ class MediaHelper {
                 $status = ($subject === null && $body === null) ? 'wait' : 'ready';
                 $translateWith = ($status === 'ready') ? 'ai' : null;
                 $pdo->prepare("UPDATE wp_content_item SET 
-                                content_subject = ?, 
-                                content_body = ?, 
-                                status = ?, 
-                                response = NULL, 
-                                updated_at = NOW(), 
-                                translate_with = ? 
-                            WHERE content_id = ? AND content_lang = ?")
-                    ->execute([
-                        $subject, 
-                        $body, 
-                        $status, 
-                        $translateWith, 
-                        $content_id, 
-                        $lang
-                    ]);
+                    content_subject = ?, 
+                    content_body = ?, 
+                    status = ?, 
+                    response = NULL, 
+                    updated_at = NOW(), 
+                    translate_with = ? 
+                    WHERE content_id = ? AND content_lang = ?")
+                ->execute([
+                    $subject, 
+                    $body, 
+                    $status, 
+                    $translateWith, 
+                    $content_id, 
+                    $lang
+                ]);
             } catch (\Throwable $e) {
                 $pdo->prepare("UPDATE wp_content_item SET status = 'failed', response = ? WHERE content_id = ? AND content_lang = ?")
-                            ->execute([$e->getMessage(), $content_id, $lang]);
+                    ->execute([$e->getMessage(), $content_id, $lang]);
             }
         }
         return true;
@@ -353,5 +408,67 @@ class MediaHelper {
             $chars,
             $words
         ]);
+    }
+    private function isUsageAllowed($newTextLength) {
+        $limit = (float)$this->TRANSLATE_LIMIT;
+        if ($limit <= 0) {
+            return true;
+        }
+        if ($limit > 500000) {
+            $limit = 500000;
+        }
+        $today = new DateTime('now', new DateTimeZone('UTC'));
+        $daysInMonth = (int)$today->format('t');
+        $currentDay = (int)$today->format('j');
+        $allowedUntilToday = ($limit / $daysInMonth) * $currentDay;
+        $firstDayOfMonth = $today->format('Y-m-01 00:00:00');
+        $stmt = $this->db->prepare("SELECT SUM(char_count) as total FROM translate_usage_log WHERE created_at >= ?");
+        $stmt->execute([$firstDayOfMonth]);
+        $usedTotal = (int)($stmt->fetch()['total'] ?? 0);
+        return ($usedTotal + $newTextLength) <= $allowedUntilToday;
+    }
+    public function archiveOldLogs() {
+        $pdo = $this->db;
+        $lastMonth = new DateTime('first day of last month', new DateTimeZone('UTC'));
+        $yearMonth = $lastMonth->format('Y-m');
+        $startDate = $lastMonth->format('Y-m-01 00:00:00');
+        $endDate = $lastMonth->format('Y-m-t 23:59:59');
+        try {
+            $check = $pdo->prepare("SELECT id FROM translate_usage_summary WHERE `year_month` = ?");
+            $check->execute([$yearMonth]);
+            if ($check->fetch()) {
+                return "Month $yearMonth already archived.";
+            }
+            $stmt = $pdo->prepare("SELECT SUM(char_count) as total_chars, SUM(word_count) as total_words, COUNT(*) as total_requests FROM translate_usage_log WHERE created_at BETWEEN ? AND ?
+            ");
+            $stmt->execute([$startDate, $endDate]);
+            $summary = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($summary && $summary['total_requests'] > 0) {
+                $pdo->beginTransaction();
+                $insert = $pdo->prepare("INSERT INTO translate_usage_summary (`year_month`, total_chars, total_words, total_requests) VALUES (?, ?, ?, ?)");
+                $insert->execute([
+                    $yearMonth, 
+                    $summary['total_chars'] ?? 0, 
+                    $summary['total_words'] ?? 0, 
+                    $summary['total_requests'] ?? 0
+                ]);
+
+                // ลบข้อมูลที่สรุปแล้วออกจากตาราง Log หลัก
+                $delete = $pdo->prepare("DELETE FROM translate_usage_log WHERE created_at <= ?");
+                $delete->execute([$endDate]);
+
+                $pdo->commit();
+                return "Archived $yearMonth successfully: " . number_format($summary['total_chars']) . " chars processed.";
+            }
+
+            return "No usage data found for $yearMonth.";
+
+        } catch (\Exception $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            error_log("Archive Error: " . $e->getMessage());
+            return "Error during archiving: " . $e->getMessage();
+        }
     }
 }
