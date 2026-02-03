@@ -21,6 +21,21 @@
             }
         }
     });
+    if (!isset($_SESSION['user']) && isset($_COOKIE['remember_me'])) {
+        $m = new Auth();
+        $user = $m->checkRememberMe();
+        if ($user) {
+            $session_id = session_id();
+            $_SESSION['session_id'] = $session_id;
+            $_SESSION['user'] = [
+                'id'   => $user['member_id'],
+                'role' => $user['role']
+            ];
+            $m->updateLogin($user['member_id'], $_SESSION['timezone'] ?? null, $session_id);
+            header("Refresh:0");
+            exit;
+        }
+    }
     $router = new Router();
     if (empty($_SESSION)) {
         $router->get('/', 'AuthController@login');

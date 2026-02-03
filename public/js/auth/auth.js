@@ -20,20 +20,21 @@ function doLogin() {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     let username = $("#username").val().trim();
     let password = $("#password").val().trim();
+    let keepLoggedIn = $("#keepLoggedIn").is(':checked');
     if (!username) { showLoginWarning('username'); return; }
     if (!password) { showLoginWarning('password'); return; }
     showPageLoader();
     $.post(`${BASE_URL}/api/auth`, {
         username: username,
         password: password,
-        timezone: tz
+        timezone: tz,
+        keepLoggedIn: keepLoggedIn
     }, function(res){
         if (res.status === 'success') {
             window.location.href = `${BASE_URL}`;
         } else {
-            showError(langData['login_failed'], langData[res.message]);
+            showError(langData['login_failed'], langData[res.message] || res.message);
         }
-
     }, 'json').fail(function() {
         showError("Error", "Network error");
     }).always(function(){

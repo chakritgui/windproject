@@ -12,12 +12,9 @@ class AuthController extends Controller {
         $username = $_POST['username'] ?? null;
         $pass = $_POST['password'] ?? null;
         $timezone = $_POST['timezone'] ?? null;
-        $keepLoggedIn  = $_POST['keepLoggedIn'] ?? false;
+        $keepLoggedIn = filter_var($_POST['keepLoggedIn'] ?? false, FILTER_VALIDATE_BOOLEAN);
         if (!$username || !$pass) {
-            echo json_encode([
-                'status'  => 'error',
-                'message' => 'missing_parameters'
-            ]);
+            echo json_encode(['status' => 'error', 'message' => 'missing_parameters']);
             exit;
         }
         $m = new Auth();
@@ -33,19 +30,28 @@ class AuthController extends Controller {
             if($timezone) {
                 $_SESSION['timezone'] = $timezone;
             }
-            echo json_encode([
-                'status' => 'success'
-            ]);
-        } else {
-            if($user && $user['status'] !== 'active') {
-                $message = 'account_inactive';
-            } else {
-                $message = 'invalid_credentials';
+            if ($keepLoggedIn) {
+                $selector = bin2hex(random_bytes(6));
+                $validator = bin2hex(random_bytes(16));
+                $expires_days = 30;
+                $expires_at = convertTimeZoneUTC(date('Y-m-d H:i:s', time() + (86400 * $expires_days)), 'Y-m-d H:i:s');
+                $m->setRememberToken($user['member_id'], $selector, hash('sha256', $validator), $expires_at);
+                setcookie(
+                    'remember_me',
+                    $selector . ':' . $validator,
+                    [
+                        'expires' => time() + (86400 * $expires_days),
+                        'path' => '/',
+                        'httponly' => true,
+                        'secure' => true,
+                        'samesite' => 'Lax'
+                    ]
+                );
             }
-            echo json_encode([
-                'status'  => 'error',
-                'message' => $message
-            ]);
+            echo json_encode(['status' => 'success']);
+        } else {
+            $message = ($user && $user['status'] !== 'active') ? 'account_inactive' : 'invalid_credentials';
+            echo json_encode(['status' => 'error', 'message' => $message]);
         }
         exit;
     }
