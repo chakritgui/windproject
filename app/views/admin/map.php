@@ -76,6 +76,26 @@
                 </div>
             </div>
             <div class="control-panel mt-3" id="stylePanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 fw-bold" data-i18n="country_line"></h5>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="show_country_line" id="showUpload" value="show" checked>
+                        <label class="form-check-label" for="showUpload" data-i18n="show"></label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="show_country_line" id="hideUpload" value="hide">
+                        <label class="form-check-label" for="hideUpload" data-i18n="hide"></label>
+                    </div>
+                </div>
+                <div id="jsonUploadSection" class="p-3 border rounded bg-light">
+                    <label for="jsonFile" class="form-label" data-i18n="upload_json"></label>
+                    <input class="form-control" type="file" id="jsonFile" accept=".json,.geojson">
+                    <p class="mt-3" data-i18n="support_json"></p>
+                </div>
+            </div>
+            <div class="control-panel mt-3" id="stylePanel">
                 <div class="row align-items-center g-3">
                     <div class="col-md-2">
                         <label class="small fw-bold" data-i18n="area_border_color"></label>
@@ -116,13 +136,13 @@
         <div class="col-lg-4">
             <div class="control-panel h-100">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0 fw-bold" data-i18n="map_kayers"></h5>
+                    <h5 class="mb-0 fw-bold" data-i18n="map_layers"></h5>
                 </div>
                 <div class="d-grid gap-2 mb-3">
                     <button id="importJsonBtn" class="btn btn-outline-primary btn-sm">
-                        Import JSON
+                        <span data-i18n="import"></span> JSON
                     </button>
-                    <input type="file" id="importJsonInput" accept=".json,.geojson,.geojsonl" hidden><input type="file" id="importJsonInput" accept=".json,.geojson" hidden>
+                    <input type="file" id="importJsonInput" hidden><input type="file" id="importJsonInput" accept=".json,.geojson" hidden>
                     <p data-i18n="support_json"></p>
                 </div>
                 <div class="data-list" id="polygonList"></div>

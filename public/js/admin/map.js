@@ -2,13 +2,14 @@ let map, drawnItems, drawControl;
 let isZoomLocked = true;
 let polygons = [];
 let polygonLayers = {};
+let countryLayers = null;
+let countryLayerInstance = null;
 let currentStyle = {
     fillColor: '#3388ff',
     color: '#3388ff',
     fillOpacity: 0.3,
     weight: 2
 };
-let is_locked = 1;
 let retry = 0;
 function safeInitMap() {
     if (typeof L === 'undefined' || typeof L.Control.Draw === 'undefined') {
@@ -57,8 +58,19 @@ function setupEvents() {
         currentStyle.weight = parseInt(e.target.value, 10);
         $('#weightValue').text(e.target.value + 'px');
     });
+    $('input[name="show_country_line"]').on('change', function() {
+        const val = $(this).val();
+        if (val === 'show') {
+            $('#jsonUploadSection').slideDown();
+            if (countryLayerInstance) map.addLayer(countryLayerInstance);
+        } else {
+            $('#jsonUploadSection').slideUp();
+            if (countryLayerInstance) map.removeLayer(countryLayerInstance);
+        }
+    });
     $('#importJsonBtn').on('click', () => $('#importJsonInput').val('').click());
     $('#importJsonInput').on('change', handleJsonImport);
+    $('#jsonFile').on('change', handleJsonImports);
     $('#saveGlobalBtn').on('click', handleMainSave);
     $('#fitBoundaryBtn').on('click', fitAllLayers);
 }
@@ -70,20 +82,27 @@ function loadMapDataFromServer() {
         success: function(res) {
             if (res.status && res.data) {
                 const settings = res.data.map_settings;
-                const savedPolygons = res.data.polygons;
+                const savedPolygons = res.data.polygons; 
                 if (settings) {
                     const lat = parseFloat(settings.center_lat) || 13.7563;
                     const lng = parseFloat(settings.center_lng) || 100.5018;
                     const zoom = parseInt(settings.zoom_level) || 12;
                     map.setView([lat, lng], zoom);
-                    if (settings.polygon_visibility) {
-                        const visibilityValue = settings.polygon_visibility; 
-                        $(`input[name="polygon_visibility"][value="${visibilityValue}"]`).prop('checked', true);
+                    if (settings.show_country_line) {
+                        const val = settings.show_country_line;
+                        $(`input[name="show_country_line"][value="${val}"]`).prop('checked', true);
+                        val === 'show' ? $('#jsonUploadSection').show() : $('#jsonUploadSection').hide();
+                    }
+                    if (settings.country_layers_data) {
+                        try {
+                            countryLayers = typeof settings.country_layers_data === 'string' 
+                                ? JSON.parse(settings.country_layers_data) : settings.country_layers_data;
+                            renderCountryLayersOnly();
+                        } catch(e) { console.error("Error parsing country data"); }
                     }
                     if (settings.default_style) {
                         currentStyle = typeof settings.default_style === 'string' 
-                            ? JSON.parse(settings.default_style) 
-                            : settings.default_style;
+                            ? JSON.parse(settings.default_style) : settings.default_style;
                         updateControlPanelUI();
                     }
                 }
@@ -120,7 +139,7 @@ function onDrawCreated(e) {
         data: layer.toGeoJSON(),
         style: { ...currentStyle } 
     });
-    renderPolygons(); 
+    renderPolygonList(); 
 }
 function renderPolygons() {
     drawnItems.clearLayers();
@@ -137,6 +156,18 @@ function renderPolygons() {
         } catch (err) { console.error("Error rendering poly_id:", p.poly_id, err); }
     });
     renderPolygonList();
+}
+function renderCountryLayersOnly() {
+    if (!countryLayers) return;
+    if (countryLayerInstance) map.removeLayer(countryLayerInstance);
+    try {
+        countryLayerInstance = L.geoJSON(countryLayers, {
+            style: { color: '#000000', weight: 1, fillOpacity: 0, interactive: false }
+        });
+        if ($('input[name="show_country_line"]:checked').val() === 'show') {
+            countryLayerInstance.addTo(map);
+        }
+    } catch (err) { console.error("Error rendering countryLayers:", err); }
 }
 function renderPolygonList() {
     const $list = $('#polygonList').empty();
@@ -177,83 +208,21 @@ function importMapJSON(json) {
     features.forEach((f) => {
         if (f.geometry?.type === 'Polygon' || f.geometry?.type === 'MultiPolygon') {
             const name = f.properties?.NAME || f.properties?.name || `Area-${Date.now().toString().slice(-4)}`;
-            const existingIndex = polygons.findIndex(p => p.name === name);
-            if (existingIndex > -1) {
-                polygons[existingIndex].data = f;
-            } else {
-                const new_id = Date.now() + Math.floor(Math.random() * 1000);
-                polygons.push({
-                    poly_id: new_id,
-                    name: name,
-                    data: f,
-                    style: { ...currentStyle }
-                });
-            }
+            const new_id = Date.now() + Math.floor(Math.random() * 1000);
+            polygons.push({
+                poly_id: new_id,
+                name: name,
+                data: f,
+                style: { ...currentStyle }
+            });
         }
     });
     renderPolygons();
     setTimeout(fitAllLayers, 100);
 }
-function openEditPopup(id) {
-    const poly = polygons.find(p => p.poly_id == id);
-    if (!poly) return;
-    const modalHtml = `
-    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered">
-            <div class="modal-content shadow border-0">
-                <div class="modal-header bg-light py-2">
-                    <h6 class="modal-title small fw-bold"><span>${langData['edit'] || "Edit"}</span>: ${poly.name}</h6>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-3">
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold mb-1">Colors</label>
-                        <div class="d-flex gap-2">
-                            <input type="color" id="editFillColor" class="form-control form-control-color w-100" value="${poly.style.fillColor}">
-                            <input type="color" id="editBorderColor" class="form-control form-control-color w-100" value="${poly.style.color}">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold mb-1">Opacity: <span id="valOpacity">${Math.round(poly.style.fillOpacity * 100)}%</span></label>
-                        <input type="range" id="editOpacity" class="form-range" min="0" max="100" value="${poly.style.fillOpacity * 100}">
-                    </div>
-                </div>
-                <div class="modal-footer border-0 pt-0 d-flex gap-2">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnResetIndividual">${langData['reset'] || "Reset"}</button>
-                    <button type="button" class="btn btn-sm btn-primary" id="btnSaveIndividual">${langData['save'] || "Save"}</button>
-                </div>
-            </div>
-        </div>
-    </div>`;
-    $('#editModal').remove();
-    $('body').append(modalHtml);
-    const myModal = new bootstrap.Modal(document.getElementById('editModal'));
-    myModal.show();
-    $('#editOpacity').on('input', function() { 
-        $('#valOpacity').text($(this).val() + '%'); 
-    });
-    $('#btnResetIndividual').on('click', function() {
-        showConfirm(langData['confirm'], langData['confirm_change'], function(){
-            $('#editFillColor').val(currentStyle.fillColor);
-            $('#editBorderColor').val(currentStyle.color);
-            $('#editOpacity').val(currentStyle.fillOpacity * 100);
-            $('#valOpacity').text((currentStyle.fillOpacity * 100) + '%');
-            $('#btnSaveIndividual').click();
-        });
-    });
-    $('#btnSaveIndividual').on('click', function() {
-        poly.style = {
-            ...poly.style,
-            fillColor: $('#editFillColor').val(),
-            color: $('#editBorderColor').val(),
-            fillOpacity: $('#editOpacity').val() / 100
-        };
-        if (polygonLayers[id]) {
-            polygonLayers[id].setStyle(poly.style);
-        }
-        renderPolygonList();
-        myModal.hide();
-    });
+function importMapJSONs(json) {
+    countryLayers = json;
+    renderCountryLayersOnly();
 }
 function focusOnLayer(id) {
     const layer = polygonLayers[id];
@@ -270,10 +239,7 @@ function applyLockState(locked) {
     if (map.dragging) map.dragging[action]();
     if (map.scrollWheelZoom) map.scrollWheelZoom[action]();
     if (map.doubleClickZoom) map.doubleClickZoom[action]();
-    $('#statusBadge').html(locked 
-        ? '<i class="fa-solid fa-lock text-danger"></i>' 
-        : '<i class="fa-solid fa-lock-open text-success"></i>'
-    );
+    $('#statusBadge').html(locked ? '<i class="fa-solid fa-lock text-danger"></i>' : '<i class="fa-solid fa-lock-open text-success"></i>');
 }
 async function handleJsonImport(e) {
     const file = e.target.files[0];
@@ -284,19 +250,27 @@ async function handleJsonImport(e) {
     };
     reader.readAsText(file);
 }
+async function handleJsonImports(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        try { importMapJSONs(JSON.parse(ev.target.result)); } catch (err) { showError('Error', langData['invalid_json_file']); }
+    };
+    reader.readAsText(file);
+}
 function fitAllLayers() {
     const layers = Object.values(polygonLayers);
     if (layers.length > 0) {
         applyLockState(false);
         const group = L.featureGroup(layers);
         map.fitBounds(group.getBounds(), { padding: [40, 40], animate: true });
-    } else {
-        showError('Error', langData['no_data_on_map']);
     }
 }
 function getMapFullConfigForSave() {
     const center = map.getCenter();
     const polygonVisibility = document.querySelector('input[name="polygon_visibility"]:checked')?.value || 'close';
+    const show_country_line = document.querySelector('input[name="show_country_line"]:checked')?.value || 'hide';
     return {
         map_settings: {
             center_lat: center.lat.toFixed(8),
@@ -304,7 +278,9 @@ function getMapFullConfigForSave() {
             zoom_level: map.getZoom(),
             is_locked: isZoomLocked ? 1 : 0, 
             default_style: JSON.stringify(currentStyle),
-            polygon_visibility: polygonVisibility 
+            polygon_visibility: polygonVisibility,
+            show_country_line: show_country_line,
+            country_layers_data: countryLayers ? JSON.stringify(countryLayers) : null
         },
         polygons: polygons.map(p => {
             const currentLayer = polygonLayers[p.poly_id];
@@ -319,9 +295,8 @@ function getMapFullConfigForSave() {
     };
 }
 function handleMainSave() {
-    const $btn = $(".save-map");
+    const $btn = $("#saveGlobalBtn");
     const payload = getMapFullConfigForSave();
-    if (!payload) return;
     $btn.prop("disabled", true);
     $.ajax({
         url: `${BASE_URL}/api/mapsetting/save`,
@@ -331,9 +306,8 @@ function handleMainSave() {
         success: function(res) {
             if (res.status === true) {
                 showSuccess('Success', langData['saved_successfully']);
-                loadMapDataFromServer();
             } else {
-                showError('Error', langData['cannot_save'] + res.message);
+                showError('Error', res.message);
             }
         },
         error: () => showError('Error', langData['cannot_save']),

@@ -7,7 +7,7 @@ class MapSettingModel {
     public function saveMapData($payload) {
         try {
             $this->db->beginTransaction();
-            $sqlMaster = "REPLACE INTO wp_map_master (map_id, center_lat, center_lng, zoom_level, default_style, polygon_visibility, created_at, updated_at) VALUES (1, :lat, :lng, :zoom, :style, :polygon_visibility, NOW(), NOW())";
+            $sqlMaster = "REPLACE INTO wp_map_master (map_id, center_lat, center_lng, zoom_level, default_style, polygon_visibility, show_country_line, country_layers_data, created_at, updated_at) VALUES (1, :lat, :lng, :zoom, :style, :polygon_visibility, :show_country_line, :country_layers_data, NOW(), NOW())";
             $stmt = $this->db->prepare($sqlMaster);
             $defaultStyle = is_string($payload['map_settings']['default_style']) ? $payload['map_settings']['default_style'] : json_encode($payload['map_settings']['default_style']);
             $stmt->execute([
@@ -16,6 +16,8 @@ class MapSettingModel {
                 ':zoom'   => $payload['map_settings']['zoom_level'],
                 ':style'  => $defaultStyle,
                 ':polygon_visibility'  => $payload['map_settings']['polygon_visibility'],
+                ':show_country_line'  => $payload['map_settings']['show_country_line'],
+                ':country_layers_data'  => $payload['map_settings']['country_layers_data'],
             ]);
             $mapId = 1;
             if (!empty($payload['polygons'])) {
