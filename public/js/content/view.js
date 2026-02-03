@@ -62,7 +62,7 @@ function renderContent(data) {
         data.images360.forEach(vr => {
             const imageUrl = `${BASE_URL}/${vr.url || data.cover}`;
             extraHtml += `
-                <div class="col-6 col-md-4 col-lg-3">
+                <div class="col-6 col-md-3 col-lg-2">
                     <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 vr-card cursor-pointer" 
                         onclick="openVRModal('${imageUrl}')">
                         <div class="position-relative h-100" style="min-height: 150px;">
@@ -97,10 +97,7 @@ function renderContent(data) {
         data.images.forEach((img, index) => {
             extraHtml += `
                 <div class="col-4 col-md-3 col-lg-2">
-                    <a href="${BASE_URL}/${img.url}" 
-                    data-fancybox="gallery" 
-                    data-caption="${data.title[lang] || ''}" 
-                    class="d-block ratio ratio-1x1 overflow-hidden rounded-3 border bg-light">
+                    <a href="${BASE_URL}/${img.url}" data-fancybox="gallery" data-caption="${data.title[lang] || ''}" class="d-block ratio ratio-1x1 overflow-hidden rounded-3 border bg-light">
                         <img src="${BASE_URL}/${img.url}" class="img-fluid object-fit-cover hover-zoom" loading="lazy">
                     </a>
                 </div>`;

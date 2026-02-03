@@ -1,3 +1,11 @@
+<script>
+    const options = {
+        key: '<?php echo WINDY_KEY; ?>',
+        lat: 16.5,
+        lon: 106.0,
+        zoom: 8
+    };
+</script>
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/map.css?v=<?=time();?>">
 <div id="wind-loading">
     <div class="wind-grid">

@@ -343,7 +343,9 @@ a.nav-link.active {
     max-width: 100% !important;
     height: auto !important;
 }
-
+img {
+    max-width: 100% !important;  
+}
 .content-view table {
     max-width: 100% !important;
 }
@@ -557,4 +559,7 @@ a.nav-link.active {
 }
 .modal-fullscreen .modal-body {
     max-height: none;
+}
+.fancybox__container {
+    z-index: 10000 !important;
 }

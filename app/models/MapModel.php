@@ -5,7 +5,7 @@ class MapModel{
         $this->db = Database::getInstance()->pdo;
     }
     public function master() {
-        $sql = "SELECT center_lat, center_lng, zoom_level, polygon_visibility FROM wp_map_master LIMIT 1";
+        $sql = "SELECT center_lat, center_lng, zoom_level, polygon_visibility, show_country_line, country_layers_data FROM wp_map_master LIMIT 1";
         return $this->db->query($sql)->fetch(PDO::FETCH_ASSOC);
     }
     public function windarea() {
@@ -15,7 +15,7 @@ class MapModel{
     }
     public function poleslocation() {
         $sql = "SELECT 
-            p.*, t.type_id, t.type_name, l.installations_name
+            p.*, t.type_id, t.type_name, l.installations_name, t.type_icon
         FROM wp_poles p 
         LEFT JOIN wp_type t on t.type_id = p.type_id 
         LEFT JOIN wp_installations l on l.installations_id = p.installations_id
@@ -104,73 +104,107 @@ class MapModel{
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function poledetails($poles_id, $start, $end, $height) {
-        $sqlPole = "SELECT 
-                        p.*, t.type_name, l.installations_name, pj.project_name
-                    FROM wp_poles p 
-                    LEFT JOIN wp_type t on t.type_id = p.type_id 
-                    LEFT JOIN wp_installations l on l.installations_id = p.installations_id
-                    LEFT JOIN wp_project pj on pj.project_id = p.project_id
-                    WHERE p.poles_id = :poles_id";
-        $stmt1 = $this->db->prepare($sqlPole);
-        $stmt1->execute([':poles_id' => $poles_id]);
-        $poleInfo = $stmt1->fetch(PDO::FETCH_ASSOC);
-        if (!$poleInfo) return false;
-        $sqlDate = "SELECT 
-                        MAX(wind_datetime) as max_datetime, 
-                        MIN(wind_datetime) as min_datetime 
-                    FROM 
-                        wp_winds 
-                    WHERE 
-                        poles_id = :poles_id and status = 'active'";
-        $stmt2 = $this->db->prepare($sqlDate);
-        $stmt2->execute([':poles_id' => $poles_id]);
-        $dateInfo = $stmt2->fetch(PDO::FETCH_ASSOC);
-        $min_datetime = ($start) ? convertTimeZone($start, 'd/m/Y') : convertTimeZone($dateInfo['min_datetime'], 'd/m/Y');
-        $max_datetime = ($end) ? convertTimeZone($end, 'd/m/Y') : convertTimeZone($dateInfo['max_datetime'], 'd/m/Y');
-        $min_datetime_val = ($start) ? convertTimeZone($start, 'Y-m-d') : convertTimeZone($dateInfo['min_datetime'], 'Y-m-d');
-        $max_datetime_val = ($end) ? convertTimeZone($end, 'Y-m-d') : convertTimeZone($dateInfo['max_datetime'], 'Y-m-d');
-        $poleInfo['start_date'] = convertTimeZone($dateInfo['min_datetime'], 'd/m/Y');
-        $poleInfo['end_date'] = convertTimeZone($dateInfo['max_datetime'], 'd/m/Y');
-        $poleInfo['min_datetime'] = $min_datetime;
-        $poleInfo['max_datetime'] = $max_datetime;
-        $poleInfo['min_datetime_val'] = $min_datetime_val;
-        $poleInfo['max_datetime_val'] = $max_datetime_val;
-        $poleInfo['levels_id'] = '';
-        $poleInfo['levels_name'] = '';
-        if ($height) {
-            $sqlHeight = "SELECT 
-                            l.levels_id, 
-                            CONCAT(h.height_name,' ',l.height_levels) AS levels_name 
+        try {
+            $sqlPole = "SELECT p.*, t.type_name, l.installations_name, pj.project_name
+                        FROM wp_poles p 
+                        LEFT JOIN wp_type t on t.type_id = p.type_id 
+                        LEFT JOIN wp_installations l on l.installations_id = p.installations_id
+                        LEFT JOIN wp_project pj on pj.project_id = p.project_id
+                        WHERE p.poles_id = :poles_id LIMIT 1";
+            $stmt1 = $this->db->prepare($sqlPole);
+            $stmt1->execute([':poles_id' => $poles_id]);
+            $poleInfo = $stmt1->fetch(PDO::FETCH_ASSOC);
+            if (!$poleInfo) return false;
+            $sqlDate = "SELECT MAX(wind_datetime) as max_dt, MIN(wind_datetime) as min_dt 
+                        FROM wp_winds WHERE poles_id = :poles_id AND status = 'active'";
+            $stmt2 = $this->db->prepare($sqlDate);
+            $stmt2->execute([':poles_id' => $poles_id]);
+            $dateInfo = $stmt2->fetch(PDO::FETCH_ASSOC);
+            $raw_min = $start ?: $dateInfo['min_dt'];
+            $raw_max = $end ?: $dateInfo['max_dt'];
+            $poleInfo['start_date'] = convertTimeZone($dateInfo['min_dt'], 'd/m/Y');
+            $poleInfo['end_date']   = convertTimeZone($dateInfo['max_dt'], 'd/m/Y');
+            $poleInfo['min_datetime'] = convertTimeZone($raw_min, 'd/m/Y');
+            $poleInfo['max_datetime'] = convertTimeZone($raw_max, 'd/m/Y');
+            $poleInfo['min_datetime_val'] = convertTimeZone($raw_min, 'Y-m-d');
+            $poleInfo['max_datetime_val'] = convertTimeZone($raw_max, 'Y-m-d');
+            $height_id = null;
+            $height_name = '';
+            if ($height) {
+                $sqlH = "SELECT l.levels_id, CONCAT(h.height_name,' ',l.height_levels) AS levels_name 
                         FROM wp_height h 
-                        LEFT JOIN wp_height_levels l ON l.height_id = h.height_id 
-                        WHERE l.levels_id = :height_id"; 
-            $stmt2 = $this->db->prepare($sqlHeight);
-            $stmt2->execute([':height_id' => $height]);
-            $heightInfo = $stmt2->fetch(PDO::FETCH_ASSOC);
-            if ($heightInfo) {
-                $poleInfo['levels_id'] = $heightInfo['levels_id'];
-                $poleInfo['levels_name'] = $heightInfo['levels_name'];
-            }
-        } else {
-            $sqlFirst = "SELECT 
-                            l.levels_id, 
-                            CONCAT(h.height_name, ' ', l.height_levels) AS levels_name 
+                        JOIN wp_height_levels l ON l.height_id = h.height_id 
+                        WHERE l.levels_id = :h_id";
+                $stH = $this->db->prepare($sqlH);
+                $stH->execute([':h_id' => $height]);
+                $resH = $stH->fetch(PDO::FETCH_ASSOC);
+                if ($resH) {
+                    $height_id = $resH['levels_id'];
+                    $height_name = $resH['levels_name'];
+                }
+            } else {
+                $sqlF = "SELECT l.levels_id, CONCAT(h.height_name, ' ', l.height_levels) AS levels_name 
                         FROM wp_height h 
-                        INNER JOIN wp_height_levels l ON l.height_id = h.height_id
-                        INNER JOIN wp_winds w ON w.levels_id = l.levels_id
-                        WHERE w.poles_id = :poles_id
-                        GROUP BY l.levels_id 
-                        ORDER BY h.height_id ASC, l.levels_id ASC 
-                        LIMIT 1";
-            $stmtFirst = $this->db->prepare($sqlFirst);
-            $stmtFirst->execute([':poles_id' => $poles_id]);
-            $firstItem = $stmtFirst->fetch(PDO::FETCH_ASSOC);
-            if ($firstItem) {
-                $poleInfo['levels_id'] = $firstItem['levels_id'];
-                $poleInfo['levels_name'] = $firstItem['levels_name'];
+                        JOIN wp_height_levels l ON l.height_id = h.height_id
+                        JOIN wp_winds w ON w.levels_id = l.levels_id
+                        WHERE w.poles_id = :p_id
+                        GROUP BY l.levels_id ORDER BY h.height_id ASC, l.levels_id ASC LIMIT 1";
+                $stF = $this->db->prepare($sqlF);
+                $stF->execute([':p_id' => $poles_id]);
+                $resF = $stF->fetch(PDO::FETCH_ASSOC);
+                if ($resF) {
+                    $height_id = $resF['levels_id'];
+                    $height_name = $resF['levels_name'];
+                }
             }
+            $poleInfo['levels_id'] = $height_id;
+            $poleInfo['levels_name'] = $height_name;
+            if (!empty($poleInfo['content_id'])) {
+                $cId = $poleInfo['content_id'];
+                $stC = $this->db->prepare("SELECT content_id, status, cover, created_at, type FROM wp_content WHERE content_id = :id AND status != 'deleted'");
+                $stC->execute([':id' => $cId]);
+                $contentBase = $stC->fetch(PDO::FETCH_ASSOC);
+                if ($contentBase) {
+                    $stI = $this->db->prepare("SELECT content_lang, content_subject, content_body FROM wp_content_item WHERE content_id = :id AND status IN ('ready', 'success')");
+                    $stI->execute([':id' => $cId]);
+                    $items = $stI->fetchAll(PDO::FETCH_ASSOC);
+                    $titles = ["th" => "", "lo" => "", "en" => ""];
+                    $bodies = ["th" => "", "lo" => "", "en" => ""];
+                    foreach ($items as $row) {
+                        $l = $row['content_lang'];
+                        if (isset($titles[$l])) {
+                            $titles[$l] = $row['content_subject'];
+                            $bodies[$l] = $row['content_body'];
+                        }
+                    }
+                    $stM = $this->db->prepare("SELECT id, file_path as url, file_name as name, file_type FROM wp_content_media WHERE content_id = :id AND status = 'active'");
+                    $stM->execute([':id' => $cId]);
+                    $media = $stM->fetchAll(PDO::FETCH_ASSOC);
+                    $images = []; $images360 = []; $attachments = [];
+                    foreach ($media as $m) {
+                        if ($m['file_type'] === 'image') $images[] = $m;
+                        elseif ($m['file_type'] === 'image360') $images360[] = $m;
+                        elseif ($m['file_type'] === 'attachment') $attachments[] = $m;
+                    }
+                    $poleInfo['content'] = [
+                        "id" => $cId,
+                        "created_at" => convertTimeZone($contentBase['created_at'], 'd/m/Y H:i:s'),
+                        "status" => $contentBase['status'],
+                        "type" => $contentBase['type'],
+                        "cover" => $contentBase['cover'],
+                        "title" => $titles,
+                        "content" => $bodies,
+                        "images" => $images,
+                        "images360" => $images360,
+                        "attachments" => $attachments
+                    ];
+                }
+            }
+            return $poleInfo;
+        } catch (PDOException $e) {
+            error_log("Database Error in poledetails: " . $e->getMessage());
+            return false;
         }
-        return $poleInfo;
     }
     public function height($page = 1, $limit = 10, $searchTerm = '', $poles_id) {
         $offset = ($page - 1) * $limit;

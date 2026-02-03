@@ -1,9 +1,3 @@
-const options = {
-    key: 'd9f3MF1fFwG9k3A70totUNl2NrghgzXE',
-    lat: 16.5,
-    lon: 106.0,
-    zoom: 8
-};
 let map, windyAPI;
 let poleLayerGroup;
 let windOn = true;
@@ -11,6 +5,8 @@ let lastPickerLatLng = null;
 let poleMarkers = {};
 let windUpdateFunctions = {};
 let menuState = {};
+let show_country_line = 'hide';
+let country_layers_data = null;
 const DEFAULT_LEVEL = '100m';
 const isMobile = () => window.innerWidth <= 768;
 windyInit(options, async api => {
@@ -30,6 +26,26 @@ windyInit(options, async api => {
         const windAreaData = results[1].status === 'fulfilled' ? results[1].value : null;
         if (masterData) applyMasterSettings(map, masterData);
         if (windAreaData) await renderWindAreas(map, picker, windAreaData, masterData);
+        show_country_line = masterData?.show_country_line;
+        country_layers_data = masterData?.country_layers_data;
+        if (show_country_line === 'show' && country_layers_data) {
+            try {
+                const geoData = typeof country_layers_data === 'string' 
+                    ? JSON.parse(country_layers_data) 
+                    : country_layers_data;
+                L.geoJSON(geoData, {
+                    style: {
+                        color: "#161616", 
+                        weight: 1, 
+                        fillOpacity: 0, 
+                        interactive: false
+                    }
+                }).addTo(map);
+
+            } catch (error) {
+                console.error("Error drawing country lines:", error);
+            }
+        }
     } catch (error) {
         console.error("Initialization Error:", error);
     } finally {
@@ -103,12 +119,23 @@ async function loadPoles(map, picker) {
         poles.forEach(pole => {
             const lat = parseFloat(pole.poles_lat), lng = parseFloat(pole.poles_lng);
             if (isNaN(lat) || isNaN(lng)) return;
-            const marker = L.marker([lat, lng], { icon: getDivIcon(pole.type_id) }).addTo(poleLayerGroup);
+            let markerIcon;
+            if (pole.type_icon && pole.type_icon.trim() !== "") {
+                markerIcon = L.icon({
+                    iconUrl: pole.type_icon,
+                    iconSize: [50, 50],
+                    iconAnchor: [16, 32],
+                    popupAnchor: [0, -32] 
+                });
+            } else {
+                markerIcon = getDivIcon(pole.type_id);
+            }
+            const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(poleLayerGroup);
             const windId = `wind-auto-${pole.poles_id}`;
             poleMarkers[pole.poles_id] = marker;
             marker.bindTooltip(
                 `<div class="wind-pill">➤<span class="wind-value" id="${windId}">...</span></div>`, 
-                { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [5, 0] }
+                { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [15, 5] }
             ).openTooltip();
             const updateWind = async () => {
                 const el = document.getElementById(windId);
@@ -125,8 +152,6 @@ async function loadPoles(map, picker) {
             updateWind();
             setInterval(updateWind, 600000);
             marker.on('click', () => {
-                map.flyTo([lat, lng], 10);
-                handlePickerOpening({ lat, lng }, picker);
                 openPoles(pole.poles_id);
             });
         });
@@ -208,7 +233,6 @@ function handleStationClick(lat, lng, id, el) {
     if (isNaN(lat) || isNaN(lng)) return;
     $('.station-item').removeClass('selected');
     $(el).addClass('selected');
-    map.flyTo([lat, lng], 10, { duration: 1.2 });
     if (windyAPI && windyAPI.picker) {
         handlePickerOpening({ lat, lng }, windyAPI.picker);
     }
@@ -227,7 +251,227 @@ $('#mapFilter').on('click', function (e) {
 });
 $(document).on('click', function () { $('.menu-panel').fadeOut(); });
 $('.menu-panel').on('click', e => e.stopPropagation());
-function openPoles(poleId) { openFilterModal(poleId); }
+async function openPoles(poleId) {
+    const $modal = $("#windModal");
+    const $dialog = $modal.find(".modal-dialog");
+    $dialog.addClass("modal-fullscreen");
+    const modalBody = $modal.find(".modal-body");
+    modalBody.html(`
+        <div class="container py-4">
+            <div class="skeleton-loader p-0">
+                <div class="skeleton-rect mb-4 shadow-sm" style="height: 275px; border-radius: 1.5rem; background: #eee;"></div>
+                <div class="skeleton-line mb-3" style="width: 70%; height: 30px; background: #eee; border-radius: 8px;"></div>
+                <div class="skeleton-line mb-4" style="width: 30%; height: 20px; background: #eee; border-radius: 8px;"></div>
+                <div class="skeleton-line mb-2" style="height: 15px; background: #eee; border-radius: 5px;"></div>
+                <div class="skeleton-line mb-2" style="height: 15px; background: #eee; border-radius: 5px;"></div>
+                <div class="skeleton-line mb-2" style="width: 90%; height: 15px; background: #eee; border-radius: 5px;"></div>
+            </div>
+        </div>
+    `);
+    $modal.find(".modal-header").html(`
+        <h5 class="modal-title fw-bold text-dark"></h5>
+        <div class="ms-auto d-flex align-items-center">
+            <button type="button" class="btn btn-light me-2 d-none d-md-inline-block" id="btn-fullscreen-toggle">
+                <i class="fa-solid fa-compress"></i>
+            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+    `);
+    $modal.modal('show');
+    const modalTitle = $modal.find(".modal-title");
+    $modal.find("#btn-fullscreen").off("click").on("click", function() {
+        $modal.find(".modal-dialog").toggleClass("modal-fullscreen");
+        $(this).find("i").toggleClass("fa-regular fa-window-maximize fa-regular fa-window-restore");
+    });
+    $modal.find(".modal-footer").html(`
+        <button type="button" class="btn btn-primary" onclick="openFilterModal(${poleId});"><i class="fas fa-chart-line me-2"></i> ${currentLang['report'] || 'Report'}</button>
+    `);
+    const modalInstance = bootstrap.Modal.getOrCreateInstance($modal[0]);
+    modalInstance.show();
+    try {
+        const response = await fetch(`${BASE_URL}/api/pole-details`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: poleId })
+        });
+        if (!response.ok) throw new Error('Network response was not ok');
+        const res = await response.json();
+        const data = res.poles_id ? res : res.data;
+        if (data && data.poles_id) {
+            const lang = typeof currentLang !== 'undefined' ? currentLang : 'th';
+            const hasContent = data.content;
+            const fullBaseUrl = BASE_URL.replace(/\/$/, "");
+            const title = hasContent ? (data.content.title[lang] || data.content.title['th']) : data.installations_name;
+            let bodyContent = hasContent ? (data.content.content[lang] || data.content.content['th'] || '') : '';
+            bodyContent = bodyContent.replace(/src="(?!(http|https|\/\/))/g, `src="${fullBaseUrl}/`);
+            const html = `
+                <div class="pole-detail-wrapper animate__animated animate__fadeIn">
+                    <div class="card border-0 bg-primary bg-opacity-10 rounded-4 mb-4 p-4 shadow-sm">
+                        <div class="row align-items-center">
+                            <div class="col-md-12">
+                                <span class="badge bg-primary mb-2">${data.type_name}</span>
+                                <h3 class="fw-bolder text-primary mb-1">${data.installations_name}</h3>
+                                <div class="d-flex flex-wrap gap-3 text-muted">
+                                    <span><i class="fa-solid fa-diagram-project me-1"></i>${data.project_name}</span>
+                                    <span><i class="fa-solid fa-signal me-1"></i>${data.levels_name}</span>
+                                </div>
+                                <div class="text-muted"><i class="fa-solid fa-location-dot"></i> ${data.poles_lat}, ${data.poles_lng}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            ${data.content?.cover ? `
+                                <div class="position-relative mb-4 overflow-hidden rounded-4 shadow-sm">
+                                    <img src="${fullBaseUrl}/${data.content.cover}" class="w-100 h-100 object-fit-cover" alt="cover" style="max-height: 275px; min-height: 275px;">
+                                </div>
+                            ` : ''}
+                            <article class="px-2">
+                                <h4 class="fw-bold mb-3">${title}</h4>
+                                <div class="d-flex align-items-center gap-3 text-muted mb-4 pb-3 border-bottom">
+                                    <div class="small"><i class="fa-regular fa-calendar-check me-1"></i> ${data.updated_at || data.created_at}</div>
+                                </div>
+                                <div class="article-content lh-lg text-secondary mb-5">
+                                    ${bodyContent}
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                    <div class="multimedia-container px-2">
+                        ${renderMultimedia(data.content, lang, fullBaseUrl)}
+                    </div>
+                </div>
+            `;
+            modalBody.html(html);
+            modalTitle.text(`${data.poles_code}`);
+        } else {
+            modalBody.html(renderErrorAlert('warning', currentLang['no_data_found'] || 'No data found'));
+        }
+    } catch (error) {
+        console.error("OpenPoles Error:", error);
+        modalBody.html(renderErrorAlert('danger', currentLang['cannot_load'] || 'Failed to load data. Please try again later.'));
+    }
+}
+function renderMultimedia(content, lang, baseUrl) {
+    if (!content) return '';
+    let html = '';
+    if (content.images360?.length > 0) {
+        html += `
+            <div class="section-title mb-3 mt-4">
+                <h5 class="fw-bold d-flex align-items-center text-dark">
+                    <i class="fa-solid fa-vr-cardboard text-info me-2"></i> ${currentLang['vr_experience'] || '360° Experience'}
+                </h5>
+            </div>
+            <div class="row g-3 mb-5">
+                ${content.images360.map(vr => `
+                    <div class="col-6 col-md-2 col-lg-2">
+                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 vr-card cursor-pointer" 
+                            onclick="openVRModal('${baseUrl}/${vr.url}')">
+                            <div class="position-relative h-100" style="min-height: 150px;">
+                                <img src="${baseUrl}/${vr.url}" class="w-100 h-100 object-fit-cover">
+                                <div class="position-absolute top-0 start-0 m-2">
+                                    <span class="badge rounded-pill bg-dark bg-opacity-75 fw-light">
+                                        <i class="fa-solid fa-rotate me-1 fa-spin"></i> 360°
+                                    </span>
+                                </div>
+                                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-25 d-flex align-items-center justify-content-center">
+                                    <div class="btn btn-light btn-sm rounded-pill shadow-sm fw-bold px-3">
+                                        <i class="fa-solid fa-expand me-1"></i> ${langData['view'] || 'View'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+    if (content.images?.length > 0) {
+        html += `
+            <div class="section-title mb-3">
+                <h5 class="fw-bold d-flex align-items-center text-dark">
+                    <i class="fa-solid fa-images text-primary me-2"></i> ${currentLang['gallery'] || 'Gallery'}
+                </h5>
+            </div>
+            <div class="row g-2 mb-5">
+                ${content.images.map(img => `
+                    <div class="col-4 col-md-2">
+                        <a href="${baseUrl}/${img.url}" data-fancybox="pole-gallery" class="gallery-item d-block ratio ratio-1x1 overflow-hidden rounded-3 border bg-light">
+                            <img src="${baseUrl}/${img.url}" class="gallery-img" loading="lazy">
+                        </a>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+    if (content.attachments?.length > 0) {
+        html += `
+            <div class="section-title mb-3">
+                <h5 class="fw-bold d-flex align-items-center text-dark">
+                    <i class="fa-solid fa-file-pdf text-danger me-2"></i> ${currentLang['attachments'] || 'Attachments'}
+                </h5>
+            </div>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+                ${content.attachments.map(file => {
+                    const isPdf = file.url.toLowerCase().endsWith('.pdf');
+                    return `
+                        <div class="col">
+                            <a href="${baseUrl}/${file.url}" download class="doc-card shadow-sm border rounded-4 p-3 d-flex align-items-center text-decoration-none hover-shadow transition-all">
+                                <div class="doc-icon me-3 bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    <i class="fa-solid ${isPdf ? 'fa-file-pdf text-danger' : 'fa-file-lines text-primary'} fs-3"></i>
+                                </div>
+                                <div class="doc-info text-truncate">
+                                    <div class="fw-bold text-dark text-truncate">${file.name}</div>
+                                    <div class="small text-muted text-uppercase">${file.url.split('.').pop()} File</div>
+                                </div>
+                                <i class="fa-solid fa-download ms-auto fa-2x text-muted"></i>
+                            </a>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        `;
+    }
+    return html;
+}
+function renderErrorAlert(type, message) {
+    return `<div class="p-5 text-center"><div class="alert alert-${type} shadow-sm rounded-4">${message}</div></div>`;
+}
 $(document).ready(function () {
     $("header").hide();
+});
+Fancybox.bind("[data-fancybox='gallery']", {
+    Hash: false,
+    Thumbs: { autoStart: false },
+    Toolbar: {
+        display: {
+            left: ["infobar"],
+            middle: [],
+            right: ["iterateZoom", "close"],
+        },
+    },
+});
+let vrViewer = null;
+function openVRModal(imgUrl) {
+    const modal = new bootstrap.Modal(document.getElementById('vrModal'));
+    modal.show();
+    if (vrViewer) {
+        vrViewer.destroy();
+    }
+    setTimeout(() => {
+        vrViewer = pannellum.viewer('panorama-viewer', {
+            "type": "equirectangular",
+            "panorama": imgUrl,
+            "autoLoad": true,
+            "autoRotate": -2,
+            "compass": true,
+            "hfov": 110
+        });
+    }, 300);
+}
+$('#vrModal').on('hidden.bs.modal', function () {
+    if (vrViewer) {
+        vrViewer.destroy();
+        vrViewer = null;
+    }
 });

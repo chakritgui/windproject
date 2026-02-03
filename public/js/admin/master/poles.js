@@ -437,6 +437,7 @@ function getContentForm(d, poles_id, content_id) {
     `;
 }
 $(document).on('click', '#btnSaveContent', function() {
+    const btn = $(this); 
     $('.is-invalid').removeClass('is-invalid');
     let errors = [];
     $('.obj-required').each(function () {
@@ -444,8 +445,6 @@ $(document).on('click', '#btnSaveContent', function() {
         if (!value) {
             $(this).addClass('is-invalid');
             errors.push(this.name || this.id);
-        } else {
-            $(this).removeClass('is-invalid');
         }
     });
     if (errors.length) {
@@ -456,7 +455,7 @@ $(document).on('click', '#btnSaveContent', function() {
         $('.is-invalid').first().focus();
         return;
     }
-    const formData = new FormData($('#contentForm')[0]);
+     const formData = new FormData($('#contentForm')[0]);
     const attachments = window.getAttachmentsData();
     attachments.forEach((att, index) => {
         if (att.type === 'new') {
@@ -502,18 +501,61 @@ $(document).on('click', '#btnSaveContent', function() {
         formData.append("cover", cover);
     }
     formData.append("ex_cover", $("#ex_cover").val());
+    Swal.fire({
+        title: langData['saving'] || 'Saving...',
+        html: `
+            <p>${langData['please_do_not_close_this_page'] || 'Please do not close this page.'}</p>
+            <div class="progress mt-2" style="height: 20px;">
+                <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                    role="progressbar" style="width: 0%">0%</div>
+            </div>
+        `,
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
     $.ajax({
         url: `${BASE_URL}/api/poles/save-content`,
-        type: 'POST',
+        type: "POST",
         data: formData,
-        processData: false,
         contentType: false,
-        success: function(res) {
+        processData: false,
+        xhr: function () {
+            let xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function (e) {
+                if (e.lengthComputable) {
+                    let percent = Math.round((e.loaded / e.total) * 100);
+                    let bar = document.getElementById("swal-progress");
+                    if (bar) {
+                        bar.style.width = percent + "%";
+                        bar.innerText = percent + "%";
+                    }
+                }
+            });
+            return xhr;
+        },
+        success: function (res) {
             if (res.status === 'success') {
-                showSuccess('Success', langData['saved_successfully']);
-                initPolesTable();
+                 showSuccess('Success', langData['saved_successfully']);
+                if (typeof initPolesTable === "function") initPolesTable();
                 $('#windModal').modal('hide');
+            } else {
+                showError('Error', (langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
             }
+        },
+        error: function (xhr) {
+            let msg = langData['cannot_save'] || 'Cannot save';
+            try {
+                let res = JSON.parse(xhr.responseText);
+                if (res.message) msg += ": " + res.message;
+            } catch (e) {}
+            showError('Error', msg);
+        },
+        complete: function() {
+            btn.prop("disabled", false);
+            if (Swal.isVisible() && !Swal.isLoading()) Swal.close();
         }
     });
 });

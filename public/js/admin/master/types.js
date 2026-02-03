@@ -160,23 +160,7 @@ $(document).on('click', '.manage-type', function() {
                 `);
                 modalEl.find(".modal-body").html(`
                     <input type="hidden" name="type_id" id="type_id" value="${type_id ?? ''}">
-                    <div id="coverDropArea" class="cover-drop-area text-center mb-3">
-                        <input type="file" id="type_icon" accept="image/*" hidden>
-                        <div id="coverPreviewWrapper" class="h-100 d-flex align-items-center justify-content-center">
-                            ${typeData.type_icon 
-                                ? `<img id="coverPreview" src="${BASE_URL}/${typeData.type_icon}" class="img-fluid rounded shadow-sm" style="max-height:150px;">`
-                                : `<img id="coverPreview" class="img-fluid rounded shadow-sm d-none" style="max-height:150px;">`
-                            }
-                        </div>
-                        <div id="coverDropLabel" class="${typeData.type_icon ? 'd-none' : ''}">
-                            <div class="fw-bold fs-6 mt-2">${langData['dropHere'] || 'Drag & Drop file here'}</div>
-                            <div class="text-muted small mb-2">
-                                <span>${langData['or'] || 'Or'}</span> <span>${langData['choose'] || 'Choose'}</span>
-                            </div>
-                        </div>
-                        <div class="text-muted small mt-2">${langData['allow_images_only'] || 'Allow images only (jpg, jpeg, png, gif, webp)'}</div>
-                        <button type="button" id="btnRemoveCover" class="btn btn-sm btn-outline-danger mt-2 ${typeData.type_icon ? '' : 'd-none'}">${langData['remove'] || 'Remove'}</button>
-                    </div>
+                    ${renderCover(typeData)}
                     <input type="hidden" id="ex_type_icon" value="${typeData.type_icon ? typeData.type_icon : ''}">
                     <div class="mb-3">
                         <label class="mb-2 required">${langData['type_name'] || 'Type Name'}</label>
@@ -301,7 +285,7 @@ function saveType() {
     formData.append("type_name_display", $("#type_name_display").val() || "");
     formData.append("status", $("#status").val());
     formData.append("ex_type_icon", $("#ex_type_icon").val());
-    const type_icon = $("#type_icon")[0].files[0] || null;
+    const type_icon = $("#cover")[0].files[0] || null;
     if (type_icon) {
         formData.append("type_icon", type_icon);
     }
