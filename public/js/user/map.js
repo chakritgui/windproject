@@ -51,7 +51,7 @@ function applyMasterSettings(map, master) {
 async function renderWindAreas(map, picker, areaData, masterData) {
     const { polygons = [] } = areaData;
     if (polygons.length === 0) return;
-    const isMaskMode = masterData?.polygon_visibility === 'open';
+    const isMaskMode = masterData?.polygon_visibility === 'close';
     const featureGroup = L.featureGroup();
     const allHoles = [];
     polygons.forEach(area => {
