@@ -548,3 +548,13 @@ a.nav-link.active {
     top: 70px !important; 
     left: 15px !important;
 }
+.modal-fullscreen .modal-footer {
+    padding: 0.5rem 1rem; 
+    min-height: auto; 
+}
+.modal-fullscreen .modal-footer .btn {
+    padding: 0.25rem 0.5rem;
+}
+.modal-fullscreen .modal-body {
+    max-height: none;
+}

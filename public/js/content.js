@@ -41,12 +41,18 @@ function initTinyMCE() {
     tinymce.remove();
     const fontUrl = 'https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap';
     tinymce.init({
-        selector: '.tinymce',
+       selector: '.tinymce',
         height: 450,
         branding: false,
         promotion: false,
-        plugins: 'image link lists table media code',
+        resize: true,
+        min_height: 300,
+        max_height: 800,
+        plugins: 'image link lists table media code wordcount paste', 
         toolbar: 'undo redo | styles | fontfamily fontsize | bold italic underline | alignleft aligncenter alignright | bullist numlist | image media table | img25 img50 img100 | code',
+        paste_as_text: true,
+        paste_block_drop: true,
+        paste_remove_styles_if_webkit: true,
         newline_behavior: 'block',
         forced_root_block: 'p',
         entity_encoding: 'raw',

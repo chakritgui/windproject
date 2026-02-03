@@ -304,12 +304,18 @@ function savePole() {
         title: langData['saving'] || 'Saving...',
         html: `
             <p>${langData['please_do_not_close_this_page'] || 'Please do not close this page.'}</p>
-            <div class="progress mt-2">
-                <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
+            <div class="progress mt-2" style="height: 10px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
+                    role="progressbar" 
+                    style="width: 100%">
+                </div>
             </div>
         `,
         allowOutsideClick: false,
-        didOpen: () => Swal.showLoading()
+        showConfirmButton: false, 
+        didOpen: () => {
+            Swal.showLoading();
+        }
     });
     $.ajax({
         url: "api/poles/save",
@@ -371,8 +377,18 @@ function manageContent(poles_id, content_id) {
         let modal = new bootstrap.Modal($modal[0]);
         $modal.find(".modal-header").html(`
             <h5 class="modal-title">${langData['content'] || 'Content'}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="ms-auto">
+                <button type="button" class="btn btn-sm btn-light me-2" id="btn-fullscreen">
+                    <i class="fa-regular fa-window-maximize"></i>
+                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
         `);
+        $modal.find("#btn-fullscreen").on("click", function() {
+            $modal.find(".modal-dialog").toggleClass("modal-fullscreen");
+            const icon = $(this).find("i");
+            icon.toggleClass("fa-regular fa-window-maximize fa-regular fa-window-restore");
+        });
         $modal.find(".modal-footer").html(`
             <div class="row w-100"> 
                 <div class="col-6 d-flex align-items-center">
@@ -467,9 +483,9 @@ $(document).on('click', '#btnSaveContent', function() {
     });
     formData.append("poles_id", $("#poles_id").val() || "");
     formData.append("content_id", $("#content_id").val() || "");
-    formData.append("title_en", $("#title_en").val());
-    formData.append("title_lo", $("#title_lo").val());
-    formData.append("title_th", $("#title_th").val());
+    formData.append("title_en", $("#title_en").val() || "");
+    formData.append("title_lo", $("#title_lo").val() || "");
+    formData.append("title_th", $("#title_th").val() || "");
     const getCleanContent = (lang) => {
         const editor = tinymce.get(`content_${lang}`);
         if (!editor) return '';
