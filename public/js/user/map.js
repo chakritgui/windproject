@@ -30,9 +30,7 @@ windyInit(options, async api => {
         country_layers_data = masterData?.country_layers_data;
         if (show_country_line === 'show' && country_layers_data) {
             try {
-                const geoData = typeof country_layers_data === 'string' 
-                    ? JSON.parse(country_layers_data) 
-                    : country_layers_data;
+                const geoData = typeof country_layers_data === 'string' ? JSON.parse(country_layers_data) : country_layers_data;
                 L.geoJSON(geoData, {
                     style: {
                         color: "#161616", 
@@ -41,7 +39,6 @@ windyInit(options, async api => {
                         interactive: false
                     }
                 }).addTo(map);
-
             } catch (error) {
                 console.error("Error drawing country lines:", error);
             }
@@ -112,6 +109,16 @@ async function renderWindAreas(map, picker, areaData, masterData) {
         map.options.maxBoundsViscosity = 1.0;
     }
 }
+function handlePickerOpening(latlng, picker) {
+    lastPickerLatLng = latlng;
+    if (picker) {
+        picker.open({ lat: latlng.lat, lon: latlng.lng || latlng.lon });
+        setTimeout(() => {
+            $(".leaflet-marker-icon").removeClass("leaflet-interactive");
+            $(".leaflet-marker-icon").css("cursor", "default");
+        }, 100);
+    }
+}
 async function loadPoles(map, picker) {
     try {
         const poles = await fetchData(`${BASE_URL}/api/poles-location`);
@@ -119,41 +126,55 @@ async function loadPoles(map, picker) {
         poles.forEach(pole => {
             const lat = parseFloat(pole.poles_lat), lng = parseFloat(pole.poles_lng);
             if (isNaN(lat) || isNaN(lng)) return;
-            let markerIcon;
-            if (pole.type_icon && pole.type_icon.trim() !== "") {
-                markerIcon = L.icon({
+            let markerIcon = (pole.type_icon && pole.type_icon.trim() !== "") 
+                ? L.icon({
                     iconUrl: pole.type_icon,
                     iconSize: [50, 50],
-                    iconAnchor: [16, 32],
-                    popupAnchor: [0, -32] 
-                });
-            } else {
-                markerIcon = getDivIcon(pole.type_id);
-            }
+                    iconAnchor: [20, 60],
+                    popupAnchor: [0, -50] 
+                }) 
+                : getDivIcon(pole.type_id);
+
             const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(poleLayerGroup);
             const windId = `wind-auto-${pole.poles_id}`;
             poleMarkers[pole.poles_id] = marker;
             marker.bindTooltip(
-                `<div class="wind-pill">➤<span class="wind-value" id="${windId}">...</span></div>`, 
-                { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [15, 5] }
+                `<div class="wind-pill">
+                    <span class="arrow-icon" id="arrow-${pole.poles_id}">➤</span>
+                    <span class="wind-value" id="${windId}">...</span>
+                </div>`, 
+                { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [15, -20] }
             ).openTooltip();
             const updateWind = async () => {
                 const el = document.getElementById(windId);
+                const arrow = document.getElementById(`arrow-${pole.poles_id}`);
                 if (!el || !windOn) return;
                 try {
-                    const data = await fetchData('https://api.windy.com/api/point-forecast/v2', {
-                        lat, lon: lng, model: "gfs", parameters: ["wind"], levels: ["surface"], key: options.key 
-                    });
-                    const windSpeed = data['wind-surface']?.[0] || data['wind']?.[0];
-                    el.innerText = windSpeed !== undefined ? windSpeed.toFixed(1) : "N/A";
-                } catch (e) { el.innerText = "N/A"; }
+                    const currentModel = W.store.get('product') || 'ecmwf';
+                    const weather = await W.model.getPoint(currentModel, { lat, lon: lng });
+                    if (weather) {
+                        const windSpeed = Math.round(weather.wind);
+                        const windDir = Math.round(weather.dir);
+                        const directionText = getDirectionName(windDir);
+                        if (arrow) arrow.style.transform = `rotate(${windDir}deg)`;
+                        el.innerText = `${directionText} ${windSpeed}kt`;
+                    }
+                } catch (e) {
+                    console.warn(`Cannot get wind for pole ${pole.poles_id}:`, e);
+                    el.innerText = "N/A";
+                }
             };
             windUpdateFunctions[pole.poles_id] = updateWind;
             updateWind();
-            setInterval(updateWind, 600000);
             marker.on('click', () => {
                 openPoles(pole.poles_id);
             });
+        });
+        W.store.on('timestamp', () => {
+            Object.values(windUpdateFunctions).forEach(fn => fn());
+        });
+        W.store.on('product', () => {
+            Object.values(windUpdateFunctions).forEach(fn => fn());
         });
     } catch (err) { console.error("LoadPoles Error:", err); }
 }
@@ -167,10 +188,6 @@ function toggleWind(isOn) {
         windOn ? marker.openTooltip() : marker.closeTooltip();
         if (windOn && windUpdateFunctions[id]) windUpdateFunctions[id]();
     });
-}
-function handlePickerOpening(latlng, picker) {
-    lastPickerLatLng = latlng;
-    if (windOn && picker) picker.open({ lat: latlng.lat, lon: latlng.lng || latlng.lon });
 }
 function getDivIcon(typeId) {
     const color = typeId == 1 ? '#e74c3c' : (typeId == 2 ? '#2ecc71' : '#3498db');
@@ -271,8 +288,8 @@ async function openPoles(poleId) {
     $modal.find(".modal-header").html(`
         <h5 class="modal-title fw-bold text-dark"></h5>
         <div class="ms-auto d-flex align-items-center">
-            <button type="button" class="btn btn-light me-2 d-none d-md-inline-block" id="btn-fullscreen-toggle">
-                <i class="fa-solid fa-compress"></i>
+            <button type="button" class="btn btn-sm btn-light me-2" id="btn-fullscreen">
+                <i class="fa-regular fa-window-maximize"></i>
             </button>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -284,7 +301,8 @@ async function openPoles(poleId) {
         $(this).find("i").toggleClass("fa-regular fa-window-maximize fa-regular fa-window-restore");
     });
     $modal.find(".modal-footer").html(`
-        <button type="button" class="btn btn-primary" onclick="openFilterModal(${poleId});"><i class="fas fa-chart-line me-2"></i> ${currentLang['report'] || 'Report'}</button>
+        <button type="button" class="btn btn-outline-primary me-2" onclick="openFilterModal(${poleId});">${currentLang['view_report'] || 'View Report'}</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
     `);
     const modalInstance = bootstrap.Modal.getOrCreateInstance($modal[0]);
     modalInstance.show();
@@ -319,27 +337,37 @@ async function openPoles(poleId) {
                             </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-lg-12">
-                            ${data.content?.cover ? `
-                                <div class="position-relative mb-4 overflow-hidden rounded-4 shadow-sm">
-                                    <img src="${fullBaseUrl}/${data.content.cover}" class="w-100 h-100 object-fit-cover" alt="cover" style="max-height: 275px; min-height: 275px;">
-                                </div>
-                            ` : ''}
-                            <article class="px-2">
-                                <h4 class="fw-bold mb-3">${title}</h4>
-                                <div class="d-flex align-items-center gap-3 text-muted mb-4 pb-3 border-bottom">
-                                    <div class="small"><i class="fa-regular fa-calendar-check me-1"></i> ${data.updated_at || data.created_at}</div>
-                                </div>
-                                <div class="article-content lh-lg text-secondary mb-5">
-                                    ${bodyContent}
-                                </div>
-                            </article>
+                    ${(data.content_id) ? `
+                        <div class="row">
+                            <div class="col-lg-12">
+                                ${data.content?.cover ? `
+                                    <div class="position-relative mb-4 overflow-hidden rounded-4 shadow-sm">
+                                        <img src="${fullBaseUrl}/${data.content.cover}" class="w-100 h-100 object-fit-cover" alt="cover" style="max-height: 275px; min-height: 275px;">
+                                    </div>
+                                ` : ''}
+                                <article class="px-2">
+                                    <h4 class="fw-bold mb-3">${title}</h4>
+                                    <div class="d-flex align-items-center gap-3 text-muted mb-4 pb-3 border-bottom">
+                                        <div class="small"><i class="fa-regular fa-calendar-check me-1"></i> ${data.updated_at || data.created_at}</div>
+                                    </div>
+                                    <div class="article-content lh-lg text-secondary mb-5">
+                                        ${bodyContent}
+                                    </div>
+                                </article>
+                            </div>
                         </div>
-                    </div>
-                    <div class="multimedia-container px-2">
-                        ${renderMultimedia(data.content, lang, fullBaseUrl)}
-                    </div>
+                        <div class="multimedia-container px-2">
+                            ${renderMultimedia(data.content, lang, fullBaseUrl)}
+                        </div>
+                    ` : `
+                        <div class="text-center py-5">
+                            <div class="mb-4">
+                                <i class="fa-regular fa-file-lines text-light-emphasis" style="font-size: 64px; opacity: 0.5;"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark">${langData['no_content_available'] || 'No content available'}</h5>
+                            <p class="text-muted mb-4">${langData['content_nothing_hear'] || 'It looks like there’s nothing here, or this page has moved.'}</p>
+                        </div>
+                    `}
                 </div>
             `;
             modalBody.html(html);

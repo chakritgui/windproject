@@ -163,9 +163,10 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
         initDatePicker('#endDate', minVal, maxVal);
         initSelect2Remote('#heightSelect', `${BASE_URL}/api/height`, { poles_id: poles_id });
         $('#poleDetailModal .modal-footer').html(`
-            <button class="btn btn-primary py-2" onclick="renderReport(${poles_id}, 'default')">
-                <i class="fas fa-chart-line me-2"></i><span>${langData['report'] || 'Report'}</span>
+            <button class="btn btn-primary me-2" onclick="renderReport(${poles_id}, 'default')">
+                ${langData['generate_report'] || 'Generate Report'}</span>
             </button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
         `);
         if (data.levels_name && data.levels_id) {
             const newOption = new Option(data.levels_name, data.levels_id, true, true);

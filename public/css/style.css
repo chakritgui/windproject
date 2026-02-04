@@ -554,12 +554,33 @@ img {
     padding: 0.5rem 1rem; 
     min-height: auto; 
 }
-.modal-fullscreen .modal-footer .btn {
-    padding: 0.25rem 0.5rem;
-}
 .modal-fullscreen .modal-body {
     max-height: none;
 }
 .fancybox__container {
     z-index: 10000 !important;
+}
+.wind-custom-tooltip {
+    background: rgba(30, 30, 30, 0.85) !important;
+    border: 1px solid #444 !important;
+    border-radius: 20px !important;
+    color: #fff !important;
+    padding: 5px 12px !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4) !important;
+    font-family: 'Arial', sans-serif;
+}
+.wind-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+}
+.arrow-icon {
+    display: inline-block;
+    font-size: 10px;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #0d6efd ;
+}
+.wind-value {
+    font-size: 9px;
 }

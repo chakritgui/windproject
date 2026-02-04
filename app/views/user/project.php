@@ -26,12 +26,10 @@
         <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
         <span class="ms-2 small text-muted" data-i18n="loading"></span>
     </div>
-
     <div id="scrollEnd" style="height: 50px;"></div>
     <div id="emptyState" class="text-center py-5 d-none animated fadeIn">
-        <i class="fa-solid fa-folder-open fa-4x text-light mb-3"></i>
+        <i class="fa-solid fa-folder-open fa-4x text-muted mb-3"></i>
         <h5 class="text-muted" data-i18n="no_data_found"></h5>
-        <p class="text-secondary small" data-i18n="project_line1"></p>
     </div>
 </div>
 <div id="scrollEnd"></div>
