@@ -1,1 +1,8 @@
-/uploads
+# Ignore sensitive configuration files
+config.php
+
+# Ignore user-uploaded content
+/uploads/
+
+# Ignore server-specific configuration
+.htaccess
