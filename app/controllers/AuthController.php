@@ -65,26 +65,61 @@ class AuthController extends Controller {
     public function forgot() {
         $this->view('auth/forgot');
     }
+    public function reset() {
+        $this->view('auth/reset');
+    }
     public function sendReset() {
         header('Content-Type: application/json; charset=utf-8');
         $email = $_POST['email'] ?? null;
+        $lang = $_POST['lang'] ?? 'en';
         if (!$email) {
-            echo json_encode([
-                'status'  => 'error',
-                'message' => 'missing_email'
-            ]);
+            echo json_encode(['status' => 'error', 'message' => 'missing_email']);
             exit;
         }
         $m = new Auth();
-        $user = $m->findByEmail($email);
-        echo json_encode([
-            'status'  => $user ? 'success' : 'error',
-            'message' => $user ? 'reset_success' : 'email_not_found'
-        ]);
+        $result = $m->findByEmail($email, $lang);
+        if ($result === 'success') {
+            echo json_encode([
+                'status'  => 'success', 
+                'message' => 'reset_success'
+            ]);
+        } else {
+            echo json_encode([
+                'status'  => 'error', 
+                'message' => ($result === 'email_not_found') ? 'email_not_found' : 'process_failed'
+            ]);
+        }
         exit;
     }
     public function account() {
         ensure_login();
         $this->view('account');
+    }
+    public function updatePassword() {
+        header('Content-Type: application/json; charset=utf-8');
+        $token = $_POST['token'] ?? null;
+        $password = $_POST['password'] ?? null;
+        $lang = $_POST['lang'] ?? 'en';
+        if (!$token || !$password) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'password_invalid_format'
+            ]);
+            exit;
+        }
+        $m = new Auth();
+        $result = $m->resetNewPassword($token, $password);
+        if ($result === 'success') {
+            echo json_encode([
+                'status'  => 'success',
+                'message' => 'password_updated_success'
+            ]);
+        } else {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => $result 
+            ]);
+        }
+        exit;
     }
 }

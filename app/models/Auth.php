@@ -9,10 +9,22 @@
             $stmt->execute([$username, $username]);
             return $stmt->fetch();
         }
-        public function findByEmail($email) {
+        public function findByEmail($email, $lang) {
             $stmt = $this->db->prepare('SELECT member_id FROM wp_members WHERE email = ? LIMIT 1');
             $stmt->execute([$email]);
-            return $stmt->fetch();
+            $user = $stmt->fetch();
+            if (!$user) {
+                return 'email_not_found';
+            }
+            $updateStmt = $this->db->prepare("UPDATE wp_password_resets SET is_valid = 0 WHERE email = ? AND is_valid = 1");
+            $updateStmt->execute([$email]);
+            $token = bin2hex(random_bytes(32));
+            $date = new DateTime("now", new DateTimeZone('UTC'));
+            $stmt = $this->db->prepare("INSERT INTO wp_password_resets (email, token, created_at, expires_at) VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 1 HOUR))");
+            $stmt->execute([$email, $token]);
+            $mailHelper = new MailHelper($this->db);
+            $sendResult = $mailHelper->sendMail($email, $lang, $token);
+            return $sendResult ? 'success' : 'mail_error';
         }
         public function updateLogin($member_id, $timezone, $session_id) {
             $stmt = $this->db->prepare('UPDATE wp_members SET last_login_at = NOW() WHERE member_id = ?');
@@ -47,4 +59,28 @@
             $stmt = $this->db->prepare("UPDATE wp_members SET remember_selector = NULL, remember_validator_hash = NULL, remember_expires_at = NULL WHERE member_id = ?");
             $stmt->execute([$member_id]);
         } 
+        public function resetNewPassword($token, $new_password) {
+            try {
+                $stmt = $this->db->prepare("SELECT email FROM wp_password_resets WHERE token = ? AND is_valid = 1 AND expires_at > UTC_TIMESTAMP() LIMIT 1");
+                $stmt->execute([$token]);
+                $resetRequest = $stmt->fetch(PDO::FETCH_ASSOC);
+                if (!$resetRequest) {
+                    return 'invalid_or_expired_token';
+                }
+                $email = $resetRequest['email'];
+                $hashedPassword = encryptToken($new_password);
+                $this->db->beginTransaction();
+                $updateUser = $this->db->prepare("UPDATE wp_members SET password_hash = ? WHERE email = ?");
+                $updateUser->execute([$hashedPassword, $email]);
+                $disableToken = $this->db->prepare("UPDATE wp_password_resets SET is_valid = 0 WHERE token = ?");
+                $disableToken->execute([$token]);
+                $this->db->commit();
+                return 'success';
+            } catch (Exception $e) {
+                if ($this->db->inTransaction()) {
+                    $this->db->rollBack();
+                }
+                return 'process_failed';
+            }
+        }
     }

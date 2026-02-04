@@ -129,10 +129,6 @@ function handlePickerOpening(latlng, picker) {
     lastPickerLatLng = latlng;
     if (picker) {
         picker.open({ lat: latlng.lat, lon: latlng.lng || latlng.lon });
-        setTimeout(() => {
-            $(".leaflet-marker-icon").removeClass("leaflet-interactive");
-            $(".leaflet-marker-icon").css("cursor", "default");
-        }, 100);
     }
 }
 async function loadPoles(map, picker) {

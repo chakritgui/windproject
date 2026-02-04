@@ -48,21 +48,33 @@ $(document).on('keydown', '#username, #password', function(e) {
     }
 });
 $(document).on('click', '.login-forgot', function() {
+    let $btn = $(this); 
     let email = $("#email").val().trim();
     if(email === "") {
         showLoginWarning('email');
         return;
     }
+    let originalText = $btn.html();
+    let loadingText = (currentLang === 'th') ? 'กำลังส่ง...' : (currentLang === 'lo') ? 'ກຳລັງສົ່ງ...' : 'Sending...';
+    $btn.prop('disabled', true).html(loadingText);
+    $('#loading').show(); 
     $.post(`${BASE_URL}/api/auth/forgot`, {
-        email: email
+        email: email,
+        lang: currentLang
     }, function(res){
         $('#loading').hide();
+        $btn.prop('disabled', false).html(originalText);
         if(res.status === 'success'){
             showSuccess(langData['reset_success']);
+            $("#email").val(""); 
         } else {
-            showError(langData[res.message]);
+            showError(langData[res.message] || res.message);
         }
-    }, 'json');
+    }, 'json').fail(function() {
+        $('#loading').hide();
+        $btn.prop('disabled', false).html(originalText);
+        showError("Connection error. Please try again.");
+    });
 });
 $(document).on('click', '#togglePassword', function () {
     let input = $("#password");

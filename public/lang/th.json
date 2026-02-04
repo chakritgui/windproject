@@ -475,5 +475,17 @@
     "content_nothing_hear": "ไม่พบข้อมูลที่ต้องการ หรือหน้านี้อาจถูกย้ายไปแล้ว",
     "view_report": "ดูรายงาน",
     "generate_report": "สร้างรายงาน",
-    "map_labels": "ป้ายแผนที่"
+    "map_labels": "ป้ายแผนที่",
+    "please_enter_email": "กรุณาระบุอีเมลของท่าน เพื่อทำการรีเซ็ตรหัสผ่าน",
+    "process_failed": "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง",
+    "reset_password_title": "รีเซ็ตรหัสผ่าน",
+    "enter_new_password": "กรุณากรอกรหัสผ่านใหม่ของคุณที่ด้านล่างนี้",
+    "confirm_password": "ยืนยันรหัสผ่านใหม่",
+    "save_password": "บันทึกรหัสผ่าน",
+    "password_invalid_format": "รูปแบบรหัสผ่านไม่ถูกต้อง",
+    "password_mismatch": "รหัสผ่านไม่ตรงกัน",
+    "password_updated_success": "เปลี่ยนรหัสผ่านสำเร็จแล้ว",
+    "connection_error": "การเชื่อมต่อขัดข้อง กรุณาลองใหม่อีกครั้ง",
+    "processing": "กำลังดำเนินการ...",
+    "invalid_or_expired_token": "ลิงก์รีเซ็ตรหัสผ่านไม่ถูกต้อง หรือหมดอายุแล้ว"
 }

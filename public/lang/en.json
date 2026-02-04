@@ -475,5 +475,17 @@
     "content_nothing_hear": "It looks like there’s nothing here, or this page has been moved.",
     "view_report": "View Report",
     "generate_report": "Generate Report",
-    "map_labels": "Map labels"
+    "map_labels": "Map labels",
+    "please_enter_email": "Please enter your email address to request a password reset.",
+    "process_failed": "Something went wrong. Please try again.",
+    "reset_password_title": "Reset Password",
+    "enter_new_password": "Please enter your new password below.",
+    "confirm_password": "Confirm New Password",
+    "save_password": "Save Password",
+    "password_invalid_format": "Invalid password format",
+    "password_mismatch": "Passwords do not match",
+    "password_updated_success": "Password updated successfully",
+    "connection_error": "Connection error. Please try again.",
+    "processing": "Processing...",
+    "invalid_or_expired_token": "The password reset link is invalid or has expired."
 }
