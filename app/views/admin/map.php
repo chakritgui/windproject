@@ -94,7 +94,7 @@
                     <input class="form-control" type="file" id="jsonFile" accept=".json,.geojson">
                     <p class="mt-3" data-i18n="support_json"></p>
                 </div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
                     <h5 class="mb-0 fw-bold" data-i18n="map_labels"></h5>
                 </div>
                 <div class="mb-3">
