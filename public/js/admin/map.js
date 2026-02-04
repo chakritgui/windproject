@@ -311,7 +311,7 @@ function handleMainSave() {
         dataType: 'json',
         success: function(res) {
             if (res.status === true) {
-                showSuccess('Success', langData['saved_successfully']);
+                showSuccess(langData['saved_successfully']);
             } else {
                 showError('Error', res.message);
             }

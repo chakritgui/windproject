@@ -1,3 +1,22 @@
+<style>
+    input[type="radio"]:disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+    input[type="radio"]:disabled + span, 
+    tr:has(input:disabled) td {
+        color: #ccc; 
+    }
+    .lang-toggle {
+        cursor: pointer;
+        border: 2px solid #eee;
+        transition: all 0.3s ease;
+    }
+    .lang-toggle.active {
+        border-color: #0d6efd;
+        background-color: #f0f7ff;
+    }
+</style>
 <div class="container-fluid mt-90 mb-5">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm" style="background: #ffffff; border-left: 4px solid #0d6efd;">
         <div class="mb-2 mb-md-0">
@@ -125,9 +144,6 @@
                                 </div>
                                 <small class="d-block mt-2 opacity-75">English Language</small>
                             </div>
-                            <label class="mt-3" for="language_default_en">
-                                <input type="radio" name="language_default" id="language_default_en" value="en" checked> <span data-i18n="default"></span>
-                            </label>
                         </div>
                         <div class="col-md-4">
                             <div class="lang-toggle" id="langLo" onclick="toggleLanguage('lo')">
@@ -140,9 +156,6 @@
                                 </div>
                                 <small class="d-block mt-2 opacity-75">Lao Language</small>
                             </div>
-                            <label class="mt-3" for="language_default_lo">
-                                <input type="radio" name="language_default" id="language_default_lo" value="lo"> <span data-i18n="default"></span>
-                            </label>
                         </div>
                         <div class="col-md-4">
                             <div class="lang-toggle" id="langTh" onclick="toggleLanguage('th')">
@@ -155,10 +168,35 @@
                                 </div>
                                 <small class="d-block mt-2 opacity-75">Thai Language</small>
                             </div>
-                            <label class="mt-3" for="language_default_th">
-                                <input type="radio" name="language_default" id="language_default_th" value="th"> <span data-i18n="default"></span>
-                            </label>
                         </div>
+                    </div>
+                    <hr class="my-4">
+                    <h5 class="card-title mb-3"><i class="fa-solid fa-gears text-primary me-2"></i><span data-i18n="system_default_settings"></span></h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle border">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width: 50%;"></th>
+                                    <th class="text-center">English</th>
+                                    <th class="text-center">ລາວ</th>
+                                    <th class="text-center">ไทย</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span data-i18n="language_website_default"></span></td>
+                                    <td class="text-center"><input type="radio" name="language_default" value="en" class="form-check-input" checked></td>
+                                    <td class="text-center"><input type="radio" name="language_default" value="lo" class="form-check-input"></td>
+                                    <td class="text-center"><input type="radio" name="language_default" value="th" class="form-check-input"></td>
+                                </tr>
+                                <tr>
+                                    <td><span data-i18n="language_content_default"></span></td>
+                                    <td class="text-center"><input type="radio" name="language_content" value="en" class="form-check-input"></td>
+                                    <td class="text-center"><input type="radio" name="language_content" value="lo" class="form-check-input" checked></td>
+                                    <td class="text-center"><input type="radio" name="language_content" value="th" class="form-check-input"></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                     <div class="alert alert-primary mt-4" role="alert">
                         <i class="fa-solid fa-circle-info me-2"></i>

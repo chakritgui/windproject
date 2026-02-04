@@ -59,7 +59,7 @@ function initPolesTable() {
             orderable: false,
             render: function(row){
                 const activeLangs = row.settings?.language ? row.settings.language.split(',') : ['en'];
-                const defaultLang = row.settings?.language_default || 'en';
+                const defaultLang = row.settings?.language_content || 'en';
                 let statusHtml = `
                     <div class="mt-1 d-flex gap-1 flex-wrap">
                         ${activeLangs.map(lang => {
@@ -136,7 +136,7 @@ $(document).on('click', '.delete-pole', function() {
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){
-                    showSuccess('Success', langData['deleted_successfully']);
+                    showSuccess(langData['deleted_successfully']);
                     initPolesTable();
                 } else {
                     showError('Error', langData['cannot_delete']);
@@ -159,7 +159,7 @@ $(document).on('click', '.delete-content', function() {
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){
-                    showSuccess('Success', langData['deleted_successfully']);
+                    showSuccess(langData['deleted_successfully']);
                     initPolesTable();
                 } else {
                     showError('Error', langData['cannot_delete']);
@@ -341,7 +341,7 @@ function savePole() {
         success: function (res) {
             Swal.close();
             if (res.status === true) {
-                showSuccess('Success', langData['saved_successfully']);
+                showSuccess(langData['saved_successfully']);
                 if (typeof initPolesTable === "function") initPolesTable();
                 $('#windModal').modal('hide');
             } else {
@@ -538,7 +538,7 @@ $(document).on('click', '#btnSaveContent', function() {
         },
         success: function (res) {
             if (res.status === 'success') {
-                 showSuccess('Success', langData['saved_successfully']);
+                 showSuccess(langData['saved_successfully']);
                 if (typeof initPolesTable === "function") initPolesTable();
                 $('#windModal').modal('hide');
             } else {

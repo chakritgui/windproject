@@ -30,7 +30,7 @@ class ProjectModel {
             'type'         => ['table' => 'wp_type',          'id' => 'type_id',          'name' => 'type_name'],
             'installation' => ['table' => 'wp_installations', 'id' => 'installations_id', 'name' => 'installations_name']
         ];
-        $stmt = $this->db->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_default')");
+        $stmt = $this->db->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_content')");
         $stmt->execute();
         $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         foreach ($folderRows as $row) {
@@ -229,7 +229,7 @@ class ProjectModel {
     }
     public function gets($id) {
         $pdo = $this->db;
-        $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_default')");
+        $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_content')");
         $stmt->execute();
         $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         if (!$id) {

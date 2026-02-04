@@ -526,7 +526,7 @@ function renderCover(d) {
     `;
 }
 function renderLangTabs(d) {
-    const defaultLang = d.settings?.language_default || 'en';
+    const defaultLang = d.settings?.language_content || 'en';
     const allLangs = d.settings?.language ? d.settings.language.split(',').map(s => s.trim()) : ['en'];
     const sortedLangs = allLangs.sort((a, b) => {
         if (a === defaultLang) return -1;

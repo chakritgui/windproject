@@ -17,7 +17,7 @@ class PolesModel {
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = (int)$stmt->fetchColumn();
-        $stmtSet = $this->db->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_default')");
+        $stmtSet = $this->db->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_content')");
         $stmtSet->execute();
         $settings = $stmtSet->fetchAll(PDO::FETCH_KEY_PAIR);
         $sql = "SELECT
@@ -325,7 +325,7 @@ class PolesModel {
     }
     public function gets($poles_id, $id) {
         $pdo = $this->db;
-        $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_default')");
+        $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_content')");
         $stmt->execute();
         $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         if (!$id) {

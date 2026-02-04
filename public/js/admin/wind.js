@@ -257,7 +257,7 @@ function importWindData() {
             setTimeout(() => {
                 Swal.close();
                 if (res.status === true) {
-                    showSuccess('Success', langData['import_successfully'] || 'Imported successfully');
+                    showSuccess(langData['import_successfully'] || 'Imported successfully');
                     $('#windModal').modal('hide');
                     if (typeof initWindTable === "function") initWindTable();
                 } else {
@@ -291,7 +291,7 @@ $(document).on('click', '.clear-data', function() {
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){
-                    showSuccess('Success', langData['clear_successfully']);
+                    showSuccess(langData['clear_successfully']);
                     initWindTable();
                 } else {
                     showError('Error', langData['cannot_clear']);

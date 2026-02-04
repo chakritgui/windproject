@@ -48,6 +48,7 @@ class SettingController extends BaseController {
         $data = [
             'languages' => $_POST['languages'] ?? 'en',
             'language_default' => $_POST['language_default'] ?? 'en',
+            'language_content' => $_POST['language_content'] ?? 'en',
         ];
         $this->json(['status'=>$this->model->saveLanguageSetting($data)]);
     }

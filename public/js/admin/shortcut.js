@@ -140,7 +140,7 @@ $('#pwaForm').on('submit', function (e) {
         contentType: false,
         success: function (res) {
             if (res.status === true) {
-                showSuccess('Success', langData['saved_successfully']);
+                showSuccess(langData['saved_successfully']);
                 initShortcut();
             } else {
                 showError('Error', langData['cannot_save']);

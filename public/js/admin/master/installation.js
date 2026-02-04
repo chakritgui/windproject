@@ -122,7 +122,7 @@ $(document).on('click', '.delete-installation', function() {
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){
-                    showSuccess('Success', langData['deleted_successfully']);
+                    showSuccess(langData['deleted_successfully']);
                     initInstallationsTable();
                 } else {
                     showError('Error', langData['cannot_delete']);
@@ -278,7 +278,7 @@ function saveInstallation() {
         success: function (res) {
             Swal.close();
             if (res.status === true) {
-                showSuccess('Success', langData['saved_successfully']);
+                showSuccess(langData['saved_successfully']);
                 if (typeof initInstallationsTable === "function") initInstallationsTable();
                 $('#windModal').modal('hide');
             } else {

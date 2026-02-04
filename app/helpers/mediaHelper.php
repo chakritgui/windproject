@@ -207,7 +207,7 @@ class MediaHelper {
     }
     public function handleContent($data, $content_id) {
         $pdo = $this->db;
-        $stmt = $pdo->prepare("SELECT setting_value FROM wp_setting WHERE setting_type = 'language_default' LIMIT 1");
+        $stmt = $pdo->prepare("SELECT setting_value FROM wp_setting WHERE setting_type = 'language_content' LIMIT 1");
         $stmt->execute();
         $dbDefaultLang = $stmt->fetchColumn() ?: 'en';
         $sqlItem = "INSERT INTO wp_content_item 
@@ -252,7 +252,7 @@ class MediaHelper {
         if (date('j') === '1') {
             $this->archiveOldLogs();
         }
-        $stmtSet = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_default')");
+        $stmtSet = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_content')");
         $stmtSet->execute();
         $settings = $stmtSet->fetchAll(PDO::FETCH_KEY_PAIR);
         $enabledLangs = explode(',', $settings['language'] ?? 'en');

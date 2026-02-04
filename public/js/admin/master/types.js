@@ -125,7 +125,7 @@ $(document).on('click', '.delete-type', function() {
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){
-                    showSuccess('Success', langData['deleted_successfully']);
+                    showSuccess(langData['deleted_successfully']);
                     initTypesTable();
                 } else {
                     showError('Error', langData['cannot_delete']);
@@ -324,7 +324,7 @@ function saveType() {
         success: function (res) {
             Swal.close();
             if (res.status === true) {
-                showSuccess('Success', langData['saved_successfully']);
+                showSuccess(langData['saved_successfully']);
                 if (typeof initTypesTable === "function") initTypesTable();
                 $('#windModal').modal('hide');
             } else {

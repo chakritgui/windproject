@@ -60,7 +60,8 @@ const settingHandlers = {
     footer: v => $('#footerText').val(v),
     site_assessment: v => $('#site_assessment').val(v),
     language: v => setLanguagesFromDB(v),
-    language_default: v => setLanguagesDefaultFromDB(v)
+    language_default: v => setLanguagesDefaultFromDB(v),
+    language_content: v => setLanguagesContentFromDB(v)
 };
 function applySetting(item) {
     if (!item.setting_value) return;
@@ -129,29 +130,8 @@ function setLanguagesFromDB(languagesStr) {
         }
     });
 }
-function setLanguagesDefaultFromDB(defaultValue = 'en') {
-    $("input[name=language_default]").each(function() {
-        const lang = $(this).val();
-        const parentToggle = $('#lang' + lang.charAt(0).toUpperCase() + lang.slice(1));
-        if (!parentToggle.hasClass('active')) {
-            $(this).prop('disabled', true);
-        } else {
-            $(this).prop('disabled', false);
-        }
-    });
-    const targetRadio = $(`#language_default_${defaultValue.toLowerCase()}`);
-    if (targetRadio.length && !targetRadio.prop('disabled')) {
-        targetRadio.prop('checked', true);
-    } else {
-        const firstEnabled = $("input[name=language_default]:not(:disabled)").first();
-        if (firstEnabled.length) {
-            firstEnabled.prop('checked', true);
-        }
-    }
-}
 function toggleLanguage(lang) {
     const el = $('#lang' + lang.charAt(0).toUpperCase() + lang.slice(1));
-    const radio = $('#language_default_' + lang.toLowerCase());
     const isActive = el.hasClass('active');
     const activeCount = $('.lang-toggle.active').length;
     if (isActive && activeCount === 1) {
@@ -159,16 +139,54 @@ function toggleLanguage(lang) {
         return;
     }
     el.toggleClass('active');
-    const nowActive = el.hasClass('active');
+    const nowActive = el.hasClass('active'); 
     el.find('i').attr('class', nowActive ? 'fa-solid fa-circle-check fs-4' : 'fa-regular fa-circle fs-4 text-muted');
+    const targetRadios = $(`input[value="${lang.toLowerCase()}"]`);
     if (!nowActive) {
-        radio.prop('disabled', true);
-        if (radio.is(':checked')) {
-            const firstActive = $('.lang-toggle.active').first().attr('id').replace('lang', '').toLowerCase();
-            $('#language_default_' + firstActive).prop('checked', true);
-        }
+        targetRadios.prop('disabled', true).prop('checked', false);
+        ensureAtLeastOneChecked();
     } else {
-        radio.prop('disabled', false);
+        targetRadios.prop('disabled', false);
+    }
+}
+function ensureAtLeastOneChecked() {
+    ['language_default', 'language_content'].forEach(name => {
+        const checkedNum = $(`input[name="${name}"]:checked:not(:disabled)`).length;
+        if (checkedNum === 0) {
+            $(`input[name="${name}"]:not(:disabled)`).first().prop('checked', true);
+        }
+    });
+}
+function setLanguagesDefaultFromDB(defaultValue = 'en') {
+    $("input[name='language_default']").each(function() {
+        const lang = $(this).val();
+        const parentToggle = $('#lang' + lang.charAt(0).toUpperCase() + lang.slice(1));
+        const isDisabled = !parentToggle.hasClass('active');
+        $(`input[value="${lang}"]`).prop('disabled', isDisabled);
+        if (isDisabled) {
+            $(`input[value="${lang}"]`).prop('checked', false);
+        }
+    });
+    selectBestAvailable('language_default', defaultValue);
+}
+function setLanguagesContentFromDB(defaultValue = 'en') {
+    $("input[name='language_content']").each(function() {
+        const lang = $(this).val();
+        const parentToggle = $('#lang' + lang.charAt(0).toUpperCase() + lang.slice(1));
+        const isDisabled = !parentToggle.hasClass('active');
+        $(`input[value="${lang}"]`).prop('disabled', isDisabled);
+        if (isDisabled) {
+            $(`input[value="${lang}"]`).prop('checked', false);
+        }
+    });
+    selectBestAvailable('language_content', defaultValue);
+}
+function selectBestAvailable(name, preferredValue) {
+    const preferred = $(`input[name="${name}"][value="${preferredValue.toLowerCase()}"]:not(:disabled)`);
+    if (preferred.length) {
+        preferred.prop('checked', true);
+    } else {
+        $(`input[name="${name}"]:not(:disabled)`).first().prop('checked', true);
     }
 }
 $(document).on('click', '.save-setting-3', function () {
@@ -180,9 +198,10 @@ $(document).on('click', '.save-setting-3', function () {
     const fd = new FormData();
     fd.append('languages', langs.join(','));
     fd.append("language_default", $("input[name=language_default]:checked").val() || 'en');
+    fd.append("language_content", $("input[name=language_content]:checked").val() || 'en');
     toggleButton('.save-setting-3', true);
     apiPost('/api/setting/saveLang', fd).done(res => {
-        res.status ? (showSuccess('Success', langData['saved_successfully']), initSetting()) : showError('Error', langData['cannot_save']);
+        res.status ? (showSuccess(langData['saved_successfully']), initSetting()) : showError('Error', langData['cannot_save']);
     }).always(() => toggleButton('.save-setting-3', false));
 });
 $(document).on('click', '.save-setting-1', function () {
@@ -195,7 +214,7 @@ $(document).on('click', '.save-setting-1', function () {
     fd.append('logoInput', $('#logoInput')[0].files[0] || null);
     fd.append('iconInput', $('#iconInput')[0].files[0] || null);
     uploadWithProgress('/api/setting/saveInfo', fd, '.save-setting-1').done(res => {
-        res.status ? (showSuccess('Success', langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError('Error', langData['cannot_save']);
+        res.status ? (showSuccess(langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError('Error', langData['cannot_save']);
     }).fail(() => showError('Error', langData['cannot_save']));
 });
 $(document).on('click', '.save-setting-2', function () {
@@ -205,6 +224,6 @@ $(document).on('click', '.save-setting-2', function () {
     fd.append('oldLoginBg', $('#oldLoginBg').val());
     fd.append('oldLoginMobileBg', $('#oldLoginMobileBg').val());
     uploadWithProgress('/api/setting/saveBgImage', fd, '.save-setting-2').done(res => {
-        res.status ? (showSuccess('Success', langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError('Error', langData['cannot_save']);
+        res.status ? (showSuccess(langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError('Error', langData['cannot_save']);
     }).fail(() => showError('Error', langData['cannot_save']));
 });

@@ -76,7 +76,7 @@ function renderTable(data, isNewSearch) {
     let html = '';
     data.forEach((item, index) => {
         const activeLangs = item.settings?.language ? item.settings.language.split(',') : ['en'];
-        const defaultLang = item.settings?.language_default || 'en';
+        const defaultLang = item.settings?.language_content || 'en';
         let statusHtml = `
             <div class="mt-1 d-flex gap-1 flex-wrap">
                 ${activeLangs.map(lang => {
@@ -229,7 +229,7 @@ $(document).on('click', '.delete-project', function () {
             dataType: 'json',
             success: function(res) {
                 if (res.status === 'success') {
-                    showSuccess('Success', langData['deleted_successfully']);
+                    showSuccess(langData['deleted_successfully']);
                     fetchFolders(currentLevel, currentFolderId, currentRefId);
                 } else {
                     showError('Error', langData['cannot_delete']);
@@ -345,7 +345,7 @@ function saveFolder() {
         success: function (res) {
             Swal.close();
             if (res.status === true) {
-                showSuccess('Success', langData['saved_successfully']);
+                showSuccess(langData['saved_successfully']);
                 fetchFolders(currentLevel, currentFolderId, currentRefId);
                 $('#windModal').modal('hide');
             } else {
@@ -577,7 +577,7 @@ function saveContent() {
         success: function (res) {
             Swal.close();
             if (res.status === true) {
-                showSuccess('Success', langData['saved_successfully']);
+                showSuccess(langData['saved_successfully']);
                 fetchFolders(currentLevel, currentFolderId, currentRefId);
                 $('#windModal').modal('hide');
             } else {
@@ -608,7 +608,7 @@ $(document).on('click', '.delete-content', function () {
             dataType: 'json',
             success: function(res) {
                 if (res.status === 'success') {
-                    showSuccess('Success', langData['deleted_successfully']);
+                    showSuccess(langData['deleted_successfully']);
                     fetchFolders(currentLevel, currentFolderId, currentRefId);
                 } else {
                     showError('Error', langData['cannot_delete']);

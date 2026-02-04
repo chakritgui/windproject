@@ -20,7 +20,7 @@ class NewsModel {
             )";
             $params[':search'] = "%{$search}%";
         }
-        $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_default')");
+        $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_content')");
         $stmt->execute();
         $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         $sqlFiltered = "SELECT COUNT(DISTINCT n.content_id) FROM wp_content n 
@@ -78,7 +78,7 @@ class NewsModel {
     }
     public function get($id) {
         $pdo = $this->db;
-        $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_default')");
+        $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_content')");
         $stmt->execute();
         $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         if (!$id) {

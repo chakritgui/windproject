@@ -122,7 +122,7 @@ $(document).on('click', '.delete-contract', function() {
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){
-                    showSuccess('Success', langData['deleted_successfully']);
+                    showSuccess(langData['deleted_successfully']);
                     initContractsTable();
                 } else {
                     showError('Error', langData['cannot_delete']);
@@ -304,7 +304,7 @@ function saveContract() {
         success: function (res) {
             Swal.close();
             if (res.status === true) {
-                showSuccess('Success', langData['saved_successfully']);
+                showSuccess(langData['saved_successfully']);
                 if (typeof initContractsTable === "function") initContractsTable();
                 $('#windModal').modal('hide');
             } else {

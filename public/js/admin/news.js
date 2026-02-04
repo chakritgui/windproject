@@ -35,7 +35,7 @@ function initNewsTable() {
         },{ 
             data: null,
             render: (data, type, row) => {
-                const defaultLang = row.settings?.language_default || 'en';
+                const defaultLang = row.settings?.language_content || 'en';
                 let title = row[`subject_${currentLang}`] || row[`subject_${defaultLang}`] || row.subject_en || 'No Title';
                 let badgeHtml = '';
                 if (parseInt(row.count_attachment) > 0) {
@@ -439,7 +439,7 @@ function saveNews() {
         success: function (res) {
             Swal.close();
             if (res.status === true) {
-                showSuccess('Success', langData['saved_successfully']);
+                showSuccess(langData['saved_successfully']);
                 if (typeof initNewsTable === "function") initNewsTable();
                 $('#windModal').modal('hide');
             } else {
@@ -470,7 +470,7 @@ $(document).on('click', '.delete-news', function() {
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){
-                    showSuccess('Success', langData['deleted_successfully']);
+                    showSuccess(langData['deleted_successfully']);
                     initNewsTable();
                 } else {
                     showError('Error', langData['cannot_delete']);

@@ -500,7 +500,7 @@ function saveDocument() {
         success: function (res) {
             Swal.close();
             if (res.status === true) {
-                showSuccess('Success', langData['saved_successfully']);
+                showSuccess(langData['saved_successfully']);
                 if (typeof initDocumentTable === "function") initDocumentTable();
                 $('#windModal').modal('hide');
             } else {
@@ -531,7 +531,7 @@ $(document).on('click', '.delete-document', function() {
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){
-                    showSuccess('Success', langData['deleted_successfully']);
+                    showSuccess(langData['deleted_successfully']);
                     initDocumentTable();
                 } else {
                     showError('Error', langData['cannot_delete']);

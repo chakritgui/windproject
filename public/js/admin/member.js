@@ -139,7 +139,7 @@ $(document).on('click', '.delete-member', function() {
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){
-                    showSuccess('Success', langData['deleted_successfully']);
+                    showSuccess(langData['deleted_successfully']);
                     initMemberTable();
                 } else {
                     showError('Error', langData['cannot_delete']);
@@ -485,7 +485,7 @@ function saveMember() {
         dataType: 'json',
         success: function(res) {
             if(res.status === true){
-                showSuccess('Success', langData['saved_successfully']);
+                showSuccess(langData['saved_successfully']);
                 initMemberTable();
                 $('#windModal').modal('hide');
             } else {

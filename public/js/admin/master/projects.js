@@ -122,7 +122,7 @@ $(document).on('click', '.delete-project', function() {
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){
-                    showSuccess('Success', langData['deleted_successfully']);
+                    showSuccess(langData['deleted_successfully']);
                     initProjectsTable();
                 } else {
                     showError('Error', langData['cannot_delete']);
@@ -314,7 +314,7 @@ function saveProject() {
         success: function (res) {
             Swal.close();
             if (res.status === true) {
-                showSuccess('Success', langData['saved_successfully']);
+                showSuccess(langData['saved_successfully']);
                 if (typeof initProjectsTable === "function") initProjectsTable();
                 $('#windModal').modal('hide');
             } else {
