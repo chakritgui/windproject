@@ -364,10 +364,7 @@ $(document).on('blur', '#email', function () {
     }
     if (!isValidEmail(email)) {
         $('#email').addClass('is-invalid').focus();
-        showWarning(
-            langData['invalid_email'] || 'Invalid email format.',
-            email
-        );
+        showWarning(langData['invalid_email'] || 'Invalid email format.');
         return;
     }
     let member_id = $('#member_id').val() || '';
@@ -378,10 +375,7 @@ $(document).on('blur', '#email', function () {
         dataType: 'json',
         success: function(res) {
             if(res.exists === true){
-                showWarning(
-                    email,
-                    langData['email_exists'] || 'This email is already in use by another member.'
-                );
+                showWarning(langData['email_exists'] || 'This email is already in use by another member.');
                 $('#email').addClass('is-invalid').focus();
                 $("#email").val("");
             } else {
@@ -411,10 +405,7 @@ function checkUsernameUnique(username) {
         dataType: 'json',
         success: function(res) {
             if(res.exists === true){
-                showWarning(
-                    username,
-                    langData['username_exists'] || 'This username is already in use by another member.'
-                );
+                showWarning(langData['username_exists'] || 'This username is already in use by another member.');
                 $('#username_').addClass('is-invalid').focus();
                 $("#username_").val("");
             } else {
@@ -435,19 +426,14 @@ $(document).on('click', '.save-member', function () {
         }
     });
     if (errors.length) {
-        showWarning(
-            langData['validation_error'] || 'Validation Error',
-            langData['required_star_message'] || 'Please fill all fields marked with *'
-        );
+        showWarning(langData['required_star_message'] || 'Please fill all fields marked with *');
         $('.is-invalid').first().focus();
         return;
     }
     let password = $("#password_").val().trim();
     if(!validPassword(password)){
         $("#password_").addClass("is-invalid");
-        showWarning(
-            langData['invalid_password'], langData['not_match_password']
-        );
+        showWarning(langData['not_match_password']);
         $("#password_").focus();
         return;
     } else {
@@ -456,9 +442,7 @@ $(document).on('click', '.save-member', function () {
     let username = $("#username_").val().trim();
     if(!validUsername(username)){
         $("#username_").addClass("is-invalid");
-        showWarning(
-            langData['invalid_username'], langData['not_match_username']
-        );
+        showWarning(langData['not_match_username']);
         $("#username_").focus();
         return;
     } else {

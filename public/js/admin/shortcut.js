@@ -57,10 +57,7 @@ function validatePngOnly(e, previewId) {
         file.type === 'image/png' ||
         file.name.toLowerCase().endsWith('.png');
     if (!isPng) {
-        showWarning(
-            langData['validation_error'] || 'Validation Error',
-            langData['png_only'] || 'Please select PNG file only'
-        );
+        showWarning(langData['png_only'] || 'Please select PNG file only');
         e.target.value = ""; 
         document.getElementById(previewId).src = ""; 
         return;
@@ -107,10 +104,7 @@ $('#pwaForm').on('submit', function (e) {
         }
     });
     if (errors.length) {
-        showWarning(
-            langData['validation_error'] || 'Validation Error',
-            langData['required_star_message'] || 'Please fill all fields marked with *'
-        );
+        showWarning(langData['required_star_message'] || 'Please fill all fields marked with *');
         $('.is-invalid').first().focus();
         return;
     }

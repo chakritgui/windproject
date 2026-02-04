@@ -16,10 +16,10 @@ function showError(msg, confirm = true) {
         confirmButtonText: langData.ok || 'OK'
     });
 }
-function showWarning(title, msg, confirm = true) {
+function showWarning(msg, confirm = true) {
     Swal.fire({
         icon: 'warning',
-        title,
+        title: langData.warning || 'Warning',
         text: msg,
         showConfirmButton: confirm,
         confirmButtonText: langData.ok || 'OK'

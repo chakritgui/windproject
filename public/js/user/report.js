@@ -20,10 +20,8 @@ function renderReport(poles_id, type) {
         $('.sensor-checkbox').removeClass('border-danger');
     }
     if (errors.length) {
-        const message = (sensors.length === 0 && errors.length === 1)
-            ? (langData['select_sensor_message'] || 'Please select at least one sensor.')
-            : (langData['required_star_message'] || 'Please fill all fields marked with *');
-        showWarning(langData['validation_error'] || 'Validation Error', message);
+        const message = (sensors.length === 0 && errors.length === 1) ? (langData['select_sensor_message'] || 'Please select at least one sensor.') : (langData['required_star_message'] || 'Please fill all fields marked with *');
+        showWarning(message);
         const el = $('.is-invalid').first()[0];
         if (el) {
             el.scrollIntoView({ behavior: 'smooth', block: 'center' });

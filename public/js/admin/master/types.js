@@ -238,10 +238,7 @@ function initCoverUpload() {
         const validExt = ["jpg","jpeg","png","gif","webp"];
         const ext = file.name.split(".").pop().toLowerCase();
         if (!file.type.startsWith("image/") && !validExt.includes(ext)) {
-            showWarning(
-                langData['validation_error'] || 'Validation Error',
-                langData['allow_images_only'] || 'Allow images only (jpg, jpeg, png, gif, webp)'
-            );
+            showWarning(langData['allow_images_only'] || 'Allow images only (jpg, jpeg, png, gif, webp)');
             input.value = "";
             return;
         } 
@@ -267,10 +264,7 @@ $(document).on('click', '.save-type', function () {
         }
     });
     if (errors.length) {
-        showWarning(
-            langData['validation_error'] || 'Validation Error',
-            langData['required_star_message'] || 'Please fill all fields marked with *'
-        );
+        showWarning(langData['required_star_message'] || 'Please fill all fields marked with *');
         $('.is-invalid').first().focus();
         return;
     }

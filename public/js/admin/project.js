@@ -293,10 +293,7 @@ $(document).on('click', '.save-folder', function () {
         }
     });
     if (errors.length) {
-        showWarning(
-            langData['validation_error'] || 'Validation Error',
-            langData['required_star_message'] || 'Please fill all fields marked with *'
-        );
+        showWarning(langData['required_star_message'] || 'Please fill all fields marked with *');
         $('.is-invalid').first().focus();
         return;
     }
@@ -474,10 +471,7 @@ $(document).on('click', '.save-content', function () {
         }
     });
     if (errors.length) {
-        showWarning(
-            langData['validation_error'] || 'Validation Error',
-            langData['required_star_message'] || 'Please fill all fields marked with *'
-        );
+        showWarning(langData['required_star_message'] || 'Please fill all fields marked with *');
         $('.is-invalid').first().focus();
         return;
     }

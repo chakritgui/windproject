@@ -198,10 +198,7 @@ $(document).on("click", ".manage-news", function () {
         $("#publish_at").on("change", function () {
             const min = $(this).attr("min");
             if (this.value < min) {
-                showWarning(
-                    langData['warning'] || 'Warning',
-                    langData['past_date'] || 'You cannot select a past date and time.'
-                );
+                showWarning(langData['past_date'] || 'You cannot select a past date and time.');
                 this.value = min;
             }
         });
@@ -340,10 +337,7 @@ $(document).on('click', '.save-news', function () {
         }
     });
     if (errors.length) {
-        showWarning(
-            langData['validation_error'] || 'Validation Error',
-            langData['required_star_message'] || 'Please fill all fields marked with *'
-        );
+        showWarning(langData['required_star_message'] || 'Please fill all fields marked with *');
         $('.is-invalid').first().focus();
         return;
     }

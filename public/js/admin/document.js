@@ -354,10 +354,7 @@ function validateDates() {
     let startDate = moment(startStr, "DD/MM/YYYY");
     let endDate = moment(endStr, "DD/MM/YYYY");
     if (endDate.isBefore(startDate)) {
-        showWarning(
-            langData['validation_error'] || 'Validation Error',
-            langData['validation_date'] || 'End date cannot be earlier than start date.'
-        );
+        showWarning(langData['validation_date'] || 'End date cannot be earlier than start date.');
         $('#document_end').val('');
         if ($('#document_end').data('datepicker')) {
             $('#document_end').datepicker('clearDates');
@@ -438,10 +435,7 @@ $(document).on('click', '.save-document', function () {
         }
     });
     if (errors.length) {
-        showWarning(
-            langData['validation_error'] || 'Validation Error',
-            langData['required_star_message'] || 'Please fill all fields marked with *'
-        );
+        showWarning(langData['required_star_message'] || 'Please fill all fields marked with *');
         $('.is-invalid').first().focus();
         return;
     }

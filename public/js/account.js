@@ -222,7 +222,7 @@ function saveField(fieldName) {
     if (!config.validate(newValue)) {
         $(input).addClass('is-invalid').focus();
         const errorMsg = langData[`invalid_${fieldName}`] || langData['invalid_format'] || 'Invalid format';
-        showWarning('Warning', errorMsg);
+        showWarning(errorMsg);
         return;
     }
     $(input).removeClass('is-invalid');

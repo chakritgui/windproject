@@ -2,19 +2,16 @@ function showLoginWarning(field) {
     let title = '', message = '';
     switch(field) {
         case 'username':
-            title = langData['enter_username'];
             message = langData['username_required'];
             break;
         case 'password':
-            title = langData['enter_password'];
             message = langData['password_required'];
             break;
         case 'email':
-            title = langData['enter_email'];
             message = langData['email_required'];
             break;
     }
-    showWarning(title, message);
+    showWarning(message);
 }
 function doLogin() {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
