@@ -465,9 +465,6 @@ header .nav-link:hover {
         rgba(0,0,0,0) 100%
     );
 }
-/* =========================
-   Wind loading overlay
-========================= */
 #wind-loading {
     position: absolute;
     top: -15px;

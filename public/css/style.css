@@ -577,7 +577,7 @@ img {
 }
 .arrow-icon {
     display: inline-block;
-    font-size: 10px;
+    font-size: 13px;
     transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     color: #0d6efd ;
 }

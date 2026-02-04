@@ -12,6 +12,18 @@ const isMobile = () => window.innerWidth <= 768;
 windyInit(options, async api => {
     windyAPI = api;
     map = api.map;
+    try {
+        const hasLabelsSpec = W.store.dataSpecs && W.store.dataSpecs.some(spec => spec.ident === 'labels');
+        if (hasLabelsSpec) {
+            store.set('labels', false);
+        }
+        const hasBaseSpec = W.store.dataSpecs && W.store.dataSpecs.some(spec => spec.ident === 'base');
+        if (hasBaseSpec) {
+            store.set('base', 'gray'); 
+        }
+    } catch (e) {
+        console.warn("Windy premium settings skipped.");
+    }
     const { store, picker } = api;
     poleLayerGroup = L.layerGroup().addTo(map);
     store.set('overlay', 'wind');
@@ -101,7 +113,7 @@ async function renderWindAreas(map, picker, areaData, masterData) {
     if (isMaskMode && allHoles.length > 0) {
         const world = [[90, -180], [90, 180], [-90, 180], [-90, -180]];
         L.polygon([world, ...allHoles], {
-            fillColor: '#C0C0C0', fillOpacity: 0.8, stroke: false, interactive: false
+            fillColor: '#C0C0C0', fillOpacity: 0.75, stroke: false, interactive: false
         }).addTo(map).bringToBack();
     }
     if (featureGroup.getBounds().isValid()) {
@@ -132,9 +144,7 @@ async function loadPoles(map, picker) {
                     iconSize: [50, 50],
                     iconAnchor: [20, 60],
                     popupAnchor: [0, -50] 
-                }) 
-                : getDivIcon(pole.type_id);
-
+                }) : getDivIcon(pole.type_id);
             const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(poleLayerGroup);
             const windId = `wind-auto-${pole.poles_id}`;
             poleMarkers[pole.poles_id] = marker;
