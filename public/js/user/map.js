@@ -6,24 +6,13 @@ let poleMarkers = {};
 let windUpdateFunctions = {};
 let menuState = {};
 let show_country_line = 'hide';
+let map_labels = 'no';
 let country_layers_data = null;
 const DEFAULT_LEVEL = '100m';
 const isMobile = () => window.innerWidth <= 768;
 windyInit(options, async api => {
     windyAPI = api;
     map = api.map;
-    try {
-        const hasLabelsSpec = W.store.dataSpecs && W.store.dataSpecs.some(spec => spec.ident === 'labels');
-        if (hasLabelsSpec) {
-            store.set('labels', false);
-        }
-        const hasBaseSpec = W.store.dataSpecs && W.store.dataSpecs.some(spec => spec.ident === 'base');
-        if (hasBaseSpec) {
-            store.set('base', 'gray'); 
-        }
-    } catch (e) {
-        console.warn("Windy premium settings skipped.");
-    }
     const { store, picker } = api;
     poleLayerGroup = L.layerGroup().addTo(map);
     store.set('overlay', 'wind');
@@ -40,6 +29,7 @@ windyInit(options, async api => {
         if (windAreaData) await renderWindAreas(map, picker, windAreaData, masterData);
         show_country_line = masterData?.show_country_line;
         country_layers_data = masterData?.country_layers_data;
+        map_labels = masterData?.map_labels;
         if (show_country_line === 'show' && country_layers_data) {
             try {
                 const geoData = typeof country_layers_data === 'string' ? JSON.parse(country_layers_data) : country_layers_data;
@@ -53,6 +43,20 @@ windyInit(options, async api => {
                 }).addTo(map);
             } catch (error) {
                 console.error("Error drawing country lines:", error);
+            }
+        }
+        if(map_labels === 'yes') {
+            try {
+                const hasLabelsSpec = W.store.dataSpecs && W.store.dataSpecs.some(spec => spec.ident === 'labels');
+                if (hasLabelsSpec) {
+                    store.set('labels', false);
+                }
+                const hasBaseSpec = W.store.dataSpecs && W.store.dataSpecs.some(spec => spec.ident === 'base');
+                if (hasBaseSpec) {
+                    store.set('base', 'gray'); 
+                }
+            } catch (e) {
+                console.warn("Windy premium settings skipped.");
             }
         }
     } catch (error) {

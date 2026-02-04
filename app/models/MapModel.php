@@ -5,7 +5,7 @@ class MapModel{
         $this->db = Database::getInstance()->pdo;
     }
     public function master() {
-        $sql = "SELECT center_lat, center_lng, zoom_level, polygon_visibility, show_country_line, country_layers_data FROM wp_map_master LIMIT 1";
+        $sql = "SELECT center_lat, center_lng, zoom_level, polygon_visibility, show_country_line, country_layers_data,map_labels FROM wp_map_master LIMIT 1";
         return $this->db->query($sql)->fetch(PDO::FETCH_ASSOC);
     }
     public function windarea() {
