@@ -125,11 +125,11 @@ $(document).on('click', '.delete-installation', function() {
                     showSuccess(langData['deleted_successfully']);
                     initInstallationsTable();
                 } else {
-                    showError('Error', langData['cannot_delete']);
+                    showError(langData['cannot_delete']);
                 }   
             },
             error: function(){
-                showError('Error', langData['cannot_delete']);
+                showError(langData['cannot_delete']);
             }
         });
     });
@@ -204,11 +204,11 @@ $(document).on('click', '.manage-installation', function() {
                     }
                 }
             } else {
-                showError('Error', langData['cannot_load']);
+                showError(langData['cannot_load']);
             }
         },
         error: function(){
-            showError('Error', langData['cannot_load']);
+            showError(langData['cannot_load']);
         }
     });
 });
@@ -282,7 +282,7 @@ function saveInstallation() {
                 if (typeof initInstallationsTable === "function") initInstallationsTable();
                 $('#windModal').modal('hide');
             } else {
-                showError('Error', (langData['cannot_save'] || 'Error: ') + ' ' + (langData[res.message] || 'Unknown error'));
+                showError((langData['cannot_save'] || 'Error: ') + ' ' + (langData[res.message] || 'Unknown error'));
             }
         },
         error: function (xhr, status, error) {
@@ -292,7 +292,7 @@ function saveInstallation() {
                 let res = JSON.parse(xhr.responseText);
                 if (res.message) msg += ": " + res.message;
             } catch (e) {}
-            showError('Error', msg);
+            showError(msg);
         },
         complete: function() {
             btn.prop("disabled", false);

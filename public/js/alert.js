@@ -7,10 +7,10 @@ function showSuccess(msg, confirm = true) {
         confirmButtonText: langData.ok || 'OK'
     });
 }
-function showError(title, msg, confirm = true) {
+function showError(msg, confirm = true) {
     Swal.fire({
         icon: 'error',
-        title,
+        title: langData.error || 'Error',
         text: msg,
         showConfirmButton: confirm,
         confirmButtonText: langData.ok || 'OK'

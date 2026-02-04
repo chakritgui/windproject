@@ -139,11 +139,11 @@ $(document).on('click', '.delete-pole', function() {
                     showSuccess(langData['deleted_successfully']);
                     initPolesTable();
                 } else {
-                    showError('Error', langData['cannot_delete']);
+                    showError(langData['cannot_delete']);
                 }   
             },
             error: function(){
-                showError('Error', langData['cannot_delete']);
+                showError(langData['cannot_delete']);
             }
         });
     });
@@ -162,11 +162,11 @@ $(document).on('click', '.delete-content', function() {
                     showSuccess(langData['deleted_successfully']);
                     initPolesTable();
                 } else {
-                    showError('Error', langData['cannot_delete']);
+                    showError(langData['cannot_delete']);
                 }   
             },
             error: function(){
-                showError('Error', langData['cannot_delete']);
+                showError(langData['cannot_delete']);
             }
         });
     });
@@ -259,11 +259,11 @@ $(document).on('click', '.manage-pole', function() {
                     $('#status').append(newOptionStatus).trigger('change');
                 }
             } else {
-                showError('Error', langData['cannot_load']);
+                showError(langData['cannot_load']);
             }
         },
         error: function(){
-            showError('Error', langData['cannot_load']);
+            showError(langData['cannot_load']);
         }
     });
 });
@@ -345,7 +345,7 @@ function savePole() {
                 if (typeof initPolesTable === "function") initPolesTable();
                 $('#windModal').modal('hide');
             } else {
-                showError('Error', (langData['cannot_save'] || 'Error: ') + ' ' + (langData[res.message] || 'Unknown error'));
+                showError((langData['cannot_save'] || 'Error: ') + ' ' + (langData[res.message] || 'Unknown error'));
             }
         },
         error: function (xhr, status, error) {
@@ -355,7 +355,7 @@ function savePole() {
                 let res = JSON.parse(xhr.responseText);
                 if (res.message) msg += ": " + res.message;
             } catch (e) {}
-            showError('Error', msg);
+            showError(msg);
         },
         complete: function() {
             btn.prop("disabled", false);
@@ -542,7 +542,7 @@ $(document).on('click', '#btnSaveContent', function() {
                 if (typeof initPolesTable === "function") initPolesTable();
                 $('#windModal').modal('hide');
             } else {
-                showError('Error', (langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
+                showError((langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
             }
         },
         error: function (xhr) {
@@ -551,7 +551,7 @@ $(document).on('click', '#btnSaveContent', function() {
                 let res = JSON.parse(xhr.responseText);
                 if (res.message) msg += ": " + res.message;
             } catch (e) {}
-            showError('Error', msg);
+            showError(msg);
         },
         complete: function() {
             btn.prop("disabled", false);

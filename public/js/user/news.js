@@ -20,11 +20,11 @@ function initNews() {
                 hasMore = res.data.has_more;
                 newsPage++;
             } else {
-                showError('Error', langData['cannot_load']);
+                showError(langData['cannot_load']);
             }
         },
         error: function () {
-            showError('Error', langData['cannot_load']);
+            showError(langData['cannot_load']);
         },
         complete: function () {
             isLoading = false;

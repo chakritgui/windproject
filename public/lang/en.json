@@ -145,6 +145,7 @@
     "cannot_change": "Could not update this item",
     "required_star_message": "Please fill in all fields marked with *",
     "validation_error": "Validation Error",
+    "error": "Error",
     "saved_successfully": "Saved successfully",
     "cannot_save": "Could not save. Please try again later.",
     "email_exists": "This email is already in use.",

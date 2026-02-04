@@ -261,7 +261,7 @@ function importWindData() {
                     $('#windModal').modal('hide');
                     if (typeof initWindTable === "function") initWindTable();
                 } else {
-                    showError('Error', res.message);
+                    showError(res.message);
                 }
             }, 500);
         },
@@ -294,7 +294,7 @@ $(document).on('click', '.clear-data', function() {
                     showSuccess(langData['clear_successfully']);
                     initWindTable();
                 } else {
-                    showError('Error', langData['cannot_clear']);
+                    showError(langData['cannot_clear']);
                 }   
             },
             error: function (xhr, status, error) {
@@ -303,7 +303,7 @@ $(document).on('click', '.clear-data', function() {
                     let res = JSON.parse(xhr.responseText);
                     if (res.message) msg += ": " + res.message;
                 } catch (e) {}
-                showError('Error', msg);
+                showError(msg);
             }
         });
     });

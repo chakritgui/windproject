@@ -128,11 +128,11 @@ $(document).on('click', '.delete-type', function() {
                     showSuccess(langData['deleted_successfully']);
                     initTypesTable();
                 } else {
-                    showError('Error', langData['cannot_delete']);
+                    showError(langData['cannot_delete']);
                 }   
             },
             error: function(){
-                showError('Error', langData['cannot_delete']);
+                showError(langData['cannot_delete']);
             }
         });
     });
@@ -189,11 +189,11 @@ $(document).on('click', '.manage-type', function() {
                     initCoverUpload();
                 }
             } else {
-                showError('Error', langData['cannot_load']);
+                showError(langData['cannot_load']);
             }
         },
         error: function(){
-            showError('Error', langData['cannot_load']);
+            showError(langData['cannot_load']);
         }
     });
 });
@@ -328,7 +328,7 @@ function saveType() {
                 if (typeof initTypesTable === "function") initTypesTable();
                 $('#windModal').modal('hide');
             } else {
-                showError('Error', (langData['cannot_save'] || 'Error: ') + ' ' + (langData[res.message] || 'Unknown error'));
+                showError((langData['cannot_save'] || 'Error: ') + ' ' + (langData[res.message] || 'Unknown error'));
             }
         },
         error: function (xhr, status, error) {
@@ -338,7 +338,7 @@ function saveType() {
                 let res = JSON.parse(xhr.responseText);
                 if (res.message) msg += ": " + res.message;
             } catch (e) {}
-            showError('Error', msg);
+            showError(msg);
         },
         complete: function() {
             btn.prop("disabled", false);

@@ -33,10 +33,10 @@ function doLogin() {
         if (res.status === 'success') {
             window.location.href = `${BASE_URL}`;
         } else {
-            showError(langData['login_failed'], langData[res.message] || res.message);
+            showError(langData[res.message] || res.message);
         }
     }, 'json').fail(function() {
-        showError("Error", "Network error");
+        showError(langData['error']);
     }).always(function(){
         hidePageLoader();
     });
@@ -63,7 +63,7 @@ $(document).on('click', '.login-forgot', function() {
         if(res.status === 'success'){
             showSuccess(langData['reset_success']);
         } else {
-            showError(langData['reset_failed'], langData[res.message]);
+            showError(langData[res.message]);
         }
     }, 'json');
 });
@@ -95,7 +95,7 @@ async function loadAuthSetting() {
             dataType: 'json'
         });
         if (!res.status) {
-            showError('Error', langData['cannot_load']);
+            showError(langData['cannot_load']);
             return;
         }
         res.data.forEach(parseAuthSetting);

@@ -18,11 +18,11 @@ function initDashboard() {
                 $('#windRowCount').text(numberWithCommas(d.total_winds));
                 $('#windUpdate').text(d.import_start || '-');
             } else {
-                showError('Error', langData['cannot_load']);
+                showError(langData['cannot_load']);
             }
         },
         error: function() {
-            showError('Error', langData['cannot_load']);
+            showError(langData['cannot_load']);
         }
     });
 }

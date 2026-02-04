@@ -142,11 +142,11 @@ $(document).on('click', '.delete-member', function() {
                     showSuccess(langData['deleted_successfully']);
                     initMemberTable();
                 } else {
-                    showError('Error', langData['cannot_delete']);
+                    showError(langData['cannot_delete']);
                 }   
             },
             error: function(){
-                showError('Error', langData['cannot_delete']);
+                showError(langData['cannot_delete']);
             }
         });
     });
@@ -306,11 +306,11 @@ $(document).on('click', '.manage-member', function() {
                     verifyAuth($('#username_').val(), 'username');
                 }
             } else {
-                showError('Error', langData['cannot_load']);
+                showError(langData['cannot_load']);
             }
         },
         error: function(){
-            showError('Error', langData['cannot_load']);
+            showError(langData['cannot_load']);
         }
     });
 });
@@ -489,12 +489,12 @@ function saveMember() {
                 initMemberTable();
                 $('#windModal').modal('hide');
             } else {
-                showError('Error', langData['cannot_save']);
+                showError(langData['cannot_save']);
             }   
             $(".save-member").attr("disabled", false);
         },
         error: function(){
-            showError('Error', langData['cannot_save']);
+            showError(langData['cannot_save']);
             $(".save-member").attr("disabled", false);
         }
     });

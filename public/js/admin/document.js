@@ -300,11 +300,11 @@ $(document).on('click', '.manage-document', function () {
                     }
                 }
             } else {
-                showError('Error', langData['cannot_load']);
+                showError(langData['cannot_load']);
             }
         },
         error: function(){
-            showError('Error', langData['cannot_load']);
+            showError(langData['cannot_load']);
         }
     });
 });
@@ -504,7 +504,7 @@ function saveDocument() {
                 if (typeof initDocumentTable === "function") initDocumentTable();
                 $('#windModal').modal('hide');
             } else {
-                showError('Error', (langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
+                showError((langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
             }
         },
         error: function (xhr, status, error) {
@@ -514,7 +514,7 @@ function saveDocument() {
                 let res = JSON.parse(xhr.responseText);
                 if (res.message) msg += ": " + res.message;
             } catch (e) {}
-            showError('Error', msg);
+            showError(msg);
         },
         complete: function() {
             btn.prop("disabled", false);
@@ -534,11 +534,11 @@ $(document).on('click', '.delete-document', function() {
                     showSuccess(langData['deleted_successfully']);
                     initDocumentTable();
                 } else {
-                    showError('Error', langData['cannot_delete']);
+                    showError(langData['cannot_delete']);
                 }   
             },
             error: function(){
-                showError('Error', langData['cannot_delete']);
+                showError(langData['cannot_delete']);
             }
         });
     });

@@ -36,11 +36,11 @@ function initShortcut() {
                     $(".shortcut-date").html(`<i class="fa-regular fa-calendar-check"></i> ${d.manifestDate}`);
                 }
             } else {
-                showError('Error', langData['cannot_load']);
+                showError(langData['cannot_load']);
             }
         },
         error: function() {
-            showError('Error', langData['cannot_load']);
+            showError(langData['cannot_load']);
         }
     });
 }
@@ -143,11 +143,11 @@ $('#pwaForm').on('submit', function (e) {
                 showSuccess(langData['saved_successfully']);
                 initShortcut();
             } else {
-                showError('Error', langData['cannot_save']);
+                showError(langData['cannot_save']);
             }
         },
         error: function () {
-            showError('Error', langData['cannot_save']);
+            showError(langData['cannot_save']);
         },
         complete: function () {
             btn.prop("disabled", false);

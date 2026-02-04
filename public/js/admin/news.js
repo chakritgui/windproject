@@ -443,7 +443,7 @@ function saveNews() {
                 if (typeof initNewsTable === "function") initNewsTable();
                 $('#windModal').modal('hide');
             } else {
-                showError('Error', (langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
+                showError((langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
             }
         },
         error: function (xhr, status, error) {
@@ -453,7 +453,7 @@ function saveNews() {
                 let res = JSON.parse(xhr.responseText);
                 if (res.message) msg += ": " + res.message;
             } catch (e) {}
-            showError('Error', msg);
+            showError(msg);
         },
         complete: function() {
             btn.prop("disabled", false);
@@ -473,7 +473,7 @@ $(document).on('click', '.delete-news', function() {
                     showSuccess(langData['deleted_successfully']);
                     initNewsTable();
                 } else {
-                    showError('Error', langData['cannot_delete']);
+                    showError(langData['cannot_delete']);
                 }   
             },
             error: function (xhr, status, error) {
@@ -482,7 +482,7 @@ $(document).on('click', '.delete-news', function() {
                     let res = JSON.parse(xhr.responseText);
                     if (res.message) msg += ": " + res.message;
                 } catch (e) {}
-                showError('Error', msg);
+                showError(msg);
             }
         });
     });

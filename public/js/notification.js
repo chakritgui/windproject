@@ -6,12 +6,12 @@ async function loadNotification() {
             dataType: 'json'
         });
         if (!res || res.status !== true) {
-            showError('Error', langData['cannot_load']);
+            showError(langData['cannot_load']);
             return;
         }
         updateUnreadBadge(res.data.unread);
     } catch (err) {
-        showError('Error', langData['cannot_load']);
+        showError(langData['cannot_load']);
     }
 }
 $(document).on('click', '.btn-notification', async function (e) {
@@ -29,7 +29,7 @@ async function readNotification() {
             dataType: 'json'
         });
         if (!res || res.status !== true) {
-            showError('Error', langData['cannot_load']);
+            showError(langData['cannot_load']);
             return;
         }
         notifyPage = 1;
@@ -37,7 +37,7 @@ async function readNotification() {
         $('.notification-list').empty();
         await loadNotificationItem();
     } catch (err) {
-        showError('Error', langData['cannot_load']);
+        showError(langData['cannot_load']);
     }
 }
 let notifyPage = 1;
@@ -57,7 +57,7 @@ async function loadNotificationItem() {
             dataType: 'json'
         });
         if (!res || res.status !== true) {
-            showError('Error', langData['cannot_load']);
+            showError(langData['cannot_load']);
             return;
         }
         const items = res.data.data ?? [];
@@ -65,7 +65,7 @@ async function loadNotificationItem() {
         notifyPage++;
     } catch (err) {
         console.error('Notification load error:', err);
-        showError('Error', langData['cannot_load']);
+        showError(langData['cannot_load']);
     } finally {
         notifyLoading = false;
     }

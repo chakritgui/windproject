@@ -43,7 +43,7 @@ $(document).ready(initSetting);
 function initSetting() {
     apiPost('/api/setting/get', null, { contentType: true, processData: true }).done(res => {
         if (!res.status) {
-            showError('Error', langData['cannot_load']);
+            showError(langData['cannot_load']);
             return;
         }
         res.data.forEach(applySetting);
@@ -81,7 +81,7 @@ function previewImage(input, previewId, type) {
     const file = input.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-        showError('Error', langData['allow_images_only']);
+        showError(langData['allow_images_only']);
         input.value = '';
         return;
     }
@@ -135,7 +135,7 @@ function toggleLanguage(lang) {
     const isActive = el.hasClass('active');
     const activeCount = $('.lang-toggle.active').length;
     if (isActive && activeCount === 1) {
-        showError('Error', langData['one_language']);
+        showError(langData['one_language']);
         return;
     }
     el.toggleClass('active');
@@ -192,7 +192,7 @@ function selectBestAvailable(name, preferredValue) {
 $(document).on('click', '.save-setting-3', function () {
     const langs = $('.lang-toggle.active').map((_, el) => el.id.replace('lang', '').toLowerCase()).get();
     if (!langs.length) {
-        showError('Error', langData['one_language']);
+        showError(langData['one_language']);
         return;
     }
     const fd = new FormData();
@@ -201,7 +201,7 @@ $(document).on('click', '.save-setting-3', function () {
     fd.append("language_content", $("input[name=language_content]:checked").val() || 'en');
     toggleButton('.save-setting-3', true);
     apiPost('/api/setting/saveLang', fd).done(res => {
-        res.status ? (showSuccess(langData['saved_successfully']), initSetting()) : showError('Error', langData['cannot_save']);
+        res.status ? (showSuccess(langData['saved_successfully']), initSetting()) : showError(langData['cannot_save']);
     }).always(() => toggleButton('.save-setting-3', false));
 });
 $(document).on('click', '.save-setting-1', function () {
@@ -214,8 +214,8 @@ $(document).on('click', '.save-setting-1', function () {
     fd.append('logoInput', $('#logoInput')[0].files[0] || null);
     fd.append('iconInput', $('#iconInput')[0].files[0] || null);
     uploadWithProgress('/api/setting/saveInfo', fd, '.save-setting-1').done(res => {
-        res.status ? (showSuccess(langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError('Error', langData['cannot_save']);
-    }).fail(() => showError('Error', langData['cannot_save']));
+        res.status ? (showSuccess(langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError(langData['cannot_save']);
+    }).fail(() => showError(langData['cannot_save']));
 });
 $(document).on('click', '.save-setting-2', function () {
     const fd = new FormData();
@@ -224,6 +224,6 @@ $(document).on('click', '.save-setting-2', function () {
     fd.append('oldLoginBg', $('#oldLoginBg').val());
     fd.append('oldLoginMobileBg', $('#oldLoginMobileBg').val());
     uploadWithProgress('/api/setting/saveBgImage', fd, '.save-setting-2').done(res => {
-        res.status ? (showSuccess(langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError('Error', langData['cannot_save']);
-    }).fail(() => showError('Error', langData['cannot_save']));
+        res.status ? (showSuccess(langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError(langData['cannot_save']);
+    }).fail(() => showError(langData['cannot_save']));
 });

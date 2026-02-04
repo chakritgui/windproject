@@ -17,7 +17,7 @@ function safeInitMap() {
         if (retry <= 10) {
             setTimeout(safeInitMap, 500);
         } else {
-            showError('Error', langData['map_failed']);
+            showError(langData['map_failed']);
         }
         return;
     }
@@ -250,7 +250,7 @@ async function handleJsonImport(e) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => {
-        try { importMapJSON(JSON.parse(ev.target.result)); } catch (err) { showError('Error', langData['invalid_json_file']); }
+        try { importMapJSON(JSON.parse(ev.target.result)); } catch (err) { showError(langData['invalid_json_file']); }
     };
     reader.readAsText(file);
 }
@@ -259,7 +259,7 @@ async function handleJsonImports(e) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => {
-        try { importMapJSONs(JSON.parse(ev.target.result)); } catch (err) { showError('Error', langData['invalid_json_file']); }
+        try { importMapJSONs(JSON.parse(ev.target.result)); } catch (err) { showError(langData['invalid_json_file']); }
     };
     reader.readAsText(file);
 }
@@ -313,10 +313,10 @@ function handleMainSave() {
             if (res.status === true) {
                 showSuccess(langData['saved_successfully']);
             } else {
-                showError('Error', res.message);
+                showError(res.message);
             }
         },
-        error: () => showError('Error', langData['cannot_save']),
+        error: () => showError(langData['cannot_save']),
         complete: () => $btn.prop("disabled", false)
     });
 }

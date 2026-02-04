@@ -77,7 +77,7 @@ function initProfileData() {
 function handleError() {
     const fallbackMsg = "Cannot load information";
     const msg = (typeof langData !== 'undefined' && langData['cannot_load']) ? langData['cannot_load'] : fallbackMsg;
-    showError('Error', msg);
+    showError(msg);
 }
 function editField(fieldName) {
     const config = fieldConfig[fieldName];
@@ -248,14 +248,12 @@ function saveField(fieldName) {
                 updateDisplay(fieldName);
                 showSuccess(langData['saved_successfully'] || 'Data saved successfully');
             } else {
-                showError(
-                    langData['error'] || 'Error', (langData[res.message] || res.message || 'Update failed')
-                );
+                showError((langData[res.message] || res.message || 'Update failed'));
             }
         },
         error: function(xhr) {
             console.error(xhr);
-            showError('Error', langData['cannot_save'] || 'Connection error');
+            showError(langData['cannot_save'] || 'Connection error');
         },
         complete: function() {
             btnSave.disabled = false;

@@ -49,11 +49,11 @@ function fetchFolders(isNewSearch = false) {
                 }
                 offset += limit;
             } else {
-                showError('Error', langData['cannot_load']);
+                showError(langData['cannot_load']);
             }
         },
         error: function () {
-            showError('Error', langData['cannot_load']);
+            showError(langData['cannot_load']);
         },
         complete: function() {
             isLoading = false;
@@ -232,11 +232,11 @@ $(document).on('click', '.delete-project', function () {
                     showSuccess(langData['deleted_successfully']);
                     fetchFolders(currentLevel, currentFolderId, currentRefId);
                 } else {
-                    showError('Error', langData['cannot_delete']);
+                    showError(langData['cannot_delete']);
                 }   
             },
             error: function(){
-                showError('Error', langData['cannot_delete']);
+                showError(langData['cannot_delete']);
             }
         });
     });
@@ -272,11 +272,11 @@ function manageFolder(folder_id = '') {
                     $('#folder_id').val(res.data.id);
                     $('#windModal').find(".modal-title").text(langData['edit_folder'] || 'Edit Folder');
                 } else {
-                    showError('Error', langData['cannot_load']);
+                    showError(langData['cannot_load']);
                 }
             },
             error: function(){
-                showError('Error', langData['cannot_load']);
+                showError(langData['cannot_load']);
             }
         });
     }
@@ -349,7 +349,7 @@ function saveFolder() {
                 fetchFolders(currentLevel, currentFolderId, currentRefId);
                 $('#windModal').modal('hide');
             } else {
-                showError('Error', (langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
+                showError((langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
             }
         },
         error: function (xhr, status, error) {
@@ -359,7 +359,7 @@ function saveFolder() {
                 let res = JSON.parse(xhr.responseText);
                 if (res.message) msg += ": " + res.message;
             } catch (e) {}
-            showError('Error', msg);
+            showError(msg);
         },
         complete: function() {
             btn.prop("disabled", false);
@@ -581,7 +581,7 @@ function saveContent() {
                 fetchFolders(currentLevel, currentFolderId, currentRefId);
                 $('#windModal').modal('hide');
             } else {
-                showError('Error', (langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
+                showError((langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
             }
         },
         error: function (xhr, status, error) {
@@ -591,7 +591,7 @@ function saveContent() {
                 let res = JSON.parse(xhr.responseText);
                 if (res.message) msg += ": " + res.message;
             } catch (e) {}
-            showError('Error', msg);
+            showError(msg);
         },
         complete: function() {
             btn.prop("disabled", false);
@@ -611,11 +611,11 @@ $(document).on('click', '.delete-content', function () {
                     showSuccess(langData['deleted_successfully']);
                     fetchFolders(currentLevel, currentFolderId, currentRefId);
                 } else {
-                    showError('Error', langData['cannot_delete']);
+                    showError(langData['cannot_delete']);
                 }   
             },
             error: function(){
-                showError('Error', langData['cannot_delete']);
+                showError(langData['cannot_delete']);
             }
         });
     });

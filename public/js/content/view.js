@@ -22,7 +22,7 @@ function initViewContent() {
         },
         error: function () {
             $('#viewLoader').hide();
-            showError('Error', 'Cannot load content');
+            showError(langData['cannot_load']);
         }
     });
 }
