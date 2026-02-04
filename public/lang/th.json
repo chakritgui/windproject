@@ -470,5 +470,6 @@
     "no_content_available": "ไม่มีเนื้อหา",
     "content_nothing_hear": "ไม่พบข้อมูลที่ต้องการ หรือหน้านี้อาจถูกย้ายไปแล้ว",
     "view_report": "ดูรายงาน",
-    "generate_report": "สร้างรายงาน"
+    "generate_report": "สร้างรายงาน",
+    "map_labels": "ป้ายแผนที่"
 }

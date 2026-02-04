@@ -93,6 +93,10 @@ function loadMapDataFromServer() {
                         $(`input[name="show_country_line"][value="${val}"]`).prop('checked', true);
                         val === 'show' ? $('#jsonUploadSection').show() : $('#jsonUploadSection').hide();
                     }
+                    if (settings.map_labels) {
+                        const val = settings.map_labels;
+                        $(`input[name="map_labels"][value="${val}"]`).prop('checked', true);
+                    }
                     if (settings.country_layers_data) {
                         try {
                             countryLayers = typeof settings.country_layers_data === 'string' 
@@ -271,6 +275,7 @@ function getMapFullConfigForSave() {
     const center = map.getCenter();
     const polygonVisibility = document.querySelector('input[name="polygon_visibility"]:checked')?.value || 'close';
     const show_country_line = document.querySelector('input[name="show_country_line"]:checked')?.value || 'hide';
+    const map_labels = document.querySelector('input[name="map_labels"]:checked')?.value || 'hide';
     return {
         map_settings: {
             center_lat: center.lat.toFixed(8),
@@ -280,6 +285,7 @@ function getMapFullConfigForSave() {
             default_style: JSON.stringify(currentStyle),
             polygon_visibility: polygonVisibility,
             show_country_line: show_country_line,
+            map_labels: map_labels,
             country_layers_data: countryLayers ? JSON.stringify(countryLayers) : null
         },
         polygons: polygons.map(p => {

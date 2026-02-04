@@ -94,6 +94,19 @@
                     <input class="form-control" type="file" id="jsonFile" accept=".json,.geojson">
                     <p class="mt-3" data-i18n="support_json"></p>
                 </div>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0 fw-bold" data-i18n="map_labels"></h5>
+                </div>
+                <div class="mb-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="map_labels" id="map_labels_yes" value="yes" checked>
+                        <label class="form-check-label" for="map_labels_yes" data-i18n="show"></label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" name="map_labels" id="map_labels_no" value="no">
+                        <label class="form-check-label" for="map_labels_no" data-i18n="hide"></label>
+                    </div>
+                </div>
             </div>
             <div class="control-panel mt-3" id="stylePanel">
                 <div class="row align-items-center g-3">

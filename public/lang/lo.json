@@ -470,5 +470,6 @@
     "no_content_available": "ບໍ່ມີເນື້ອໃນ",
     "content_nothing_hear": "ບໍ່ພົບຂໍ້ມູນທີ່ຕ້ອງການ ຫຼື ໜ້ານີ້ອາດຈະຖືກຍ້າຍໄປແລ້ວ",
     "view_report": "ເບິ່ງບົດລາຍງານ",
-    "generate_report": "ສ້າງບົດລາຍງານ"
+    "generate_report": "ສ້າງບົດລາຍງານ",
+    "map_labels": "ປ້າຍແຜນທີ່"
 }
