@@ -26,14 +26,17 @@ INSERT INTO `wp_setting` (`setting_type`, `setting_value`, `created_at`, `update
 ('infography', NULL, NOW(), NOW());
 
 INSERT INTO `wp_folder` (`id`, `name`, `code`, `type`, `level`, `parent_id`, `ref_id`, `content_id`, `notification_status`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'PROJECT', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', '2026-01-21 18:14:45', '2026-01-21 18:14:45'),
-(2, 'MEASUREMENT STATION', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', '2026-01-21 18:14:45', '2026-01-21 18:14:45'),
-(3, 'EIA / EHIA', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', '2026-01-21 18:16:27', '2026-01-21 18:16:27'),
-(4, 'PDA / PPA / CA', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', '2026-01-21 18:16:27', '2026-01-21 18:16:27'),
-(5, 'CONTRACT', 'contract', 'root', 2, 1, NULL, NULL, 'no', 'active', '2026-01-24 04:14:14', '2026-01-24 04:14:14'),
-(6, 'PROJECT', 'project', 'root', 3, 5, NULL, NULL, 'no', 'active', '2026-01-24 04:14:14', '2026-01-24 04:14:14'),
-(7, 'PROCESS', 'process', 'root', 4, 6, NULL, NULL, 'no', 'deleted', '2026-01-24 04:14:14', '2026-01-24 04:14:14'),
-(8, 'CONTRACT', 'contract', 'root', 2, 2, NULL, NULL, 'no', 'active', '2026-01-24 04:14:14', '2026-01-24 04:14:14'),
-(9, 'PROJECT', 'project', 'root', 3, 8, NULL, NULL, 'no', 'active', '2026-01-24 04:14:14', '2026-01-26 16:56:45'),
-(10, 'TYPE', 'type', 'root', 4, 9, NULL, NULL, 'no', 'active', '2026-01-24 04:14:14', '2026-01-24 04:14:14'),
-(11, 'INSTALLATION', 'installation', 'root', 5, 10, NULL, NULL, 'no', 'active', '2026-01-24 04:14:14', '2026-01-24 04:14:14');
+(1, 'PROJECT', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW()),
+(2, 'MEASUREMENT STATION', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW()),
+(3, 'EIA / EHIA', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW()),
+(4, 'PDA / PPA / CA', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW()),
+(5, 'CONTRACT', 'contract', 'root', 2, 1, NULL, NULL, 'no', 'active', NOW(), NOW()),
+(6, 'PROJECT', 'project', 'root', 3, 5, NULL, NULL, 'no', 'active', NOW(), NOW()),
+(7, 'PROCESS', 'process', 'root', 4, 6, NULL, NULL, 'no', 'deleted', NOW(), NOW()),
+(8, 'CONTRACT', 'contract', 'root', 2, 2, NULL, NULL, 'no', 'active', NOW(), NOW()),
+(9, 'PROJECT', 'project', 'root', 3, 8, NULL, NULL, 'no', 'active', NOW(), NOW()),
+(10, 'TYPE', 'type', 'root', 4, 9, NULL, NULL, 'no', 'active', NOW(), NOW()),
+(11, 'INSTALLATION', 'installation', 'root', 5, 10, NULL, NULL, 'no', 'active', NOW(), NOW());
+
+INSERT INTO `wp_members`(`member_id`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone`, `role`, `status`, `last_login_at`, `created_at`, `updated_at`, `remember_selector`, `remember_validator_hash`, `remember_expires_at`) VALUES 
+(1,'admin@windproject',md5('Wp2026')','Admin','System','admin@windproject.wp',null,'admin@windproject.wp','active','null,NOW(),NOW(),null,null,null)
