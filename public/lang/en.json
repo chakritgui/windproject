@@ -490,5 +490,17 @@
     "invalid_or_expired_token": "The password reset link is invalid or has expired.",
     "allow_images_and_videos_only": "Allow images and videos only",
     "image/video": "Image/Video (1080 × 1920px)",
-    "infography": "Infography"
+    "infography": "Infography",
+    "configuration": "Configuration",
+    "general_settings": "General Settings",
+    "email_settings": "Email Settings",
+    "api_settings": "API Settings",
+    "domain_name": "Domain Name",
+    "specify_the_system's_main_URL.": "Specify the system's main URL.",
+    "mail_host": "Mail Host",
+    "mail_port": "Mail Port",
+    "mail_user": "Mail User",
+    "mail_pass": "Mail Password",
+    "windy_key": "Windy Key",
+    "google_api_key_for_translate": "Google API Key for Translate"
 }

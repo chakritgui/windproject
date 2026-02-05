@@ -50,6 +50,16 @@ function initSetting() {
         if (Array.isArray(settingsArray)) {
             settingsArray.forEach(applySetting);
         }
+        const systemConfigs = res.data.system_configs;
+        if (systemConfigs && typeof systemConfigs === 'object') {
+            Object.keys(systemConfigs).forEach(key => {
+                const value = systemConfigs[key];
+                const $el = $(`#systemConfigForm [name="${key}"]`);
+                if ($el.length) {
+                    $el.val(value);
+                }
+            });
+        }
         const dbDefault = settingsArray.find(i => i.setting_type === 'language_default')?.setting_value;
         const targetLang = res.data.user_lang || sessionStorage.getItem('lang') || dbDefault || 'en';
         if (typeof currentLang !== 'undefined' && currentLang !== targetLang) {
@@ -263,5 +273,35 @@ $(document).on('click', '.save-setting-2', function () {
     fd.append('oldinfographyBg', $('#oldinfographyBg').val());
     uploadWithProgress('/api/setting/saveBgImage', fd, '.save-setting-2').done(res => {
         res.status ? (showSuccess(langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError(langData['cannot_save']);
+    }).fail(() => showError(langData['cannot_save']));
+});
+function toggleVisibility(id) {
+    const input = document.getElementById(id);
+    const icon = event.currentTarget.querySelector('i');
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        input.type = "password";
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+$(document).on('click', '.save-configuration', function () {
+    const fd = new FormData();
+    const formId = '#systemConfigForm';
+    $(formId).find('input, select, textarea').each(function() {
+        const name = $(this).attr('name');
+        const value = $(this).val();
+        if (name) {
+            fd.append(name, value);
+        }
+    });
+    uploadWithProgress('/api/setting/saveConfig', fd, '.save-configuration').done(res => {
+        if (res.status) {
+            showSuccess(langData['saved_successfully']);
+            if (typeof initSetting === 'function') initSetting(); 
+        } else {
+            showError(langData['cannot_save']);
+        }
     }).fail(() => showError(langData['cannot_save']));
 });

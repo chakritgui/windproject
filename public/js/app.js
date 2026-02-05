@@ -45,8 +45,6 @@ async function loadSetting() {
         }
         const settingsArray = res.data.settings;
         settingsArray.forEach(handleSettingItem);
-        console.log(settingsArray);
-        
         const dbDefault = settingsArray.find(i => i.setting_type === 'language_default')?.setting_value;
         currentLang = res.data.user_lang || sessionStorage.getItem('lang') || dbDefault || 'en';
         sessionStorage.setItem('lang', currentLang);
@@ -139,7 +137,6 @@ async function changeLanguage(lang) {
             data: { language: lang },
             dataType: 'json'
         });
-        console.log("Language updated in DB successfully");
     } catch (err) {
         console.warn("Could not save language to DB (User might not be logged in)", err);
     }

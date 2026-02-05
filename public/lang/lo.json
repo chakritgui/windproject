@@ -490,5 +490,17 @@
     "invalid_or_expired_token": "ລິ້ງຕັ້ງຄ່າລະຫັດຜ່ານໃໝ່ບໍ່ຖືກຕ້ອງ ຫຼື ໝົດອາຍຸແລ້ວ",
     "allow_images_and_videos_only": "ສະເພາະຮູບພາບ ແລະ ວິດີໂອເທົ່ານັ້ນ",
     "image/video": "ຮູບພາບ/ວິດີໂອ (1080 × 1920px)",
-    "infography": "ອິນໂຟກຣາຟິກ"
+    "infography": "ອິນໂຟກຣາຟິກ",
+    "configuration": "ການຈັດການຄ່າລະບົບ",
+    "general_settings": "ຕັ້ງຄ່າທົ່ວໄປ",
+    "email_settings": "ຕັ້ງຄ່າອີເມວ",
+    "api_settings": "ຕັ້ງຄ່າ API",
+    "domain_name": "ຊື່ໂດເມນ (Domain Name)",
+    "specify_the_system's_main_URL.": "ລະບຸ URL ຫຼັກຂອງລະບົບ",
+    "mail_host": "ເຊີບເວີອີເມວ (Mail Host)",
+    "mail_port": "ພອດອີເມວ (Mail Port)",
+    "mail_user": "ຜູ້ໃຊ້ອີເມວ",
+    "mail_pass": "ລະຫັດຜ່ານອີເມວ",
+    "windy_key": "Windy API Key",
+    "google_api_key_for_translate": "Google API Key ສຳລັບແປພາສາ"
 }

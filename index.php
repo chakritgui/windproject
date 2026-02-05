@@ -85,6 +85,7 @@
             $router->post('/api/setting/saveLang', 'SettingController@saveLang');
             $router->post('/api/setting/saveShortcut', 'SettingController@saveShortcut');
             $router->post('/api/setting/saveBgImage', 'SettingController@saveBgImage');
+            $router->post('/api/setting/saveConfig', 'SettingController@saveConfig');
             $router->post('/api/mapsetting/save', 'MapSettingController@save');
             $router->get('/api/mapsetting/load', 'MapSettingController@load');
             $router->post('/api/contracts/list', 'ContractsController@list');
@@ -158,6 +159,7 @@
     $router->post('/api/notification/load', 'NotificationController@load');
     $router->post('/api/notification/load-list', 'NotificationController@loadlist');
     $router->post('/api/setting/get', 'SettingController@get');
+    $router->get('/api/setting/getPublicConfig', 'SettingController@getPublicConfig');
     $router->get('/account', 'AuthController@account');
     $router->post('/api/account/get', 'AccountControl@get');
     $router->post('/api/account/update', 'AccountControl@update');

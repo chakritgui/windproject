@@ -1,0 +1,8 @@
+INSERT INTO `system_settings` (`setting_key`, `setting_value`, `setting_group`, `description`) VALUES
+('WINDY_KEY', '', 'API', 'API Key สำหรับบริการ Windy.com'),
+('GOOGLE_API_KEY', '', 'API', 'Google Maps/Services API Key'),
+('MAIL_HOST', 'smtp.gmail.com', 'MAIL', 'Outgoing Mail Server (SMTP)'),
+('MAIL_USER', '', 'MAIL', 'Email Account สำหรับส่งจดหมาย'),
+('MAIL_PASS', '', 'MAIL', 'Password สำหรับ Email Account'),
+('MAIL_PORT', '587', 'MAIL', 'Port สำหรับส่งเมล (เช่น 587, 465)'),
+('DOMAIN_NAME', 'http://localhost', 'GENERAL', 'URL หลักของเว็บไซต์');

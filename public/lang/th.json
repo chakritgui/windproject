@@ -490,5 +490,17 @@
     "invalid_or_expired_token": "ลิงก์รีเซ็ตรหัสผ่านไม่ถูกต้อง หรือหมดอายุแล้ว",
     "allow_images_and_videos_only": "เฉพาะรูปภาพและวิดีโอเท่านั้น",
     "image/video": "รูปภาพ/วิดีโอ (1080 × 1920px)",
-    "infography": "อินโฟกราฟิก"
+    "infography": "อินโฟกราฟิก",
+    "configuration": "การจัดการค่าระบบ",
+    "general_settings": "ตั้งค่าทั่วไป",
+    "email_settings": "ตั้งค่าอีเมล",
+    "api_settings": "ตั้งค่า API",
+    "domain_name": "ชื่อโดเมน (Domain Name)",
+    "specify_the_system's_main_URL.": "ระบุ URL หลักของระบบ",
+    "mail_host": "เซิร์ฟเวอร์อีเมล (Mail Host)",
+    "mail_port": "พอร์ตอีเมล (Mail Port)",
+    "mail_user": "ผู้ใช้อีเมล",
+    "mail_pass": "รหัสผ่านอีเมล",
+    "windy_key": "Windy API Key",
+    "google_api_key_for_translate": "Google API Key สำหรับแปลภาษา"
 }

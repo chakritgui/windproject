@@ -2,12 +2,10 @@
 class MediaHelper {
     private $db;
     private $basePath;
-    private string $GOOGLE_API_KEY;
     private string $TRANSLATE_LIMIT;
     public function __construct($db) {
         $this->db = $db;
-        $this->basePath = realpath(dirname(__DIR__, 2)); 
-        $this->GOOGLE_API_KEY = GOOGLE_API_KEY;
+        $this->basePath = realpath(dirname(__DIR__, 2));
         $this->TRANSLATE_LIMIT = TRANSLATE_LIMIT;
     }
     public function syncMedia($content_id, $type, $existingIds = []) {
@@ -369,8 +367,16 @@ class MediaHelper {
         }
         return html_entity_decode($result, ENT_QUOTES, 'UTF-8');
     }
-    private function callTranslateApi($text, $source, $target){
-        $url = 'https://translation.googleapis.com/language/translate/v2?key=' . $this->GOOGLE_API_KEY;
+    private function callTranslateApi($text, $source, $target) {
+        $sql = "SELECT setting_value FROM system_settings WHERE setting_key = 'GOOGLE_API_KEY' LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $encryptedKey = $stmt->fetchColumn();
+        if (!$encryptedKey) {
+            throw new Exception('Google API Key not found in system settings.');
+        }
+        $apiKey = decryptToken($encryptedKey); 
+        $url = 'https://translation.googleapis.com/language/translate/v2?key=' . $apiKey;
         $payload = [
             'q'      => $text,
             'source' => $source,
@@ -383,16 +389,24 @@ class MediaHelper {
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
             CURLOPT_POSTFIELDS     => json_encode($payload),
-            CURLOPT_TIMEOUT        => 30
+            CURLOPT_TIMEOUT        => 30,
+            CURLOPT_SSL_VERIFYPEER => true
         ]);
         $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         if ($response === false) {
-            throw new Exception('CURL error: ' . curl_error($ch));
+            $error = curl_error($ch);
+            curl_close($ch);
+            throw new Exception('CURL error: ' . $error);
         }
         curl_close($ch);
         $json = json_decode($response, true);
+        if ($httpCode !== 200) {
+            $errorMessage = $json['error']['message'] ?? 'Unknown error';
+            throw new Exception('Google Translate API Error (' . $httpCode . '): ' . $errorMessage);
+        }
         if (!isset($json['data']['translations'][0]['translatedText'])) {
-            throw new Exception('Google Translate API error: ' . $response);
+            throw new Exception('Unexpected Google Translate API response structure.');
         }
         return $json['data']['translations'][0]['translatedText'];
     }
@@ -452,17 +466,12 @@ class MediaHelper {
                     $summary['total_words'] ?? 0, 
                     $summary['total_requests'] ?? 0
                 ]);
-
-                // ลบข้อมูลที่สรุปแล้วออกจากตาราง Log หลัก
                 $delete = $pdo->prepare("DELETE FROM translate_usage_log WHERE created_at <= ?");
                 $delete->execute([$endDate]);
-
                 $pdo->commit();
                 return "Archived $yearMonth successfully: " . number_format($summary['total_chars']) . " chars processed.";
             }
-
             return "No usage data found for $yearMonth.";
-
         } catch (\Exception $e) {
             if ($pdo->inTransaction()) {
                 $pdo->rollBack();

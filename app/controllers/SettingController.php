@@ -55,6 +55,7 @@ class SettingController extends BaseController {
         $this->json(['status'=>$this->model->saveLanguageSetting($data)]);
     }
     public function get() {
+        header('Content-Type: application/octet-stream');
         $this->json(['status'=> true, 'data' => $this->model->getAll()]);
     }
     public function shortcut() {
@@ -78,5 +79,45 @@ class SettingController extends BaseController {
         } else {
             echo json_encode(['status' => false, 'message' => 'Database error']);
         }
+    }
+    public function saveConfig() {
+        $userId = $_SESSION['user']['id'] ?? null;
+        if (!$userId) {
+            echo json_encode(['status' => false, 'message' => 'Unauthorized']);
+            return;
+        }
+        $configs = $_POST;
+        $secureKeys = ['MAIL_PASS', 'WINDY_KEY', 'GOOGLE_API_KEY'];
+        foreach ($configs as $key => $value) {
+            if (in_array($key, $secureKeys)) {
+                if (empty(trim($value))) {
+                    unset($configs[$key]);
+                    continue;
+                }
+                $configs[$key] = encryptToken($value);
+            }
+        }
+        $result = $this->model->saveSystemConfig($configs);
+        if ($result) {
+            echo json_encode(['status' => true, 'message' => 'Configuration saved successfully']);
+        } else {
+            echo json_encode(['status' => false, 'message' => 'Database error']);
+        }
+    }
+    public function getPublicConfig() {
+        $publicKeys = [
+            'WINDY_KEY',
+        ];
+        $publicData = [];
+        foreach ($publicKeys as $key) {
+            $encryptedValue = $this->model->getSetting($key);
+            if (!empty($encryptedValue)) {
+                $publicData[$key] = decryptToken($encryptedValue);
+            }
+        }
+        $payload = base64_encode(json_encode($publicData));
+        header('Content-Type: application/octet-stream');
+        echo $payload;
+        exit;
     }
 }

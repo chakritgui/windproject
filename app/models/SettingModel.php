@@ -69,6 +69,20 @@ class SettingModel {
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $settings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $sqlConfig = "SELECT setting_key, setting_value FROM system_settings";
+        $stmtConfig = $this->db->prepare($sqlConfig);
+        $stmtConfig->execute();
+        $configsRaw = $stmtConfig->fetchAll(PDO::FETCH_ASSOC);
+        $systemConfigs = [];
+        $secureKeys = ['MAIL_PASS', 'WINDY_KEY', 'GOOGLE_API_KEY'];
+        foreach ($configsRaw as $row) {
+            $key = $row['setting_key'];
+            $value = $row['setting_value'];
+            if (in_array($key, $secureKeys) && !empty($value)) {
+                $value = decryptToken($value);
+            }
+            $systemConfigs[$key] = $value;
+        }
         $userLanguage = null;
         if(!empty($_SESSION['user']['id'])) {
             $sql = "SELECT language FROM wp_members_language WHERE member_id = ?";
@@ -81,6 +95,7 @@ class SettingModel {
         }
         return [
             'settings' => $settings,
+            'system_configs' => (!empty($_SESSION['user']['id'])) ? $systemConfigs : [],
             'user_lang' => $userLanguage
         ];
     }
@@ -244,6 +259,39 @@ class SettingModel {
         } catch (PDOException $e) {
             error_log("Error saving user language: " . $e->getMessage());
             return false;
+        }
+    }
+    public function saveSystemConfig($configs) {
+        $sql = "INSERT INTO system_settings (setting_key, setting_value, updated_at) 
+                VALUES (?, ?, NOW()) 
+                ON DUPLICATE KEY UPDATE 
+                setting_value = VALUES(setting_value), 
+                updated_at = NOW()";
+        try {
+            $this->db->beginTransaction();
+            $stmt = $this->db->prepare($sql);
+            foreach ($configs as $key => $value) {
+                $stmt->execute([$key, $value]);
+            }
+            $this->db->commit();
+            return true;
+        } catch (PDOException $e) {
+            $this->db->rollBack();
+            error_log("Error saving system configuration: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function getSetting($key) {
+        try {
+            $sql = "SELECT setting_value FROM system_settings WHERE setting_key = :key LIMIT 1";
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':key', $key, PDO::PARAM_STR);
+            $stmt->execute();
+            $result = $stmt->fetchColumn();
+            return ($result !== false) ? $result : ''; 
+        } catch (PDOException $e) {
+            error_log("Error in getSetting Model: " . $e->getMessage());
+            return null;
         }
     }
 }

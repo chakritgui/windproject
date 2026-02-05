@@ -38,7 +38,7 @@
     </div>
 </div>
 <div class="container-fluid mt-3 mb-5">
-    <ul class="nav nav-pills mb-4" role="tablist">
+    <ul class="nav nav-pills mb-4" role="tablist" id="mainTabs">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#general" type="button"><i class="fa-solid fa-house-chimney me-2"></i><span data-i18n="information"></span></button>
         </li>
@@ -47,6 +47,9 @@
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" data-bs-toggle="pill" data-bs-target="#background" type="button"><i class="fa-solid fa-images me-2"></i><span data-i18n="background"></span></button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#configuration" type="button"><i class="fa-solid fa-gears me-2"></i><span data-i18n="configuration"></span></button>
         </li>
     </ul>
     <div class="tab-content">
@@ -273,6 +276,85 @@
                 <button class="btn btn-lg btn-primary save-setting-2">
                     <i class="fa-solid fa-floppy-disk me-2"></i><span data-i18n="save"></span>
                 </button>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="configuration">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white py-3">
+                    <ul class="nav nav-pills card-header-pills" id="mainTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general-config" type="button" role="tab">
+                                <i class="fa-solid fa-earth-asia me-2"></i><span data-i18n="general_settings"></span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email-config" type="button" role="tab">
+                                <i class="fa-solid fa-envelope me-2"></i><span data-i18n="email_settings"></span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="api-tab" data-bs-toggle="tab" data-bs-target="#api-config" type="button" role="tab">
+                                <i class="fa-solid fa-key me-2"></i><span data-i18n="api_settings"></span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body p-4">
+                    <form id="systemConfigForm">
+                        <div class="tab-content" id="configTabContent">
+                            <div class="tab-pane fade show active" id="general-config" role="tabpanel">
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label fw-bold" data-i18n="domain_name"></label>
+                                        <input type="url" name="DOMAIN_NAME" class="form-control" placeholder="https://yourdomain.com">
+                                        <div class="form-text" data-i18n="specify_the_system's_main_URL."></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="email-config" role="tabpanel">
+                                <div class="row g-3">
+                                    <div class="col-md-8">
+                                        <label class="form-label fw-bold" data-i18n="mail_host"></label>
+                                        <input type="text" name="MAIL_HOST" class="form-control" placeholder="smtp.gmail.com">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label fw-bold" data-i18n="mail_port"></label>
+                                        <input type="number" name="MAIL_PORT" class="form-control" placeholder="587">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold" data-i18n="mail_user"></label>
+                                        <input type="email" name="MAIL_USER" class="form-control" placeholder="example@mail.com">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold" data-i18n="mail_pass"></label>
+                                        <div class="input-group">
+                                            <input type="password" name="MAIL_PASS" id="mail_pass_input" class="form-control">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="toggleVisibility('mail_pass_input')"><i class="fa-solid fa-eye"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="api-config" role="tabpanel">
+                                <div class="row g-3">
+                                    <div class="col-md-12">
+                                        <label class="form-label fw-bold" data-i18n="windy_key"></label>
+                                        <input type="text" name="WINDY_KEY" class="form-control">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label fw-bold" data-i18n="google_api_key_for_translate"></label>
+                                        <input type="text" name="GOOGLE_API_KEY" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="my-4">
+                        <div class="text-end mt-4">
+                            <button class="btn btn-lg btn-primary save-configuration">
+                                <i class="fa-solid fa-floppy-disk me-2"></i><span data-i18n="save"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
