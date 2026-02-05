@@ -246,6 +246,26 @@
                                 <button class="btn btn-outline-danger w-100 mt-3 btn-remove-mobile d-none" onclick="removeImage('loginMobilePreview', 'loginMobileInput')"><i class="fa-solid fa-trash-can me-2"></i><span data-i18n="remove"></span></button> 
                             </div>
                         </div>
+                        <div class="col-md-4">
+                            <label class="form-label" data-i18n="infography"></label>
+                            <div class="preview-box" id="infographyPreview">
+                                <div class="text-center">
+                                    <i class="fa-solid fa-cloud-arrow-up fs-1 text-muted"></i>
+                                    <p class="mt-2 text-muted"><span data-i18n="uploadFile"></span></p>
+                                    <small class="text-muted" data-i18n="image/video"></small>
+                                </div>
+                            </div>
+                            <input type="file" id="infographyInput" class="d-none" accept="image/*,video/*" onchange="previewImage(this, 'infographyPreview', 'infography')">
+                            <input type="hidden" id="oldinfographyBg">
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('infographyInput').click()">
+                                    <i class="fa-solid fa-upload me-2"></i><span data-i18n="choose"></span>
+                                </button> 
+                                <button class="btn btn-outline-danger w-100 mt-3 btn-remove-infography d-none" onclick="removeImage('infographyPreview', 'infographyInput', 'infography')">
+                                    <i class="fa-solid fa-trash-can me-2"></i><span data-i18n="remove"></span>
+                                </button> 
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

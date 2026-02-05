@@ -32,8 +32,12 @@ class SettingModel {
             if (empty($data['oldLoginMobileBg']) && (empty($_FILES['loginMobileInput']) || $_FILES['loginMobileInput']['error'] === UPLOAD_ERR_NO_FILE)) {
                 $this->updateSetting('login_mobile_bg', null);
             }
+            if (empty($data['oldinfographyBg']) && (empty($_FILES['infographyInput']) || $_FILES['infographyInput']['error'] === UPLOAD_ERR_NO_FILE)) {
+                $this->updateSetting('infography', null);
+            }
             $this->uploadAndSave('loginInput', 'login_bg');
             $this->uploadAndSave('loginMobileInput', 'login_mobile_bg');
+            $this->uploadAndSave('infographyInput', 'infography');
             $this->db->commit();
             return true;
         } catch (Exception $e) {
@@ -97,36 +101,46 @@ class SettingModel {
             return;
         }
         $file = $_FILES[$inputName];
-        $imgInfo = getimagesize($file['tmp_name']);
-        if ($imgInfo === false) {
-            return;
-        }
+        $mimeType = mime_content_type($file['tmp_name']); 
         $dir = dirname(__DIR__, 2) . "/uploads/website/";
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
-        $filename = $settingType . ".webp";
-        $target   = $dir . $filename;
-        switch ($imgInfo['mime']) {
-            case 'image/jpeg':
-                $image = imagecreatefromjpeg($file['tmp_name']);
-                break;
-            case 'image/png':
-                $image = imagecreatefrompng($file['tmp_name']);
-                imagepalettetotruecolor($image);
+        if (str_contains($mimeType, 'video/')) {
+            $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+            $filename = $settingType . "." . $extension; 
+            $target = $dir . $filename;
+            if (move_uploaded_file($file['tmp_name'], $target)) {
+                $filePath = "uploads/website/" . $filename;
+                $this->updateSetting($settingType, $filePath);
+            }
+        } else if (str_contains($mimeType, 'image/')) {
+            $filename = $settingType . ".webp";
+            $target = $dir . $filename;
+            $image = null;
+            switch ($mimeType) {
+                case 'image/jpeg': $image = imagecreatefromjpeg($file['tmp_name']); break;
+                case 'image/png': 
+                    $image = imagecreatefrompng($file['tmp_name']);
+                    imagepalettetotruecolor($image);
+                    break;
+                case 'image/gif':  $image = imagecreatefromgif($file['tmp_name']); break;
+                case 'image/avif': 
+                    if (function_exists('imagecreatefromavif')) {
+                        $image = imagecreatefromavif($file['tmp_name']);
+                    }
+                    break;
+                case 'image/webp': $image = imagecreatefromwebp($file['tmp_name']); break;
+            }
+            if ($image) {
                 imagealphablending($image, true);
                 imagesavealpha($image, true);
-                break;
-            case 'image/gif':
-                $image = imagecreatefromgif($file['tmp_name']);
-                break;
-            default:
-                return;
+                imagewebp($image, $target, 80);
+                imagedestroy($image);
+                $filePath = "uploads/website/" . $filename;
+                $this->updateSetting($settingType, $filePath);
+            }
         }
-        imagewebp($image, $target, 80);
-        imagedestroy($image);
-        $filePath = "uploads/website/" . $filename;
-        $this->updateSetting($settingType, $filePath);
     }
     public function saveShortcut($data){
         $iconDir = __DIR__ . "/../../public/icons/";

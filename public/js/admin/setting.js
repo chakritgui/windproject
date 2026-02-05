@@ -66,6 +66,7 @@ const settingHandlers = {
     icon: v => renderImage('iconPreview', v),
     login_mobile_bg: v => renderBg('loginMobilePreview', v, 'mobile'),
     login_bg: v => renderBg('loginPreview', v, 'pc'),
+    infography: v => renderBg('infographyPreview', v, 'infography'),
     website_en: v => $('#nameEn').val(v),
     website_lo: v => $('#nameLo').val(v),
     website_th: v => $('#nameTh').val(v),
@@ -85,23 +86,46 @@ function renderImage(previewId, path) {
     `);
 }
 function renderBg(previewId, path, type) {
-    renderImage(previewId, path);
+    if (!path) return;
+    const extension = path.split('.').pop().toLowerCase();
+    const videoExtensions = ['mp4', 'webm', 'ogg'];
+    const isVideo = videoExtensions.includes(extension);
+    if (isVideo) {
+        $(`#${previewId}`).html(`
+            <video class="preview-video" controls style="width:100%; height:100%; object-fit:contain;">
+                <source src="${path}" type="video/${extension}">
+            </video>
+        `);
+    } else {
+        $(`#${previewId}`).html(`<img src="${path}" class="preview-img" style="width:100%; height:100%; object-fit:contain;">`);
+    }
     $(`.btn-remove-${type}`).removeClass('d-none');
-    $(`#oldLogin${type === 'mobile' ? 'Mobile' : ''}Bg`).val(path);
+    const hiddenInputId = type === 'infography' ? '#oldinfographyBg' : (type === 'mobile' ? '#oldLoginMobileBg' : '#oldLoginBg');
+    $(hiddenInputId).val(path);
 }
 function previewImage(input, previewId, type) {
     const file = input.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) {
-        showError(langData['allow_images_only']);
+    const isImage = file.type.startsWith('image/');
+    const isVideo = file.type.startsWith('video/');
+    if (!isImage && !isVideo) {
+        showError(langData['allow_images_and_videos_only']);
         input.value = '';
         return;
     }
     const reader = new FileReader();
     reader.onload = e => {
-        $(`#${previewId}`).html(`
-            <img src="${e.target.result}" class="preview-img">
-        `);
+        let previewHtml = '';
+        if (isImage) {
+            previewHtml = `<img src="${e.target.result}" class="preview-img" style="width:100%; height:100%; object-fit:contain;">`;
+        } else if (isVideo) {
+            previewHtml = `
+                <video class="preview-video" controls style="width:100%; height:100%; object-fit:contain;">
+                    <source src="${e.target.result}" type="${file.type}">
+                    Your browser does not support the video tag.
+                </video>`;
+        }
+        $(`#${previewId}`).html(previewHtml);
         $(`.btn-remove-${type}`).removeClass('d-none');
     };
     reader.readAsDataURL(file);
@@ -233,8 +257,10 @@ $(document).on('click', '.save-setting-2', function () {
     const fd = new FormData();
     fd.append('loginInput', $('#loginInput')[0].files[0] || null);
     fd.append('loginMobileInput', $('#loginMobileInput')[0].files[0] || null);
+    fd.append('infographyInput', $('#infographyInput')[0].files[0] || null);
     fd.append('oldLoginBg', $('#oldLoginBg').val());
     fd.append('oldLoginMobileBg', $('#oldLoginMobileBg').val());
+    fd.append('oldinfographyBg', $('#oldinfographyBg').val());
     uploadWithProgress('/api/setting/saveBgImage', fd, '.save-setting-2').done(res => {
         res.status ? (showSuccess(langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError(langData['cannot_save']);
     }).fail(() => showError(langData['cannot_save']));
