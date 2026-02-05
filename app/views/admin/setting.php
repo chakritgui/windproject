@@ -371,7 +371,7 @@
                 <div class="card-body">
                     <h5 class="card-title mb-4">
                         <i class="fa-solid fa-bell text-primary me-2"></i>
-                        <span data-i18n="notification_settings"></span>
+                        <span data-i18n="notification"></span>
                     </h5>
                     <form id="notificationSettingForm">
                         <div class="row g-4">
