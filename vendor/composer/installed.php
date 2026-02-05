@@ -3,7 +3,7 @@
         'name' => '__root__',
         'pretty_version' => 'dev-Chakrit',
         'version' => 'dev-Chakrit',
-        'reference' => '55e14f904365981dd2b7a4f903047dc6415e2390',
+        'reference' => 'aa7fa90c5b5946257bdd796025f28836f14d308b',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         '__root__' => array(
             'pretty_version' => 'dev-Chakrit',
             'version' => 'dev-Chakrit',
-            'reference' => '55e14f904365981dd2b7a4f903047dc6415e2390',
+            'reference' => 'aa7fa90c5b5946257bdd796025f28836f14d308b',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

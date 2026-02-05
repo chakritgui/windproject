@@ -159,6 +159,8 @@
     $router->post('/api/notification/read', 'NotificationController@read');
     $router->post('/api/notification/load', 'NotificationController@load');
     $router->post('/api/notification/load-list', 'NotificationController@loadlist');
+    $router->post('/api/push/subscribe', 'PushController@saveSubscription');
+    $router->post('/api/push/unsubscribe', 'PushController@unsubscribe');
     $router->post('/api/setting/get', 'SettingController@get');
     $router->get('/api/setting/getPublicConfig', 'SettingController@getPublicConfig');
     $router->get('/account', 'AuthController@account');

@@ -509,5 +509,10 @@
     "notifyPwa": "PWA Push Notification",
     "receive_notifications_pwa": "Receive notifications via browser or mobile device (PWA).",
     "queuing_system": "Queuing System",
-    "email_tip": "All emails will be sent to a queue and processed according to priority."
+    "email_tip": "All emails will be sent to a queue and processed according to priority.",
+    "you_will_receive_notifications": "You will receive notifications from us from now on.",
+    "do_you_receive": "Do you receive notifications?",
+    "we_will_keep_you": "We will keep you informed of important information and status updates immediately.",
+    "for_later": "for later",
+    "okay": "Okay, go ahead and open it."
 }

@@ -10,20 +10,123 @@ const langInfo = {
     en: { flag: 'gb', label: 'EN', full: 'English' },
     th: { flag: 'th', label: 'TH', full: 'ไทย' }
 };
+const VAPID_PUBLIC_KEY = 'BJyu1v7EXRhdUr1MnfK3sAjxitbj2wxpO5YZlQVbz1abX-fnNQwWU0-RHR791cmfoCg-6H7cuvGBa6ctsERVnho';
 $(document).ready(initApp);
 async function initApp() {
     try {
-        await loadSetting();
-        await loadLang(currentLang);
-        await loadNotification();
+        await Promise.all([
+            loadSetting(),
+            loadLang(currentLang),
+            loadNotification()
+        ]);
         bindSidebar();
         bindNotification();
         initAutoLanguageObserver();
         initMeta();
         refreshAllTables();
+        if (isPWA()) {
+            await handlePWANotifications();
+        }
     } catch (error) {
         console.error("Initialization failed:", error);
+        showError(langData['process_failed']);
     }
+}
+async function handlePWANotifications() {
+    if (Notification.permission === 'denied') return;
+    if (sessionStorage.getItem('notification_asked_this_session')) {
+        return;
+    }
+    const registration = await navigator.serviceWorker.ready;
+    const sub = await registration.pushManager.getSubscription();
+    if (Notification.permission === 'default') {
+        showNotificationModal(async () => {
+            await requestAndSubscribe(registration);
+        }, () => {
+            sessionStorage.setItem('notification_asked_this_session', 'true');
+        });
+    } else if (Notification.permission === 'granted' && !sub) {
+        await requestAndSubscribe(registration);
+    }
+}
+async function requestAndSubscribe(registration) {
+    try {
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+            Swal.fire({
+                title: langData['processing'],
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+            });
+            const response = await fetch(`${BASE_URL}/api/push/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(subscription)
+            });
+            if (response.ok) {
+                Swal.fire({
+                    icon: 'success',
+                    title: langData['success'],
+                    text: langData['you_will_receive_notifications'],
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                throw new Error("Server response failed");
+            }
+        }
+    } catch (error) {
+        console.error("Push Subscription Error:", error);
+        showError(langData['process_failed']);
+    }
+}
+async function showNotificationModal(onAllow, onLater) {
+    const result = await Swal.fire({
+        title: langData['do_you_receive'],
+        text: langData['we_will_keep_you'],
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: langData['okay'],
+        cancelButtonText: langData['for_later'],
+        reverseButtons: true
+    });
+    if (result.isConfirmed) {
+        onAllow();
+    } else {
+        onLater();
+    }
+}
+async function unsubscribeUser() {
+    const registration = await navigator.serviceWorker.ready;
+    const subscription = await registration.pushManager.getSubscription();
+    if (subscription) {
+        await fetch(`${BASE_URL}/api/push/unsubscribe`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ endpoint: subscription.endpoint })
+        });
+        await subscription.unsubscribe();
+        showSuccess(langData['saved_successfully']);
+    }
+}
+function isPWA() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
 }
 function initMeta() {
     $.post(`${BASE_URL}/api/setting/shortcut`).done(res => {
