@@ -502,5 +502,6 @@
     "mail_user": "ຜູ້ໃຊ້ອີເມວ",
     "mail_pass": "ລະຫັດຜ່ານອີເມວ",
     "windy_key": "Windy API Key",
-    "google_api_key_for_translate": "Google API Key ສຳລັບແປພາສາ"
+    "google_api_key_for_translate": "Google API Key ສຳລັບແປພາສາ",
+    "use_a_translate": "ໃຊ້ລະບົບການແປພາສາ (Google Translate)."
 }

@@ -502,5 +502,6 @@
     "mail_user": "ผู้ใช้อีเมล",
     "mail_pass": "รหัสผ่านอีเมล",
     "windy_key": "Windy API Key",
-    "google_api_key_for_translate": "Google API Key สำหรับแปลภาษา"
+    "google_api_key_for_translate": "Google API Key สำหรับแปลภาษา",
+    "use_a_translate": "ใช้งานระบบแปลภาษา (Google Translate)"
 }

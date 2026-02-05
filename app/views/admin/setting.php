@@ -341,6 +341,12 @@
                                         <input type="text" name="WINDY_KEY" class="form-control">
                                     </div>
                                     <div class="col-md-12">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" id="enableTranslate" name="ENABLE_TRANSLATE" value="1">
+                                            <label class="form-check-label fw-bold" for="enableTranslate" data-i18n="use_a_translate"></label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12" id="googleApiKeyContainer" style="display: none;">
                                         <label class="form-label fw-bold" data-i18n="google_api_key_for_translate"></label>
                                         <input type="text" name="GOOGLE_API_KEY" class="form-control">
                                     </div>

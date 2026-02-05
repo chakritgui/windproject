@@ -368,12 +368,19 @@ class MediaHelper {
         return html_entity_decode($result, ENT_QUOTES, 'UTF-8');
     }
     private function callTranslateApi($text, $source, $target) {
+        $sqlStatus = "SELECT setting_value FROM system_settings WHERE setting_key = 'ENABLE_TRANSLATE' LIMIT 1";
+        $stmtStatus = $this->db->prepare($sqlStatus);
+        $stmtStatus->execute();
+        $isEnabled = $stmtStatus->fetchColumn();
+        if (!$isEnabled || $isEnabled == '0') {
+            return $text; 
+        }
         $sql = "SELECT setting_value FROM system_settings WHERE setting_key = 'GOOGLE_API_KEY' LIMIT 1";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $encryptedKey = $stmt->fetchColumn();
         if (!$encryptedKey) {
-            throw new Exception('Google API Key not found in system settings.');
+            return $text;
         }
         $apiKey = decryptToken($encryptedKey); 
         $url = 'https://translation.googleapis.com/language/translate/v2?key=' . $apiKey;
@@ -397,16 +404,12 @@ class MediaHelper {
         if ($response === false) {
             $error = curl_error($ch);
             curl_close($ch);
-            throw new Exception('CURL error: ' . $error);
+            return $text;
         }
         curl_close($ch);
         $json = json_decode($response, true);
-        if ($httpCode !== 200) {
-            $errorMessage = $json['error']['message'] ?? 'Unknown error';
-            throw new Exception('Google Translate API Error (' . $httpCode . '): ' . $errorMessage);
-        }
-        if (!isset($json['data']['translations'][0]['translatedText'])) {
-            throw new Exception('Unexpected Google Translate API response structure.');
+        if ($httpCode !== 200 || !isset($json['data']['translations'][0]['translatedText'])) {
+            return $text;
         }
         return $json['data']['translations'][0]['translatedText'];
     }

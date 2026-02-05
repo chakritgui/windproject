@@ -40,6 +40,13 @@ const uploadWithProgress = (url, formData, btnSelector) => {
     }).always(() => toggleButton(btnSelector, false));
 };
 $(document).ready(initSetting);
+$(document).on('change', '#enableTranslate', function() {
+    if ($(this).is(':checked')) {
+        $('#googleApiKeyContainer').slideDown();
+    } else {
+        $('#googleApiKeyContainer').slideUp();
+    }
+});
 function initSetting() {
     apiPost('/api/setting/get', null).done(res => {
         if (!res.status || !res.data) {
@@ -56,7 +63,12 @@ function initSetting() {
                 const value = systemConfigs[key];
                 const $el = $(`#systemConfigForm [name="${key}"]`);
                 if ($el.length) {
-                    $el.val(value);
+                    if ($el.is(':checkbox')) {
+                        const isChecked = (value == 1 || value == "1" || value === true);
+                        $el.prop('checked', isChecked).trigger('change');
+                    } else {
+                        $el.val(value).trigger('change');
+                    }
                 }
             });
         }
@@ -65,9 +77,7 @@ function initSetting() {
         if (typeof currentLang !== 'undefined' && currentLang !== targetLang) {
             currentLang = targetLang;
             sessionStorage.setItem('lang', currentLang);
-            if (typeof loadLang === 'function') {
-                loadLang(currentLang);
-            }
+            if (typeof loadLang === 'function') loadLang(currentLang);
         }
     });
 }
@@ -291,10 +301,14 @@ $(document).on('click', '.save-configuration', function () {
     const formId = '#systemConfigForm';
     $(formId).find('input, select, textarea').each(function() {
         const name = $(this).attr('name');
-        const value = $(this).val();
-        if (name) {
-            fd.append(name, value);
+        if (!name) return;
+        let value;
+        if ($(this).is(':checkbox')) {
+            value = $(this).is(':checked') ? 1 : 0;
+        } else {
+            value = $(this).val();
         }
+        fd.append(name, value);
     });
     uploadWithProgress('/api/setting/saveConfig', fd, '.save-configuration').done(res => {
         if (res.status) {

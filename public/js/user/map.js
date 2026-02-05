@@ -1,7 +1,6 @@
 let map, windyAPI;
 let poleLayerGroup;
 let windOn = true;
-let lastPickerLatLng = null;
 let poleMarkers = {};
 let windUpdateFunctions = {};
 let menuState = {};
@@ -10,65 +9,67 @@ let map_labels = 'no';
 let country_layers_data = null;
 const DEFAULT_LEVEL = '100m';
 const isMobile = () => window.innerWidth <= 768;
-windyInit(options, async api => {
-    windyAPI = api;
-    map = api.map;
-    const { store, picker } = api;
-    poleLayerGroup = L.layerGroup().addTo(map);
-    store.set('overlay', 'wind');
-    store.set('level', DEFAULT_LEVEL);
-    try {
-        const results = await Promise.allSettled([
-            fetchData(`${BASE_URL}/api/master`),
-            fetchData(`${BASE_URL}/api/wind-area`),
-            loadPoles(map, picker)
-        ]);
-        const masterData = results[0].status === 'fulfilled' ? results[0].value : null;
-        const windAreaData = results[1].status === 'fulfilled' ? results[1].value : null;
-        if (masterData) applyMasterSettings(map, masterData);
-        if (windAreaData) await renderWindAreas(map, picker, windAreaData, masterData);
-        show_country_line = masterData?.show_country_line;
-        country_layers_data = masterData?.country_layers_data;
-        map_labels = masterData?.map_labels;
-        if (show_country_line === 'show' && country_layers_data) {
-            try {
-                const geoData = typeof country_layers_data === 'string' ? JSON.parse(country_layers_data) : country_layers_data;
-                L.geoJSON(geoData, {
-                    style: {
-                        color: "#161616", 
-                        weight: 1, 
-                        fillOpacity: 0, 
-                        interactive: false
+function initMap() {
+    windyInit(options, async api => {
+        windyAPI = api;
+        map = api.map;
+        const { store, picker } = api;
+        poleLayerGroup = L.layerGroup().addTo(map);
+        store.set('overlay', 'wind');
+        store.set('level', DEFAULT_LEVEL);
+        try {
+            const results = await Promise.allSettled([
+                fetchData(`${BASE_URL}/api/master`),
+                fetchData(`${BASE_URL}/api/wind-area`),
+                loadPoles(map, picker)
+            ]);
+            const masterData = results[0].status === 'fulfilled' ? results[0].value : null;
+            const windAreaData = results[1].status === 'fulfilled' ? results[1].value : null;
+            if (masterData) applyMasterSettings(map, masterData);
+            if (windAreaData) await renderWindAreas(map, picker, windAreaData, masterData);
+            show_country_line = masterData?.show_country_line;
+            country_layers_data = masterData?.country_layers_data;
+            map_labels = masterData?.map_labels;
+            if (show_country_line === 'show' && country_layers_data) {
+                try {
+                    const geoData = typeof country_layers_data === 'string' ? JSON.parse(country_layers_data) : country_layers_data;
+                    L.geoJSON(geoData, {
+                        style: {
+                            color: "#161616", 
+                            weight: 1, 
+                            fillOpacity: 0, 
+                            interactive: false
+                        }
+                    }).addTo(map);
+                } catch (error) {
+                    console.error("Error drawing country lines:", error);
+                }
+            }
+            if(map_labels === 'yes') {
+                try {
+                    const hasLabelsSpec = W.store.dataSpecs && W.store.dataSpecs.some(spec => spec.ident === 'labels');
+                    if (hasLabelsSpec) {
+                        store.set('labels', false);
                     }
-                }).addTo(map);
-            } catch (error) {
-                console.error("Error drawing country lines:", error);
-            }
-        }
-        if(map_labels === 'yes') {
-            try {
-                const hasLabelsSpec = W.store.dataSpecs && W.store.dataSpecs.some(spec => spec.ident === 'labels');
-                if (hasLabelsSpec) {
-                    store.set('labels', false);
+                    const hasBaseSpec = W.store.dataSpecs && W.store.dataSpecs.some(spec => spec.ident === 'base');
+                    if (hasBaseSpec) {
+                        store.set('base', 'gray'); 
+                    }
+                } catch (e) {
+                    console.warn("Windy premium settings skipped.");
                 }
-                const hasBaseSpec = W.store.dataSpecs && W.store.dataSpecs.some(spec => spec.ident === 'base');
-                if (hasBaseSpec) {
-                    store.set('base', 'gray'); 
-                }
-            } catch (e) {
-                console.warn("Windy premium settings skipped.");
             }
+        } catch (error) {
+            console.error("Initialization Error:", error);
+        } finally {
+            hideWindLoading();
         }
-    } catch (error) {
-        console.error("Initialization Error:", error);
-    } finally {
-        hideWindLoading();
-    }
-    const windSwitch = document.getElementById('windSwitch');
-    if (windSwitch) {
-        windSwitch.addEventListener('change', e => toggleWind(e.target.checked));
-    }
-});
+        const windSwitch = document.getElementById('windSwitch');
+        if (windSwitch) {
+            windSwitch.addEventListener('change', e => toggleWind(e.target.checked));
+        }
+    });
+}
 function applyMasterSettings(map, master) {
     if (!master?.center_lat || !master?.center_lng) return;
     const lat = parseFloat(master.center_lat);
@@ -91,10 +92,11 @@ async function renderWindAreas(map, picker, areaData, masterData) {
             const geoLayer = L.geoJSON(geoJsonData, {
                 style: () => ({
                     fillColor: styleData.fillColor || "#3388ff",
-                    fillOpacity: isMaskMode ? 0 : (styleData.fillOpacity || 0.2),
+                    fillOpacity: isMaskMode ? 0.01 : (styleData.fillOpacity || 0.2),
                     color: styleData.color || "#3388ff",
                     weight: styleData.weight || 2,
-                    stroke: !isMaskMode,
+                    stroke: true,
+                    opacity: isMaskMode ? 0.01 : 1,
                     interactive: true
                 })
             });
@@ -126,7 +128,6 @@ async function renderWindAreas(map, picker, areaData, masterData) {
     }
 }
 function handlePickerOpening(latlng, picker) {
-    lastPickerLatLng = latlng;
     if (picker) {
         picker.open({ lat: latlng.lat, lon: latlng.lng || latlng.lon });
     }
@@ -477,6 +478,7 @@ function renderErrorAlert(type, message) {
 }
 $(document).ready(function () {
     $("header").hide();
+    initMap();
 });
 Fancybox.bind("[data-fancybox='gallery']", {
     Hash: false,
