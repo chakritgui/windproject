@@ -489,5 +489,6 @@
     "processing": "Processing...",
     "invalid_or_expired_token": "The password reset link is invalid or has expired.",
     "allow_images_and_videos_only": "Allow images and videos only",
-    "image/video": "Image/Video (1080 × 1920px)"
+    "image/video": "Image/Video (1080 × 1920px)",
+    "infography": "Infography"
 }

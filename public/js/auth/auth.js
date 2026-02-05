@@ -114,19 +114,42 @@ async function loadAuthSetting() {
     }
 }
 function parseAuthSetting(item) {
+    const fullPath = item.setting_value ? `${BASE_URL}/${item.setting_value}` : null;
     switch (item.setting_type) {
         case 'login_bg':
-            authState.bg = item.setting_value ? `${BASE_URL}/${item.setting_value}` : null;
+            authState.bg = fullPath;
+            if (fullPath) $('.auth-bg-img-pc').attr('src', fullPath);
             break;
         case 'login_mobile_bg':
-            authState.mobileBg = item.setting_value ? `${BASE_URL}/${item.setting_value}` : null;
+            authState.mobileBg = fullPath;
+            if (fullPath) $('.auth-bg-img-mobile').attr('src', fullPath);
             break;
         case 'site_assessment':
             if (item.setting_value) {
                 $('.project-info').html(item.setting_value);
             }
             break;
+        case 'infography':
+            if (fullPath) {
+                renderInfography(fullPath);
+            }
+            break;
     }
+}
+function renderInfography(path) {
+    const ext = path.split('.').pop().toLowerCase();
+    const videoExts = ['mp4', 'webm', 'ogg', 'mov'];
+    let html = '';
+    if (videoExts.includes(ext)) {
+        html = `
+            <video autoplay muted loop playsinline style="max-width: 100%; height: auto;">
+                <source src="${path}" type="video/${ext === 'mov' ? 'quicktime' : ext}">
+                Your browser does not support the video tag.
+            </video>`;
+    } else {
+        html = `<img src="${path}" alt="Infography" style="max-width: 100%; height: auto;">`;
+    }
+    $('.infography').html(html);
 }
 function applyAuthBackground() {
     if (authState.bg) {
