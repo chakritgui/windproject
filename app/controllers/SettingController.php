@@ -120,4 +120,23 @@ class SettingController extends BaseController {
         echo $payload;
         exit;
     }
+    public function saveNotification() {
+        $configKeys = ['NOTIFY_EMAIL', 'NOTIFY_PWA'];
+        $updateData = [];
+        foreach ($configKeys as $key) {
+            if (isset($_POST[$key])) {
+                $updateData[$key] = htmlspecialchars($_POST[$key]);
+            }
+        }
+        if (empty($updateData)) {
+            echo json_encode(['status' => false, 'message' => 'No data to update']);
+            return;
+        }
+        $result = $this->model->updateSystemConfig($updateData);
+        if ($result) {
+            echo json_encode(['status' => true, 'message' => 'Settings saved successfully']);
+        } else {
+            echo json_encode(['status' => false, 'message' => 'Failed to save settings']);
+        }
+    }
 }

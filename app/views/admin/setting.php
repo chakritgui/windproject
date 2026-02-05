@@ -51,6 +51,9 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link" data-bs-toggle="pill" data-bs-target="#configuration" type="button"><i class="fa-solid fa-gears me-2"></i><span data-i18n="configuration"></span></button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#notifications" type="button"><i class="fa-solid fa-bell me-2"></i><span data-i18n="notifications"></span></button>
+        </li>
     </ul>
     <div class="tab-content">
         <div class="tab-pane fade show active" id="general">
@@ -356,6 +359,54 @@
                         <hr class="my-4">
                         <div class="text-end mt-4">
                             <button class="btn btn-lg btn-primary save-configuration">
+                                <i class="fa-solid fa-floppy-disk me-2"></i><span data-i18n="save"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="notifications">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="fa-solid fa-bell text-primary me-2"></i>
+                        <span data-i18n="notification_settings"></span>
+                    </h5>
+                    <form id="notificationSettingForm">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded-3 bg-light">
+                                    <div class="form-check form-switch d-flex align-items-center justify-content-between p-0">
+                                        <div>
+                                            <label class="form-check-label fw-bold fs-5" for="notifyEmail" data-i18n="email_notification"></label>
+                                            <p class="text-muted small mb-0" data-i18n="receive_notifications_email"></p>
+                                        </div>
+                                        <input class="form-check-input ms-0" type="checkbox" name="NOTIFY_EMAIL" id="notifyEmail" style="width: 2.5em; height: 1.25em;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="p-3 border rounded-3 bg-light">
+                                    <div class="form-check form-switch d-flex align-items-center justify-content-between p-0">
+                                        <div>
+                                            <label class="form-check-label fw-bold fs-5" for="notifyPwa" data-i18n="notifyPwa"></label>
+                                            <p class="text-muted small mb-0" data-i18n="receive_notifications_pwa"></p>
+                                        </div>
+                                        <input class="form-check-input ms-0" type="checkbox" name="NOTIFY_PWA" id="notifyPwa" style="width: 2.5em; height: 1.25em;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 mt-4">
+                                <div class="alert alert-info border-0 shadow-sm">
+                                    <i class="fa-solid fa-clock-rotate-left me-2"></i>
+                                    <strong data-i18n="queuing_system"></strong> <span data-i18n="email_tip"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-lg btn-primary save-notification">
                                 <i class="fa-solid fa-floppy-disk me-2"></i><span data-i18n="save"></span>
                             </button>
                         </div>

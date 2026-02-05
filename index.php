@@ -86,6 +86,7 @@
             $router->post('/api/setting/saveShortcut', 'SettingController@saveShortcut');
             $router->post('/api/setting/saveBgImage', 'SettingController@saveBgImage');
             $router->post('/api/setting/saveConfig', 'SettingController@saveConfig');
+            $router->post('/api/setting/saveNotification', 'SettingController@saveNotification');
             $router->post('/api/mapsetting/save', 'MapSettingController@save');
             $router->get('/api/mapsetting/load', 'MapSettingController@load');
             $router->post('/api/contracts/list', 'ContractsController@list');

@@ -61,7 +61,7 @@ function initSetting() {
         if (systemConfigs && typeof systemConfigs === 'object') {
             Object.keys(systemConfigs).forEach(key => {
                 const value = systemConfigs[key];
-                const $el = $(`#systemConfigForm [name="${key}"]`);
+                const $el = $(`#systemConfigForm [name="${key}"], #notificationSettingForm [name="${key}"]`);
                 if ($el.length) {
                     if ($el.is(':checkbox')) {
                         const isChecked = (value == 1 || value == "1" || value === true);
@@ -311,6 +311,29 @@ $(document).on('click', '.save-configuration', function () {
         fd.append(name, value);
     });
     uploadWithProgress('/api/setting/saveConfig', fd, '.save-configuration').done(res => {
+        if (res.status) {
+            showSuccess(langData['saved_successfully']);
+            if (typeof initSetting === 'function') initSetting(); 
+        } else {
+            showError(langData['cannot_save']);
+        }
+    }).fail(() => showError(langData['cannot_save']));
+});
+$(document).on('click', '.save-notification', function () {
+    const fd = new FormData();
+    const formId = '#notificationSettingForm';
+    $(formId).find('input').each(function() {
+        const name = $(this).attr('name');
+        if (!name) return;
+        let value;
+        if ($(this).is(':checkbox')) {
+            value = $(this).is(':checked') ? 1 : 0;
+        } else {
+            value = $(this).val();
+        }
+        fd.append(name, value);
+    });
+    uploadWithProgress('/api/setting/saveNotification', fd, '.save-notification').done(res => {
         if (res.status) {
             showSuccess(langData['saved_successfully']);
             if (typeof initSetting === 'function') initSetting(); 

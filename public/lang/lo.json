@@ -503,5 +503,11 @@
     "mail_pass": "ລະຫັດຜ່ານອີເມວ",
     "windy_key": "Windy API Key",
     "google_api_key_for_translate": "Google API Key ສຳລັບແປພາສາ",
-    "use_a_translate": "ໃຊ້ລະບົບການແປພາສາ (Google Translate)."
+    "use_a_translate": "ໃຊ້ລະບົບການແປພາສາ (Google Translate).",
+    "email_notification": "ແຈ້ງເຕືອນຜ່ານອີເມວ",
+    "receive_notifications_email": "ຮັບການແຈ້ງເຕືອນກ່ຽວກັບເຫດການຕ່າງໆ ຜ່ານທາງອີເມວ.",
+    "notifyPwa": "ແຈ້ງເຕືອນຜ່ານ PWA Push",
+    "receive_notifications_pwa": "ຮັບການແຈ້ງເຕືອນຜ່ານບຣາວເຊີ ຫຼື ໂທລະສັບມືຖື (PWA).",
+    "queuing_system": "ລະບົບຈັດຄິວ",
+    "email_tip": "ອີເມວທັງໝົດຈະຖືກສົ່ງເຂົ້າໄປໃນຄິວ ແລະ ປະມວນຜົນຕາມລຳດັບຄວາມສຳຄັນ."
 }

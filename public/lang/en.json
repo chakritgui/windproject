@@ -503,5 +503,11 @@
     "mail_pass": "Mail Password",
     "windy_key": "Windy Key",
     "google_api_key_for_translate": "Google API Key for Translate",
-    "use_a_translate": "Use a translation system (Google Translate)."
+    "use_a_translate": "Use a translation system (Google Translate).",
+    "email_notification": "Email Notification",
+    "receive_notifications_email": "Receive notifications about various events via email.",
+    "notifyPwa": "PWA Push Notification",
+    "receive_notifications_pwa": "Receive notifications via browser or mobile device (PWA).",
+    "queuing_system": "Queuing System",
+    "email_tip": "All emails will be sent to a queue and processed according to priority."
 }

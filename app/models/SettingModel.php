@@ -294,4 +294,28 @@ class SettingModel {
             return null;
         }
     }
+    public function updateSystemConfig($data) {
+        try {
+            $this->db->beginTransaction();
+            foreach ($data as $key => $value) {
+                $sql = "INSERT INTO system_settings (setting_key, setting_value, updated_at) 
+                        VALUES (:key, :value, NOW()) 
+                        ON DUPLICATE KEY UPDATE 
+                        setting_value = :value_update, 
+                        updated_at = NOW()";
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute([
+                    ':key'          => $key,
+                    ':value'        => $value,
+                    ':value_update' => $value
+                ]);
+            }
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log("Update Settings Error: " . $e->getMessage());
+            return false;
+        }
+    }
 }

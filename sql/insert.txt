@@ -7,6 +7,8 @@ INSERT INTO `system_settings` (`setting_key`, `setting_value`, `setting_group`, 
 ('MAIL_PORT', '587', 'MAIL', 'Port สำหรับส่งเมล (เช่น 587, 465)'),
 ('DOMAIN_NAME', 'http://localhost', 'GENERAL', 'URL หลักของเว็บไซต์');
 ('ENABLE_TRANSLATE', '0', 'GENERAL', 'ใช้งานระบบแปลภาษา (Google Translate)');
+('NOTIFY_EMAIL', '1', 'GENERAL', 'การแจ้งเตือนผ่านอีเมล');
+('NOTIFY_PWA', '1', 'GENERAL', 'การแจ้งเตือนผ่าน PWA Push');
 
 INSERT INTO `wp_setting` (`setting_type`, `setting_value`, `created_at`, `updated_at`) VALUES
 ('logo', NULL, NOW(), NOW()),
