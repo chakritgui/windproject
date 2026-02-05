@@ -152,6 +152,7 @@
     $router->post('/api/pole-val', 'PoleController@poleval');
     $router->post('/api/pole-info', 'PoleController@info');
     $router->post('/api/setting/shortcut', 'SettingController@shortcut');
+    $router->post('/api/member/updateLanguage', 'SettingController@updateLanguage');
     $router->post('/api/news/get', 'NewsController@get');
     $router->post('/api/notification/read', 'NotificationController@read');
     $router->post('/api/notification/load', 'NotificationController@load');

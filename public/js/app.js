@@ -43,9 +43,13 @@ async function loadSetting() {
             console.warn("Settings API returned false status");
             return;
         }
-        res.data.forEach(handleSettingItem);
-        const dbDefault = res.data.find(i => i.setting_type === 'language_default')?.setting_value;
-        currentLang = sessionStorage.getItem('lang') || dbDefault || 'en';
+        const settingsArray = res.data.settings;
+        settingsArray.forEach(handleSettingItem);
+        console.log(settingsArray);
+        
+        const dbDefault = settingsArray.find(i => i.setting_type === 'language_default')?.setting_value;
+        currentLang = res.data.user_lang || sessionStorage.getItem('lang') || dbDefault || 'en';
+        sessionStorage.setItem('lang', currentLang);
         await loadLang(currentLang); 
     } catch (err) {
         console.error("loadSetting Error:", err);
@@ -67,7 +71,7 @@ function handleSettingItem(item) {
         case 'website_lo': website.lo = val; break;
         case 'website_th': website.th = val; break;
         case 'footer':
-            footer = val || 'Copyright © 2025 iWind Corporation Limited';
+            footer = val || 'Copyright © iWind Corporation Limited';
             $('.footer').html(footer);
             break;
         case 'language':
@@ -128,6 +132,17 @@ async function changeLanguage(lang) {
     if (currentLang === lang) return;
     currentLang = lang;
     sessionStorage.setItem('lang', lang);
+    try {
+        await $.ajax({
+            url: `${BASE_URL}/api/member/updateLanguage`,
+            method: 'POST',
+            data: { language: lang },
+            dataType: 'json'
+        });
+        console.log("Language updated in DB successfully");
+    } catch (err) {
+        console.warn("Could not save language to DB (User might not be logged in)", err);
+    }
     await loadLang(lang);
     refreshAllTables();
     $('.dropdown-menu').removeClass('show');

@@ -64,7 +64,21 @@ class SettingModel {
         $sql = "SELECT * FROM wp_setting";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $settings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $userLanguage = null;
+        if(!empty($_SESSION['user']['id'])) {
+            $sql = "SELECT language FROM wp_members_language WHERE member_id = ?";
+            $stmtLang = $this->db->prepare($sql); 
+            $stmtLang->execute([(int)$_SESSION['user']['id']]);
+            $row = $stmtLang->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                $userLanguage = $row['language'];
+            }
+        }
+        return [
+            'settings' => $settings,
+            'user_lang' => $userLanguage
+        ];
     }
     private function updateSettings(array $settings) {
         foreach ($settings as $type => $value) {
@@ -207,5 +221,15 @@ class SettingModel {
             'manifestDate' => $fileDate($manifestFile),
         ];
         return $data;
+    }
+    public function saveUserLanguage($userId, $lang) {
+        $sql = "INSERT INTO wp_members_language (member_id, language, updated_at) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE language = VALUES(language), updated_at = NOW()"; 
+        try {
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([(int)$userId, $lang]);
+        } catch (PDOException $e) {
+            error_log("Error saving user language: " . $e->getMessage());
+            return false;
+        }
     }
 }

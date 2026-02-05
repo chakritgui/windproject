@@ -29,7 +29,9 @@
             </div>
             <div class="text-white mt-3 text-center project-info"></div>
         </div>
-        <div class="col-lg-7 col-md-12 text-center text-white"></div>
+        <div class="col-lg-7 col-md-12 text-center text-white">
+            <div class="infography"></div>
+        </div>
     </div>
 </div>
 <script src="<?=BASE_URL?>/public/js/auth/auth.js?v=<?=time()?>"></script>

@@ -58,4 +58,23 @@ class SettingController extends BaseController {
     public function shortcut() {
         $this->json(['status'=> true, 'data' => $this->model->shortcut()]);
     }
+    public function updateLanguage() {
+        $userId = $_SESSION['user']['id'] ?? null;
+        if (!$userId) {
+            echo json_encode(['status' => false, 'message' => 'Unauthorized']);
+            return;
+        }
+        $lang = $_POST['language'] ?? '';
+        $allowedLangs = ['en', 'lo', 'th'];
+        if (!in_array($lang, $allowedLangs)) {
+            echo json_encode(['status' => false, 'message' => 'Invalid language code']);
+            return;
+        }
+        $result = $this->model->saveUserLanguage($userId, $lang);
+        if ($result) {
+            echo json_encode(['status' => true, 'message' => 'Language updated']);
+        } else {
+            echo json_encode(['status' => false, 'message' => 'Database error']);
+        }
+    }
 }

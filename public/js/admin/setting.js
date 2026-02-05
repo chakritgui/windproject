@@ -41,12 +41,24 @@ const uploadWithProgress = (url, formData, btnSelector) => {
 };
 $(document).ready(initSetting);
 function initSetting() {
-    apiPost('/api/setting/get', null, { contentType: true, processData: true }).done(res => {
-        if (!res.status) {
+    apiPost('/api/setting/get', null).done(res => {
+        if (!res.status || !res.data) {
             showError(langData['cannot_load']);
             return;
         }
-        res.data.forEach(applySetting);
+        const settingsArray = res.data.settings;
+        if (Array.isArray(settingsArray)) {
+            settingsArray.forEach(applySetting);
+        }
+        const dbDefault = settingsArray.find(i => i.setting_type === 'language_default')?.setting_value;
+        const targetLang = res.data.user_lang || sessionStorage.getItem('lang') || dbDefault || 'en';
+        if (typeof currentLang !== 'undefined' && currentLang !== targetLang) {
+            currentLang = targetLang;
+            sessionStorage.setItem('lang', currentLang);
+            if (typeof loadLang === 'function') {
+                loadLang(currentLang);
+            }
+        }
     });
 }
 const settingHandlers = {

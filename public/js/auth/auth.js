@@ -103,11 +103,12 @@ async function loadAuthSetting() {
             type: 'POST',
             dataType: 'json'
         });
-        if (!res.status) {
-            showError(langData['cannot_load']);
+        if (!res.status || !res.data) {
             return;
         }
-        res.data.forEach(parseAuthSetting);
+        if (res.data.settings && Array.isArray(res.data.settings)) {
+            res.data.settings.forEach(parseAuthSetting);
+        }
     } catch (err) {
         console.error('[AuthSetting]', err);
     }
