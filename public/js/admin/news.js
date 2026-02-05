@@ -119,22 +119,24 @@ function initNewsTable() {
             data.length = pageLength; 
         },
         language: getTableLang(),
-        initComplete: function(){
+        initComplete: function() {
+            let self = this.api();
             let $filter = $('#tb_news_filter');
-            let btn = `
-                <button class="btn btn-primary btn-sm manage-news" data-id="">
-                    <i class="fa-solid fa-plus"></i> <span>${langData['news'] || 'News'}</span>
-                </button>
-            `;
-            $filter.append(btn);
-            var input = $('#tb_news_filter input').unbind();
-            var self = this.api();
-            input.bind('keypress', function(e){
-                if(e.keyCode == 13) {
-                    self.search(input.val()).draw();
+            if ($filter.find('.manage-news').length === 0) {
+                let btn = `
+                    <button class="btn btn-primary btn-sm manage-news ms-2" data-id="">
+                        <i class="fa-solid fa-plus"></i> <span>${langData['news'] || 'News'}</span>
+                    </button>
+                `;
+                $filter.append(btn);
+            }
+            let $input = $filter.find('input').unbind();
+            $input.bind('keypress', function(e) {
+                if (e.keyCode == 13) {
+                    self.search(this.value).draw();
                 }
             });
-        }, 
+        },
         drawCallback: function(){
             getTableLang();
         }

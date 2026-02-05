@@ -100,29 +100,24 @@ function initDocumentTable() {
             data.length = pageLength; 
         },
         language: getTableLang(),
-        initComplete: function(){
-            var input = $('#tb_document_filter input').unbind();
-            var self = this.api();
-            input.bind('keypress', function(e){
-                if(e.keyCode == 13) {
-                    self.search(input.val()).draw();
-                }
-            });
+       initComplete: function() {
+            let self = this.api();
             let $filter = $('#tb_document_filter');
-            let btn = `
-                <button class="btn btn-primary btn-sm manage-document" data-id="">
-                    <i class="fa-solid fa-plus"></i> <span>${langData['document'] || 'Document'}</span>
-                </button>
-            `;
-            $filter.append(btn);
-            var input = $('#tb_document_filter input').unbind();
-            var self = this.api();
-            input.bind('keypress', function(e){
-                if(e.keyCode == 13) {
-                    self.search(input.val()).draw();
+            if ($filter.find('.manage-document').length === 0) {
+                let btn = `
+                    <button class="btn btn-primary btn-sm manage-document ms-2" data-id="">
+                        <i class="fa-solid fa-plus"></i> <span>${langData['document'] || 'Document'}</span>
+                    </button>
+                `;
+                $filter.append(btn);
+            }
+            let $input = $filter.find('input').unbind();
+            $input.bind('keypress', function(e) {
+                if (e.keyCode == 13) {
+                    self.search(this.value).draw();
                 }
             });
-        }, 
+        },
         drawCallback: function(){
             getTableLang();
         }

@@ -51,29 +51,24 @@ function initWindTable() {
             data.length = pageLength; 
         },
         language: getTableLang(),
-        initComplete: function(){
-            var input = $('#tb_wind_filter input').unbind();
-            var self = this.api();
-            input.bind('keypress', function(e){
-                if(e.keyCode == 13) {
-                    self.search(input.val()).draw();
-                }
-            });
+        initComplete: function() {
+            let self = this.api();
             let $filter = $('#tb_wind_filter');
-            let btn = `
-                <button class="btn btn-primary btn-sm manage-wind" data-id="">
-                    <i class="fa-solid fa-plus"></i> <span>${langData['import'] || "Import"}</span>
-                </button>
-            `;
-            $filter.append(btn);
-            var input = $('#tb_wind_filter input').unbind();
-            var self = this.api();
-            input.bind('keypress', function(e){
-                if(e.keyCode == 13) {
-                    self.search(input.val()).draw();
+            if ($filter.find('.manage-wind').length === 0) {
+                let btn = `
+                    <button class="btn btn-primary btn-sm manage-wind ms-2" data-id="">
+                        <i class="fa-solid fa-plus"></i> <span>${langData['import'] || "Import"}</span>
+                    </button>
+                `;
+                $filter.append(btn);
+            }
+            let $input = $filter.find('input').unbind();
+            $input.bind('keypress', function(e) {
+                if (e.keyCode == 13) {
+                    self.search($(this).val()).draw();
                 }
             });
-        }, 
+        },
         drawCallback: function(){
             getTableLang();
         }

@@ -193,6 +193,7 @@ class MediaHelper {
                         FROM wp_members WHERE status = 'active'
                         ON DUPLICATE KEY UPDATE status = 'published', publish_at = :pub";
                 $pdo->prepare($sql)->execute([':target' => $target, ':nid' => $content_id, ':pub' => $publish_at]);
+                // ปั้น body ส่งเข่า Mail และ PWA 
             } else {
                 $stmt = $pdo->prepare("UPDATE wp_notification_targets SET status = :status, publish_at = NULL WHERE notifications_item = :id AND notifications_target = :target");
                 $stmt->execute([':status' => $status, ':id' => $content_id, ':target' => $target]);

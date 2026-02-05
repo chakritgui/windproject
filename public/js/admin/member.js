@@ -97,22 +97,24 @@ function initMemberTable() {
             data.length = pageLength; 
         },
         language: getTableLang(),
-        initComplete: function(){
+        initComplete: function() {
             let $filter = $('#tb_member_filter');
-            let btn = `
-                <button class="btn btn-primary btn-sm manage-member" data-id="">
-                    <i class="fa-solid fa-plus"></i> <span>${langData['member'] || 'Member'}</span>
-                </button>
-            `;
-            $filter.append(btn);
-            var input = $('#tb_member_filter input').unbind();
-            var self = this.api();
-            input.bind('keypress', function(e){
-                if(e.keyCode == 13) {
-                    self.search(input.val()).draw();
+            let self = this.api();
+            if ($filter.find('.manage-member').length === 0) {
+                let btn = `
+                    <button class="btn btn-primary btn-sm manage-member ms-2" data-id="">
+                        <i class="fa-solid fa-plus"></i> <span>${langData['member'] || 'Member'}</span>
+                    </button>
+                `;
+                $filter.append(btn);
+            }
+            let $input = $filter.find('input').unbind();
+            $input.bind('keypress', function(e) {
+                if (e.keyCode == 13) {
+                    self.search(this.value).draw();
                 }
             });
-        }, 
+        },
         drawCallback: function(){
             getTableLang();
         }

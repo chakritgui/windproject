@@ -84,29 +84,24 @@ function initContractsTable() {
             data.length = pageLength; 
         },
         language: getTableLang(),
-        initComplete: function(){
-            var input = $('#tb_contract_filter input').unbind();
+        initComplete: function() {
             var self = this.api();
-            input.bind('keypress', function(e){
-                if(e.keyCode == 13) {
+            var $filter = $('#tb_contract_filter');
+            var input = $filter.find('input').unbind(); 
+            input.bind('keypress', function(e) {
+                if (e.keyCode == 13) {
                     self.search(input.val()).draw();
                 }
             });
-            let $filter = $('#tb_contract_filter');
-            let btn = `
-                <button class="btn btn-primary btn-sm manage-contract" data-id="">
-                    <i class="fa-solid fa-plus"></i> <span>${langData['contract'] || 'Contract'}</span>
-                </button>
-            `;
-            $filter.append(btn);
-            var input = $('#tb_contract_filter input').unbind();
-            var self = this.api();
-            input.bind('keypress', function(e){
-                if(e.keyCode == 13) {
-                    self.search(input.val()).draw();
-                }
-            });
-        }, 
+            if ($filter.find('.manage-contract[data-id=""]').length === 0) {
+                let btn = `
+                    <button class="btn btn-primary btn-sm manage-contract ms-2" data-id="">
+                        <i class="fa-solid fa-plus"></i> <span>${langData['contract'] || 'Contract'}</span>
+                    </button>
+                `;
+                $filter.append(btn);
+            }
+        },
         drawCallback: function(){
             getTableLang();
         }
