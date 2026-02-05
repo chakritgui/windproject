@@ -5,10 +5,10 @@ class PushModel {
         $this->db = Database::getInstance()->pdo;
     }
     public function saveSubscription($subscription) {
-        $endpoint = $subscription['endpoint'] ?? '';
-        $p256dh   = $subscription['keys']['p256dh'] ?? '';
-        $auth     = $subscription['keys']['auth'] ?? '';
-        $userId   = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+        $endpoint  = $subscription['endpoint'] ?? '';
+        $p256dh    = $subscription['keys']['p256dh'] ?? '';
+        $auth      = $subscription['keys']['auth'] ?? '';
+        $userId    = $_SESSION['user']['id'] ?? null;
         $userAgent = $_SERVER['HTTP_USER_AGENT'];
         $browser   = $this->getBrowserName($userAgent);
         $os        = $this->getOSName($userAgent);
@@ -24,7 +24,8 @@ class PushModel {
                 is_active = 1,
                 updated_at = NOW()";
         try {
-            return $this->db->execute($sql, [
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([
                 $userId, 
                 $endpoint, 
                 $p256dh, 
@@ -55,11 +56,12 @@ class PushModel {
         return 'Unknown';
     }
     public function disableSubscription($endpoint) {
-        $sql = "UPDATE push_subscriptions SET is_active = 0, updated_at = NOW() WHERE endpoint = ?";
+        $sql = "UPDATE push_subscriptions SET is_active = 0, updated_at = NOW() WHERE endpoint = :endpoint";
         try {
-            return $this->db->execute($sql, [$endpoint]);
-        } catch (Exception $e) {
-            error_log("Disable Subscription Error: " . $e->getMessage());
+            $stmt = $this->db->prepare($sql); 
+            return $stmt->execute([':endpoint' => $endpoint]);
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
             return false;
         }
     }

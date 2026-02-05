@@ -22,12 +22,12 @@ class  PushController extends BaseController {
         }
     }
     public function unsubscribe() {
-        die("Reached Subscribe");
                  ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
         $json = file_get_contents('php://input');
         $data = json_decode($json, true);
+        print_r($data);
         if (isset($data['endpoint'])) {
             $result = $this->model->disableSubscription($data['endpoint']);
             if ($result) {

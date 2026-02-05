@@ -386,7 +386,6 @@
                                     </div>
                                 </div>
                             </div>
-
                             <div class="col-md-6">
                                 <div class="p-3 border rounded-3 bg-light">
                                     <div class="form-check form-switch d-flex align-items-center justify-content-between p-0">

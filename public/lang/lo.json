@@ -514,5 +514,15 @@
     "do_you_receive": "ທ່ານຕ້ອງການຮັບການແຈ້ງເຕືອນຫຼືບໍ່?",
     "we_will_keep_you": "ພວກເຮົາຈະແຈ້ງຂໍ້ມູນທີ່ສຳຄັນ ແລະ ອັບເດດສະຖານະຕ່າງໆໃຫ້ທ່ານຊາບທັນທີ",
     "for_later": "ໄວ້ເທື່ອໜ້າ",
-    "okay": "ຕົກລົງ, ເປີດໃຊ້ງານເລີຍ"
+    "okay": "ຕົກລົງ, ເປີດໃຊ້ງານເລີຍ",
+    "notifications_on_the_device": "ການແຈ້ງເຕືອນໃນອຸປະກອນ",
+    "manage_notifications_for_this_app_on_your_device.": "ຈັດການການແຈ້ງເຕືອນສຳລັບແອັບນີ້ໃນເຄື່ອງຂອງທ່ານ",
+    "enable_push_notifications.": "ເປີດໃຊ້ງານການແຈ້ງເຕືອນແບບ Push",
+    "disabled": "ປິດໃຊ້ງານຢູ່",
+    "you_have_blocked_notifications": "ທ່ານໄດ້ບລັອກການແຈ້ງເຕືອນໃນບຣາວເຊີ. ກະລຸນາປ່ຽນການຕັ້ງຄ່າສິດກ່ອນເປີດໃຊ້ງານ",
+    "this_setting_will_only_take_effect_in_the_browser": "ການຕັ້ງຄ່ານີ້ຈະມີຜົນສະເພາະໃນບຣາວເຊີ ຫຼື ອຸປະກອນທີ່ທ່ານກຳລັງໃຊ້ງານຢູ່ເທົ່ານັ້ນ",
+    "this_browser_does_not_support_notifications.": "ບຣາວເຊີນີ້ບໍ່ຮອງຮັບການແຈ້ງເຕືອນ",
+    "enable": "ເປີດໃຊ້ງານ",
+    "deactivated": "ປິດໃຊ້ງານ (ຍັງບໍ່ທັນໄດ້ລົງທະບຽນ)",
+    "blocked_by_browser": "ຖືກບລັອກໂດຍບຣາວເຊີ"
 }

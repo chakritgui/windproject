@@ -514,5 +514,15 @@
     "do_you_receive": "Do you receive notifications?",
     "we_will_keep_you": "We will keep you informed of important information and status updates immediately.",
     "for_later": "for later",
-    "okay": "Okay, go ahead and open it."
+    "okay": "Okay, go ahead and open it.",
+    "notifications_on_the_device": "Notifications on the device",
+    "manage_notifications_for_this_app_on_your_device.": "Manage notifications for this app on your device.",
+    "enable_push_notifications.": "Enable Push Notifications.",
+    "disabled": "Disabled",
+    "you_have_blocked_notifications": "You have blocked notifications in your browser. Please change the permissions settings before enabling them.",
+    "this_setting_will_only_take_effect_in_the_browser": "This setting will only take effect in the browser or device you are currently using.",
+    "this_browser_does_not_support_notifications.": "This browser does not support notifications.",
+    "enable": "Enable",
+    "deactivated": "Deactivated (not yet registered)",
+    "blocked_by_browser": "Blocked by browser"
 }

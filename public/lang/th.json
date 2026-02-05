@@ -514,5 +514,15 @@
     "do_you_receive": "ต้องการรับการแจ้งเตือนหรือไม่?",
     "we_will_keep_you": "เราจะแจ้งข้อมูลสำคัญและอัปเดตสถานะต่างๆ ให้คุณทราบทันที",
     "for_later": "ไว้ทีหลัง",
-    "okay": "ตกลง, เปิดใช้งานเลย"
+    "okay": "ตกลง, เปิดใช้งานเลย",
+    "notifications_on_the_device": "การแจ้งเตือนบนอุปกรณ์",
+    "manage_notifications_for_this_app_on_your_device.": "จัดการการแจ้งเตือนสำหรับแอปนี้บนเครื่องของคุณ",
+    "enable_push_notifications.": "เปิดใช้งานการแจ้งเตือนแบบ Push",
+    "disabled": "ปิดใช้งานอยู่",
+    "you_have_blocked_notifications": "คุณได้บล็อกการแจ้งเตือนในเบราว์เซอร์ โปรดเปลี่ยนการตั้งค่าสิทธิ์ก่อนเปิดใช้งาน",
+    "this_setting_will_only_take_effect_in_the_browser": "การตั้งค่านี้จะมีผลเฉพาะในเบราว์เซอร์หรืออุปกรณ์ที่คุณกำลังใช้งานอยู่เท่านั้น",
+    "this_browser_does_not_support_notifications.": "เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือน",
+    "enable": "เปิดใช้งาน",
+    "deactivated": "ปิดใช้งาน (ยังไม่ได้ลงทะเบียน)",
+    "blocked_by_browser": "ถูกบล็อกโดยเบราว์เซอร์"
 }

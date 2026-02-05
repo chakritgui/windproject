@@ -1,317 +1,4 @@
-<style>
-    :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --primary-color: #667eea;
-        --secondary-color: #6c757d;
-        --success-color: #28a745;
-        --bg-color: #f5f7fa;
-        --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-    body {
-        background: var(--bg-color);
-        min-height: 100vh;
-        padding: 2rem 0;
-    }
-    .profile-container {
-        max-width: 1000px;
-        margin: 0 auto;
-        padding: 0 1rem;
-    }
-    .profile-card {
-        background: white;
-        border-radius: 20px;
-        box-shadow: var(--card-shadow);
-        overflow: hidden;
-        border: none;
-    }
-    .profile-header {
-        background: var(--primary-gradient);
-        color: white;
-        padding: 2.5rem 2rem;
-        position: relative;
-    }
-    .profile-title {
-        font-size: 1.8rem;
-        font-weight: 800;
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-    .profile-subtitle {
-        opacity: 0.85;
-        font-size: 1rem;
-    }
-    .nav-pills {
-        background: #f1f3f5;
-        padding: 0.5rem;
-        gap: 0.5rem;
-    }
-    .nav-pills .nav-link {
-        color: var(--secondary-color);
-        border-radius: 10px;
-        font-weight: 600;
-        padding: 0.5rem 1rem;
-        transition: var(--transition);
-        border: none;
-    }
-    .nav-pills .nav-link.active {
-        background: white;
-        color: var(--primary-color) !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-    .info-section {
-        background: #ffffff;
-        padding: 1rem;
-        margin-bottom: 2rem;
-        transition: var(--transition);
-    }
-    .info-section:hover {
-        border-color: #e0e4e8;
-        transform: translateY(-2px);
-    }
-    .section-title {
-        font-size: 1.15rem;
-        font-weight: 700;
-        color: #1a1d23;
-        margin-bottom: 1.5rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 2px solid #f1f3f5;
-        display: flex;
-        align-items: center;
-        gap: 0.6rem;
-    }
-    .info-row {
-        display: flex;
-        align-items: center;
-        padding: 1.2rem 0;
-        border-bottom: 1px solid #f8f9fa;
-        gap: 1.5rem;
-    }
-    .info-row:last-child {
-        border-bottom: none;
-    }
-    .info-label {
-        font-weight: 600;
-        color: #868e96;
-        width: 200px;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-    .info-value {
-        flex: 1;
-        width: 100%; 
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1rem;
-    }
-    .info-text {
-        color: #212529;
-        font-weight: 500;
-        word-break: break-word;
-    }
-    .password-value {
-        letter-spacing: 3px;
-        color: #adb5bd;
-    }
-    .btn-edit {
-        background: #f0f2ff;
-        border: none;
-        color: var(--primary-color);
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        white-space: nowrap;
-        transition: var(--transition);
-    }
-    .btn-edit:hover {
-        background: var(--primary-color);
-        color: white;
-    }
-    .edit-mode {
-        display: flex;
-        gap: 0.5rem;
-        width: 100%;
-    }
-    .edit-input {
-        flex: 1;
-        padding: 0.6rem 1rem;
-        border: 2px solid #e9ecef;
-        border-radius: 10px;
-        transition: var(--transition);
-    }
-    .edit-input:focus {
-        border-color: var(--primary-color);
-        outline: none;
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-    }
-    .activity-item {
-        background: #f8f9fa;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-        border: 1px solid transparent;
-        transition: var(--transition);
-    }
-    .activity-item:hover {
-        background: white;
-        border-color: var(--primary-color);
-        box-shadow: var(--card-shadow);
-    }
-    .activity-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        color: #6c757d;
-        font-size: 0.85rem;
-        margin-top: 0.5rem;
-    }
-    @media (max-width: 768px) {
-        body { padding: 1rem 0; }
-        .profile-header {
-            padding: 2rem 1.5rem;
-            text-align: center;
-        }
-        .profile-title { justify-content: center; }
-        .info-row {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.5rem;
-            padding: 1.5rem 0;
-        }
-        .info-label {
-            width: 100%;
-            font-size: 0.9rem;
-        }
-        .info-value {
-            width: 100%;
-        }
-        .edit-mode {
-            flex-wrap: wrap;
-        }
-        .edit-input {
-            width: 100%;
-            flex: none;
-        }
-        .btn-save, .btn-cancel {
-            flex: 1;
-            text-align: center;
-        }
-    }
-    .input-group-custom {
-        position: relative;
-        display: flex;
-        flex: 1;
-    }
-    .input-group-custom .edit-input {
-        padding-right: 40px;
-        width: 100%;
-    }
-    .btn-toggle-eye {
-        position: absolute;
-        right: 10px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: none;
-        border: none;
-        color: #6c757d;
-        cursor: pointer;
-        z-index: 10;
-        padding: 5px;
-    }
-    .btn-toggle-eye:hover {
-        color: var(--primary-color);
-    }
-    #activityHistory {
-        padding: 10px 5px;
-        position: relative;
-    }
-    .activity-timeline-item {
-        position: relative;
-        padding-left: 35px;
-        padding-bottom: 25px;
-    }
-    .activity-line {
-        position: absolute;
-        left: 14px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: #e9ecef;
-    }
-    .activity-timeline-item:last-child .activity-line {
-        display: none;
-    }
-    .activity-dot {
-        position: absolute;
-        left: 8px;
-        top: 5px;
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        background: #ced4da;
-        border: 3px solid #fff;
-        box-shadow: 0 0 0 1px #dee2e6;
-        z-index: 2;
-    }
-    .activity-dot.active {
-        background: #28a745;
-        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
-    }
-    .activity-card {
-        background: #fff;
-        border-radius: 12px;
-        border: 1px solid #f0f0f0;
-        padding: 15px;
-        transition: transform 0.2s, box-shadow 0.2s;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-    }
-    .activity-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-    .activity-title {
-        font-weight: 700;
-        font-size: 0.95rem;
-        color: #333;
-    }
-    .activity-time-text {
-        font-size: 0.8rem;
-        color: #888;
-    }
-    .device-info-box {
-        background: #fcfcfd;
-        border: 1px solid #f1f3f5;
-        border-radius: 8px;
-        padding: 10px;
-        margin-top: 10px;
-    }
-    .device-text, .ip-text {
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: #495057;
-        display: block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-    .status-badge.latest {
-        background: linear-gradient(45deg, #28a745, #34ce57);
-        color: white;
-        font-size: 0.7rem;
-        padding: 3px 10px;
-        border-radius: 20px;
-        text-transform: uppercase;
-        font-weight: bold;
-        letter-spacing: 0.5px;
-    }
-</style>
-</style>
+<link rel="stylesheet" href="<?=BASE_URL?>/public/css/account.css?v=<?=time();?>">
 <div class="container py-5 mt-5 profile-container">
     <div class="profile-card">
         <div class="profile-header">
@@ -327,6 +14,9 @@
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab"><i class="fa-solid fa-clock-rotate-left me-2"></i><span data-i18n="usage_history"></span></button>
+                </li>
+                <li class="nav-item is-pwa d-none" role="presentation">
+                    <button class="nav-link" id="notification-tab" data-bs-toggle="tab" data-bs-target="#notification" type="button" role="tab"><i class="fa-solid fa-bell me-2"></i><span data-i18n="notification"></span></button>
                 </li>
             </ul>
             <div class="tab-content" id="profileTabContent">
@@ -383,6 +73,45 @@
                 <div class="tab-pane fade" id="history" role="tabpanel">
                     <div id="activityHistory"></div>
                     <div id="scrollEnd"></div>
+                </div>
+                <div class="tab-pane fade" id="notification" role="tabpanel">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="flex-shrink-0 bg-primary-subtle text-primary p-3 rounded-3">
+                                    <i class="fa-solid fa-bell fs-4"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h5 class="mb-1 fw-bold" data-i18n="notifications_on_the_device"></h5>
+                                    <p class="text-muted small mb-0" data-i18n="manage_notifications_for_this_app_on_your_device."></p>
+                                </div>
+                            </div>
+                            <div class="list-group list-group-flush border rounded-3 overflow-hidden">
+                                <div class="list-group-item p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <div class="fw-bold" data-i18n="enable_push_notifications."></div>
+                                            <div id="pwa-status-text" class="small text-muted" data-i18n="disabled"></div>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input pwa-noti-toggle" type="checkbox" role="switch" id="pwaPushToggle" style="transform: scale(1.2);">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="permission-warning" class="mt-3 d-none">
+                                <div class="alert alert-warning d-flex align-items-start mb-0" role="alert">
+                                    <i class="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
+                                    <div>
+                                        <span class="small" data-i18n="you_have_blocked_notifications"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-muted mt-3 x-small italic" style="font-size: 0.75rem;">
+                                * <span data-i18n="this_setting_will_only_take_effect_in_the_browser"></span>
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
