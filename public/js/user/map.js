@@ -312,8 +312,8 @@ async function openPoles(poleId) {
         $(this).find("i").toggleClass("fa-regular fa-window-maximize fa-regular fa-window-restore");
     });
     $modal.find(".modal-footer").html(`
-        <button type="button" class="btn btn-outline-primary me-2" onclick="openFilterModal(${poleId});">${currentLang['view_report'] || 'View Report'}</button>
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
+        <button type="button" class="btn btn-outline-primary me-2" onclick="openFilterModal(${poleId});" data-i18n="view_report"></button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
     `);
     const modalInstance = bootstrap.Modal.getOrCreateInstance($modal[0]);
     modalInstance.show();
