@@ -69,7 +69,12 @@ function initPolesTable() {
                     </div>`;
                 return (row.content_id) ? `
                     <div class="btn-group border rounded-3 bg-white mb-3">
-                        <a href="${BASE_URL}/content/preview/${row.content_slug}" class="btn btn-link text-info py-1" target="_blank"><i class="fa-solid fa-eye"></i></a> 
+                        ${(isPWA()) ? `
+                            <a onclick="openContent('${row.content_slug}', 'preview')" class="btn btn-link text-info py-1"><i class="fa-solid fa-eye"></i></a> 
+                        ` : `
+                            <a href="${BASE_URL}/content/preview/${row.content_slug}" class="btn btn-link text-info py-1" target="_blank"><i class="fa-solid fa-eye"></i></a> 
+                        `}
+                        
                         <button class="btn btn-link text-warning py-1 border-start manage-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-pen-to-square"></i></button> 
                         <button class="btn btn-link text-danger py-1 border-start delete-content" data-pole="${row.poles_id}" data-content="${row.content_id}"><i class="fa-solid fa-trash-can"></i></button> 
                     </div>
@@ -374,6 +379,8 @@ function manageContent(poles_id, content_id) {
         let ENABLE_TRANSLATE = translates.ENABLE_TRANSLATE;
         let GOOGLE_API_KEY = translates.GOOGLE_API_KEY;
         let $modal = $("#windModal");
+        const $dialog = $modal.find(".modal-dialog");
+        $dialog.removeClass("modal-fullscreen");
         let modal = new bootstrap.Modal($modal[0]);
         $modal.find(".modal-header").html(`
             <h5 class="modal-title">${langData['content'] || 'Content'}</h5>

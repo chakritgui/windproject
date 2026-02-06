@@ -85,7 +85,12 @@ function renderView(data, isNewSearch) {
         html += `
             <div class="card doc-item border-0 shadow-none mb-2" data-index="${globalIndex}" style="cursor: pointer;">
                 ${isContent ? `
-                <a href="${BASE_URL}/content/preview/${item.content_slug}" target="_blank" style="text-decoration: none;">    
+                    ${(isPWA()) ? `
+                        <a onclick="openContent('${item.content_slug}', 'view')" style="text-decoration: none;">
+                    ` : `
+                        <a href="${BASE_URL}/content/preview/${item.content_slug}" target="_blank" style="text-decoration: none;">
+                    `}
+                    
                 ` :``}
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center">

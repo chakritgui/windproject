@@ -345,7 +345,8 @@ class PolesModel {
                 "attachments" => [],
                 "images" => [],
                 "images360" => [],
-                "settings" => $settings
+                "settings" => $settings,
+                "translates" => $translates
             ];
         }
         $stmt = $pdo->prepare("SELECT content_id, status, cover FROM wp_content WHERE content_id = ?");

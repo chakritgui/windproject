@@ -64,7 +64,11 @@ function initNewsTable() {
             className: "text-center",
             render: (data, type, row) => `
                 <div class="btn-group border rounded-3 bg-white">
-                    <a class="btn btn-link text-info" href="${BASE_URL}/content/preview/${row.content_slug}" target="_blank"><i class="fa-solid fa-eye"></i></a>
+                    ${(isPWA()) ? `
+                        <a class="btn btn-link text-info" onclick="openContent('${row.content_slug}', 'preview')"><i class="fa-solid fa-eye"></i></a>
+                    ` : `
+                        <a class="btn btn-link text-info" href="${BASE_URL}/content/preview/${row.content_slug}" target="_blank"><i class="fa-solid fa-eye"></i></a>
+                    `}
                     <button class="btn btn-link text-warning py-1 border-start manage-news" data-id="${row.content_id}"><i class="fa-solid fa-pen-to-square"></i></button>
                     <button class="btn btn-link text-danger py-1 border-start delete-news" data-id="${row.content_id}"><i class="fa-regular fa-trash-can"></i></button>
                 </div>`
@@ -94,6 +98,8 @@ $(document).on("click", ".manage-news", function () {
         let ENABLE_TRANSLATE = translates.ENABLE_TRANSLATE;
         let GOOGLE_API_KEY = translates.GOOGLE_API_KEY;
         const $modal = $("#windModal");
+        const $dialog = $modal.find(".modal-dialog");
+        $dialog.removeClass("modal-fullscreen");
         const modalInstance = new bootstrap.Modal($modal[0]);
         $modal.find(".modal-header").html(`
             <h5 class="modal-title">${langData['news_management'] || 'News Management'}</h5>

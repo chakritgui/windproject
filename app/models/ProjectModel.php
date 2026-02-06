@@ -246,7 +246,8 @@ class ProjectModel {
                 "status_translate" => ["th" => "", "lo" => "", "en" => ""],
                 "response" => ["th" => "", "lo" => "", "en" => ""],
                 "translate_with" => ["th" => "", "lo" => "", "en" => ""],
-                "settings" => $settings
+                "settings" => $settings,
+                "translates" => $translates
             ];
         }
         $stmt = $pdo->prepare("SELECT content_id, status, cover FROM wp_content WHERE content_id = ?");

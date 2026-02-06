@@ -73,7 +73,11 @@ function renderNews(items) {
             badgeHtml += `<span class="badge-tag tag-vr"><i class="fa-solid fa-vr-cardboard"></i> <span>${langData['vr'] || 'VR'}</span></span>`;
         const isRead = parseInt(item.is_read) === 1;
         const html = `
-            <a href="${BASE_URL}/content/view/${item.content_slug}" class="news-item ${isRead ? '' : 'unread'}" target="_blank">
+            ${(isPWA()) ? `
+                <a class="news-item ${isRead ? '' : 'unread'}" onclick="openContent('${item.content_slug}', 'view')">
+            ` : `
+                <a class="news-item ${isRead ? '' : 'unread'}" href="${BASE_URL}/content/preview/${item.content_slug}" target="_blank">
+            `}
                 ${thumbHtml}
                 <div class="news-content">
                     <div class="news-header">
