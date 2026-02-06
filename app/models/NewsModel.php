@@ -81,6 +81,9 @@ class NewsModel {
         $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_content')");
         $stmt->execute();
         $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        $stmtTranslate = $pdo->prepare("SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN ('ENABLE_TRANSLATE', 'GOOGLE_API_KEY')");
+        $stmtTranslate->execute();
+        $translates = $stmtTranslate->fetchAll(PDO::FETCH_KEY_PAIR);
         if (!$id) {
             return [
                 "id" => "", "status" => "published", "publish_at" => date('Y-m-d H:i'), "cover" => "",
@@ -149,24 +152,26 @@ class NewsModel {
             "attachments" => $attachments,
             "images" => $images,
             "images360" => $images360,
-            "settings" => $settings
+            "settings" => $settings,
+            "translates" => $translates
         ];
     }
     public function save($data) {
         $pdo = $this->db;
-        $content_id = $data['content_id'] ?? null;
-        $ex_cover = $data['ex_cover'] ?? null;
+        $content_id = $data['content_id'] ?: null;
         $status = $data['status'] ?? 'draft';
-        $auto_translate = $data['auto_translate'] ?? 'no';
-        $publish_at = null;
         $mediaHelper = new MediaHelper($pdo);
-        $content_slug = $mediaHelper->generateSlug('news', $data["title_en"], $content_id);
+        $publish_at = null;
         if ($status !== 'draft') {
             $tz = new DateTimeZone('Asia/Bangkok');
-            if (empty($data['publish_at']) || ($data['publish_now'] ?? false)) {
+            if ($data['publish_now'] === true || empty($data['publish_at'])) {
                 $dt = new DateTime('now', $tz);
             } else {
-                $dt = DateTime::createFromFormat('d/m/Y H:i', trim($data['publish_at']), $tz);
+                $raw_date = trim($data['publish_at']);
+                $dt = DateTime::createFromFormat('Y-m-d H:i:s', $raw_date, $tz);
+                if (!$dt) {
+                    $dt = DateTime::createFromFormat('d/m/Y H:i', $raw_date, $tz);
+                }
                 if (!$dt) $dt = new DateTime('now', $tz);
             }
             $dt->setTimezone(new DateTimeZone('UTC'));
@@ -174,39 +179,45 @@ class NewsModel {
         }
         try {
             $pdo->beginTransaction();
+            $content_slug = $mediaHelper->generateSlug('news', $data["title_en"], $content_id);
             if ($content_id) {
-                $stmt = $pdo->prepare("UPDATE wp_content SET status = :status, content_slug = :content_slug, publish_at = :publish_at, updated_at = NOW() WHERE content_id = :content_id");
-                $stmt->bindValue(':content_slug', $content_slug);
+                $stmt = $pdo->prepare("UPDATE wp_content SET 
+                    status = :status, 
+                    content_slug = :content_slug, 
+                    publish_at = :publish_at, 
+                    updated_at = NOW() 
+                    WHERE content_id = :content_id");
                 $stmt->bindValue(':content_id', (int)$content_id, PDO::PARAM_INT);
             } else {
-                $stmt = $pdo->prepare("INSERT INTO wp_content (status, content_slug, publish_at, created_at, updated_at) VALUES (:status, :content_slug, :publish_at, NOW(), NOW())");
-                $stmt->bindValue(':content_slug', $content_slug);
+                $stmt = $pdo->prepare("INSERT INTO wp_content 
+                    (status, content_slug, publish_at, created_at, updated_at) 
+                    VALUES (:status, :content_slug, :publish_at, NOW(), NOW())");
             }
             $stmt->bindValue(':status', $status);
+            $stmt->bindValue(':content_slug', $content_slug);
             $stmt->bindValue(':publish_at', $publish_at, $publish_at === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
             $stmt->execute();
             if (!$content_id) {
                 $content_id = $pdo->lastInsertId();
             }
             $mediaHelper->handleContent($data, $content_id);
-            if(!$ex_cover) {
+            if (empty($data['ex_cover'])) {
                 $mediaHelper->deleteExistingCover($content_id, 'wp_content', 'cover');
             }
-            if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
-                $mediaHelper->handleSingleUpload($content_id, $_FILES['cover']);
+            if (isset($data['cover']) && $data['cover']['error'] === UPLOAD_ERR_OK) {
+                $mediaHelper->handleSingleUpload($content_id, $data['cover']);
             }
-            $mediaHelper->syncMedia($content_id, 'attachment', $data['existing_attachments'] ?? []);
-            $mediaHelper->syncMedia($content_id, 'image', $data['existing_images'] ?? []);
-            $mediaHelper->syncMedia($content_id, 'image360', $data['existing_images360'] ?? []);
+            $mediaHelper->syncMedia($content_id, 'attachment', $data['existing_attachments']);
+            $mediaHelper->syncMedia($content_id, 'image', $data['existing_images']);
+            $mediaHelper->syncMedia($content_id, 'image360', $data['existing_images360']);
             $mediaHelper->handleMultiUpload($content_id, 'attachment', 'new_attachments');
             $mediaHelper->handleMultiUpload($content_id, 'image', 'new_images');
             $mediaHelper->handleMultiUpload($content_id, 'image360', 'new_images360');
-            $stmt = $pdo->prepare("SELECT publish_at FROM wp_content WHERE content_id = ?");
-            $stmt->execute([$content_id]);
-            $publish_at = $stmt->fetchColumn();
-            $mediaHelper->notification($content_id, $status, $publish_at, 'news');
-            if($auto_translate == 'yes') {
+            if ($data['auto_translate'] === 'yes') {
                 $mediaHelper->autoTranslate($content_id);
+            }
+            if ($data['send_notification'] === 'yes' && $status === 'published') {
+                $mediaHelper->notification($content_id, $status, $publish_at, 'news');
             }
             $pdo->commit();
             return true;

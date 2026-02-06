@@ -232,6 +232,9 @@ class ProjectModel {
         $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_content')");
         $stmt->execute();
         $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        $stmtTranslate = $pdo->prepare("SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN ('ENABLE_TRANSLATE', 'GOOGLE_API_KEY')");
+        $stmtTranslate->execute();
+        $translates = $stmtTranslate->fetchAll(PDO::FETCH_KEY_PAIR);
         if (!$id) {
             return [
                 "id" => "", "status" => "active", "cover" => "", "notification_status" => "no",
@@ -303,7 +306,8 @@ class ProjectModel {
             "attachments" => $attachments,
             "images" => $images,
             "images360" => $images360,
-            "settings" => $settings
+            "settings" => $settings,
+            "translates" => $translates
         ];
     }
     public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {
@@ -348,7 +352,7 @@ class ProjectModel {
         $content_id = $data['content_id'] ?? null;
         $ex_cover = $data['ex_cover'] ?? null;
         $status = $data['status'] ?? 'active';
-        $notification = $data['notification'] ?? 'no';
+        $send_notification = $data['send_notification'] ?? 'no';
         $auto_translate = $data['auto_translate'] ?? 'no';
         $mediaHelper = new MediaHelper($pdo);
         $content_slug = $mediaHelper->generateSlug('project', $data["title_en"], $content_id);
@@ -380,7 +384,7 @@ class ProjectModel {
                 $stmtFolder->execute([
                     ':name' => $data["title_en"],
                     ':id'   => $data['content_id'],
-                    ':notification' => $notification
+                    ':notification' => $send_notification
                 ]);
             } else {
                 $parentId = (!empty($data['parent_id']) && $data['parent_id'] > 0) ? $data['parent_id'] : null;
@@ -393,7 +397,7 @@ class ProjectModel {
                     ':level'     => $data['level'],
                     ':ref_id'    => $ref_id,
                     ':content_id' => $content_id,
-                    ':notification' => $notification
+                    ':notification' => $send_notification
                 ]);
             }
             $mediaHelper->syncMedia($content_id, 'attachment', $data['existing_attachments'] ?? []);
@@ -403,11 +407,11 @@ class ProjectModel {
             $mediaHelper->handleMultiUpload($content_id, 'image', 'new_images');
             $mediaHelper->handleMultiUpload($content_id, 'image360', 'new_images360');
             $status = '';
-            if($notification == 'yes') {
+            if($send_notification == 'yes') {
                 $status = 'published';
+                $publish_at = convertTimeZoneUTC(date('Y-m-d H:i:s'), 'Y-m-d H:i:s');
+                $mediaHelper->notification($content_id, $status, $publish_at, 'project');
             }
-            $publish_at = convertTimeZoneUTC(date('Y-m-d H:i:s'), 'Y-m-d H:i:s');
-            $mediaHelper->notification($content_id, $status, $publish_at, 'project');
             if($auto_translate == 'yes') {
                 $mediaHelper->autoTranslate($content_id);
             }

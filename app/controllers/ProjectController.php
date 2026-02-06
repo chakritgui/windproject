@@ -77,7 +77,7 @@ class ProjectController extends BaseController {
         $data = [
             'content_id'   => intval($_POST['content_id'] ?? 0),
             'status' => $_POST['status'] ?? '',
-            'notification' => $_POST['notification'] ?? '',
+            'send_notification'    => $_POST['send_notification'] ?? 'no',
             'parent_id'   => intval($_POST['parent_id'] ?? 0),
             'level'       => intval($_POST['level'] ?? 1),
             'ref_id'       => intval($_POST['ref_id'] ?? ''),

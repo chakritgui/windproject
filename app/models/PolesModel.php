@@ -328,6 +328,9 @@ class PolesModel {
         $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_content')");
         $stmt->execute();
         $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        $stmtTranslate = $pdo->prepare("SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN ('ENABLE_TRANSLATE', 'GOOGLE_API_KEY')");
+        $stmtTranslate->execute();
+        $translates = $stmtTranslate->fetchAll(PDO::FETCH_KEY_PAIR);
         if (!$id) {
             return [
                 "id" => "", 
@@ -399,7 +402,8 @@ class PolesModel {
             "attachments" => $attachments,
             "images" => $images,
             "images360" => $images360,
-            "settings" => $settings
+            "settings" => $settings,
+            "translates" => $translates
         ];
     }
     public function saveContent($data) {

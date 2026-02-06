@@ -370,6 +370,9 @@ function manageContent(poles_id, content_id) {
     }, function(res) {
         if(res.status !== "success") return;
         let d = res.data;
+        const translates = d.translates;
+        let ENABLE_TRANSLATE = translates.ENABLE_TRANSLATE;
+        let GOOGLE_API_KEY = translates.GOOGLE_API_KEY;
         let $modal = $("#windModal");
         let modal = new bootstrap.Modal($modal[0]);
         $modal.find(".modal-header").html(`
@@ -389,12 +392,14 @@ function manageContent(poles_id, content_id) {
         $modal.find(".modal-footer").html(`
             <div class="row w-100"> 
                 <div class="col-6 d-flex align-items-center">
-                    <div class="form-check mb-0">
-                        <input class="form-check-input" type="checkbox" id="auto_translate" value="yes">
-                        <label class="form-check-label" for="auto_translate">
-                            ${langData['auto_translate'] || 'Auto Translate'}
-                        </label>
-                    </div>
+                    ${(ENABLE_TRANSLATE == 1 && GOOGLE_API_KEY) ? `
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="checkbox" id="auto_translate" value="yes">
+                            <label class="form-check-label" for="auto_translate">
+                                ${langData['auto_translate'] || 'Auto Translate'}
+                            </label>
+                        </div>
+                        ` : ``}
                 </div>
                 <div class="col-6 text-end">
                     <button type="button" class="btn btn-primary me-2" id="btnSaveContent">

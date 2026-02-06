@@ -371,6 +371,9 @@ function manageContent(id) {
     $.post("api/project/gets", { id }, function(res) {
         if(res.status !== "success") return;
         let d = res.data;
+        const translates = d.translates;
+        let ENABLE_TRANSLATE = translates.ENABLE_TRANSLATE;
+        let GOOGLE_API_KEY = translates.GOOGLE_API_KEY;
         let $modal = $("#windModal");
         let modal = new bootstrap.Modal($modal[0]);
         $modal.find(".modal-header").html(`
@@ -390,12 +393,14 @@ function manageContent(id) {
         $modal.find(".modal-footer").html(`
             <div class="row w-100"> 
                 <div class="col-6 d-flex align-items-center">
-                    <div class="form-check mb-0">
-                        <input class="form-check-input" type="checkbox" id="auto_translate" value="yes">
-                        <label class="form-check-label" for="auto_translate">
-                            ${langData['auto_translate'] || 'Auto Translate'}
-                        </label>
-                    </div>
+                    ${(ENABLE_TRANSLATE == 1 && GOOGLE_API_KEY) ? `
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="checkbox" id="auto_translate" value="yes">
+                            <label class="form-check-label" for="auto_translate">
+                                ${langData['auto_translate'] || 'Auto Translate'}
+                            </label>
+                        </div>
+                        ` : ``}
                 </div>
                 <div class="col-6 text-end">
                     <button type="button" class="btn btn-primary me-2 save-content">
@@ -409,18 +414,11 @@ function manageContent(id) {
         `);
         $modal.find(".modal-body").html(getContentForm(d));
         initSelect2Remote('#status', `${BASE_URL}/api/project/filter`, { type: 'status' });
-        initSelect2Remote('#notification', `${BASE_URL}/api/project/filter`, { type: 'notification' });
         let status = (d.status) ? d.status : 'active';
         if (status) {
             let statusName = status.charAt(0).toUpperCase() + status.slice(1);
             var newOptionStatus = new Option(statusName, status, true, true);
             $('#status').append(newOptionStatus).trigger('change');
-        }
-        let notification_status = (d.notification_status) ? d.notification_status : 'no';
-        if (notification_status) {
-            let statusName = notification_status.charAt(0).toUpperCase() + notification_status.slice(1);
-            var newOptionStatus = new Option(statusName, notification_status, true, true);
-            $('#notification').append(newOptionStatus).trigger('change');
         }
         initCoverUpload();
         initAttachmentsUpload(d.attachments || []);
@@ -432,6 +430,7 @@ function manageContent(id) {
     }, "json");
 }
 function getContentForm(d) {
+    const isEdit = !!d.id; 
     return `
         <form id="contentForm">
             ${renderTabs()}
@@ -444,10 +443,17 @@ function getContentForm(d) {
                             <label class="mb-2 mt-3 required">${langData['status'] || 'Status'}</label>
                             <select id="status" class="form-select obj-required"></select>
                         </div>
-                        <div class="col-md-4">
-                            <label class="mb-2 mt-3 required">${langData['notification'] || 'Notification'}</label>
-                            <select id="notification" class="form-select obj-required"></select>
+                    </div>
+                </div>
+                <hr class="my-4">
+                <div class="card bg-light border-0">
+                    <div class="card-body">
+                        <h6 class="card-title fw-bold text-dark"><i class="fa-solid fa-bell me-2"></i>${langData['notification_settings']}</h6>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="send_notification">
+                            <label class="form-check-label" for="send_notification">${isEdit ? langData['send_update'] : langData['send_publishing']}</label>
                         </div>
+                        <small class="text-muted d-block mt-1">${langData['if_enabled']}</small>
                     </div>
                 </div>
                 ${renderGallery()}
@@ -475,9 +481,20 @@ $(document).on('click', '.save-content', function () {
         $('.is-invalid').first().focus();
         return;
     }
-    saveContent();
+    const isNotify = $("#send_notification").is(":checked");
+    if (isNotify) {
+        Swal.fire({
+            title: langData['send_notification'],
+            text: langData['success_record'],
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: langData['save_and_notify']
+        }).then((result) => { if (result.isConfirmed) executeSave(); });
+    } else {
+        executeSave();
+    }
 });
-function saveContent() {
+function executeSave() {
     const btn = $(".save-content");
     btn.prop("disabled", true);
     const formData = new FormData($('#contentForm')[0]);
@@ -510,12 +527,12 @@ function saveContent() {
     formData.append("ref_id", currentRefId || "");
     formData.append("content_id", $("#content_id").val() || "");
     formData.append("status", $("#status").val());
-    formData.append("notification", $("#notification").val());
     formData.append("publish_at", typeof buildPublishAt === "function" ? buildPublishAt() : "");
     formData.append("title_en", $("#title_en").val() || "");
     formData.append("title_lo", $("#title_lo").val() || "");
     formData.append("ex_cover", $("#ex_cover").val() || "");
     formData.append("title_th", $("#title_th").val() || "");
+    formData.append("send_notification", $("#send_notification").is(":checked") ? 'yes' : 'no');
     const getCleanContent = (lang) => {
         const editor = tinymce.get(`content_${lang}`);
         if (!editor) return '';

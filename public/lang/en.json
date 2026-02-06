@@ -524,5 +524,12 @@
     "this_browser_does_not_support_notifications.": "This browser does not support notifications.",
     "enable": "Enable",
     "deactivated": "Deactivated (not yet registered)",
-    "blocked_by_browser": "Blocked by browser"
+    "blocked_by_browser": "Blocked by browser",
+    "send_update": "Send notification again for this update?",
+    "send_publishing": "Send notification to users upon publishing?",
+    "if_enabled": "If enabled, the system will send a push notification when Save is pressed.",
+    "notification_settings": "Notification Settings",
+    "send_notification": "Send Notification?",
+    "success_record": "The system will send a notification to the user as soon as the record is successful",
+    "save_and_notify": "Save & Notify"
 }

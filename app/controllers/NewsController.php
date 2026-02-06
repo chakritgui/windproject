@@ -29,26 +29,33 @@ class NewsController extends BaseController {
     }
     public function save() {
         $data = [
-            'content_id' => intval($_POST['content_id'] ?? 0),
-            'status' => $_POST['status'] ?? '',
-            'publish_at' => $_POST['publish_at'] ?? '',
-            'title_en' => $_POST['title_en'] ?? '',
-            'title_lo' => $_POST['title_lo'] ?? '',
-            'title_th' => $_POST['title_th'] ?? '',
-            'content_en' => $_POST['content_en'] ?? '',
-            'content_lo' => $_POST['content_lo'] ?? '',
-            'content_th' => $_POST['content_th'] ?? '',
-            'ex_cover' => $_POST['ex_cover'] ?? '',
-            'cover' => $_FILES['cover'] ?? null,
+            'content_id'           => intval($_POST['content_id'] ?? 0),
+            'status'               => $_POST['status'] ?? 'draft',
+            'publish_at'           => $_POST['publish_at'] ?? '',
+            'publish_now'          => ($_POST['publish_at'] === 'NOW'),
+            'title_en'             => $_POST['title_en'] ?? '',
+            'title_lo'             => $_POST['title_lo'] ?? '',
+            'title_th'             => $_POST['title_th'] ?? '',
+            'content_en'           => $_POST['content_en'] ?? '',
+            'content_lo'           => $_POST['content_lo'] ?? '',
+            'content_th'           => $_POST['content_th'] ?? '',
+            'ex_cover'             => $_POST['ex_cover'] ?? '',
+            'cover'                => $_FILES['cover'] ?? null,
             'existing_attachments' => $_POST['existing_attachments'] ?? [],
             'new_attachments'      => $_FILES['new_attachments'] ?? null,
             'existing_images'      => $_POST['existing_images'] ?? [],
             'new_images'           => $_FILES['new_images'] ?? null,
             'existing_images360'   => $_POST['existing_images360'] ?? [],
             'new_images360'        => $_FILES['new_images360'] ?? null,
-            'auto_translate' => $_POST['auto_translate'] ?? 'no'
+            'auto_translate'       => $_POST['auto_translate'] ?? 'no',
+            'send_notification'    => $_POST['send_notification'] ?? 'no'
         ];
-        $this->json(['status'=>$this->model->save($data)]);
+        try {
+            $result = $this->model->save($data);
+            $this->json(['status' => $result]);
+        } catch (Exception $e) {
+            $this->json(['status' => false, 'message' => $e->getMessage()]);
+        }
     }
     public function filter() {
         $page = intval($_POST['page'] ?? 0);
