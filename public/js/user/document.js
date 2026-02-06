@@ -138,7 +138,7 @@ function renderDocuments(items) {
         $('#listView').html(`
             <div class="text-center text-muted py-5">
                 <i class="fa-regular fa-folder-open" style="font-size:48px;"></i>
-                <p class="mt-3">${langData['no_documents_found'] || 'No documents found'}</p>
+                <p class="mt-3" data-i18n="no_documents_found"></p>
             </div>
         `);
         return;
@@ -187,7 +187,7 @@ function renderGridView(items) {
                     </div>
                     <button class="btn btn-outline-primary download-btn w-100 mt-2" data-id="${item.document_id}" data-path="${item.document_path}" data-file-name="${item.document_file_name}">
                         <i class="fa-solid fa-download"></i>
-                        <span class="btn-text">${langData['download'] || 'Download'}</span>
+                        <span class="btn-text" data-i18n="download"></span>
                     </button>
                 </div>
             </div>
@@ -229,7 +229,7 @@ function renderListView(items) {
                 <div class="col-12 col-md-auto text-end">
                     <button class="btn btn-outline-primary download-btn w-100 w-md-auto" data-id="${item.document_id}" data-path="${item.document_path}" data-file-name="${item.document_file_name}">
                         <i class="fa-solid fa-download"></i>
-                        <span class="btn-text">${langData['download'] || 'Download'}</span>
+                        <span class="btn-text" data-i18n="download"></span>
                     </button>
                 </div>
             </div>
@@ -291,11 +291,11 @@ $(document).on('click', '.history-download', function (e) {
     let modal = new bootstrap.Modal(modalEl[0]);
     modal.show();
     modalEl.find(".modal-header").html(`
-        <h5 class="modal-title">${langData['history_download'] || 'History Download'}</h5>
+        <h5 class="modal-title" data-i18n="history_download"></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     `);
     modalEl.find(".modal-footer").html(`
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
     `);
     modalEl.find(".modal-body").html(`
         <div id="downloadHistoryList" class="d-flex flex-column gap-3"></div>

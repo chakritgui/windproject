@@ -62,7 +62,7 @@ function renderNews(items) {
         if (item.cover_image) {
             thumbHtml = `<div class="news-thumbnail"><img src="${item.cover_image}" alt="cover"></div>`;
         } else {
-            thumbHtml = `<div class="news-thumbnail no-image"><i class="bi bi-newspaper"></i></div>`;
+            thumbHtml = `<div class="news-thumbnail no-image"><img src="${BASE_URL}/public/images/noimage.jpg" alt="cover"></div>`;
         }
         let badgeHtml = '';
         if (parseInt(item.count_attachment) > 0) 

@@ -269,6 +269,7 @@ function executeSave() {
             formData.append(`title_${lang}`, $(`#title_${lang}`).val() || "");
         }
     });
+    formData.append("content_id", $("#content_id").val() || "");
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
