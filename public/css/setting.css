@@ -13,8 +13,11 @@
 }
 .preview-img {
     max-width: 100%;
-    max-height: 60px;
+    max-height: 100px;
     border-radius: 8px;
+}
+.preview-video {
+    max-height: 100px;
 }
 .upload-btn {
     cursor: pointer;
