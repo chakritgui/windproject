@@ -1,5 +1,6 @@
 {
     "require": {
-        "box/spout": "^3.3"
+        "box/spout": "^3.3",
+        "minishlink/web-push": "^8.0"
     }
 }

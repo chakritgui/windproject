@@ -49,6 +49,30 @@ class MailHelper {
             return false;
         }
     }
+    public function sendQueueMail($email, $subject, $body, $lang = 'en') {
+        $senderName = $this->siteSettings["website_$lang"] ?? 'Phongsupthavy Group';
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host       = $this->configs['MAIL_HOST'] ?? '';
+            $mail->SMTPAuth   = true;
+            $mail->Username   = $this->configs['MAIL_USER'] ?? '';
+            $mail->Password   = $this->decrypt($this->configs['MAIL_PASS'] ?? '');
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; 
+            $mail->Port       = $this->configs['MAIL_PORT'] ?? 587;
+            $mail->CharSet    = 'UTF-8';
+            $mail->setFrom($this->configs['MAIL_USER'] ?? '', $senderName);
+            $mail->addAddress($email);
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body    = $body;
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log("Queue Mail Error: " . $mail->ErrorInfo);
+            return false;
+        }
+    }
     private function getEmailContent($lang, $token) {
         $domain = rtrim($this->configs['DOMAIN_NAME'] ?? '', '/');
         $logoUrl    = $domain . "/" . ($this->siteSettings['logo'] ?? '');

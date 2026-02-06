@@ -192,16 +192,104 @@ class MediaHelper {
                         SELECT :target, :nid, member_id, :pub, 'published' 
                         FROM wp_members WHERE status = 'active'
                         ON DUPLICATE KEY UPDATE status = 'published', publish_at = :pub";
-                $pdo->prepare($sql)->execute([':target' => $target, ':nid' => $content_id, ':pub' => $publish_at]);
-                // ปั้น body ส่งเข่า Mail และ PWA 
+                $pdo->prepare($sql)->execute([
+                    ':target' => $target, 
+                    ':nid' => $content_id, 
+                    ':pub' => $publish_at
+                ]);
+                $stmtNoti = $pdo->prepare("SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN ('NOTIFY_EMAIL', 'NOTIFY_PWA')");
+                $stmtNoti->execute();
+                $settings = $stmtNoti->fetchAll(PDO::FETCH_KEY_PAIR);
+                $canEmail = ($settings['NOTIFY_EMAIL'] ?? 0) == 1;
+                $canPWA   = ($settings['NOTIFY_PWA'] ?? 0) == 1;
+                if ($canEmail) {
+                    $this->handleEmail($content_id, $publish_at);
+                }
+                if ($canPWA) {
+                    $this->handlePWA($content_id, $publish_at);
+                }
             } else {
-                $stmt = $pdo->prepare("UPDATE wp_notification_targets SET status = :status, publish_at = NULL WHERE notifications_item = :id AND notifications_target = :target");
-                $stmt->execute([':status' => $status, ':id' => $content_id, ':target' => $target]);
+                $sql = "UPDATE wp_notification_targets SET status = :status, publish_at = NULL WHERE notifications_item = :id AND notifications_target = :target"; 
+                $pdo->prepare($sql)->execute([
+                    ':status' => $status, 
+                    ':id' => $content_id, 
+                    ':target' => $target
+                ]);
+                $pdo->prepare("DELETE FROM email_queue WHERE status = 'pending' AND subject IN (SELECT content_subject FROM wp_content_item WHERE content_id = ?)")->execute([$content_id]);
+                $pdo->prepare("DELETE FROM pwa_notification_queue WHERE status = 'pending' AND title IN (SELECT content_subject FROM wp_content_item WHERE content_id = ?)")->execute([$content_id]);
             }
             if (!$isExternalTrans) $pdo->commit();
         } catch (Exception $e) {
             if (!$isExternalTrans && $pdo->inTransaction()) $pdo->rollBack();
+            error_log("Notification Error: " . $e->getMessage());
             throw $e;
+        }
+    }
+    private function handleEmail($id, $publish_at = null) {
+        $pdo = $this->db;
+        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body FROM wp_content_item WHERE content_id = ?");
+        $stmt->execute([$id]);
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $availableContent = [];
+        foreach ($items as $row) {
+            $availableContent[$row['content_lang']] = [
+                'subject' => $row['content_subject'],
+                'body'    => $row['content_body']
+            ];
+        }
+        if (empty($availableContent)) return;
+        $sqlMembers = "SELECT m.member_id, m.email, IFNULL(ml.language, 'en') as user_lang FROM wp_members m LEFT JOIN wp_members_language ml ON m.member_id = ml.member_id WHERE m.status = 'active'";
+        $members = $pdo->query($sqlMembers)->fetchAll(PDO::FETCH_ASSOC);
+        $sqlQueue = "INSERT INTO email_queue (recipient_email, subject, body, priority, status, scheduled_at, created_at) VALUES (:email, :subject, :body, :priority, 'pending', :scheduled, NOW())";
+        $stmtQueue = $pdo->prepare($sqlQueue);
+        $scheduledTime = $publish_at ?: date('Y-m-d H:i:s');
+        foreach ($members as $member) {
+            $targetLang = $member['user_lang'];
+            $final = $availableContent[$targetLang] ?? null;
+            if (!$final) {
+                foreach (['en', 'lo', 'th'] as $fallback) {
+                    if (isset($availableContent[$fallback])) {
+                        $final = $availableContent[$fallback];
+                        break;
+                    }
+                }
+            }
+            if ($final) {
+                $stmtQueue->execute([
+                    ':email'     => $member['email'],
+                    ':subject'   => $final['subject'],
+                    ':body'      => $final['body'],
+                    ':priority'  => 3,
+                    ':scheduled' => $scheduledTime
+                ]);
+            }
+        }
+    }
+    private function handlePWA($id, $publish_at = null) {
+        $pdo = $this->db;
+        $stmt = $pdo->prepare("SELECT content_lang, content_subject FROM wp_content_item WHERE content_id = ?");
+        $stmt->execute([$id]);
+        $availableSubjects = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        if (empty($availableSubjects)) return;
+        $sqlSub = "SELECT ps.id, ps.user_id, IFNULL(ml.language, 'en') as user_lang FROM push_subscriptions ps LEFT JOIN wp_members_language ml ON ps.user_id = ml.member_id WHERE ps.is_active = 1"; 
+        $subscriptions = $pdo->query($sqlSub)->fetchAll(PDO::FETCH_ASSOC);
+        $sqlInsert = "INSERT INTO pwa_notification_queue (subscription_id, title, status, scheduled_at, created_at) VALUES (?, ?, 'pending', ?, NOW())";
+        $stmtInsert = $pdo->prepare($sqlInsert);
+        $scheduledTime = $publish_at ?: date('Y-m-d H:i:s');
+        foreach ($subscriptions as $sub) {
+            $targetLang = ($sub['user_id'] !== null) ? $sub['user_lang'] : 'en';
+            $finalSubject = $availableSubjects[$targetLang] ?? '';
+            if ($finalSubject === '') {
+                foreach (['en', 'lo', 'th'] as $fallback) {
+                    if (isset($availableSubjects[$fallback])) {
+                        $finalSubject = $availableSubjects[$fallback];
+                        break;
+                    }
+                }
+            }
+            if ($finalSubject !== '') {
+                $stmtInsert->execute([$sub['id'], $finalSubject, $scheduledTime]);
+            }
         }
     }
     public function handleContent($data, $content_id) {
