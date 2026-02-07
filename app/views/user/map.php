@@ -26,6 +26,7 @@
         .catch(err => console.error("Config error:", err));
 </script>
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/map.css?v=<?=time();?>">
+<link rel="stylesheet" href="<?=BASE_URL?>/public/css/pole.css?v=<?=time();?>">
 <div id="wind-loading">
     <div class="wind-grid">
         <div class="wind-spacer"></div>
@@ -44,3 +45,5 @@
     </div>
 </div>
 <div id="windy"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="<?=BASE_URL?>/public/js/user/pole.js?v=<?=time();?>" defer></script>

@@ -1,31 +1,37 @@
 const sensors = [{
     key: 'WS',
     name: 'Wind Speed',
+    lang: 'wind_speed',
     unit: 'm/s',
     color: 'rgb(75,192,192)'
 },{
     key: 'WD',
     name: 'Wind Direction',
+    lang: 'wind_direction',
     unit: 'degree',
     color: 'rgb(54,162,235)'
 },{
     key: 'AD',
     name: 'Air Density',
+    lang: 'air_density',
     unit: 'kg/m³',
     color: 'rgb(255,159,64)'
 },{
     key: 'SP',
     name: 'Surface Pressure',
+    lang: 'surface_pressure',
     unit: 'hPa',
     color: 'rgb(153,102,255)'
 },{
     key: 'RH',
     name: 'Relative Humidity',
+    lang: 'relative_humidity',
     unit: '%',
     color: 'rgb(255,205,86)'
 },{
     key: 'TI',
     name: 'Turbulence Intensity',
+    lang: 'turbulence_intensity',
     unit: '',
     color: 'rgb(231,76,60)'
 }];
@@ -127,7 +133,7 @@ async function generateStats(selectedSensors) {
         col.innerHTML = `
             <div class="stat-card" style="background:${sensor.color}">
                 <i class="fas ${icon} stat-icon"></i>
-                <h6>${sensor.name} ${(sensor.unit) ? `(${langData[sensor.unit] || sensor.unit})`  : ``}</h6>
+                <h6>${langData[sensor.lang] || sensor.name} ${(sensor.unit) ? `(${langData[sensor.unit] || sensor.unit})`  : ``}</h6>
                 <div class="stat-value">${value}</div>
             </div>
         `;

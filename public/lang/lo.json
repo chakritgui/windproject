@@ -299,7 +299,7 @@
     "degree": "ອົງສາ",
     "select_sensor_message": "ກະລຸນາເລືອກເຊັນເຊີຢ່າງໜ້ອຍໜຶ່ງຕົວ",
     "average_summary": "ສະຫຼຸບຄ່າສະເລ່ຍ",
-    "visualization": "ພາບຂໍ້ມູນ",
+    "visualization": "ພາບລວມຂອງຂໍ້ມູນ",
     "wind_speed_trend": "ແນວໂນ້ມຄວາມໄວລົມ",
     "wind_speed_area": "ພື້ນທີ່ຄວາມໄວລົມ",
     "wind_speed_distribution": "ການກະຈາຍຕົວຂອງຄວາມໄວລົມ",
@@ -531,5 +531,6 @@
     "notification_settings": "ການຕັ້ງຄ່າການແຈ້ງເຕືອນ",
     "send_notification": "ສົ່ງການແຈ້ງເຕືອນບໍ?",
     "success_record": "ລະບົບຈະສົ່ງການແຈ້ງເຕືອນໃຫ້ຜູ້ໃຊ້ທັນທີທີ່ບັນທຶກສໍາເລັດ",
-    "save_and_notify": "ບັນທຶກ & ແຈ້ງ"
+    "save_and_notify": "ບັນທຶກ & ແຈ້ງ",
+    "analysis_report": "ບົດລາຍງານການວິເຄາະ"
 }

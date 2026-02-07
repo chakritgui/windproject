@@ -258,6 +258,7 @@
     min-height: 130px;
     position: relative;
     overflow: hidden;
+    height: 125px;
 }
 .stat-icon {
     position: absolute;

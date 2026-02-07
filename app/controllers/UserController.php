@@ -24,18 +24,8 @@ class UserController extends Controller {
         ensure_login();
         $this->view('user/news');
     }
-    public function projectDetail($slug) {
-        ensure_login();
-        $project = 1;
-        if (!$project) {
-            http_response_code(404);
-            exit('Project not found');
-        }
-        $this->view('user/project/detail', [
-            'project' => $project
-        ]);
-    }
     public function pole($data = null){
+        ensure_login();
         $filters = [];
         if (!empty($data)) {
             $json = base64_decode($data, true);

@@ -1,8 +1,12 @@
 <?php
-class PoleModel{
+class PoleModel {
     private PDO $db;
-    public function __construct(){
+    public function __construct() {
         $this->db = Database::getInstance()->pdo;
+    }
+    private function formatDbDate($dateStr) {
+        $date = DateTime::createFromFormat('d/m/Y', $dateStr);
+        return $date ? $date->format('Y-m-d') : $dateStr;
     }
     public function polestats($params) {
         $map = [
@@ -22,19 +26,21 @@ class PoleModel{
             }
         }
         if (empty($select)) return [];
+        $start = $this->formatDbDate($params['start']) . " 00:00:00";
+        $end   = $this->formatDbDate($params['end']) . " 23:59:59";
         $sql = "SELECT " . implode(', ', $select) . "
                 FROM wp_winds
                 WHERE poles_id = ?
                 AND levels_id = ?
                 AND wind_datetime BETWEEN ? AND ?
-                AND status = 'active'
-        ";
+                AND status = 'active'";
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             $params['poles_id'],
             $params['height_id'],
-            $params['start'],
-            $params['end']
+            $start,
+            $end
         ]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -53,6 +59,8 @@ class PoleModel{
                 $select[] = "ROUND(AVG({$map[$k]}), 2) AS {$k}";
             }
         }
+        $start = $this->formatDbDate($params['start']) . " 00:00:00";
+        $end   = $this->formatDbDate($params['end']) . " 23:59:59";
         $sql = "SELECT " . implode(', ', $select) . "
                 FROM wp_winds
                 WHERE poles_id = ? AND levels_id = ? 
@@ -61,20 +69,26 @@ class PoleModel{
                 GROUP BY DATE_FORMAT(wind_datetime, '%Y-%m-%d %H:%i')
                 ORDER BY wind_datetime ASC";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$params['poles_id'], $params['height_id'], $params['start'], $params['end']]);
+        $stmt->execute([
+            $params['poles_id'], 
+            $params['height_id'], 
+            $start, 
+            $end
+        ]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function info($params) {
         $poles_id = $params['poles_id'];
         $height_id = $params['height_id'];
-        $dateStart = new DateTime($params['start']);
-        $dateEnd   = new DateTime($params['end']);
+        $dateStart = DateTime::createFromFormat('d/m/Y', $params['start']);
+        $dateEnd   = DateTime::createFromFormat('d/m/Y', $params['end']);
+        if (!$dateStart) $dateStart = new DateTime($params['start']);
+        if (!$dateEnd) $dateEnd = new DateTime($params['end']);
         $interval = $dateStart->diff($dateEnd);
         $total_days = $interval->days + 1;
-        $start = convertTimeZone($params['start'], 'd/m/Y');
-        $end = convertTimeZone($params['end'], 'd/m/Y');
-        $sqlPole = "SELECT 
-                        p.*, t.type_name, l.installations_name, pj.project_name
+        $startStr = $dateStart->format('d/m/Y');
+        $endStr = $dateEnd->format('d/m/Y');
+        $sqlPole = "SELECT p.*, t.type_name, l.installations_name, pj.project_name
                     FROM wp_poles p 
                     LEFT JOIN wp_type t on t.type_id = p.type_id 
                     LEFT JOIN wp_installations l on l.installations_id = p.installations_id
@@ -83,19 +97,19 @@ class PoleModel{
         $stmt1 = $this->db->prepare($sqlPole);
         $stmt1->execute([':poles_id' => $poles_id]);
         $poleInfo = $stmt1->fetch(PDO::FETCH_ASSOC);
-        $sqlHeight = "SELECT 
-                        l.levels_id AS levels_id, 
-                        CONCAT(h.height_name,' ',l.height_levels) AS levels_name 
+        $sqlHeight = "SELECT l.levels_id AS levels_id, 
+                            CONCAT(h.height_name,' ',l.height_levels) AS levels_name 
                     FROM wp_height h 
                     LEFT JOIN wp_height_levels l ON l.height_id = h.height_id 
                     WHERE l.levels_id = :height_id"; 
         $stmt2 = $this->db->prepare($sqlHeight);
         $stmt2->execute([':height_id' => $height_id]);
         $heightInfo = $stmt2->fetch(PDO::FETCH_ASSOC);
+
         return [
             'pole'   => $poleInfo,
             'level'  => $heightInfo,
-            'period' => "$start - $end",
+            'period' => "$startStr - $endStr",
             'total_days' => $total_days
         ];
     }

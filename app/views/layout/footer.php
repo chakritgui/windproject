@@ -35,6 +35,15 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header"></div>
+            <div class="modal-body"></div>
+            <div class="modal-footer"></div>
+        </div>
+    </div>
+</div>
 <div class="modal fade" id="vrModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-fullscreen-md-down modal-xl">
         <div class="modal-content overflow-hidden rounded-4 border-0 position-relative">
