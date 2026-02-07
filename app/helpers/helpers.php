@@ -84,3 +84,12 @@
             return '';
         }
     }
+    function env($key, $default = null) {
+        if (isset($_ENV[$key])) {
+            return $_ENV[$key];
+        }
+        if (getenv($key) !== false) {
+            return getenv($key);
+        }
+        return $default;
+    }

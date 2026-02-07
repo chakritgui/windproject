@@ -1,10 +1,13 @@
 <?php
     session_start();
+    require_once __DIR__ . '/vendor/autoload.php';
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+    $dotenv->load();
+    require_once __DIR__ . '/app/helpers/helpers.php';
     require_once __DIR__ . '/config.php';
     require_once __DIR__ . '/app/core/Database.php';
     require_once __DIR__ . '/app/core/Controller.php';
     require_once __DIR__ . '/app/core/Router.php';
-    require_once __DIR__ . '/app/helpers/helpers.php';
     require_once __DIR__ . '/app/helpers/mediaHelper.php';
     require_once __DIR__ . '/app/helpers/mailHelper.php';
     require_once __DIR__ . '/vendor/autoload.php';
