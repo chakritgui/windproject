@@ -1,6 +1,8 @@
 #!/usr/bin/php
 <?php
     set_time_limit(0); 
+    require __DIR__ . '/vendor/autoload.php';
+    Dotenv\Dotenv::createImmutable(__DIR__)->load();
     require_once __DIR__ . '/config.php';
     require_once __DIR__ . '/app/core/Database.php';
     require_once __DIR__ . '/app/helpers/mailHelper.php';
