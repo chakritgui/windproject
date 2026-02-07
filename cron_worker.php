@@ -1,22 +1,21 @@
 #!/usr/bin/php
 <?php
+    use Minishlink\WebPush\WebPush;
+    use Minishlink\WebPush\Subscription;
     date_default_timezone_set('Asia/Bangkok');
+    set_time_limit(0);
     file_put_contents(
         '/var/log/windproject-cron.log',
-        "[".date('Y-m-d H:i:s')."] cron run\n",
+        "[" . date('Y-m-d H:i:s') . "] cron run\n",
         FILE_APPEND
     );
-    set_time_limit(0); 
-    require __DIR__ . '/vendor/autoload.php';
+    require_once __DIR__ . '/vendor/autoload.php';
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
     $dotenv->load();
     require_once __DIR__ . '/app/helpers/helpers.php';
     require_once __DIR__ . '/config.php';
     require_once __DIR__ . '/app/core/Database.php';
     require_once __DIR__ . '/app/helpers/mailHelper.php';
-    require_once __DIR__ . '/vendor/autoload.php';
-    use Minishlink\WebPush\WebPush;
-    use Minishlink\WebPush\Subscription;
     try {
         $db = Database::getInstance()->pdo;
         $mailHelper = new MailHelper($db);
