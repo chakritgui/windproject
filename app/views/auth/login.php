@@ -20,7 +20,7 @@
                         </span>
                     </div>
                     <div class="form-check my-2">
-                        <input class="form-check-input" type="checkbox" id="keepLoggedIn">
+                        <input class="form-check-input" type="checkbox" id="keepLoggedIn" checked>
                         <label class="form-check-label" for="keepLoggedIn" data-i18n="keep_me_login"></label>
                     </div>
                     <button type="button" class="btn-login login-btn w-100" data-i18n="login"></button>

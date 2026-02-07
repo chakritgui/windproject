@@ -355,3 +355,6 @@ $('#windModal').on('show.bs.modal', function () {
     $(document).off('hide.bs.dropdown.block-by-modal');
 });
 $("input").attr("autocomplete", "off");
+window.onload = function() {
+    document.body.classList.add('loaded');
+};

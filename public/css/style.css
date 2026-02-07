@@ -9,6 +9,13 @@ body {
     font-size: 12px !important;
     margin: 0; padding: 0;
 }
+body { 
+    opacity: 0; 
+    transition: opacity 0.4s ease-in-out; 
+}
+body.loaded { 
+    opacity: 1; 
+}
 .btn, a, select, input, textarea, .select2-container--bootstrap-5 .select2-selection, .select2-container--bootstrap-5 .select2-dropdown .select2-results__options .select2-results__option {
     font-size: 12px !important;
 }
