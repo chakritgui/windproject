@@ -3,7 +3,7 @@ function openContent(slugFromParam, modeFromParam) {
     const $dialog = $modal.find(".modal-dialog");
     $dialog.addClass("modal-fullscreen");
     $modal.find(".modal-footer").html(`
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
+        <div class="d-flex justify-content-center align-items-center w-100">${footer}</div>
     `);
     const modalBody = $modal.find(".modal-body");
     modalBody.html(`
@@ -26,19 +26,12 @@ function openContent(slugFromParam, modeFromParam) {
         </div>
     `);
     $modal.find(".modal-header").html(`
-        <h6 class="modal-title fw-bold text-dark"></h6>
-        <div class="ms-auto d-flex align-items-center">
-            <button type="button" class="btn btn-sm btn-light me-2 btn-fullscreen">
-                <i class="fa-regular fa-window-maximize"></i>
+        <div class="d-flex align-items-center w-100">
+            <button type="button" class="btn btn-sm btn-light me-2" data-bs-dismiss="modal">
+                <i class="fa-solid fa-arrow-left"></i>
             </button>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
     `);
-    const modalTitle = $modal.find(".modal-title");
-    $modal.find(".btn-fullscreen").off("click").on("click", function() {
-        $modal.find(".modal-dialog").toggleClass("modal-fullscreen");
-        $(this).find("i").toggleClass("fa-regular fa-window-maximize fa-regular fa-window-restore");
-    });
     $modal.modal('show');
     const urlParts = window.location.pathname.split('/');
     const finalSlug = slugFromParam || decodeURIComponent(urlParts[urlParts.length - 1]);
