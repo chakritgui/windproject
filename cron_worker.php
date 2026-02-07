@@ -22,6 +22,7 @@
         if (class_exists('Minishlink\WebPush\WebPush')) {
             $vapid_keys = [
                 'VAPID' => [
+                    'subject'    => 'mailto:sv1.pstgwind.com',
                     'publicKey'  => 'BJyu1v7EXRhdUr1MnfK3sAjxitbj2wxpO5YZlQVbz1abX-fnNQwWU0-RHR791cmfoCg-6H7cuvGBa6ctsERVnho',
                     'privateKey' => 'zATIYMv5d222-QeBz34E7rDY_t4e5oU2QS9MW3rHP8M',
                 ],
