@@ -1,5 +1,11 @@
 #!/usr/bin/php
 <?php
+    date_default_timezone_set('Asia/Bangkok');
+    file_put_contents(
+        '/var/log/windproject-cron.log',
+        "[".date('Y-m-d H:i:s')."] cron run\n",
+        FILE_APPEND
+    );
     set_time_limit(0); 
     require __DIR__ . '/vendor/autoload.php';
     Dotenv\Dotenv::createImmutable(__DIR__)->load();
