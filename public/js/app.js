@@ -165,7 +165,6 @@ function handleSettingItem(item) {
             break;
         case 'icon':
             icon = `${BASE_URL}/${val || 'public/images/icon.png'}`;
-            $('img.logo-small').attr('src', icon);
             $('link[rel="icon"]').attr('href', icon);
             break;
         case 'website_en': website.en = val; break;
@@ -175,9 +174,12 @@ function handleSettingItem(item) {
             footer = val || 'Copyright © iWind Corporation Limited';
             $('.footer').html(footer);
             break;
-        case 'language':
-            val = (val) ? val : 'en';
-            if (val) buildLanguageMenu(val.split(',').map(s => s.trim()));
+       case 'language':
+            let languages = (val && val.trim() !== "") ? val : 'en';
+            let langArray = languages.split(',').map(s => s.trim());
+            if (typeof buildLanguageMenu === "function") {
+                buildLanguageMenu(langArray);
+            }
             break;
         case 'language_default':
             if (!currentLang) currentLang = val;
@@ -266,7 +268,7 @@ function updateDropdownLabel(lang) {
     const info = langInfo[lang] || langInfo.en;
     $('.dropdown-language .dropdown-toggle').html(`
         <img src="${BASE_URL}/public/flags/${info.flag}.png" width="15" class="me-1">
-        ${info.label}
+        <span class="d-none d-md-inline">${info.label}</span>
     `);
 }
 function refreshAllTables() {

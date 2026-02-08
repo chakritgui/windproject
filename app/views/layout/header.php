@@ -84,18 +84,17 @@
                     <div id="menu-level-3" class="menu-panel"></div>
                     <div id="menu-level-4" class="menu-panel"></div>
                 </div>
-                <button id="sidebarToggle" class="btn btn-light btn-sm me-2 <?= (isset($_SESSION['user']['role']) && in_array($_SESSION['user']['role'], ['admin','administrator'])) ? '' : 'd-lg-none' ?>">
+                <button id="sidebarToggle" class="btn btn-light btn-sm me-1 <?= (isset($_SESSION['user']['role']) && in_array($_SESSION['user']['role'], ['admin','administrator'])) ? '' : 'd-lg-none' ?>">
                     <i class="fa-solid fa-bars"></i>
                 </button>
             <?php } ?>
             <div class="h4 m-0">
                 <a href="<?=BASE_URL?>/" class="logo text-decoration-none text-dark d-flex align-items-center">
-                    <img alt="" height="45" class="me-2 logo-full">
-                    <img alt="" height="35" class="me-2 logo-small">
+                    <img class="logo-full" alt="" height="40" class="me-2">
                 </a>
             </div>
         </div>
-        <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center gap-2">
             <?php if(isset($_SESSION['user']) && !in_array($_SESSION['user']['role'], ['admin','administrator'])) { ?>
                 <ul class="nav d-none d-lg-flex align-items-center me-3">
                     <li class="nav-item">
