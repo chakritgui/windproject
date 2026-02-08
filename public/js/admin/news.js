@@ -275,6 +275,11 @@ function executeSave() {
         formData.append(`title_${lang}`, $(`#title_${lang}`).val() || "");
     });
     formData.append("content_id", $("#content_id").val() || "");
+    formData.append("ex_cover", $("#ex_cover").val() || "");
+    const cover = $("#cover")[0].files[0] || null;
+    if (cover) {
+        formData.append("cover", cover);
+    }
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
