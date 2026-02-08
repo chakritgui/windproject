@@ -43,7 +43,7 @@
             <input type="text" id="txtSearch" class="form-control form-control-sm ps-5" autocomplete="off">
         </div>
     </div>
-    <div id="listView" class="bg-white rounded shadow-sm border">
+    <div id="listView" class="bg-white rounded table-responsive">
         <table class="table table-striped table-hover mb-0">
             <thead class="table-light">
                 <tr>
