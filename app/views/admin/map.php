@@ -110,18 +110,18 @@
             </div>
             <div class="control-panel mt-3" id="stylePanel">
                 <div class="row align-items-center g-3">
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="small fw-bold" data-i18n="area_border_color"></label>
                         <div class="d-flex gap-2 mt-1">
                             <input type="color" class="form-control form-control-color" id="fillColor" value="#3388ff">
                             <input type="color" class="form-control form-control-color" id="borderColor" value="#3388ff">
                         </div>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="small fw-bold"><span data-i18n="opacity"></span> (<span id="opacityValue">30%</span>)</label>
                         <input type="range" class="form-range" id="fillOpacity" min="0" max="100" value="30">
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="small fw-bold"><span data-i18n="border_weight"></span> (<span id="weightValue">2px</span>)</label>
                         <input type="range" class="form-range" id="borderWeight" min="1" max="10" value="2">
                     </div>
@@ -137,11 +137,6 @@
                                 <label class="form-check-label" for="maskClose">Close</label>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <button class="btn btn-primary w-100 save-map" id="saveGlobalBtn">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> <span data-i18n="save_all_changes"></span>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -161,5 +156,11 @@
                 <div class="data-list" id="polygonList"></div>
             </div>
         </div>
+    </div>
+    <div class="d-flex justify-content-end mt-4">
+        <button class="btn btn-lg btn-primary w-md-auto save-map" id="saveGlobalBtn">
+            <i class="fa-solid fa-floppy-disk me-2"></i>
+            <span data-i18n="save"></span>
+        </button>
     </div>
 </div>
