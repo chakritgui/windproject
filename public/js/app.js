@@ -176,6 +176,7 @@ function handleSettingItem(item) {
             $('.footer').html(footer);
             break;
         case 'language':
+            val = (val) ? val : 'en';
             if (val) buildLanguageMenu(val.split(',').map(s => s.trim()));
             break;
         case 'language_default':
