@@ -1,3 +1,7 @@
+let charts = {
+    main: null,
+    others: {}
+};
 function initDashboard() {
     $.ajax({
         url: `${BASE_URL}/api/dashboard/getStats`,
@@ -17,37 +21,115 @@ function initDashboard() {
                 $('#windImportCount').text(numberWithCommas(d.total_imports));
                 $('#windRowCount').text(numberWithCommas(d.total_winds));
                 $('#windUpdate').text(d.import_start || '-');
-            } else {
-                showError(langData['cannot_load']);
+                loadWindData(); 
             }
-        },
-        error: function() {
-            showError(langData['cannot_load']);
         }
     });
+}
+let chartInstances = {};
+function loadWindData() {
+    if (typeof Chart === 'undefined') {
+        setTimeout(loadWindData, 200);
+        return;
+    }
+    $.getJSON(`${BASE_URL}/api/dashboard/getWindChartData`, function(res) {
+        if (!res.status || !res.data.length) return;
+        const data = res.data;
+        const labels = data.map(i => i.time);
+        createChart('windDataChart', 'Speed (m/s)', labels, data.map(i => i.speed), '#4361ee', true);
+        createChart('chart-direction', 'Dir', labels, data.map(i => i.direction), '#f72585', false);
+        createChart('chart-temp', 'Temp', labels, data.map(i => i.temp), '#ff9f43', false);
+        createChart('chart-humidity', 'Hum', labels, data.map(i => i.humidity), '#4cc9f0', false);
+        createChart('chart-pressure', 'Pres', labels, data.map(i => i.pressure), '#2ec4b6', false);
+        createChart('chart-density', 'Dens', labels, data.map(i => i.density), '#7209b7', false);
+    });
+}
+function createChart(canvasId, label, labels, dataValues, color, isMain) {
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    if (chartInstances[canvasId]) {
+        chartInstances[canvasId].destroy();
+    }
+    chartInstances[canvasId] = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: label,
+                data: dataValues,
+                borderColor: color,
+                backgroundColor: isMain ? hexToRgba(color, 0.1) : 'transparent',
+                fill: isMain,
+                tension: 0.4,
+                borderWidth: isMain ? 3 : 2,
+                pointRadius: isMain ? 2 : 0, 
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false, 
+            plugins: {
+                legend: { display: isMain },
+                tooltip: { mode: 'index', intersect: false }
+            },
+            scales: {
+                x: {
+                    display: isMain,
+                    grid: { display: false },
+                    ticks: { maxTicksLimit: 8 }
+                },
+                y: {
+                    beginAtZero: false,
+                    grid: { color: '#f0f0f0' },
+                    ticks: { font: { size: 10 } }
+                }
+            }
+        }
+    });
+}
+function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1, 3), 16),
+          g = parseInt(hex.slice(3, 5), 16),
+          b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+function getCommonOptions(label) {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+        plugins: {
+            tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                padding: 10,
+                bodySpacing: 5
+            }
+        },
+        scales: {
+            y: { beginAtZero: false, grid: { color: '#f0f0f0' } },
+            x: { grid: { display: false }, ticks: { autoSkip: true, maxTicksLimit: 10 } }
+        }
+    };
 }
 function loadLoginHistory() {
     $.getJSON(`${BASE_URL}/api/dashboard/loginHistory`, function(res) {
         if (!res.status) return;
-
         let html = '';
         res.data.forEach(row => {
+            let badge = row.log_type === 'login' ? 'bg-primary' : (row.log_type === 'kick' ? 'bg-danger' : 'bg-success');
             html += `
                 <tr>
-                    <td>${row.member_name}</td>
-                    <td>${row.login_at}</td>
-                    <td>${row.logout_at ?? '-'}</td>
-                    <td>${row.ip_address}</td>
-                    <td class="text-truncate" style="max-width:200px">${row.login_device}</td>
-                    <td>
-                        <span class="badge bg-${row.log_type === 'kick' ? 'danger' : (row.log_type == 'login') ? 'warning' : 'success'}">
-                            ${row.log_type}
-                        </span>
-                    </td>
-                </tr>
-            `;
+                    <td><div class="fw-bold">${row.member_name}</div></td>
+                    <td><small>${row.login_at}</small></td>
+                    <td class="hide-mobile"><small>${row.logout_at ?? '-'}</small></td>
+                    <td><code class="small">${row.ip_address}</code></td>
+                    <td class="hide-mobile small text-muted text-truncate" style="max-width:150px">${row.login_device}</td>
+                    <td><span class="badge ${badge} rounded-pill">${row.log_type.toUpperCase()}</span></td>
+                </tr>`;
         });
-
         $('#loginHistoryTable tbody').html(html);
     });
 }

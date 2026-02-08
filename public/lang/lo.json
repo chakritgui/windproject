@@ -532,5 +532,11 @@
     "send_notification": "ສົ່ງການແຈ້ງເຕືອນບໍ?",
     "success_record": "ລະບົບຈະສົ່ງການແຈ້ງເຕືອນໃຫ້ຜູ້ໃຊ້ທັນທີທີ່ບັນທຶກສໍາເລັດ",
     "save_and_notify": "ບັນທຶກ & ແຈ້ງ",
-    "analysis_report": "ບົດລາຍງານການວິເຄາະ"
+    "analysis_report": "ບົດລາຍງານການວິເຄາະ",
+    "wind_analytics": "ການວິເຄາະຂໍ້ມູນລົມ",
+    "Real-timeData": "ຂໍ້ມູນແບບຮຽວທາມ",
+    "row_recorded": "ຈຳນວນແຖວທີ່ບັນທຶກ",
+    "login_time": "ເວລາເຂົ້າສູ່ລະບົບ",
+    "logout_time": "ເວລາອອກຈາກລະບົບ",
+    "ip_address": "ທີ່ຢູ່ໄອພີ (IP)"
 }

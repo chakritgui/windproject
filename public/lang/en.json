@@ -532,5 +532,11 @@
     "send_notification": "Send Notification?",
     "success_record": "The system will send a notification to the user as soon as the record is successful",
     "save_and_notify": "Save & Notify",
-    "analysis_report": "Analysis Report"
+    "analysis_report": "Analysis Report",
+    "wind_analytics": "Wind Analytics",
+    "Real-timeData": "Real-time Data",
+    "row_recorded": "Rows Recorded",
+    "login_time": "Login Time",
+    "logout_time": "Logout Time",
+    "ip_address": "IP Address"
 }
