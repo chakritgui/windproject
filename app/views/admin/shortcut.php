@@ -1,3 +1,4 @@
+<link rel="stylesheet" href="<?=BASE_URL?>/public/css/admin/setting.css?v=<?php echo time(); ?>">
 <div class="container-fluid mt-90 mb-5">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm" style="background: #ffffff; border-left: 4px solid #0d6efd;">
         <div class="mb-2 mb-md-0">
@@ -162,9 +163,9 @@
                 </div>
             </div>
         </div>
-        <div class="text-end mt-4">
-            <button type="submit" class="btn btn-primary px-4 save-shortcut">
-                <i class="fa-solid fa-floppy-disk me-1"></i>
+        <div class="d-flex justify-content-end mt-4">
+            <button class="btn btn-lg btn-primary w-md-auto save-shortcut">
+                <i class="fa-solid fa-floppy-disk me-2"></i>
                 <span data-i18n="save"></span>
             </button>
         </div>
