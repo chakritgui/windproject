@@ -1,22 +1,4 @@
-<style>
-    input[type="radio"]:disabled {
-        cursor: not-allowed;
-        opacity: 0.5;
-    }
-    input[type="radio"]:disabled + span, 
-    tr:has(input:disabled) td {
-        color: #ccc; 
-    }
-    .lang-toggle {
-        cursor: pointer;
-        border: 2px solid #eee;
-        transition: all 0.3s ease;
-    }
-    .lang-toggle.active {
-        border-color: #0d6efd;
-        background-color: #f0f7ff;
-    }
-</style>
+<link rel="stylesheet" href="<?=BASE_URL?>/public/css/admin/setting.css?v=<?php echo time(); ?>">
 <div class="container-fluid mt-90 mb-5">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm" style="background: #ffffff; border-left: 4px solid #0d6efd;">
         <div class="mb-2 mb-md-0">
@@ -86,11 +68,7 @@
                             <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('iconInput').click()"><i class="fa-solid fa-upload me-2"></i><span data-i18n="choose"></span></button>
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="website_name"></span></h5>
+                    <h5 class="card-title mt-4 mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="website_name"></span></h5>
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">
@@ -111,11 +89,7 @@
                             <input type="text" class="form-control" id="nameTh">
                         </div>
                     </div>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-body">
-                    <div class="row g-3">
+                    <div class="row g-3 mt-4">
                         <div class="col-md-4">
                             <h5 class="card-title mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="footer"></span></h5>
                             <input type="text" class="form-control" id="footerText">
@@ -127,9 +101,10 @@
                     </div>
                 </div>
             </div>
-            <div class="text-end mt-4">
-                <button class="btn btn-lg btn-primary save-setting-1">
-                    <i class="fa-solid fa-floppy-disk me-2"></i><span data-i18n="save"></span>
+            <div class="d-flex justify-content-end mt-4">
+                <button class="btn btn-lg btn-primary w-md-auto save-information">
+                    <i class="fa-solid fa-floppy-disk me-2"></i>
+                    <span data-i18n="save"></span>
                 </button>
             </div>
         </div>
@@ -210,9 +185,10 @@
                     </div>
                 </div>
             </div>
-            <div class="text-end mt-4">
-                <button class="btn btn-lg btn-primary save-setting-3">
-                    <i class="fa-solid fa-floppy-disk me-2"></i><span data-i18n="save"></span>
+            <div class="d-flex justify-content-end mt-4">
+                <button class="btn btn-lg btn-primary w-md-auto save-language">
+                    <i class="fa-solid fa-floppy-disk me-2"></i>
+                    <span data-i18n="save"></span>
                 </button>
             </div>
         </div>
@@ -275,9 +251,10 @@
                     </div>
                 </div>
             </div>
-            <div class="text-end mt-4">
-                <button class="btn btn-lg btn-primary save-setting-2">
-                    <i class="fa-solid fa-floppy-disk me-2"></i><span data-i18n="save"></span>
+            <div class="d-flex justify-content-end mt-4">
+                <button class="btn btn-lg btn-primary w-md-auto save-background">
+                    <i class="fa-solid fa-floppy-disk me-2"></i>
+                    <span data-i18n="save"></span>
                 </button>
             </div>
         </div>
@@ -356,14 +333,14 @@
                                 </div>
                             </div>
                         </div>
-                        <hr class="my-4">
-                        <div class="text-end mt-4">
-                            <button class="btn btn-lg btn-primary save-configuration">
-                                <i class="fa-solid fa-floppy-disk me-2"></i><span data-i18n="save"></span>
-                            </button>
-                        </div>
                     </form>
                 </div>
+            </div>
+            <div class="d-flex justify-content-end mt-4">
+                <button class="btn btn-lg btn-primary w-md-auto save-configuration">
+                    <i class="fa-solid fa-floppy-disk me-2"></i>
+                    <span data-i18n="save"></span>
+                </button>
             </div>
         </div>
         <div class="tab-pane fade" id="notifications">
@@ -404,13 +381,14 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="text-end mt-4">
-                            <button type="button" class="btn btn-lg btn-primary save-notification">
-                                <i class="fa-solid fa-floppy-disk me-2"></i><span data-i18n="save"></span>
-                            </button>
-                        </div>
                     </form>
                 </div>
+            </div>
+            <div class="d-flex justify-content-end mt-4">
+                <button class="btn btn-lg btn-primary w-md-auto save-notification">
+                    <i class="fa-solid fa-floppy-disk me-2"></i>
+                    <span data-i18n="save"></span>
+                </button>
             </div>
         </div>
     </div>

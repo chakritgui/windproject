@@ -1,0 +1,108 @@
+body {
+    background: #f5f7fb;
+}
+.card {
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 6px 20px rgba(0,0,0,.06);
+}
+.card-body {
+    padding: 1.75rem;
+}
+.breadcrumb {
+    margin-top: 4px;
+}
+.breadcrumb-item {
+    font-size: 13px;
+    color: #6c757d;
+}
+.nav-pills .nav-link {
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-weight: 500;
+    color: #495057;
+    transition: all .2s ease;
+}
+.nav-pills .nav-link.active {
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+    box-shadow: 0 4px 12px rgba(13,110,253,.35);
+}
+.card-title {
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+.form-label {
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+.form-control {
+    border-radius: 10px;
+    min-height: 44px;
+}
+.form-control:focus {
+    box-shadow: 0 0 0 .15rem rgba(13,110,253,.25);
+}
+.preview-box {
+    border: 2px dashed #dee2e6;
+    border-radius: 14px;
+    padding: 28px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .25s ease;
+    background: #fafbff;
+}
+.preview-box:hover {
+    border-color: #0d6efd;
+    background: #f0f6ff;
+}
+.btn-lg {
+    border-radius: 12px;
+    padding: 12px 22px;
+}
+.btn-primary {
+    background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+    border: none;
+}
+.btn-primary:hover {
+    box-shadow: 0 6px 18px rgba(13,110,253,.4);
+}
+.lang-toggle {
+    border-radius: 16px;
+    padding: 18px;
+    height: 100%;
+    background: #fff;
+}
+.lang-toggle.active {
+    border-color: #0d6efd;
+    box-shadow: 0 6px 16px rgba(13,110,253,.2);
+}
+.table th {
+    font-size: 14px;
+    font-weight: 600;
+}
+.table td {
+    vertical-align: middle;
+}
+.alert {
+    border-radius: 14px;
+}
+.text-end > .btn,
+.d-flex.justify-content-end > .btn {
+    min-width: 180px;
+}
+@media (max-width: 767.98px) {
+    .nav-pills {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+    .nav-pills .nav-link {
+        white-space: nowrap;
+    }
+    .text-end > .btn,
+    .d-flex.justify-content-end > .btn {
+        width: 100%;
+    }
+    .card-body {
+        padding: 1.25rem;
+    }
+}

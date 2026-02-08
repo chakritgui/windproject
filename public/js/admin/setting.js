@@ -245,7 +245,7 @@ function selectBestAvailable(name, preferredValue) {
         $(`input[name="${name}"]:not(:disabled)`).first().prop('checked', true);
     }
 }
-$(document).on('click', '.save-setting-3', function () {
+$(document).on('click', '.save-language', function () {
     const langs = $('.lang-toggle.active').map((_, el) => el.id.replace('lang', '').toLowerCase()).get();
     if (!langs.length) {
         showError(langData['one_language']);
@@ -255,12 +255,12 @@ $(document).on('click', '.save-setting-3', function () {
     fd.append('languages', langs.join(','));
     fd.append("language_default", $("input[name=language_default]:checked").val() || 'en');
     fd.append("language_content", $("input[name=language_content]:checked").val() || 'en');
-    toggleButton('.save-setting-3', true);
+    toggleButton('.save-language', true);
     apiPost('/api/setting/saveLang', fd).done(res => {
         res.status ? (showSuccess(langData['saved_successfully']), initSetting()) : showError(langData['cannot_save']);
-    }).always(() => toggleButton('.save-setting-3', false));
+    }).always(() => toggleButton('.save-language', false));
 });
-$(document).on('click', '.save-setting-1', function () {
+$(document).on('click', '.save-information', function () {
     const fd = new FormData();
     fd.append('nameEn', $('#nameEn').val());
     fd.append('nameLo', $('#nameLo').val());
@@ -269,11 +269,11 @@ $(document).on('click', '.save-setting-1', function () {
     fd.append('site_assessment', $('#site_assessment').val());
     fd.append('logoInput', $('#logoInput')[0].files[0] || null);
     fd.append('iconInput', $('#iconInput')[0].files[0] || null);
-    uploadWithProgress('/api/setting/saveInfo', fd, '.save-setting-1').done(res => {
+    uploadWithProgress('/api/setting/saveInfo', fd, '.save-information').done(res => {
         res.status ? (showSuccess(langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError(langData['cannot_save']);
     }).fail(() => showError(langData['cannot_save']));
 });
-$(document).on('click', '.save-setting-2', function () {
+$(document).on('click', '.save-background', function () {
     const fd = new FormData();
     fd.append('loginInput', $('#loginInput')[0].files[0] || null);
     fd.append('loginMobileInput', $('#loginMobileInput')[0].files[0] || null);
@@ -281,7 +281,7 @@ $(document).on('click', '.save-setting-2', function () {
     fd.append('oldLoginBg', $('#oldLoginBg').val());
     fd.append('oldLoginMobileBg', $('#oldLoginMobileBg').val());
     fd.append('oldinfographyBg', $('#oldinfographyBg').val());
-    uploadWithProgress('/api/setting/saveBgImage', fd, '.save-setting-2').done(res => {
+    uploadWithProgress('/api/setting/saveBgImage', fd, '.save-background').done(res => {
         res.status ? (showSuccess(langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError(langData['cannot_save']);
     }).fail(() => showError(langData['cannot_save']));
 });
