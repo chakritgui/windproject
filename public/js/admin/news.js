@@ -141,7 +141,7 @@ $(document).on("click", ".manage-news", function () {
         initAttachmentsUpload(d.attachments || []);
         initImagesUpload(d.images || []);
         init360ImagesUpload(d.images360 || []);
-        initTinyMCE();
+        initSummernote();
         togglePublishControls();
         modalInstance.show();
     }, "json");
@@ -265,15 +265,14 @@ function executeSave() {
     appendFiles(window.getImagesData, 'images');
     appendFiles(window.get360ImagesData, 'images360');
     formData.append("publish_at", buildPublishAt());
-    formData.append("send_notification", $("#send_notification").is(":checked") ? 'yes' : 'no');
+    formData.append("send_notification",$("#send_notification").is(":checked") ? 'yes' : 'no');
     ['en', 'lo', 'th'].forEach(lang => {
-        const editor = tinymce.get(`content_${lang}`);
-        if (editor) {
-            const html = editor.getContent().trim();
-            const text = html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim();
-            formData.append(`content_${lang}`, text === '' ? '' : html);
-            formData.append(`title_${lang}`, $(`#title_${lang}`).val() || "");
-        }
+        const $editor = $(`#content_${lang}`);
+        if (!$editor.length) return;
+        const html = $editor.summernote('code').trim();
+        const text = html.replace(/<br\s*\/?>/gi, '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim();
+        formData.append(`content_${lang}`, text === '' ? '' : html);
+        formData.append(`title_${lang}`, $(`#title_${lang}`).val() || "");
     });
     formData.append("content_id", $("#content_id").val() || "");
     Swal.fire({

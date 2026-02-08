@@ -20,6 +20,10 @@
 <link href="<?=BASE_URL?>/vendor/daterangepicker/daterangepicker.css" rel="stylesheet">
 <link href="<?=BASE_URL?>/vendor/bootstrap-datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet">
 <link href="<?=BASE_URL?>/vendor/tempus-dominus/dist/css/tempus-dominus.min.css" rel="stylesheet">
+<link rel="stylesheet" href="<?=BASE_URL?>/vendor/fancybox/fancybox.css">
+<link rel="stylesheet" href="<?=BASE_URL?>/vendor/pannellum/pannellum.css">
+<link rel="stylesheet" href="<?=BASE_URL?>/vendor/animate.css/animate.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.css">
 <link href="<?=BASE_URL?>/public/css/style.css?v=<?= time(); ?>" rel="stylesheet">
 <?php if (file_exists($manifestFile)) { ?>
     <link rel="manifest" href="<?= BASE_URL ?>/public/manifest.json">
@@ -35,19 +39,15 @@
 <script src="<?=BASE_URL?>/vendor/datatables/js/dataTables.bootstrap5.min.js"></script>
 <script src="<?=BASE_URL?>/vendor/select2/dist/js/select2.min.js"></script>
 <script src="<?=BASE_URL?>/vendor/fancyapps/ui/dist/fancybox.umd.js"></script>
-<script src="https://cdn.tiny.cloud/1/6p9duehcdfxhe2uffzhybsh7yloe0xgdcxtxba6jgfb37lhp/tinymce/6/tinymce.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.js"></script>
 <script src="<?=BASE_URL?>/vendor/momentjs/latest/moment.min.js"></script>
 <script src="<?=BASE_URL?>/vendor/daterangepicker/daterangepicker.min.js"></script>
 <script src="<?=BASE_URL?>/vendor/bootstrap-datepicker/js/bootstrap-datepicker.min.js"></script>
 <script src="<?=BASE_URL?>/vendor/bootstrap-datepicker/locales/bootstrap-datepicker.th.min.js"></script>
-<script src="<?=BASE_URL?>/vendor/popperjs/dist/umd/popper.min.js"></script>
 <script src="<?=BASE_URL?>/vendor/tempus-dominus/dist/js/tempus-dominus.min.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
-<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.css"/>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/pannellum@2.5.6/build/pannellum.js"></script>
+<script src="<?=BASE_URL?>/vendor/fancybox/fancybox.umd.js"></script>
+<script type="text/javascript" src="<?=BASE_URL?>/vendor/pannellum/pannellum.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 <script>
     const BASE_URL = "<?=BASE_URL?>";
 <?php if (file_exists($manifestFile)) { ?>

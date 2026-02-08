@@ -423,7 +423,7 @@ function manageContent(poles_id, content_id) {
         initAttachmentsUpload(d.attachments || []);
         initImagesUpload(d.images || []);
         init360ImagesUpload(d.images360 || []);
-        initTinyMCE();
+        initSummernote();
         modal.show();
     }, "json");
 }
@@ -492,9 +492,9 @@ $(document).on('click', '#btnSaveContent', function() {
     formData.append("title_lo", $("#title_lo").val() || "");
     formData.append("title_th", $("#title_th").val() || "");
     const getCleanContent = (lang) => {
-        const editor = tinymce.get(`content_${lang}`);
-        if (!editor) return '';
-        const content = editor.getContent().trim();
+        const $el = $(`#content_${lang}`);
+        if (!$el.length) return '';
+        const content = $el.summernote('code').trim();
         const plainText = content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim();
         return plainText === '' ? '' : content;
     };

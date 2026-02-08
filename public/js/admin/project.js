@@ -430,7 +430,7 @@ function manageContent(id) {
         initAttachmentsUpload(d.attachments || []);
         initImagesUpload(d.images || []);
         init360ImagesUpload(d.images360 || []);
-        initTinyMCE();
+        initSummernote();
         modal.show();
         modal.show();
     }, "json");
@@ -540,9 +540,9 @@ function executeSave() {
     formData.append("title_th", $("#title_th").val() || "");
     formData.append("send_notification", $("#send_notification").is(":checked") ? 'yes' : 'no');
     const getCleanContent = (lang) => {
-        const editor = tinymce.get(`content_${lang}`);
-        if (!editor) return '';
-        const content = editor.getContent().trim();
+        const $el = $(`#content_${lang}`);
+        if (!$el.length) return '';
+        const content = $el.summernote('code').trim();
         const plainText = content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim();
         return plainText === '' ? '' : content;
     };

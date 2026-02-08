@@ -33,97 +33,104 @@ function langTab(lang, d, isDefault = false) {
         </div>
         <div class="mb-3">
             <label class="form-label fw-bold">${currentLang['content'] || 'Content'}</label>
-            <textarea class="form-control tinymce" id="content_${lang}" rows="10">${rawContent}</textarea>
+            <textarea class="form-control summernote" id="content_${lang}" rows="10">${rawContent}</textarea>
         </div>
     `;
 }
-function initTinyMCE() {
-    tinymce.remove();
-    const fontUrl = 'https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap';
-    tinymce.init({
-       selector: '.tinymce',
+function initSummernote() {
+    $('.summernote').summernote({
+        dialogsInBody: true,
         height: 450,
-        branding: false,
-        promotion: false,
-        resize: true,
-        min_height: 300,
-        max_height: 800,
-        plugins: 'image link lists table media code wordcount paste', 
-        toolbar: 'undo redo | styles | fontfamily fontsize | bold italic underline | alignleft aligncenter alignright | bullist numlist | image media table | img25 img50 img100 | code',
-        paste_as_text: true,
-        paste_block_drop: true,
-        paste_remove_styles_if_webkit: true,
-        newline_behavior: 'block',
-        forced_root_block: 'p',
-        entity_encoding: 'raw',
-        font_family_formats: "TH Sarabun New='TH Sarabun New', Sarabun, sans-serif; Arial=Arial, sans-serif;",
-        content_css: [fontUrl],
-        content_style: `
-            @import url('${fontUrl}');
-            body { font-family: 'TH Sarabun New', 'Sarabun', sans-serif; font-size: 10pt; line-height: 1.6; }
-            p { margin: 0; padding: 0; }
-            img { max-width:100%; height:auto; cursor: pointer; transition: 0.3s; }
-            img:hover { outline: 3px solid #6366f1; }
-        `,
-        setup: function (editor) {
-            editor.on('init', function () {
-                const content = editor.getContent().trim();
-                if (content === '' || content === '<p>&nbsp;</p>') {
-                    editor.setContent(''); 
-                }
-                editor.oldImages = getImageList(editor);
-            });
-            editor.ui.registry.addButton('img25', { text: '25%', onAction: () => resizeImage(editor, '25%') });
-            editor.ui.registry.addButton('img50', { text: '50%', onAction: () => resizeImage(editor, '50%') });
-            editor.ui.registry.addButton('img100', { text: 'Full', onAction: () => resizeImage(editor, '100%') });
-            editor.on('change keyup', function () {
-                let newImages = getImageList(editor);
-                let removed = (editor.oldImages || []).filter(src => !newImages.includes(src));
-                removed.forEach(src => {
-                    if (!src || src.startsWith('blob:')) return;
-                    fetch(BASE_URL + '/public/uploads/delete_content_image.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ url: src })
-                    });
-                });
-                editor.oldImages = newImages;
-            });
+        dropdownParent: document.body,
+        toolbar: [
+            ['style', ['bold', 'italic', 'underline']],
+            ['para', ['ul', 'ol']],
+            ['insert', ['picture', 'link']],
+            ['custom', ['img25', 'img50', 'img100']],
+            ['view', ['codeview']]
+        ],
+        buttons: {
+            img25: function () {
+                return $.summernote.ui.button({
+                    contents: '25%',
+                    tooltip: 'Image 25%',
+                    click: function () {
+                        resizeImage('25%');
+                    }
+                }).render();
+            },
+            img50: function () {
+                return $.summernote.ui.button({
+                    contents: '50%',
+                    tooltip: 'Image 50%',
+                    click: function () {
+                        resizeImage('50%');
+                    }
+                }).render();
+            },
+            img100: function () {
+                return $.summernote.ui.button({
+                    contents: 'Full',
+                    tooltip: 'Image 100%',
+                    click: function () {
+                        resizeImage('100%');
+                    }
+                }).render();
+            }
         },
-        automatic_uploads: true,
-        images_upload_handler: function (blobInfo, progress) {
-            return new Promise((resolve, reject) => {
-                let formData = new FormData();
-                formData.append('file', blobInfo.blob(), blobInfo.filename());
-                fetch(BASE_URL + '/public/uploads/upload_content_image.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(r => r.json())
-                .then(result => {
-                    if (result && result.url) resolve(result.url);
-                    else reject('Upload failed');
-                })
-                .catch(() => reject('Upload error'));
-            });
+        callbacks: {
+            onImageUpload: function(files) {
+                uploadImage(files[0], this);
+            },
+            onChange: function(contents) {
+                handleRemovedImages(this, contents);
+            }
         }
     });
 }
-function getImageList(editor) {
-    let imgs = editor.getBody().querySelectorAll('img');
-    let list = [];
-    imgs.forEach(img => {
-        let src = img.getAttribute('src');
-        if (src) list.push(src);
+function uploadImage(file, editor) {
+    let data = new FormData();
+    data.append('file', file);
+    $.ajax({
+        url: BASE_URL + '/public/uploads/upload_content_image.php',
+        type: 'POST',
+        data: data,
+        processData: false,
+        contentType: false,
+        success: function (res) {
+            let result = typeof res === 'string' ? JSON.parse(res) : res;
+            if (result.uploaded && result.url) {
+                $(editor).summernote('insertImage', result.url);
+            }
+        },
+        error: function () {
+            alert('Upload image failed');
+        }
     });
-    return list;
 }
-function resizeImage(editor, width) {
-    let img = editor.selection.getNode();
-    if (img && img.nodeName === 'IMG') {
+let oldImages = [];
+function handleRemovedImages(editor, contents) {
+    let div = document.createElement('div');
+    div.innerHTML = contents;
+    let imgs = [...div.querySelectorAll('img')].map(i => i.src);
+    let removed = oldImages.filter(src => !imgs.includes(src));
+    removed.forEach(src => {
+        $.post(
+            BASE_URL + '/public/uploads/delete_content_image.php',
+            JSON.stringify({ url: src })
+        );
+    });
+    oldImages = imgs;
+}
+function resizeImage(width) {
+    let img = document.getSelection()?.anchorNode?.parentElement;
+    if (img && img.tagName === 'IMG') {
         img.style.width = width;
     }
 }
+$(document).on('click', '.note-modal .close', function () {
+    $(this).closest('.modal').modal('hide');
+});
 function initCoverUpload() {
     const dropArea = document.getElementById("coverDropArea");
     const input = document.getElementById("cover");
@@ -421,7 +428,7 @@ function formatFileSize(bytes) {
 }
 function renderTabs() {
     return `
-        <ul class="nav nav-pills nav-justified mb-4" id="contentTab" role="tablist">
+        <ul class="nav nav-pills nav-justified mb-4" id="mainTabs" role="tablist">
             <li class="nav-item">
                 <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-basic" type="button">
                     <i class="fa-solid fa-pen-to-square me-2"></i><span>${langData['content'] || 'Content'}</span>
