@@ -86,7 +86,7 @@ class NewsModel {
         $translates = $stmtTranslate->fetchAll(PDO::FETCH_KEY_PAIR);
         if (!$id) {
             return [
-                "id" => "", "status" => "published", "publish_at" => date('Y-m-d H:i'), "cover" => "",
+                "id" => "", "status" => "published", "publish_at" => convertTimeZoneUTC(date('Y-m-d H:i'), 'Y-m-d H:i'), "cover" => "",
                 "attachments" => [],
                 "images" => [],
                 "images360" => [],
