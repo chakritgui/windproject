@@ -197,6 +197,67 @@ function renderPolygonList() {
         `);
     });
 }
+function openEditPopup(id) {
+    const poly = polygons.find(p => p.poly_id == id);
+    if (!poly) return;
+    const modalHtml = `
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content shadow border-0">
+                <div class="modal-header bg-light py-2">
+                    <h6 class="modal-title small fw-bold"><span data-i18n="edit"></span>: ${poly.name}</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold mb-1">Colors</label>
+                        <div class="d-flex gap-2">
+                            <input type="color" id="editFillColor" class="form-control form-control-color w-100" value="${poly.style.fillColor}">
+                            <input type="color" id="editBorderColor" class="form-control form-control-color w-100" value="${poly.style.color}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold mb-1">Opacity: <span id="valOpacity">${Math.round(poly.style.fillOpacity * 100)}%</span></label>
+                        <input type="range" id="editOpacity" class="form-range" min="0" max="100" value="${poly.style.fillOpacity * 100}">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnResetIndividual" data-i18n="reset"></button>
+                    <button type="button" class="btn btn-sm btn-primary" id="btnSaveIndividual" data-i18n="save"></button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    $('#editModal').remove();
+    $('body').append(modalHtml);
+    const myModal = new bootstrap.Modal(document.getElementById('editModal'));
+    myModal.show();
+    $('#editOpacity').on('input', function() { 
+        $('#valOpacity').text($(this).val() + '%'); 
+    });
+    $('#btnResetIndividual').on('click', function() {
+        showConfirm(langData['confirm'], langData['confirm_change'], function(){
+            $('#editFillColor').val(currentStyle.fillColor);
+            $('#editBorderColor').val(currentStyle.color);
+            $('#editOpacity').val(currentStyle.fillOpacity * 100);
+            $('#valOpacity').text((currentStyle.fillOpacity * 100) + '%');
+            $('#btnSaveIndividual').click();
+        });
+    });
+    $('#btnSaveIndividual').on('click', function() {
+        poly.style = {
+            ...poly.style,
+            fillColor: $('#editFillColor').val(),
+            color: $('#editBorderColor').val(),
+            fillOpacity: $('#editOpacity').val() / 100
+        };
+        if (polygonLayers[id]) {
+            polygonLayers[id].setStyle(poly.style);
+        }
+        renderPolygonList();
+        myModal.hide();
+    });
+}
 function deletePolygon(id) {
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         polygons = polygons.filter(p => p.poly_id != id);
