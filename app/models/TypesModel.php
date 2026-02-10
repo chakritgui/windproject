@@ -30,7 +30,7 @@ class TypesModel {
                 created_at
             FROM wp_type
             {$where}
-            ORDER BY type_id DESC
+            ORDER BY {$order} {$orderDir}
         ";
         if ($length != -1) {
             $sql .= " LIMIT :start, :length";

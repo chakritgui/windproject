@@ -4,24 +4,38 @@ class InstallationsModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 3, $orderDir = 'desc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*) FROM wp_installations i {$where}";
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = (int)$stmt->fetchColumn();
+        $order = 'i.created_at';
+        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
+        $orderMap = [
+            0 => "p.project_name",
+            1 => "t.type_name",
+            2 => "i.installations_name",
+            3 => "i.installations_name_display",
+            4 => "i.created_at",
+            5 => "i.status",
+        ];
+        if (isset($orderMap[$colIndex])) {
+            $order = $orderMap[$colIndex];
+        }
         $sql = "SELECT
                 i.installations_id, 
                 i.installations_name,
                 i.installations_name_display,
                 i.status,
                 p.project_name,
-                t.type_name
+                t.type_name,
+                i.created_at
             FROM wp_installations i
             LEFT JOIN wp_project p on p.project_id = i.project_id
             LEFT JOIN wp_type t on t.type_id = i.type_id
             {$where}
-            ORDER BY i.installations_id DESC
+            ORDER BY {$order} {$orderDir}
         ";
         if ($length != -1) {
             $sql .= " LIMIT :start, :length";
@@ -36,6 +50,9 @@ class InstallationsModel {
         }
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as &$row) {
+            $this->formatDocumentRow($row);
+        }
         return [
             'total' => $total,
             'data'  => $rows
@@ -61,6 +78,13 @@ class InstallationsModel {
             $params[':search'] = "%{$search}%";
         }
         return [$where, $params];
+    }
+    private function formatDocumentRow(&$row) {
+        foreach (['created_at'] as $f) {
+            if (!empty($row[$f])) {
+                $row[$f] = convertTimeZone($row[$f], 'd/m/Y H:i:s');
+            }
+        }
     }
     public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {
         $offset = ($page - 1) * $limit;

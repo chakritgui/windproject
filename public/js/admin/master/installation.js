@@ -12,8 +12,7 @@ function initInstallationsTable() {
     tb_installation = $('#tb_installation').DataTable({
         processing: true,
         serverSide: true,
-        ordering: false,
-        order: [[2, 'desc']],
+        order: [[3, 'desc']],
         ajax: { 
             url: "api/installations/list", 
             type: "POST",
@@ -24,11 +23,14 @@ function initInstallationsTable() {
             }
         },
         columns: [{ 
-            data: "project_name" 
+            data: "project_name",
+            orderable: true,
         },{ 
-            data: "type_name" 
+            data: "type_name",
+            orderable: true, 
         },{ 
             data: "installations_name",
+            orderable: true,
             render: function (data, type, row) {
                 if (data) {
                     return data.replace(/\r\n|\n/g, '<br />');
@@ -37,6 +39,7 @@ function initInstallationsTable() {
             }
         },{ 
             data: "installations_name_display",
+            orderable: true,
             render: function (data, type, row) {
                 if (data) {
                     return data.replace(/\r\n|\n/g, '<br />');
@@ -44,7 +47,11 @@ function initInstallationsTable() {
                 return data;
             }
         },{ 
+            data: "created_at",
+            orderable: true,
+        },{ 
             data: 'status',
+            orderable: true,
             render: function (status, type, row) {
                 let badge = "";
                 switch(status) {

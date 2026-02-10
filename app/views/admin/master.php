@@ -160,6 +160,7 @@
                             <th data-i18n="type"></th>
                             <th data-i18n="installation"></th>
                             <th data-i18n="display"></th>
+                            <th data-i18n="create_at"></th>
                             <th data-i18n="status"></th>
                             <th></th>
                         </tr>
