@@ -4,7 +4,7 @@
             session_start();
         }
         if (empty($_SESSION['user'])) {
-            header('Location: login');
+            header('Location: /login');
             exit;
         }
         $member_id  = $_SESSION['user']['id'];
