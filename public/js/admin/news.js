@@ -9,7 +9,7 @@ function initNewsTable() {
         processing: true,
         serverSide: true,
         responsive: true,
-        ordering: false,
+        order: [[4, 'desc']],
         ajax: {
             url: `${BASE_URL}/api/news/list`,
             type: "POST",
@@ -17,6 +17,7 @@ function initNewsTable() {
         },
         columns: [{ 
             data: "cover_image",
+            orderable: false,
             className: 'text-center',
             render: data => {
                 const imgUrl = data ? `${BASE_URL}/${data}` : `${BASE_URL}/public/images/noimage.jpg`;
@@ -26,6 +27,7 @@ function initNewsTable() {
             }
         },{ 
             data: null,
+            orderable: true,
             render: (data, type, row) => {
                 const defaultLang = row.settings?.language_content || 'en';
                 const title = row[`subject_${currentLang}`] || row[`subject_${defaultLang}`] || row.subject_en || 'No Title';
@@ -37,6 +39,7 @@ function initNewsTable() {
             }
         },{ 
             data: null,
+            orderable: false,
             render: (data, type, row) => {
                 const activeLangs = row.settings?.language ? row.settings.language.split(',') : ['en'];
                 return `<div class="d-flex gap-1 flex-wrap">
@@ -45,22 +48,27 @@ function initNewsTable() {
             }
         },{
             data: "publish_at",
+            orderable: true,
             render: (data, type, row) => (row.status !== 'published' || !data) ? `<span class="text-muted small">-</span>` : `<div class="small"><i class="fa-regular fa-calendar-check me-1"></i> ${data}</div>`
         },{ 
             data: "created_at",
+            orderable: true,
             render: data => `<div class="small text-muted">${data}</div>` 
         },{ 
             data: "content_view", 
+            orderable: true,
             className: "text-end",
             render: data => `<strong>${Number(data).toLocaleString()}</strong>` 
         },{
             data: "status",
+            orderable: true,
             render: status => {
                 const bg = status === "published" ? "success" : "secondary";
                 return `<span class="badge rounded-pill bg-${bg}-subtle text-${bg}">${langData[status] || status}</span>`;
             }
         },{
             data: null,
+            orderable: false,
             className: "text-center",
             render: (data, type, row) => `
                 <div class="btn-group border rounded-3 bg-white">

@@ -4,19 +4,31 @@ require_once __DIR__ . '/../models/NewsModel.php';
 class NewsController extends BaseController {
     private $model;
     public function __construct(){ $this->model = new NewsModel(); }
-     public function list(){
-        $start = intval($_POST['start'] ?? 0);
-        $length= intval($_POST['length'] ?? 10);
+    public function list(){
+        $start  = intval($_POST['start'] ?? 0);
+        $length = intval($_POST['length'] ?? 10);
         $filters = [
-            'status'=> $_POST['status'] ?? '',
+            'status' => $_POST['status'] ?? '',
         ];
         $search = $_POST['search']['value'] ?? '';
-        $res = $this->model->list($start,$length,$filters,$search);
+        $orderDir    = 'asc';
+        if (!empty($_POST['order'][0])) {
+            $colIndex   = intval($_POST['order'][0]['column']);
+            $orderDir   = $_POST['order'][0]['dir'] === 'desc' ? 'desc' : 'asc';
+        }
+        $res = $this->model->list(
+            $start,
+            $length,
+            $filters,
+            $search,
+            $colIndex,
+            $orderDir
+        );
         $this->json([
-            "draw" => intval($_POST['draw'] ?? 1),
-            "recordsTotal" => $res['total'],
+            "draw"            => intval($_POST['draw'] ?? 1),
+            "recordsTotal"    => $res['total'],
             "recordsFiltered" => $res['total'],
-            "data" => $res['data']
+            "data"            => $res['data']
         ]);
     }
     public function get(){

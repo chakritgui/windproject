@@ -4,7 +4,7 @@ class NewsModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 4, $orderDir = 'desc') {
         $pdo = $this->db;
         $where = " WHERE n.status != 'deleted' AND n.type = 'news' ";
         $params = [];
@@ -31,8 +31,20 @@ class NewsModel {
         $stmtFiltered = $pdo->prepare($sqlFiltered);
         $stmtFiltered->execute($params);
         $totalFiltered = $stmtFiltered->fetchColumn();
+        $order = 'n.created_at';
+        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
+        $orderMap = [
+            1 => "COALESCE(iTh.content_subject, iEn.content_subject, iLo.content_subject)",
+            3 => "n.publish_at",
+            4 => "n.created_at",
+            5 => "n.content_view",
+            6 => "n.status"
+        ];
+        if (isset($orderMap[$colIndex])) {
+            $order = $orderMap[$colIndex];
+        }
         $sql = "SELECT 
-                    n.content_id, n.publish_at, n.created_at, n.status, n.content_view, n.cover as cover_image,
+                    n.content_id, n.publish_at, n.created_at, n.status, MAX(n.content_view) AS content_view, n.cover as cover_image,
                     iEn.content_subject AS subject_en,
                     iLo.content_subject AS subject_lo,
                     iTh.content_subject AS subject_th,
@@ -50,7 +62,7 @@ class NewsModel {
                 LEFT JOIN wp_content_media m on m.content_id = n.content_id and m.status = 'active'
                 $where
                 GROUP BY n.content_id
-                ORDER BY n.content_id DESC
+                ORDER BY {$order} {$orderDir}
                 LIMIT :start, :length";
         $stmt = $pdo->prepare($sql);
         foreach ($params as $k => $v) {

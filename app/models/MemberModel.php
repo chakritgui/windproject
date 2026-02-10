@@ -4,7 +4,7 @@ class MemberModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 5, $orderDir = 'desc') {
         $pdo = $this->db;
         $where = " WHERE 1=1 ";
         $params = [];
@@ -24,6 +24,20 @@ class MemberModel {
         $stmtTotal = $pdo->prepare($sqlTotal);
         $stmtTotal->execute($params);
         $total = $stmtTotal->fetchColumn();
+        $order = 'created_at';
+        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
+        $orderMap = [
+            1 => "COALESCE(first_name, last_name)",
+            2 => "email",
+            3 => "phone",
+            4 => "role",
+            5 => "created_at",
+            6 => "last_login_at",
+            7 => "status"
+        ];
+        if (isset($orderMap[$colIndex])) {
+            $order = $orderMap[$colIndex];
+        }
         $sql = "SELECT 
             member_id,
             username,
@@ -38,7 +52,7 @@ class MemberModel {
             password_hash
         FROM wp_members
         $where and status != 'deleted'
-        ORDER BY member_id DESC";
+        ORDER BY {$order} {$orderDir}";
         if ($length != -1) {
             $sql .= " LIMIT :start, :length";
         }

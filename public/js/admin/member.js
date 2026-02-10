@@ -13,8 +13,7 @@ function initMemberTable() {
         processing: true,
         serverSide: true,
         responsive: true, 
-        ordering: false,
-        order: [[4, 'asc'], [5, 'desc']],
+        order: [[5, 'desc']],
         ajax: { 
             url: "api/member/list",
             type: "POST",
@@ -45,21 +44,28 @@ function initMemberTable() {
             } 
         }, { 
             data: null,
+            orderable: true,
             render: function(row){
                 return `${row.first_name} ${row.last_name}`;
             } 
         },{ 
-            data: "email" 
+            data: "email",
+            orderable: true,
         },{ 
-            data: "phone" 
+            data: "phone",
+            orderable: true, 
         },{ 
-            data: "role" 
+            data: "role",
+            orderable: true,
         },{ 
-            data: "created_at" 
+            data: "created_at",
+            orderable: true,
         },{ 
-            data: "last_login_at" 
+            data: "last_login_at",
+            orderable: true,
         },{
             data: "status",
+            orderable: true,
             render: function (status, type, row) {
                 let badge = '';
                 switch(status) {
