@@ -4,12 +4,27 @@ class ProjectsModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 6, $orderDir = 'desc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*) FROM wp_project p LEFT JOIN wp_contract c on c.contract_id = p.contract_id {$where}";
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = (int)$stmt->fetchColumn();
+        $order = 'p.created_at';
+        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
+        $orderMap = [
+            0 => "p.project_code",
+            1 => "p.project_name",
+            2 => "p.project_name_display",
+            3 => "c.contract_name",
+            4 => "p.project_start",
+            5 => "p.project_end",
+            6 => "p.created_at",
+            7 => "p.status"
+        ];
+        if (isset($orderMap[$colIndex])) {
+            $order = $orderMap[$colIndex];
+        }
         $sql = "SELECT
                 p.project_id, 
                 p.project_code, 
@@ -18,11 +33,12 @@ class ProjectsModel {
                 p.project_start, 
                 p.project_end, 
                 p.status,
-                c.contract_name
+                c.contract_name,
+                p.created_at
             FROM wp_project p
             LEFT JOIN wp_contract c on c.contract_id = p.contract_id 
             {$where}
-            ORDER BY p.project_id DESC
+            ORDER BY {$order} {$orderDir}
         ";
         if ($length != -1) {
             $sql .= " LIMIT :start, :length";
@@ -67,6 +83,11 @@ class ProjectsModel {
         foreach (['project_start', 'project_end'] as $f) {
             if (!empty($row[$f])) {
                 $row[$f] = convertTimeZone($row[$f], 'd/m/Y');
+            }
+        }
+        foreach (['created_at'] as $f) {
+            if (!empty($row[$f])) {
+                $row[$f] = convertTimeZone($row[$f], 'd/m/Y H:i:s');
             }
         }
     }

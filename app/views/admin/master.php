@@ -97,6 +97,7 @@
                             <th data-i18n="contract"></th>
                             <th data-i18n="startDate"></th>
                             <th data-i18n="endDate"></th>
+                            <th data-i18n="create_at"></th>
                             <th data-i18n="status"></th>
                             <th></th>
                         </tr>

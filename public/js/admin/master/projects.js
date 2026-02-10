@@ -12,8 +12,7 @@ function initProjectsTable() {
     tb_project = $('#tb_project').DataTable({
         processing: true,
         serverSide: true,
-        ordering: false,
-        order: [[5, 'desc']],
+        order: [[6, 'desc']],
         ajax: { 
             url: "api/projects/list", 
             type: "POST",
@@ -23,9 +22,11 @@ function initProjectsTable() {
             }
         },
         columns: [{ 
-            data: "project_code" 
+            data: "project_code",
+            orderable: true,
         },{ 
             data: "project_name",
+            orderable: true,
             render: function (data, type, row) {
                 if (data) {
                     return data.replace(/\r\n|\n/g, '<br />');
@@ -34,6 +35,7 @@ function initProjectsTable() {
             }
         },{ 
             data: "project_name_display",
+            orderable: true,
             render: function (data, type, row) {
                 if (data) {
                     return data.replace(/\r\n|\n/g, '<br />');
@@ -41,13 +43,20 @@ function initProjectsTable() {
                 return data;
             }
         },{ 
-            data: "contract_name" 
+            data: "contract_name",
+            orderable: true, 
         },{ 
-            data: "project_start" 
+            data: "project_start",
+            orderable: true, 
         },{ 
-            data: "project_end" 
+            data: "project_end",
+            orderable: true,
+        },{ 
+            data: "created_at",
+            orderable: true,
         },{ 
             data: 'status',
+            orderable: true,
             render: function (status, type, row) {
                 let badge = "";
                 switch(status) {
