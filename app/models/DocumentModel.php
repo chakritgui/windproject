@@ -4,12 +4,26 @@ class DocumentModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 4, $orderDir = 'desc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*) FROM wp_documents d {$where}";
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = (int)$stmt->fetchColumn();
+        $order = 'd.created_at';
+        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
+        $orderMap = [
+            0 => "d.document_name",
+            1 => "d.document_start, d.document_end",
+            2 => "d.document_size",
+            3 => "d.document_type",
+            4 => "d.created_at",
+            5 => "d.status",
+            6 => "d.document_download"
+        ];
+        if (isset($orderMap[$colIndex])) {
+            $order = $orderMap[$colIndex];
+        }
         $sql = "SELECT
                 d.document_id, 
                 d.document_name, 
@@ -33,7 +47,7 @@ class DocumentModel {
             LEFT JOIN wp_installations i on i.installations_id = d.installations_id
             LEFT JOIN wp_poles pl on pl.poles_id = d.poles_id
             {$where}
-            ORDER BY d.document_id DESC
+            ORDER BY {$order} {$orderDir}
         ";
         if ($length != -1) {
             $sql .= " LIMIT :start, :length";
@@ -147,19 +161,29 @@ class DocumentModel {
     public function delete($id) {
         return $this->updateStatus($id, 'deleted');
     }
-    public function downloadHistory($start, $length, $filters, $search) {
+    public function downloadHistory($start, $length, $filters, $search, $colIndex = 2, $orderDir = 'desc') {
         list($where, $params) = $this->buildDownloadWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*) FROM wp_documents_download_logs d LEFT JOIN wp_members m ON m.member_id = d.member_id {$where}";
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = $stmt->fetchColumn();
+        $order = 'd.download_date';
+        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
+        $orderMap = [
+            1 => "m.first_name, m.last_name",
+            2 => "d.download_date",
+            3 => "d.download_device"
+        ];
+        if (isset($orderMap[$colIndex])) {
+            $order = $orderMap[$colIndex];
+        }
         $sql = "SELECT
                 d.*,
                 CONCAT(m.first_name, ' ', m.last_name) AS member_name
             FROM wp_documents_download_logs d
             LEFT JOIN wp_members m ON m.member_id = d.member_id
             {$where}
-            ORDER BY d.download_date DESC
+            ORDER BY {$order} {$orderDir}
             LIMIT {$start}, {$length}
         ";
         $stmt = $this->db->prepare($sql);

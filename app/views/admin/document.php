@@ -60,9 +60,12 @@
             <thead class="table-light">
                 <tr>
                     <th data-i18n="document_name" style="width: 45%"></th>
-                    <th data-i18n="file_info"></th>
-                    <th data-i18n="timeline"></th>
+                    <th data-i18n="range"></th>
+                    <th data-i18n="size"></th>
+                    <th data-i18n="type"></th>
+                    <th data-i18n="create_at"></th>
                     <th data-i18n="status" class="text-center"></th>
+                    <th data-i18n="download"></th>
                     <th class="text-end"></th>
                 </tr>
             </thead>

@@ -12,8 +12,7 @@ function initDocumentTable() {
     tb_document = $('#tb_document').DataTable({
         processing: true,
         serverSide: true,
-        ordering: false,
-        order: [[2, 'desc']],
+        order: [[4, 'desc']],
         ajax: { 
             url: "api/document/list", 
             type: "POST",
@@ -29,18 +28,19 @@ function initDocumentTable() {
         },
         columns: [{ 
             data: "document_name",
+            orderable: true,
             className: 'align-middle',
             render: function (data, type, row) {
                 const iconClass = getFileIconClass(row.document_type);
                 const createBadge = (text, icon, colorClass) => {
                     if (!text) return '';
-                    return `<span class="badge ${colorClass} fw-normal d-inline-flex align-items-center me-1" style="font-size: 10px; padding: 3px 6px;"><i class="${icon} me-1"></i>${text}</span>`;
+                    return `<span class="badge ${colorClass} fw-normal d-inline-flex align-items-center me-1" style="font-size: 8px; padding: 3px 6px;"><i class="${icon} me-1"></i>${text}</span>`;
                 };
                 return `
                     <div class="d-flex align-items-start gap-3 py-1">
                         <div class="mt-1"><i class="${iconClass} fa-2x text-secondary-light"></i></div>
                         <div class="d-flex flex-column gap-1">
-                            <h6 class="text-truncate fw-bold" style="max-width: 400px;" title="${data}">${data}</h6>
+                            <p class="text-truncate fw-bold" style="max-width: 400px;" title="${data}">${data}</p>
                             <div class="d-flex flex-wrap gap-1">
                                 ${createBadge(row.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
                                 ${createBadge(row.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
@@ -52,26 +52,38 @@ function initDocumentTable() {
                     </div>`;
             }
         },{ 
-            data: "created_at",
-            className: 'align-middle',
+            data: null,
+            orderable: true,
+            className: 'align-middle text-nowrap',
             render: function(data, type, row) {
-                return `<div class="lh-sm">
-                            <small class="text-dark fw-semibold"><i class="fa-regular fa-calendar-check me-1"></i>${data}</small><br>
-                            <small class="text-muted" style="font-size: 11px;"><span>${langData['range'] || 'Range'}</span>: ${row.document_start} - ${row.document_end}</small>
-                        </div>`;
+                return `<div class="lh-sm">${row.document_start} - ${row.document_end}</div>`;
             }
         },{ 
             data: "document_size",
+            orderable: true,
+            className: 'align-middle text-nowrap',
+            render: function(data, type, row) {
+                let size = data ? (data / (1024 * 1024)).toFixed(2) + " MB" : "-";
+                return `<div class="lh-sm">
+                            <small class="text-muted"><i class="fa-solid fa-database"></i> ${size}</small>
+                        </div>`;
+            }
+        },{ 
+            data: "document_type",
+            orderable: true,
             className: 'align-middle text-nowrap',
             render: function(data, type, row) {
                 let size = data ? (data / (1024 * 1024)).toFixed(2) + " MB" : "-";
                 return `<div class="lh-sm">
                             <span class="badge bg-light text-dark border-0 fw-bold">${row.document_type.toUpperCase()}</span> 
-                            <small class="text-muted"><i class="fa-solid fa-database"></i> ${size}</small> <small class="text-muted"><i class="fa-solid fa-download me-1"></i>${row.document_download}</small>
                         </div>`;
             }
+        },{ 
+            data: "created_at",
+            orderable: true,
         },{
             data: "status",
+            orderable: true,
             className: 'align-middle text-center',
             render: function (status, type, row) {
                 let badgeColor = status === "public" ? "success" : "secondary";
@@ -79,6 +91,14 @@ function initDocumentTable() {
                     <div class="d-flex flex-column align-items-center gap-1">
                         <span class="badge rounded-pill bg-${badgeColor}-subtle text-${badgeColor}">${langData[status] || status}</span>
                     </div>`;
+            }
+        },{ 
+            data: "document_download",
+            orderable: true,
+            className: 'text-end',
+            render: function(data, type, row) {
+                let size = data ? (data / (1024 * 1024)).toFixed(2) + " MB" : "-";
+                return `<small class="text-muted"><i class="fa-solid fa-download me-1"></i>${row.document_download}</small>`;
             }
         },{
             data: null,
@@ -583,7 +603,6 @@ function loadDownloadHistory(document_id){
         destroy: true,
         processing: true,
         serverSide: true,
-        ordering: false,
         order: [[2, 'desc']],
         ajax: {
             url: "api/document/download_history",
@@ -600,11 +619,14 @@ function loadDownloadHistory(document_id){
                 return meta.row + meta.settings._iDisplayStart + 1;
             }
         },{ 
-            data: "member_name" 
+            data: "member_name",
+            orderable: true, 
         },{ 
-            data: "download_date" 
+            data: "download_date",
+            orderable: true, 
         },{ 
             data: "download_device",
+            orderable: true,
             render: function(d){
                 d = (d || '').toLowerCase();
                 if(d.includes("mobile"))
