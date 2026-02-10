@@ -12,7 +12,6 @@ function initContractsTable() {
     tb_contract = $('#tb_contract').DataTable({
         processing: true,
         serverSide: true,
-        ordering: false,
         order: [[5, 'desc']],
         ajax: { 
             url: "api/contracts/list", 
@@ -22,9 +21,11 @@ function initContractsTable() {
             }
         },
         columns: [{ 
-            data: "contract_no" 
+            data: "contract_no",
+            orderable: true,
         },{ 
             data: "contract_name",
+            orderable: true,
             render: function (data, type, row) {
                 if (data) {
                     return data.replace(/\r\n|\n/g, '<br />');
@@ -33,6 +34,7 @@ function initContractsTable() {
             }
         },{ 
             data: "contract_name_display",
+            orderable: true,
             render: function (data, type, row) {
                 if (data) {
                     return data.replace(/\r\n|\n/g, '<br />');
@@ -40,11 +42,17 @@ function initContractsTable() {
                 return data;
             }
         },{ 
-            data: "contract_start" 
+            data: "contract_start",
+            orderable: true,
         },{ 
-            data: "contract_end" 
+            data: "contract_end",
+            orderable: true,
+        },{ 
+            data: "created_at",
+            orderable: true,
         },{ 
             data: 'status',
+            orderable: true,
             render: function (status, type, row) {
                 let badge = "";
                 switch(status) {

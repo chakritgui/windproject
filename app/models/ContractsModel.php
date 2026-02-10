@@ -4,12 +4,26 @@ class ContractsModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 5, $orderDir = 'desc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*) FROM wp_contract {$where}";
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = (int)$stmt->fetchColumn();
+        $order = 'created_at';
+        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
+        $orderMap = [
+            0 => "contract_no",
+            1 => "contract_name",
+            2 => "contract_name_display",
+            3 => "contract_start",
+            4 => "contract_end",
+            5 => "created_at",
+            6 => "status"
+        ];
+        if (isset($orderMap[$colIndex])) {
+            $order = $orderMap[$colIndex];
+        }
         $sql = "SELECT
                 contract_id, 
                 contract_no,
@@ -17,10 +31,11 @@ class ContractsModel {
                 contract_name_display,
                 contract_start, 
                 contract_end, 
-                status
+                status,
+                created_at
             FROM wp_contract
             {$where}
-            ORDER BY contract_id DESC
+            ORDER BY {$order} {$orderDir}
         ";
         if ($length != -1) {
             $sql .= " LIMIT :start, :length";
@@ -61,6 +76,11 @@ class ContractsModel {
         foreach (['contract_start', 'contract_end'] as $f) {
             if (!empty($row[$f])) {
                 $row[$f] = convertTimeZone($row[$f], 'd/m/Y');
+            }
+        }
+        foreach (['created_at'] as $f) {
+            if (!empty($row[$f])) {
+                $row[$f] = convertTimeZone($row[$f], 'd/m/Y H:i:s');
             }
         }
     }
