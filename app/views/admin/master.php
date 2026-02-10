@@ -202,6 +202,7 @@
                             <th data-i18n="latitude"></th>
                             <th data-i18n="longitude"></th>
                             <th data-i18n="installation"></th>
+                            <th data-i18n="create_at"></th>
                             <th data-i18n="status"></th>
                             <th data-i18n="content"></th>
                             <th></th>

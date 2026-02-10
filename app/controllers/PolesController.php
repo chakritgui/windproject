@@ -14,7 +14,19 @@ class PolesController extends BaseController {
             'installation'=> $_POST['installation'] ?? '',
         ];
         $search = $_POST['search']['value'] ?? '';
-        $res = $this->model->list($start,$length,$filters,$search);
+        $orderDir    = 'asc';
+        if (!empty($_POST['order'][0])) {
+            $colIndex   = intval($_POST['order'][0]['column']);
+            $orderDir   = $_POST['order'][0]['dir'] === 'desc' ? 'desc' : 'asc';
+        }
+        $res = $this->model->list(
+            $start,
+            $length,
+            $filters,
+            $search,
+            $colIndex,
+            $orderDir
+        );
         $this->json([
             "draw" => intval($_POST['draw'] ?? 1),
             "recordsTotal" => $res['total'],

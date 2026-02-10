@@ -12,8 +12,7 @@ function initPolesTable() {
     tb_pole = $('#tb_pole').DataTable({
         processing: true,
         serverSide: true,
-        ordering: false,
-        order: [[8, 'desc']],
+        order: [[6, 'desc']],
         ajax: { 
             url: `${BASE_URL}/api/poles/list`, 
             type: "POST",
@@ -25,19 +24,29 @@ function initPolesTable() {
             }
         },
         columns: [{ 
-            data: "poles_code" 
+            data: "poles_code",
+            orderable: true, 
         },{ 
-            data: "type_name" 
+            data: "type_name",
+            orderable: true,
         },{ 
-            data: "project_name" 
+            data: "project_name",
+            orderable: true, 
         },{ 
-            data: "poles_lat" 
+            data: "poles_lat",
+            orderable: true,
         },{ 
-            data: "poles_lng" 
+            data: "poles_lng",
+            orderable: true,
         },{ 
-            data: "installations_name" 
+            data: "installations_name",
+            orderable: true, 
+        },{ 
+            data: "created_at",
+            orderable: true,
         },{ 
             data: 'status',
+            orderable: true,
             render: function (status, type, row) {
                 let badge = "";
                 switch(status) {

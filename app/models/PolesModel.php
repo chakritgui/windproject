@@ -5,7 +5,7 @@ class PolesModel {
         $this->db = Database::getInstance()->pdo;
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 6, $orderDir = 'desc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*)
             FROM wp_poles p
@@ -20,6 +20,21 @@ class PolesModel {
         $stmtSet = $this->db->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_content')");
         $stmtSet->execute();
         $settings = $stmtSet->fetchAll(PDO::FETCH_KEY_PAIR);
+        $order = 'p.created_at';
+        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
+        $orderMap = [
+            0 => "p.poles_code",
+            1 => "t.type_name",
+            2 => "pj.project_name",
+            3 => "p.poles_lat",
+            4 => "p.poles_lng",
+            5 => "i.installations_name",
+            6 => "p.created_at",
+            7 => "p.status"
+        ];
+        if (isset($orderMap[$colIndex])) {
+            $order = $orderMap[$colIndex];
+        }
         $sql = "SELECT
                     p.poles_id,
                     p.poles_code,
@@ -36,7 +51,8 @@ class PolesModel {
                     c.content_slug,
                     iEn.status as en_status,
                     iLo.status as lo_status,
-                    iTh.status as th_status
+                    iTh.status as th_status,
+                    p.created_at
                 FROM wp_poles p
                 LEFT JOIN wp_project pj ON pj.project_id = p.project_id
                 LEFT JOIN wp_type t ON t.type_id = p.type_id
@@ -46,7 +62,7 @@ class PolesModel {
                 LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang='lo'
                 LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang='th'
                 {$where}
-                ORDER BY p.poles_id DESC
+                ORDER BY {$order} {$orderDir}
         ";
         if ($length != -1) {
             $sql .= " LIMIT :start, :length";
@@ -62,12 +78,20 @@ class PolesModel {
         $stmt->execute();
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($data as &$r) {
+            $this->formatDocumentRow($r);
             $r['settings'] = $settings;
         }
         return [
             'total'    => $total,
             'data'     => $data
         ];
+    }
+    private function formatDocumentRow(&$row) {
+        foreach (['created_at'] as $f) {
+            if (!empty($row[$f])) {
+                $row[$f] = convertTimeZone($row[$f], 'd/m/Y H:i:s');
+            }
+        }
     }
     private function buildListWhere($filters, $search) {
         $where  = " WHERE p.status != 'deleted' ";
