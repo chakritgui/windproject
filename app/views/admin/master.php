@@ -124,6 +124,7 @@
                             <th data-i18n="icon"></th>
                             <th data-i18n="type_name"></th>
                             <th data-i18n="display"></th>
+                            <th data-i18n="create_at"></th>
                             <th data-i18n="status"></th>
                             <th></th>
                         </tr>

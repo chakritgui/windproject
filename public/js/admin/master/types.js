@@ -12,7 +12,6 @@ function initTypesTable() {
     tb_type = $('#tb_type').DataTable({
         processing: true,
         serverSide: true,
-        ordering: false,
         order: [[3, 'desc']],
         ajax: { 
             url: "api/types/list", 
@@ -35,6 +34,7 @@ function initTypesTable() {
             }
         },{ 
             data: "type_name",
+            orderable: true,
             render: function (data, type, row) {
                 if (data) {
                     return data.replace(/\r\n|\n/g, '<br />');
@@ -43,6 +43,7 @@ function initTypesTable() {
             }
         },{ 
             data: "type_name_display",
+            orderable: true,
             render: function (data, type, row) {
                 if (data) {
                     return data.replace(/\r\n|\n/g, '<br />');
@@ -50,7 +51,11 @@ function initTypesTable() {
                 return data;
             }
         },{ 
+            data: "created_at",
+            orderable: true,
+        },{ 
             data: 'status',
+            orderable: true,
             render: function (status, type, row) {
                 let badge = "";
                 switch(status) {

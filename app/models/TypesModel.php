@@ -4,18 +4,30 @@ class TypesModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 3, $orderDir = 'desc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*) FROM wp_type {$where}";
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = (int)$stmt->fetchColumn();
+        $order = 'created_at';
+        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
+        $orderMap = [
+            1 => "type_name",
+            2 => "type_name_display",
+            3 => "created_at",
+            4 => "status"
+        ];
+        if (isset($orderMap[$colIndex])) {
+            $order = $orderMap[$colIndex];
+        }
         $sql = "SELECT
                 type_id, 
                 type_name,
                 type_name_display,
                 type_icon,
-                status
+                status,
+                created_at
             FROM wp_type
             {$where}
             ORDER BY type_id DESC
@@ -33,6 +45,9 @@ class TypesModel {
         }
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as &$row) {
+            $this->formatDocumentRow($row);
+        }
         return [
             'total' => $total,
             'data'  => $rows
@@ -50,6 +65,13 @@ class TypesModel {
             $params[':search'] = "%{$search}%";
         }
         return [$where, $params];
+    }
+    private function formatDocumentRow(&$row) {
+        foreach (['created_at'] as $f) {
+            if (!empty($row[$f])) {
+                $row[$f] = convertTimeZone($row[$f], 'd/m/Y H:i:s');
+            }
+        }
     }
     public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {
         $offset = ($page - 1) * $limit;
