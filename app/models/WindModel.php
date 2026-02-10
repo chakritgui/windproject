@@ -5,7 +5,7 @@ class WindModel{
     public function __construct(){
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 4, $orderDir = 'desc') {
         list($whereBase, $whereJoin, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*) FROM wp_winds w LEFT JOIN wp_poles p ON p.poles_id = w.poles_id
             LEFT JOIN wp_project pj ON pj.project_id = p.project_id
@@ -18,6 +18,28 @@ class WindModel{
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = (int)$stmt->fetchColumn();
+        $order = 'w.wind_datetime';
+        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
+        $orderMap = [
+            1 => "p.poles_code",
+            2 => "pj.project_name",
+            3 => "t.type_name",
+            4 => "i.installations_name",
+            5 => "w.year",
+            6 => "w.wind_datetime",
+            7 => "h.height_name",
+            8 => "l.height_levels",
+            9 => "w.wind_speed",
+            10 => "w.wind_direction",
+            11 => "w.air_density",
+            12 => "w.pressure",
+            13 => "w.humidity",
+            14 => "w.temperature",
+            15 => "w.turbulence_intensity"
+        ];
+        if (isset($orderMap[$colIndex])) {
+            $order = $orderMap[$colIndex];
+        }
         $sql = "SELECT
                 w.id,
                 w.poles_id,
@@ -46,6 +68,7 @@ class WindModel{
             LEFT JOIN wp_height h ON h.height_id = l.height_id
             {$whereBase}
             {$whereJoin}
+            ORDER BY {$order} {$orderDir}
         ";
         if ($length != -1) {
             $sql .= " LIMIT :start, :length";

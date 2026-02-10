@@ -59,7 +59,6 @@
         <table class="table table-striped table-hover" id="tb_wind">
             <thead>
                 <tr>
-                    <th data-i18n="no."></th>
                     <th data-i18n="code"></th>
                     <th data-i18n="project"></th>
                     <th data-i18n="type"></th>
