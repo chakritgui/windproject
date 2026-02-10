@@ -4,7 +4,7 @@ class ProjectModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function get($start = 0, $length = 20, $filters = [], $search = '') {
+    public function get($start = 0, $length = 20, $filters = [], $search = '', $order = 'asc') {
         $currentRefId = $filters['ref_id'] ?? null;
         $currentProjectId = $filters['project_id'] ?? null;
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
@@ -18,7 +18,7 @@ class ProjectModel {
         LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang='en'
         LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang='lo'
         LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang='th'
-        {$mainWhere} ORDER BY f.id ASC";
+        {$mainWhere} ORDER BY f.id {$order}";
         $stmt = $this->db->prepare($sql);
         foreach ($mainParams as $k => $v) { $stmt->bindValue($k, $v); }
         $stmt->execute();

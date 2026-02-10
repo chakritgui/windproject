@@ -9,6 +9,7 @@ const limit = 20;
 let isLoading = false;
 let isFull = false;
 let currentSearch = '';
+let currentSort = 'asc';
 initProject();
 function initProject() {
     fetchFolders(true);
@@ -34,7 +35,8 @@ function fetchFolders(isNewSearch = false) {
             project_id: currentProjectId,
             start: offset,
             length: limit,
-            search: { value: currentSearch }
+            search: { value: currentSearch },
+            order: currentSort
         },
         dataType: 'json',
         success: function(res) {
@@ -61,6 +63,13 @@ function fetchFolders(isNewSearch = false) {
         }
     });
 }
+$(document).on('click', '.sort-option', function() {
+    const sortValue = $(this).data('sort');
+    const label = $(this).data('label');
+    currentSort = sortValue;
+    $('#selectedSortLabel').text(langData[label]);
+    fetchFolders(true); 
+});
 function renderTable(data, isNewSearch) {
     const $body = $('#listViewBody');
     const $empty = $('#emptyState');

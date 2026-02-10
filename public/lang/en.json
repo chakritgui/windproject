@@ -538,5 +538,6 @@
     "row_recorded": "Rows Recorded",
     "login_time": "Login Time",
     "logout_time": "Logout Time",
-    "ip_address": "IP Address"
+    "newest": "Newest",
+    "oldest": "Oldest"
 }

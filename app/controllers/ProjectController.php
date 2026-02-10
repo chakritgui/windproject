@@ -22,7 +22,8 @@ class ProjectController extends BaseController {
             'project_id'  => $project_id,
         ];
         $search = $_POST['search']['value'] ?? '';
-        $result = $this->model->get($start, $length, $filters, $search);
+        $order = $_POST['order'] ?? 'asc';
+        $result = $this->model->get($start, $length, $filters, $search, $order);
         $this->json([
             'status' => true,
             'data'   => $result
