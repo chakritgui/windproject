@@ -49,7 +49,7 @@
 <script type="text/javascript" src="<?=BASE_URL?>/vendor/pannellum/pannellum.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    const BASE_URL = "<?=BASE_URL?>";
+    const BASE_URL = "";
 <?php if (file_exists($manifestFile)) { ?>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register(BASE_URL + '/sw.js');
