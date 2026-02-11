@@ -273,15 +273,14 @@ function hideWindLoading() {
     $("header").show();
 }
 const MENU_LEVELS = {
-    1: { title: 'MEASUREMENT STATION', endpoint: `${BASE_URL}/api/contracts`, key: 'contract_id', label: 'contract_name' },
-    2: { title: 'PROJECT', endpoint: `${BASE_URL}/api/project`, key: 'project_id', label: 'project_name' },
-    3: { title: 'POLE TYPE', endpoint: `${BASE_URL}/api/type`, key: 'type_id', label: 'type_name' },
-    4: { title: 'INSTALLATION', endpoint: `${BASE_URL}/api/station`, key: 'installations_id', label: 'installations_name', isLast: true }
+    1: { title: 'PROJECT', endpoint: `${BASE_URL}/api/project`, key: 'project_id', label: 'project_name' },
+    2: { title: 'POLE TYPE', endpoint: `${BASE_URL}/api/type`, key: 'type_id', label: 'type_name' },
+    3: { title: 'INSTALLATION', endpoint: `${BASE_URL}/api/station`, key: 'installations_id', label: 'installations_name', isLast: true }
 };
 async function loadMenuLevel(level) {
     const cfg = MENU_LEVELS[level];
     if (!cfg) return;
-    for (let i = level; i <= 4; i++) $(`#menu-level-${i}`).removeClass('active').hide().empty();
+    for (let i = level; i <= 3; i++) $(`#menu-level-${i}`).removeClass('active').hide().empty();
     const data = await fetchData(cfg.endpoint, menuState);
     if (!data.length) return;
     let html = `<div class="menu-header">${cfg.title}</div>`;

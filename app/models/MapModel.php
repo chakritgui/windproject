@@ -38,7 +38,7 @@ class MapModel{
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    public function project($contract_id){
+    public function project(){
         $sql = "SELECT DISTINCT
                 pj.project_id,
                 CASE 
@@ -53,13 +53,10 @@ class MapModel{
                 ON pj.project_id = p.project_id
             WHERE pj.status = 'active'
             AND p.status = 'online'
-            AND pj.contract_id = :contract_id
             ORDER BY pj.project_id
         ";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            ':contract_id' => $contract_id
-        ]);
+        $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function type($project_id) {

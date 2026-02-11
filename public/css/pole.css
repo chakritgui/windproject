@@ -54,38 +54,6 @@
     height: 1.5em !important;
     cursor: pointer;
 }
-.menu-panel {
-    position: fixed;
-    background: rgba(0,0,0,0.6);
-    color: #fff;
-    width: 225px;
-    max-width: 80vw;
-    display: none;
-    padding: 10px;
-    z-index: 9999;
-}
-.menu-item {
-    padding: 10px;
-    cursor: pointer;
-}
-.menu-item:hover,.menu-item.active {
-    background: rgba(255,255,255,0.2);
-}
-@media (max-width: 768px) {
-    .menu-panel {
-        max-height: 80vh;
-        overflow-y: auto;
-    }
-    .submenu {
-        margin-left: 20px;
-        background: rgba(0,0,0,0.1);
-        border-left: 2px solid #111111;
-        display: none;
-    }
-    .menu-item {
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-}
 :root {
     --primary-color: #2c3e50;
     --secondary-color: #3498db;

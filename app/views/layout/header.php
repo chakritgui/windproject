@@ -99,7 +99,6 @@
                     <div id="menu-level-1" class="menu-panel"></div>
                     <div id="menu-level-2" class="menu-panel"></div>
                     <div id="menu-level-3" class="menu-panel"></div>
-                    <div id="menu-level-4" class="menu-panel"></div>
                 </div>
                 <button id="sidebarToggle" class="btn btn-light btn-sm me-1 <?= (isset($_SESSION['user']['role']) && in_array($_SESSION['user']['role'], ['admin','administrator'])) ? '' : 'd-lg-none' ?>">
                     <i class="fa-solid fa-bars"></i>
