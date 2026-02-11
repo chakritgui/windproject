@@ -159,7 +159,6 @@ async function loadPoles(map) {
         if (!Array.isArray(poles)) return;
         poleLayerGroup.clearLayers();
         poleMarkers = {};
-        windUpdateFunctions = {};
         poles.forEach(pole => {
             const lat = parseFloat(pole.poles_lat);
             const lng = parseFloat(pole.poles_lng);
@@ -186,43 +185,43 @@ async function loadPoles(map) {
                     offset: [15, -20]
                 }
             ).openTooltip();
-            poleMarkers[pole.poles_id] = { marker, lat, lng, windId };
+
+            poleMarkers[pole.poles_id] = { lat, lng, windId };
             marker.on('click', () => openPoles(pole.poles_id));
         });
-        let updating = false;
         const updateAllPoles = () => {
-            if (!windOn || updating) return;
-            updating = true;
-            const poleList = Object.values(poleMarkers);
-            let index = 0;
-            const processNext = () => {
-                if (index >= poleList.length) {
-                    updating = false;
-                    return;
-                }
-                const pole = poleList[index++];
+            if (!windOn) return;
+            const overlayData = windyAPI.store.get('overlayData');
+            if (!overlayData || !overlayData.data || !overlayData.header) return;
+            const { data, header } = overlayData;
+            const nx = header.nx;
+            const ny = header.ny;
+            const lo1 = header.lo1;
+            const la1 = header.la1;
+            const dx = header.dx;
+            const dy = header.dy;
+            Object.values(poleMarkers).forEach(pole => {
                 const { lat, lng, windId } = pole;
-                const handler = (data) => {
-                    if (data && data.values && data.overlay === 'wind') {
-                        const windSpeed = Math.round(data.values.wind);
-                        const windDir = Math.round(data.values.dir);
-                        const directionText = getDirectionName(windDir);
-                        const el = document.getElementById(windId);
-                        const arrow = document.getElementById(`arrow-${windId.split('-').pop()}`);
-                        if (arrow) arrow.style.transform = `rotate(${windDir}deg)`;
-                        if (el) el.innerText = `${directionText} ${windSpeed} kt`;
-                    }
-                    windyAPI.picker.off('pickerMoved', handler);
-                    setTimeout(processNext, 10); 
-                };
-                windyAPI.picker.once('pickerMoved', handler);
-                windyAPI.store.set('pickerLocation', { lat, lon: lng });
-            };
-            processNext();
+                const i = Math.floor((lng - lo1) / dx);
+                const j = Math.floor((la1 - lat) / dy);
+                if (i < 0 || j < 0 || i >= nx || j >= ny) return;
+                const index = j * nx + i;
+                const u = data[0][index];
+                const v = data[1][index];
+                if (u == null || v == null) return;
+                const windSpeed = Math.round(Math.sqrt(u * u + v * v));
+                const windDir = Math.round((Math.atan2(u, v) * 180 / Math.PI + 360) % 360);
+                const directionText = getDirectionName(windDir);
+                const el = document.getElementById(windId);
+                const arrow = document.getElementById(`arrow-${windId.split('-').pop()}`);
+                if (arrow) arrow.style.transform = `rotate(${windDir}deg)`;
+                if (el) el.innerText = `${directionText} ${windSpeed} kt`;
+            });
         };
         if (!window._windEventsBound) {
             W.store.on('timestamp', updateAllPoles);
             W.store.on('product', updateAllPoles);
+            W.store.on('overlay', updateAllPoles);
             map.on('moveend zoomend', updateAllPoles);
             window._windEventsBound = true;
         }
