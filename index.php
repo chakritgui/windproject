@@ -54,6 +54,7 @@
     $router->post('/api/auth/update-password', 'AuthController@updatePassword');
     // --- [B] จัดการหน้าหลัก (/) จุดเดียวจบ ---
     $router->get('/', function() {
+        print_r($_SESSION); exit;
         if (!isset($_SESSION['user'])) {
             return (new AuthController())->login();
         }
@@ -68,7 +69,6 @@
         $role = $_SESSION['user']['role'] ?? '';
         if ($role === 'admin' || $role === 'administrator') {
             // Admin Routes
-            $router->get('/', 'AdminController@index');
             $router->get('/member', 'AdminController@member');
             $router->get('/project', 'AdminController@project');
             $router->get('/map', 'AdminController@map');
