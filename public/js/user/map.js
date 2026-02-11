@@ -376,6 +376,10 @@ async function openPoles(poleId) {
             const title = hasContent ? (data.content.title[lang] || data.content.title['th']) : data.installations_name;
             let bodyContent = hasContent ? (data.content.content[lang] || data.content.content['th'] || '') : '';
             bodyContent = bodyContent.replace(/src="(?!(http|https|\/\/))/g, `src="${fullBaseUrl}/`);
+            const bg = data.project_bg;
+            const project_background = bg.project_background;
+            const project_opacity = bg.project_opacity;
+            const opacityValue = project_opacity > 0 ? (project_opacity / 100) : 1;
             const html = `
                 <div class="pole-detail-wrapper animate__animated animate__fadeIn">
                     <div class="card border-0 bg-primary bg-opacity-10 rounded-4 mb-4 p-4 shadow-sm">
@@ -386,8 +390,8 @@ async function openPoles(poleId) {
                                 <div class="d-flex flex-wrap gap-3 text-muted">
                                     <span><i class="fa-solid fa-diagram-project me-1"></i>${data.project_name}</span>
                                     <span><i class="fa-solid fa-signal me-1"></i>${data.height_name}</span>
+                                    <span><i class="fa-solid fa-location-dot me-1"></i>${data.poles_lat}, ${data.poles_lng}</span>
                                 </div>
-                                <div class="text-muted"><i class="fa-solid fa-location-dot"></i> ${data.poles_lat}, ${data.poles_lng}</div>
                             </div>
                         </div>
                     </div>
@@ -414,13 +418,22 @@ async function openPoles(poleId) {
                             ${renderMultimedia(data.content, lang, fullBaseUrl)}
                         </div>
                     ` : `
-                        <div class="text-center py-5">
-                            <div class="mb-4">
-                                <i class="fa-regular fa-file-lines text-light-emphasis" style="font-size: 64px; opacity: 0.5;"></i>
+                        ${(project_background) ? `
+                            <div class="position-relative w-100" style="height: 400px; overflow: hidden;">
+                                <img src="${BASE_URL}/${project_background}" 
+                                    alt="Background" 
+                                    class="w-100 h-100" 
+                                    style="object-fit: contain; opacity: ${opacityValue};">
                             </div>
-                            <h5 class="fw-bold text-dark">${langData['no_content_available'] || 'No content available'}</h5>
-                            <p class="text-muted mb-4">${langData['content_nothing_hear'] || 'It looks like there’s nothing here, or this page has moved.'}</p>
-                        </div>
+                        ` : `
+                            <div class="text-center py-5">
+                                <div class="mb-4">
+                                    <i class="fa-regular fa-file-lines text-light-emphasis" style="font-size: 64px; opacity: 0.5;"></i>
+                                </div>
+                                <h5 class="fw-bold text-dark">${langData['no_content_available'] || 'No content available'}</h5>
+                                <p class="text-muted mb-4">${langData['content_nothing_hear'] || 'It looks like there’s nothing here, or this page has moved.'}</p>
+                            </div>
+                        `}
                     `}
                 </div>
             `;

@@ -546,5 +546,6 @@
     "project_status": "Project Status",
     "manageStatus": "Manage Status",
     "color": "Color",
-    "manageBackground": "Manage Background"
+    "manageBackground": "Manage Background",
+    "report_remark": "Remark: Data Output is review version only. Future Validation and Analysis is required."
 }

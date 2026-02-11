@@ -197,6 +197,16 @@ class MapModel{
                     ];
                 }
             }
+            $project_id = $poleInfo['project_id'];
+            $sql = "SELECT project_background, project_opacity FROM wp_project WHERE project_id = ?"; 
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([(int)$project_id]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            $default = [
+                'project_background' => '',
+                'project_opacity' => 0
+            ];
+            $poleInfo['project_bg'] = $row ?: $default;
             return $poleInfo;
         } catch (PDOException $e) {
             error_log("Database Error in poledetails: " . $e->getMessage());

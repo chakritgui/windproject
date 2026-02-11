@@ -73,6 +73,12 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                         </div>
                     </div>
                 </div>
+                <div class="mt-1 border-opacity-25">
+                    <div class="d-flex align-items-center text-white">
+                        <i class="fa-solid fa-circle-info me-2 small"></i>
+                        <div class="fw-bold" data-i18n="report_remark"></div>
+                    </div>
+                </div>
             </div>
             <div class="filter-card" id="filterCard">
                 <div class="filter-content" id="filterContent">
@@ -203,6 +209,12 @@ function showReportPWA(data) {
                         <i class="fa-regular fa-calendar me-1"></i>
                         <span id="period"></span> <span class="badge-days mx-1"> <span id="total_days"></span> <span data-i18n="days"></span></span>
                     </span>
+                </div>
+                <div class="mt-1 border-opacity-25">
+                    <div class="d-flex align-items-center text-primary-emphasis">
+                        <i class="fa-solid fa-circle-info me-2 small"></i>
+                        <div class="fw-bold" data-i18n="report_remark"></div>
+                    </div>
                 </div>
             </div>
             <div class="report-section mb-4">

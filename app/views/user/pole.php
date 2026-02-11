@@ -50,6 +50,12 @@
                 </div>
             </div>
         </div>
+        <div class="mt-1 border-opacity-25">
+            <div class="d-flex align-items-center text-white">
+                <i class="fa-solid fa-circle-info me-2 small"></i>
+                <div class="fw-bold" data-i18n="report_remark"></div>
+            </div>
+        </div>
     </div>
 </div>
 <div class="container-fluid mt-3 mb-3">
