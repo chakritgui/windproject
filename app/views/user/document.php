@@ -17,15 +17,37 @@
             <div class="divider-dot"></div>
         </div>
     </div>
-    <div class="text-end">
-        <div class="view-toggle btn-group mt-2 mb-4" role="group" aria-label="View Toggle">
-            <button class="btn btn-light" data-view="grid" onclick="setView('grid')">
-                <i class="fas fa-th"></i>
-            </button>
-            <button class="btn btn-light active" data-view="list" onclick="setView('list')">
-                <i class="fas fa-list"></i>
-            </button>
-            <button class="btn btn-outline-secondary history-download w-100 w-lg-auto">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 p-2 bg-light rounded-3">
+        <div class="d-flex align-items-center gap-2">
+            <div class="dropdown">
+                <button class="btn btn-white border shadow-sm dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa-solid fa-sort me-2 text-secondary"></i> 
+                    <span id="selectedSortLabel" data-i18n="newest" class="fw-medium"></span>
+                </button>
+                <ul class="dropdown-menu shadow-sm border-0" aria-labelledby="sortDropdown">
+                    <li>
+                        <a class="dropdown-item sort-option py-2" href="javascript:void(0)" data-sort="desc" data-label="newest">
+                            <i class="fa-solid fa-arrow-down-9-1 me-2 text-muted"></i><span data-i18n="newest"></span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item sort-option py-2" href="javascript:void(0)" data-sort="asc" data-label="oldest">
+                            <i class="fa-solid fa-arrow-up-1-9 me-2 text-muted"></i><span data-i18n="oldest"></span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <div class="btn-group shadow-sm" role="group">
+                <button class="btn btn-outline-primary active" data-view="grid" onclick="setView('grid')" title="Grid View">
+                    <i class="fas fa-th"></i>
+                </button>
+                <button class="btn btn-outline-primary" data-view="list" onclick="setView('list')" title="List View">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary shadow-sm px-3 history-download" title="History">
                 <i class="fa-solid fa-clock-rotate-left"></i>
             </button>
         </div>

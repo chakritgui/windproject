@@ -4,7 +4,7 @@ class UserModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function documentList($page = 1, $limit = 20,  $contract_id = null, $project_id = null, $type_id = null, $installations_id = null, $poles_id = null, $date = null, $keyword = null) {
+    public function documentList($page = 1, $limit = 20,  $contract_id = null, $project_id = null, $type_id = null, $installations_id = null, $poles_id = null, $date = null, $keyword = null, $order = 'desc') {
         $offset = ($page - 1) * $limit;
         $where  = "WHERE d.status = 'public'";
         $params = [];
@@ -71,8 +71,8 @@ class UserModel {
             LEFT JOIN wp_type t on t.type_id = d.type_id
             LEFT JOIN wp_installations i on i.installations_id = d.installations_id
             LEFT JOIN wp_poles pl on pl.poles_id = d.poles_id
-            $where
-            ORDER BY d.created_at DESC, d.document_id DESC
+            $where 
+            ORDER BY d.created_at {$order}
             LIMIT :limit OFFSET :offset
         ";
         $stmt = $this->db->prepare($sql);

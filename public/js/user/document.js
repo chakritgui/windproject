@@ -2,6 +2,7 @@ let docPage     = 1;
 let isLoading  = false;
 let hasMore    = true;
 let currentView = 'list';
+let currentSort = 'desc';
 $(document).on('change', '#filter_contract, #filter_project, #filter_type, #filter_installations', function() {
     const $this = $(this);
     const id = $this.attr('id');
@@ -84,6 +85,16 @@ function resetAndLoad() {
     $('#gridView, #listView').empty();
     loadDocuments();
 }
+$(document).on('click', '.sort-option', function() {
+    const sortValue = $(this).data('sort');
+    const label = $(this).data('label');
+    currentSort = sortValue;
+    $('#selectedSortLabel').text(langData[label]);
+    docPage = 1;
+    hasMore = true;
+    $('#gridView, #listView').empty();
+    loadDocuments(); 
+});
 function triggerDownload(url, fileName='') {
     const a = document.createElement('a');
     a.href = url;
@@ -113,7 +124,8 @@ function loadDocuments() {
             installations: $("#filter_installations").val(),
             poles: $("#filter_poles").val(),
             date: $("#filter_date").val(),
-            keyword: $("#filter_keyword").val()
+            keyword: $("#filter_keyword").val(),
+            order: currentSort
         },
         success: function (res) {
             if (res.status === true) {

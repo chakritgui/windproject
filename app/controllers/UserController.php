@@ -88,6 +88,7 @@ class UserController extends Controller {
         $keyword  = trim($_POST['keyword'] ?? '');
         $view     = $_POST['view'] ?? 'grid';
         $limit = ($view === 'list') ? 15 : 9;
+        $order = $_POST['order'] ?? 'desc';
         $data = $this->model->documentList(
             $page,
             $limit,
@@ -97,7 +98,8 @@ class UserController extends Controller {
             $installations_id,
             $poles_id,
             $date ?: null,
-            $keyword ?: null
+            $keyword ?: null,
+            $order
         );
         $this->json([
             'status' => true,
