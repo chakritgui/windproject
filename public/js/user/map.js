@@ -182,20 +182,22 @@ async function loadPoles(map) {
                 </div>`,
                 { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [15, -20] }
             ).openTooltip();
-            const updateWind = async () => {
+            const updateWind = () => {
+                if (typeof W === 'undefined' || !W.picker) return;
                 try {
-                    const { interpolate } = W.require('@windy/utils');
-                    const data = interpolate('wind', { lat, lon: lng });
-                    if (data) {
-                        const windSpeed = Math.round(data.wind);
-                        const windDir = Math.round(data.dir);
+                    const data = W.picker.getParams({ lat, lon: lng });
+                    if (data && data.wind !== undefined) {
+                        const windSpeed = Math.round(data.wind); 
+                        const windDir = Math.round(data.dir); 
                         const el = document.getElementById(windId);
                         const arrow = document.getElementById(`arrow-${pole.poles_id}`);
                         if (arrow) arrow.style.transform = `rotate(${windDir}deg)`;
                         if (el) el.innerText = `${windSpeed} kt`;
+                    } else {
+                        W.store.set('pickerLocation', { lat, lon: lng });
                     }
-                } catch (e) {
-                    console.error("Module @windy/utils not found or failed to load");
+                } catch (error) {
+                    console.warn("Picker is not ready for pole:", pole.poles_id);
                 }
             };
             windUpdateFunctions[pole.poles_id] = updateWind;
