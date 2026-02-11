@@ -201,7 +201,7 @@ class WindModel{
             return ['status' => false, 'message' => 'No file'];
         }
         if ($_FILES['wind_file']['error'] !== UPLOAD_ERR_OK) {
-            return ['status' => false, 'message' => 'Upload error'];
+            return ['status' => false, 'message' => 'Upload error code: ' . $_FILES['wind_file']['error']];
         }
         $importId = null;
         try {
@@ -236,7 +236,7 @@ class WindModel{
     }
     private function handleFileImport(array $file): int {
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $tmpDir = sys_get_temp_dir() . '/wind_import';
+        $tmpDir = __DIR__ . '/../../storage/wind_import';
         if (!is_dir($tmpDir)) {
             mkdir($tmpDir, 0777, true);
         }
