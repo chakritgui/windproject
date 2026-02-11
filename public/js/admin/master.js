@@ -18,8 +18,10 @@ function initTable() {
             initContractsTable();
             break;
         case 'group':
-            $(".filter").on("change", () => initGroupTable());
             initGroupTable();
+            break;
+        case 'project-status':
+            initProjectStatusTable();
             break;
         case 'projects':
             initSelect2Remote('#filter_project_status', `${BASE_URL}/api/projects/filter`, { type: 'status' });

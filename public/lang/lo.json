@@ -543,5 +543,8 @@
     "oldest": "ເກົ່າແກ່ທີ່ສຸດ",
     "group": "ກຣຸບ",
     "group_name": "ຊື່ກຸ່ມ",
-    "manageGroup": "ຈັດການກຸ່ມ"
+    "manageGroup": "ຈັດການກຸ່ມ",
+    "project_status": "ສະຖານະໂຄງການ",
+    "manageStatus": "ຈັດການສະຖານະ",
+    "color": "ສີ"
 }

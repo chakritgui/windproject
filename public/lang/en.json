@@ -542,5 +542,8 @@
     "oldest": "Oldest",
     "group": "Group",
     "group_name": "Group Name",
-    "manageGroup": "Manage Group"
+    "manageGroup": "Manage Group",
+    "project_status": "Project Status",
+    "manageStatus": "Manage Status",
+    "color": "Color"
 }

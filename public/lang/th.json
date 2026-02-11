@@ -543,5 +543,8 @@
     "oldest": "เก่าสุด",
     "group": "กลุ่ม",
     "group_name": "ชื่อกลุ่ม",
-    "manageGroup": "จัดการกลุ่ม"
+    "manageGroup": "จัดการกลุ่ม",
+    "project_status": "สถานะโครงการ",
+    "manageStatus": "จัดการสถานะ",
+    "color": "สี"
 }

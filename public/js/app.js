@@ -283,7 +283,8 @@ function refreshAllTables() {
         'tb_type': typeof initTypesTable === 'function' ? initTypesTable : null,
         'tb_news': typeof initNewsTable === 'function' ? initNewsTable : null,
         'tb_wind': typeof initWindTable === 'function' ? initWindTable : null,
-        'tb_group': typeof initGroupTable === 'function' ? initGroupTable : null
+        'tb_group': typeof initGroupTable === 'function' ? initGroupTable : null,
+        'tb_group': typeof initProjectStatusTable === 'function' ? initProjectStatusTable : null
     };
     $('.dataTable').each(function () {
         const initFn = tableMappings[this.id];
