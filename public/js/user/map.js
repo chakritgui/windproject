@@ -250,7 +250,7 @@ async function loadPoles(map) {
             map.on('moveend zoomend', refreshVisiblePoles);
             window._windEventsBound = true;
         }
-
+W.picker.getParams({ lat: 18.14, lon: 104.77 })
     } catch (err) {
         console.error("LoadPoles Error:", err);
     }
