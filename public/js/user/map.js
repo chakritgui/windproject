@@ -15,7 +15,7 @@ function initMap() {
         map = api.map;
         const { store, picker } = api;
         poleLayerGroup = L.layerGroup().addTo(map);
-        store.set('overlay', 'wind');
+        store.set('overlay', 'fire');
         store.set('level', DEFAULT_LEVEL);
         try {
             const results = await Promise.allSettled([
