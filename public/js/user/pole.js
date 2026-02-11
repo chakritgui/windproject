@@ -87,24 +87,19 @@ $(document).ready(function () {
     endDate   = $('#end').val() || '';
     height_id = $('#height_id').val() || '';
     const sensorsVal = $('#sensors').val();
-    sensors_data = sensorsVal
-        ? sensorsVal
-            .split(',')
-            .map(v => parseInt(v, 10) - 1)
-            .filter(v => v >= 0) 
-        : [];
+    sensors_data = sensorsVal ? sensorsVal.split(',').map(v => parseInt(v, 10) - 1).filter(v => v >= 0)  : [];
     generateReport();
 });
 function generateReport() {
-    let selectedSensors = sensors_data && sensors_data.length
-        ? sensors_data.map(v => parseInt(v, 10))
-        : [];
-    selectedSensors = selectedSensors.filter(Number.isInteger);
-    generateStats(selectedSensors);
-    updateChartVisibility(selectedSensors);
-    requestAnimationFrame(() => {
-        generateCharts(selectedSensors);
-    });
+    let selectedSensors = sensors_data && sensors_data.length ? sensors_data.map(v => parseInt(v, 10)) : [];
+    if(selectedSensors.length > 0) {
+        selectedSensors = selectedSensors.filter(Number.isInteger);
+        generateStats(selectedSensors);
+        updateChartVisibility(selectedSensors);
+        requestAnimationFrame(() => {
+            generateCharts(selectedSensors);
+        });
+    }
 }
 async function generateStats(selectedSensors) {
     const statsContainer = document.getElementById('statsContainer');

@@ -100,15 +100,26 @@ async function renderWindAreas(map, picker, areaData, masterData) {
                     interactive: true
                 })
             });
-            geoLayer.on('click', (e) => handlePickerOpening(e.latlng, picker));
-            if (area.area_name) geoLayer.bindTooltip(area.area_name, { sticky: true });
             geoLayer.addTo(featureGroup);
+            geoLayer.on('touchend click', function (e) {
+                if (!e.latlng) return;
+                if (e.originalEvent) {
+                    e.originalEvent.stopImmediatePropagation();
+                    e.originalEvent.preventDefault();
+                }
+                map.off('click');
+                setTimeout(() => {
+                    handlePickerOpening(e.latlng, picker);
+                    setTimeout(() => {
+                        map.on('click', function(){});
+                    }, 300);
+                }, 120);
+            });
             if (isMaskMode) {
                 geoLayer.eachLayer(layer => {
                     if (layer.getLatLngs) {
                         const latlngs = layer.getLatLngs();
-                        const rings = Array.isArray(latlngs[0]) && !(latlngs[0][0] instanceof L.LatLng) 
-                            ? latlngs.map(inner => inner[0]) : [latlngs[0]];
+                        const rings = Array.isArray(latlngs[0]) && !(latlngs[0][0] instanceof L.LatLng) ? latlngs.map(inner => inner[0]) : [latlngs[0]];
                         allHoles.push(...rings);
                     }
                 });
@@ -128,8 +139,17 @@ async function renderWindAreas(map, picker, areaData, masterData) {
     }
 }
 function handlePickerOpening(latlng, picker) {
-    if (picker) {
-        picker.open({ lat: latlng.lat, lon: latlng.lng || latlng.lon });
+    if (!picker || !latlng) return;
+    const lat = Number(latlng.lat);
+    const lng = Number(latlng.lng ?? latlng.lon);
+    if (!isNaN(lat) && !isNaN(lng)) {
+        setTimeout(() => {
+            picker.open({ lat, lon: lng });
+            const markerPane = document.querySelector('.leaflet-marker-pane');
+            if (markerPane) {
+                markerPane.style.zIndex = 650;
+            }
+        }, 50);
     }
 }
 async function loadPoles(map, picker) {
