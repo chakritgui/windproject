@@ -53,7 +53,7 @@
     $router->post('/api/auth/forgot', 'AuthController@sendReset');
     $router->post('/api/auth/update-password', 'AuthController@updatePassword');
     // --- [B] จัดการหน้าหลัก (/) จุดเดียวจบ ---
-    $router->get('', function() {
+    $router->get('/', function() {
         if (!isset($_SESSION['user'])) {
             return (new AuthController())->login();
         }
