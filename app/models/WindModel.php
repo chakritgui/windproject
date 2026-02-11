@@ -236,7 +236,7 @@ class WindModel{
     }
     private function handleFileImport(array $file): int {
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $tmpDir = sys_get_temp_dir() . '/wind_import';
+        $tmpDir = __DIR__ . '/../../storage/wind_import';
         if (!is_dir($tmpDir)) {
             mkdir($tmpDir, 0777, true);
         }
