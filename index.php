@@ -41,6 +41,7 @@
         }
     }
     $router = new Router();
+    print_r($_SESSION); exit;
     if (empty($_SESSION)) {
         $router->get('/', 'AuthController@login');
         $router->get('/login', 'AuthController@login');
