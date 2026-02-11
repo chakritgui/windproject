@@ -133,9 +133,11 @@ class UserController extends Controller {
     public function newsList() {
         $page     = max(1, (int)($_POST['page'] ?? 1));
         $limit = 10;
+        $order = $_POST['order'] ?? 'desc';
         $data = $this->model->newsList(
             $page,
             $limit,
+            $order
         );
         $this->json([
             'status' => true,

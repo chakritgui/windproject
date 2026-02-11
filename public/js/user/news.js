@@ -2,7 +2,18 @@ let pages     = 'news';
 let newsPage     = 1;
 let isLoading  = false;
 let hasMore    = true;
+let currentSort = 'desc';
 $(document).ready(initNews);
+$(document).on('click', '.sort-option', function() {
+    const sortValue = $(this).data('sort');
+    const label = $(this).data('label');
+    currentSort = sortValue;
+    $('#selectedSortLabel').text(langData[label]);
+    newsPage = 1;
+    hasMore = true;
+    $('#listView').empty();
+    initNews(); 
+});
 function initNews() {
     if (isLoading || !hasMore) return;
     isLoading = true;
@@ -12,6 +23,7 @@ function initNews() {
         dataType: 'json',
         data: { 
             page: newsPage,
+            order: currentSort
         },
         success: function (res) {
             if (res.status === true) {

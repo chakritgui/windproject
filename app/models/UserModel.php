@@ -176,7 +176,7 @@ class UserModel {
             'has_more' => ($offset + $limit) < $total
         ];
     }
-    public function newsList($page = 1, $limit = 20) {
+    public function newsList($page = 1, $limit = 20, $order = 'desc') {
         $offset = ($page - 1) * $limit;
         $member_id = $_SESSION['user']['id'] ?? 0; 
         $where  = "WHERE c.status = 'published' AND c.type = 'news'";
@@ -203,7 +203,7 @@ class UserModel {
                 LEFT JOIN wp_notification_targets t on t.notifications_item = c.content_id AND t.notifications_target = 'news' AND t.member_id = :member_id
                 $where
                 GROUP BY c.content_id
-                ORDER BY c.created_at DESC, c.content_id DESC
+                ORDER BY c.created_at {$order}
                 LIMIT :limit OFFSET :offset";
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
