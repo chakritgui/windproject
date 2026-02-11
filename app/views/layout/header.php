@@ -50,28 +50,11 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     const BASE_URL = "<?=BASE_URL?>";
-    <?php if (file_exists($manifestFile)) { ?>
+<?php if (file_exists($manifestFile)) { ?>
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register(BASE_URL + '/sw.js')
-                .then(function(registration) {
-                    registration.onupdatefound = function() {
-                        const installingWorker = registration.installing;
-                        installingWorker.onstatechange = function() {
-                            if (installingWorker.state === 'installed') {
-                                if (navigator.serviceWorker.controller) {
-                                    console.log('New content is available; please refresh.');
-                                }
-                            }
-                        };
-                    };
-                })
-                .catch(function(error) {
-                    console.log('ServiceWorker registration failed: ', error);
-                });
-            });
+            navigator.serviceWorker.register(BASE_URL + '/sw.js');
         }
-    <?php } ?>
+<?php } ?>
 </script>
 </head>
 <body>
