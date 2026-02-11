@@ -155,7 +155,7 @@ function handlePickerOpening(latlng, picker) {
 async function loadPoles(map) {
     try {
         if (typeof W === 'undefined') return;
-        
+
         const poles = await fetchData(`${BASE_URL}/api/poles-location`);
         if (!Array.isArray(poles)) return;
 
@@ -163,20 +163,27 @@ async function loadPoles(map) {
         poleMarkers = {};
         windUpdateFunctions = {};
 
-        // บังคับเปิดลมเพื่อให้ Grid ข้อมูลถูกโหลด
-        W.store.set('overlay', 'wind');
+        // บังคับให้โหลดข้อมูลลมมาไว้ใน Buffer
+        if (W.store.get('overlay') !== 'wind') {
+            W.store.set('overlay', 'wind');
+        }
 
-        // ดึง Picker Module มาเตรียมไว้ (สำหรับดึงค่าลม)
-        const picker = W.require('picker');
+        // --- จุดสำคัญ: ดึง Module Picker มาเตรียมไว้ ---
+        const pickerModule = W.require('picker');
 
         poles.forEach(pole => {
             const lat = parseFloat(pole.poles_lat);
             const lng = parseFloat(pole.poles_lng);
             if (isNaN(lat) || isNaN(lng)) return;
 
-            // --- ส่วนสร้าง Marker (เหมือนเดิม) ---
+            // 1. สร้าง Marker และ Icon
             let markerIcon = (pole.type_icon && pole.type_icon.trim() !== "")
-                ? L.icon({ iconUrl: pole.type_icon, iconSize: [50, 50], iconAnchor: [25, 50] })
+                ? L.icon({
+                    iconUrl: pole.type_icon,
+                    iconSize: [50, 50],
+                    iconAnchor: [25, 50],
+                    popupAnchor: [0, -50]
+                })
                 : getDivIcon(pole.type_id);
 
             const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(poleLayerGroup);
@@ -192,42 +199,43 @@ async function loadPoles(map) {
                 { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [15, -20] }
             ).openTooltip();
 
-            // --- ฟังก์ชันอัปเดตค่าลมที่แก้ Error getParams ---
-            const updateWind = () => {
+            // 2. ฟังก์ชันอัปเดตแบบฉลาด (ใช้ Module และระบบ Retry)
+            const updateWind = (retries = 5) => {
                 try {
-                    // ใช้โมดูล picker ที่ require มาในการดึงค่า
-                    // หาก getParams() แบบใส่พิกัดไม่ได้ ให้ใช้การเปิดพิกัดชั่วคราว
-                    const data = picker.getParams ? picker.getParams({ lat, lon: lng }) : null;
+                    // ดึงค่าผ่าน Module ที่ require มา (ไม่ใช่ W.picker ตรงๆ)
+                    const data = pickerModule.getParams({ lat, lon: lng });
+
+                    const el = document.getElementById(windId);
+                    const arrow = document.getElementById(arrowId);
 
                     if (data && data.wind !== undefined) {
-                        const windSpeed = Math.round(data.wind); 
-                        const windDir = Math.round(data.dir); 
-                        
-                        const el = document.getElementById(windId);
-                        const arrow = document.getElementById(arrowId);
-                        
+                        const windSpeed = Math.round(data.wind);
+                        const windDir = Math.round(data.dir);
+
                         if (arrow) arrow.style.transform = `rotate(${windDir}deg)`;
                         if (el) el.innerText = `${windSpeed} kt`;
-                    } else {
-                        // แผนสำรอง: ถ้าเรียกตรงๆ ไม่ได้ ให้ใช้ระบบ Store
-                        const currentData = W.model.picker && W.model.picker.getData ? W.model.picker.getData() : null;
-                        if (currentData && currentData.lat === lat) { // เช็คว่าใช่จุดที่เราต้องการไหม
-                             // อัปเดต UI จาก currentData
-                        }
+                    } else if (retries > 0) {
+                        // ถ้ายังไม่มีข้อมูล ให้รอ 1 วินาทีแล้วลองใหม่ (แก้ปัญหา data null ตอนโหลดครั้งแรก)
+                        setTimeout(() => updateWind(retries - 1), 1000);
                     }
-                } catch (error) {
-                    console.debug("Data sync in progress...");
+                } catch (e) {
+                    console.debug("Picker module sync...");
                 }
             };
 
             windUpdateFunctions[pole.poles_id] = updateWind;
-            setTimeout(updateWind, 1000); // รอ 1 วินาทีให้ Grid โหลดเสร็จ
+            
+            // รันทันทีเมื่อสร้างเสร็จ
+            updateWind();
+
+            marker.on('click', () => openPoles(pole.poles_id));
         });
 
-        // ระบบ Real-time Refresh
+        // 3. ระบบ Refresh ข้อมูลตามเหตุการณ์ต่างๆ
         const refreshVisiblePoles = () => {
             const bounds = map.getBounds();
             Object.keys(poleMarkers).forEach(id => {
+                // อัปเดตเฉพาะเสาที่มองเห็น เพื่อลด Quota และความหน่วง
                 if (bounds.contains(poleMarkers[id].getLatLng())) {
                     if (windUpdateFunctions[id]) windUpdateFunctions[id]();
                 }
@@ -235,13 +243,20 @@ async function loadPoles(map) {
         };
 
         if (!window._windEventsBound) {
-            W.store.on('timestamp', refreshVisiblePoles); 
+            // เมื่อเวลาเปลี่ยน (Timeline ขยับ)
+            W.store.on('timestamp', refreshVisiblePoles);
+            // เมื่อเลื่อนหรือซูมแผนที่
             map.on('moveend zoomend', refreshVisiblePoles);
+            // เมื่อข้อมูล Grid ชุดใหม่โหลดเสร็จ
+            W.store.on('broadcast', (payload) => {
+                if (payload === 'dataLoaded') refreshVisiblePoles();
+            });
+
             window._windEventsBound = true;
         }
 
     } catch (err) {
-        console.error("LoadPoles Error:", err);
+        console.error("LoadPoles Error Final:", err);
     }
 }
 function toggleWind(isOn) {
