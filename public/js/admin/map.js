@@ -200,6 +200,8 @@ function renderPolygonList() {
 function openEditPopup(id) {
     const poly = polygons.find(p => p.poly_id == id);
     if (!poly) return;
+    console.log(poly);
+    
     const modalHtml = `
     <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-sm modal-dialog-centered">
@@ -210,15 +212,19 @@ function openEditPopup(id) {
                 </div>
                 <div class="modal-body p-3">
                     <div class="mb-3">
-                        <label class="form-label small fw-bold mb-1">Colors</label>
+                        <label class="form-label small fw-bold mb-1" data-i18n="area_border_color"></label>
                         <div class="d-flex gap-2">
                             <input type="color" id="editFillColor" class="form-control form-control-color w-100" value="${poly.style.fillColor}">
                             <input type="color" id="editBorderColor" class="form-control form-control-color w-100" value="${poly.style.color}">
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold mb-1">Opacity: <span id="valOpacity">${Math.round(poly.style.fillOpacity * 100)}%</span></label>
+                        <label class="form-label small fw-bold mb-1"><span data-i18n="opacity"></span>: <span id="valOpacity">${Math.round(poly.style.fillOpacity * 100)}%</span></label>
                         <input type="range" id="editOpacity" class="form-range" min="0" max="100" value="${poly.style.fillOpacity * 100}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold mb-1" data-i18n=""><span data-i18n="border_weight"></span>: <span id="valWeight">${poly.style.weight}px</span></label>
+                        <input type="range" class="form-range" id="editborderWeight" min="0" max="10" value="${poly.style.weight}">
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0 d-flex gap-2">
@@ -235,12 +241,17 @@ function openEditPopup(id) {
     $('#editOpacity').on('input', function() { 
         $('#valOpacity').text($(this).val() + '%'); 
     });
+    $('#editborderWeight').on('input', function() { 
+        $('#valWeight').text($(this).val() + 'px'); 
+    });
     $('#btnResetIndividual').on('click', function() {
         showConfirm(langData['confirm'], langData['confirm_change'], function(){
+            $('#editborderWeight').val(currentStyle.weight);
             $('#editFillColor').val(currentStyle.fillColor);
             $('#editBorderColor').val(currentStyle.color);
             $('#editOpacity').val(currentStyle.fillOpacity * 100);
             $('#valOpacity').text((currentStyle.fillOpacity * 100) + '%');
+            $('#valWeight').text((currentStyle.weight) + 'px');
             $('#btnSaveIndividual').click();
         });
     });
@@ -249,7 +260,8 @@ function openEditPopup(id) {
             ...poly.style,
             fillColor: $('#editFillColor').val(),
             color: $('#editBorderColor').val(),
-            fillOpacity: $('#editOpacity').val() / 100
+            fillOpacity: $('#editOpacity').val() / 100,
+            weight: $('#editborderWeight').val(),
         };
         if (polygonLayers[id]) {
             polygonLayers[id].setStyle(poly.style);

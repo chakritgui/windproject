@@ -98,14 +98,13 @@ class PoleModel {
         $stmt1->execute([':poles_id' => $poles_id]);
         $poleInfo = $stmt1->fetch(PDO::FETCH_ASSOC);
         $sqlHeight = "SELECT l.levels_id AS levels_id, 
-                            CONCAT(h.height_name,' ',l.height_levels) AS levels_name 
+                            h.height_name AS levels_name 
                     FROM wp_height h 
                     LEFT JOIN wp_height_levels l ON l.height_id = h.height_id 
                     WHERE l.levels_id = :height_id"; 
         $stmt2 = $this->db->prepare($sqlHeight);
         $stmt2->execute([':height_id' => $height_id]);
         $heightInfo = $stmt2->fetch(PDO::FETCH_ASSOC);
-
         return [
             'pole'   => $poleInfo,
             'level'  => $heightInfo,

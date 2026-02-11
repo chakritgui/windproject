@@ -172,7 +172,7 @@ function handleSettingItem(item) {
         case 'website_th': website.th = val; break;
         case 'footer':
             footer = val || 'Copyright © iWind Corporation Limited';
-            $('.footer').html(footer);
+            $('.footer-text').html(footer);
             break;
        case 'language':
             let languages = (val && val.trim() !== "") ? val : 'en';

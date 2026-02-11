@@ -165,8 +165,8 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
             <button class="btn btn-primary me-2" onclick="renderReport(${poles_id}, 'default')" data-i18n="generate_report"></button>
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
         `);
-        if (data.levels_name && data.levels_id) {
-            const newOption = new Option(data.levels_name, data.levels_id, true, true);
+        if (data.height_name && data.height_id) {
+            const newOption = new Option(data.height_name, data.height_id, true, true);
             $('#heightSelect').append(newOption).trigger('change');
         }
     } catch (err) {

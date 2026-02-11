@@ -81,6 +81,11 @@ function applyMasterSettings(map, master) {
 async function renderWindAreas(map, picker, areaData, masterData) {
     const { polygons = [] } = areaData;
     if (polygons.length === 0) return;
+    map.eachLayer(layer => {
+        if (layer instanceof L.GeoJSON || (layer instanceof L.Polygon && layer._isMask)) {
+            map.removeLayer(layer);
+        }
+    });
     const isMaskMode = masterData?.polygon_visibility === 'close';
     const featureGroup = L.featureGroup();
     const allHoles = [];
@@ -90,15 +95,19 @@ async function renderWindAreas(map, picker, areaData, masterData) {
             const geoJsonData = JSON.parse(area.geo_data);
             const styleData = JSON.parse(area.custom_style || "{}");
             const geoLayer = L.geoJSON(geoJsonData, {
-                style: () => ({
-                    fillColor: styleData.fillColor || "#3388ff",
-                    fillOpacity: isMaskMode ? 0.01 : (styleData.fillOpacity || 0.2),
-                    color: styleData.color || "#3388ff",
-                    weight: styleData.weight || 2,
-                    stroke: true,
-                    opacity: isMaskMode ? 0.01 : 1,
-                    interactive: true
-                })
+                style: () => {
+                    const weight = styleData.weight !== undefined ? parseFloat(styleData.weight) : 2;
+                    const fillOpacity = styleData.fillOpacity !== undefined ? parseFloat(styleData.fillOpacity) : 0.2;
+                    return {
+                        fillColor: styleData.fillColor || "#3388ff",
+                        fillOpacity: fillOpacity, 
+                        color: styleData.color || "#3388ff",
+                        weight: weight,
+                        stroke: true,
+                        opacity: 1, 
+                        interactive: true
+                    };
+                }
             });
             geoLayer.on('touchend click', function (e) {
                 if (!e.latlng) return;
@@ -107,21 +116,13 @@ async function renderWindAreas(map, picker, areaData, masterData) {
                     e.originalEvent.preventDefault();
                 }
                 if (e.target.getBounds) {
-                    map.flyToBounds(e.target.getBounds(), {
-                        padding: [50, 50],
-                        duration: 0.8,
-                        easeLinearity: 0.25
-                    });
+                    map.flyToBounds(e.target.getBounds(), { padding: [50, 50], duration: 0.8 });
                     map.once('moveend', () => {
                         if (typeof handlePickerOpening === 'function') {
                             handlePickerOpening(e.latlng, picker);
                         }
-                        setTimeout(() => {
-                            map.on('click', function(){});
-                        }, 100);
                     });
                 }
-                map.off('click');
             });
             geoLayer.addTo(featureGroup);
             if (isMaskMode) {
@@ -129,28 +130,30 @@ async function renderWindAreas(map, picker, areaData, masterData) {
                     if (layer.getLatLngs) {
                         const latlngs = layer.getLatLngs();
                         const rings = Array.isArray(latlngs[0]) && !(latlngs[0][0] instanceof L.LatLng) 
-                                      ? latlngs.map(inner => inner[0]) 
-                                      : [latlngs[0]];
+                            ? latlngs.map(inner => inner[0]) 
+                            : [latlngs[0]];
                         allHoles.push(...rings);
                     }
                 });
             }
-        } catch (e) { console.error("JSON Parse Error (Area):", e); }
+        } catch (e) { console.error("JSON Parse Error:", e); }
     });
-    featureGroup.addTo(map);
     if (isMaskMode && allHoles.length > 0) {
         const world = [[90, -180], [90, 180], [-90, 180], [-90, -180]];
-        L.polygon([world, ...allHoles], {
+        const mask = L.polygon([world, ...allHoles], {
             fillColor: '#C0C0C0', 
-            fillOpacity: 0.75, 
-            stroke: true,
+            fillOpacity: 0.75,
+            stroke: false,
             interactive: false
-        }).addTo(map).bringToBack();
+        });
+        mask._isMask = true;
+        mask.addTo(map);
+        mask.bringToBack();
     }
+    featureGroup.addTo(map);
+    featureGroup.bringToFront();
     if (featureGroup.getBounds().isValid()) {
         map.fitBounds(featureGroup.getBounds(), { padding: [20, 20] });
-        map.setMaxBounds(featureGroup.getBounds().pad(0.3));
-        map.options.maxBoundsViscosity = 1.0;
     }
 }
 function handlePickerOpening(latlng, picker) {
@@ -383,7 +386,7 @@ async function openPoles(poleId) {
                                 <h3 class="fw-bolder text-primary mb-1">${data.installations_name}</h3>
                                 <div class="d-flex flex-wrap gap-3 text-muted">
                                     <span><i class="fa-solid fa-diagram-project me-1"></i>${data.project_name}</span>
-                                    <span><i class="fa-solid fa-signal me-1"></i>${data.levels_name}</span>
+                                    <span><i class="fa-solid fa-signal me-1"></i>${data.height_name}</span>
                                 </div>
                                 <div class="text-muted"><i class="fa-solid fa-location-dot"></i> ${data.poles_lat}, ${data.poles_lng}</div>
                             </div>

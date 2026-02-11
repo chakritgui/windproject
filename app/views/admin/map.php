@@ -123,7 +123,7 @@
                     </div>
                     <div class="col-md-3">
                         <label class="small fw-bold"><span data-i18n="border_weight"></span> (<span id="weightValue">2px</span>)</label>
-                        <input type="range" class="form-range" id="borderWeight" min="1" max="10" value="2">
+                        <input type="range" class="form-range" id="borderWeight" min="0" max="10" value="2">
                     </div>
                     <div class="col-md-3">
                         <label class="small fw-bold"><span data-i18n="outside_the_polygon">Outside the Polygon</span></label>

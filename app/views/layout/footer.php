@@ -1,15 +1,11 @@
 </div>
-<div class="footer"></div>
-<div id="slidePanel">
-    <div class="panel-header d-flex justify-content-between align-items-center">
-        <div>
-            <h5 class="mb-1" id="panelTitle">ข้อมูลเสา</h5>
-            <small id="panelSubtitle">รายละเอียดเสา Smart Pole</small>
-        </div>
-        <button class="btn btn-light" onclick="closePanel()">×</button>
+<div class="footer">
+    <div class="footer-container">
+        <img src="<?=BASE_URL?>/public/images/iwind.png" alt="wind" class="footer-logo">
+        <span class="footer-text">
+            Wind Data Website © <?=date('Y')?> All rights reserved.
+        </span>
     </div>
-    <div class="p-4" id="panelContent"></div>
-    <div id="panelFooter" class="panel-footer align-items-center"></div>
 </div>
 <div class="modal fade" id="windModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">

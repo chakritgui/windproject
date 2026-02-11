@@ -131,34 +131,34 @@ class MapModel{
             $height_id = null;
             $height_name = '';
             if ($height) {
-                $sqlH = "SELECT l.levels_id, CONCAT(h.height_name,' ',l.height_levels) AS levels_name 
+                $sqlH = "SELECT h.height_id, h.height_name
                         FROM wp_height h 
                         JOIN wp_height_levels l ON l.height_id = h.height_id 
-                        WHERE l.levels_id = :h_id";
+                        WHERE h.height_id = :h_id";
                 $stH = $this->db->prepare($sqlH);
                 $stH->execute([':h_id' => $height]);
                 $resH = $stH->fetch(PDO::FETCH_ASSOC);
                 if ($resH) {
-                    $height_id = $resH['levels_id'];
-                    $height_name = $resH['levels_name'];
+                    $height_id = $resH['height_id'];
+                    $height_name = $resH['height_name'];
                 }
             } else {
-                $sqlF = "SELECT l.levels_id, CONCAT(h.height_name, ' ', l.height_levels) AS levels_name 
+                $sqlF = "SELECT h.height_id, h.height_name 
                         FROM wp_height h 
                         JOIN wp_height_levels l ON l.height_id = h.height_id
                         JOIN wp_winds w ON w.levels_id = l.levels_id
                         WHERE w.poles_id = :p_id
-                        GROUP BY l.levels_id ORDER BY h.height_id ASC, l.levels_id ASC LIMIT 1";
+                        GROUP BY h.height_id ORDER BY h.height_id ASC LIMIT 1";
                 $stF = $this->db->prepare($sqlF);
                 $stF->execute([':p_id' => $poles_id]);
                 $resF = $stF->fetch(PDO::FETCH_ASSOC);
                 if ($resF) {
-                    $height_id = $resF['levels_id'];
-                    $height_name = $resF['levels_name'];
+                    $height_id = $resF['height_id'];
+                    $height_name = $resF['height_name'];
                 }
             }
-            $poleInfo['levels_id'] = $height_id;
-            $poleInfo['levels_name'] = $height_name;
+            $poleInfo['height_id'] = $height_id;
+            $poleInfo['height_name'] = $height_name;
             if (!empty($poleInfo['content_id'])) {
                 $cId = $poleInfo['content_id'];
                 $stC = $this->db->prepare("SELECT content_id, status, cover, created_at, type FROM wp_content WHERE content_id = :id AND status != 'deleted'");
@@ -220,12 +220,12 @@ class MapModel{
         $stmtCount = $this->db->prepare("SELECT COUNT(DISTINCT l.levels_id) as total FROM wp_height h {$join} {$where}");
         $stmtCount->execute($params);
         $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
-        $sql = "SELECT l.levels_id AS id, CONCAT(h.height_name, ' ', l.height_levels) AS text 
+        $sql = "SELECT h.height_id AS id, h.height_name AS text 
                 FROM wp_height h 
                 {$join} 
                 {$where}
-                GROUP BY l.levels_id 
-                ORDER BY h.height_id ASC, l.levels_id ASC 
+                GROUP BY h.height_id
+                ORDER BY h.height_id ASC
                 LIMIT :limit OFFSET :offset";
         $stmt = $this->db->prepare($sql);
         foreach ($params as $k => $v) {

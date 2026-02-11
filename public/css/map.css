@@ -249,6 +249,8 @@
 .footer {
     background: none !important;
     box-shadow: none !important;
+}
+.footer-text {
     color: #ffffff !important;
 }
 header {
