@@ -1,4 +1,9 @@
 <?php
+    ini_set('session.cookie_httponly', 1);
+    if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+        ini_set('session.cookie_secure', 1);
+    }
+    ini_set('session.cookie_samesite', 'Lax');
     session_start();
     require_once __DIR__ . '/vendor/autoload.php';
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
@@ -11,11 +16,7 @@
     require_once __DIR__ . '/app/helpers/mediaHelper.php';
     require_once __DIR__ . '/app/helpers/mailHelper.php';
     spl_autoload_register(function ($class) {
-        $paths = [
-            'app/controllers/',
-            'app/models/',
-            'app/core/',
-        ];
+        $paths = ['app/controllers/', 'app/models/', 'app/core/'];
         foreach ($paths as $path) {
             $file = __DIR__ . '/' . $path . $class . '.php';
             if (file_exists($file)) {
@@ -40,16 +41,28 @@
         }
     }
     $router = new Router();
-    if (empty($_SESSION)) {
-        $router->get('/', 'AuthController@login');
-        $router->get('/login', 'AuthController@login');
-        $router->get('/reset-password', 'AuthController@reset');
-        $router->get('/forgot-password', 'AuthController@forgot');
-        $router->post('/api/auth', 'AuthController@doLogin');
-        $router->post('/api/auth/forgot', 'AuthController@sendReset');
-        $router->post('/api/auth/update-password', 'AuthController@updatePassword');
-    } else {
-        if (isset($_SESSION['user']['role']) && ($_SESSION['user']['role'] === 'admin') || ($_SESSION['user']['role'] === 'administrator')) {
+    $router->get('/', function() {
+        if (!isset($_SESSION['user'])) {
+            return (new AuthController())->login();
+        }
+        $role = $_SESSION['user']['role'] ?? '';
+        if ($role === 'admin' || $role === 'administrator') {
+            header("Location: " . BASE_URL . "/dashboard");
+            exit;
+        } else {
+            header("Location: " . BASE_URL . "/home");
+            exit;
+        }
+    });
+    $router->get('/login', 'AuthController@login');
+    $router->get('/reset-password', 'AuthController@reset');
+    $router->get('/forgot-password', 'AuthController@forgot');
+    $router->post('/api/auth', 'AuthController@doLogin');
+    $router->post('/api/auth/forgot', 'AuthController@sendReset');
+    $router->post('/api/auth/update-password', 'AuthController@updatePassword');
+    if (isset($_SESSION['user'])) {
+        $role = $_SESSION['user']['role'] ?? '';
+        if ($role === 'admin' || $role === 'administrator') {
             $router->get('/dashboard', 'AdminController@index');
             $router->get('/member', 'AdminController@member');
             $router->get('/project', 'AdminController@project');
@@ -129,6 +142,7 @@
             $router->post('/api/project/delete-content', 'ProjectController@deleteContent');
         } else {
             $router->get('/home', 'UserController@user');
+            $router->get('/map', 'UserController@user');
             $router->get('/news', 'UserController@news');
             $router->get('/pole/{slug}', 'UserController@pole');
             $router->post('/api/document-list', 'UserController@documentList');
@@ -140,6 +154,7 @@
             $router->get('/download', 'UserController@download');
         }
     }
+    $router->get('/logout', 'AuthController@logout');
     $router->get('/content/{mode}/{slug}', 'ContentController@content');
     $router->post('/api/content/getBySlug', 'ContentController@getBySlug');
     $router->post('/api/document/filter', 'DocumentController@filter');
@@ -170,10 +185,9 @@
     $router->post('/api/account/update', 'AccountControl@update');
     $router->post('/api/account/history', 'AccountControl@history');
     $router->post('/api/project/get', 'ProjectController@get');
-    $router->get('/logout', 'AuthController@logout');
     $currentRoute = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
     $basePath = dirname($_SERVER['SCRIPT_NAME']);
-    $basePath = ($basePath === '/') ? '' : $basePath;
+    $basePath = ($basePath === '/' || $basePath === '\\') ? '' : $basePath;
     $currentRoute = str_replace($basePath, '', $currentRoute);
     $GLOBALS['currentRoute'] = $currentRoute;
     $router->run();
