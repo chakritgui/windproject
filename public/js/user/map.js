@@ -154,100 +154,66 @@ function handlePickerOpening(latlng, picker) {
 }
 async function loadPoles(map) {
     try {
-        if (!windyAPI || !windyAPI.store || !windyAPI.interpolator) return;
-
+        if (!windyAPI || !windyAPI.utils) return;
         const poles = await fetchData(`${BASE_URL}/api/poles-location`);
         if (!Array.isArray(poles)) return;
-
         poleLayerGroup.clearLayers();
         poleMarkers = {};
-
+        windUpdateFunctions = {};
         poles.forEach(pole => {
-
             const lat = parseFloat(pole.poles_lat);
             const lng = parseFloat(pole.poles_lng);
             if (isNaN(lat) || isNaN(lng)) return;
-
-            const markerIcon =
-                (pole.type_icon && pole.type_icon.trim() !== "")
-                    ? L.icon({
-                        iconUrl: pole.type_icon,
-                        iconSize: [50, 50],
-                        iconAnchor: [20, 60],
-                        popupAnchor: [0, -50]
-                    })
-                    : getDivIcon(pole.type_id);
-
-            const marker = L.marker([lat, lng], { icon: markerIcon })
-                .addTo(poleLayerGroup);
-
+            let markerIcon = (pole.type_icon && pole.type_icon.trim() !== "")
+                ? L.icon({
+                    iconUrl: pole.type_icon,
+                    iconSize: [50, 50],
+                    iconAnchor: [20, 60],
+                    popupAnchor: [0, -50]
+                })
+                : getDivIcon(pole.type_id);
+            const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(poleLayerGroup);
             const windId = `wind-auto-${pole.poles_id}`;
-
+            poleMarkers[pole.poles_id] = marker;
             marker.bindTooltip(
                 `<div class="wind-pill">
                     <span class="arrow-icon" id="arrow-${pole.poles_id}">➤</span>
                     <span class="wind-value" id="${windId}">...</span>
                 </div>`,
-                {
-                    permanent: true,
-                    direction: 'right',
-                    className: 'wind-custom-tooltip',
-                    offset: [15, -20]
-                }
+                { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [15, -20] }
             ).openTooltip();
-
-            poleMarkers[pole.poles_id] = {
-                lat,
-                lng,
-                windId,
-                poleId: pole.poles_id
+            const updateWind = () => {
+                if (!windOn || !map.getBounds().contains(marker.getLatLng())) return;
+                const handler = (data) => {
+                    if (!data || data.overlay !== 'wind') return;
+                    const windSpeed = Math.round(data.values.wind);
+                    const windDir = Math.round(data.values.dir);
+                    const el = document.getElementById(windId);
+                    const arrow = document.getElementById(`arrow-${pole.poles_id}`);
+                    if (arrow) arrow.style.transform = `rotate(${windDir}deg)`;
+                    if (el) el.innerText = `${windSpeed} kt`;
+                    windyAPI.picker.off('pickerMoved', handler);
+                };
+                windyAPI.picker.once('pickerMoved', handler);
+                windyAPI.store.set('pickerLocation', { lat, lon: lng });
             };
-
+            windUpdateFunctions[pole.poles_id] = updateWind;
+            updateWind();
             marker.on('click', () => openPoles(pole.poles_id));
         });
-
-        const updateAllPoles = () => {
-
-            if (!windOn) return;
-
-            const overlay = windyAPI.store.get('overlay');
-            if (overlay !== 'wind') return;
-
-            Object.values(poleMarkers).forEach(pole => {
-
-                const { lat, lng, windId, poleId } = pole;
-
-                const wind = windyAPI.interpolator(lat, lng);
-
-                if (!wind || wind.wind == null || wind.dir == null) return;
-
-                const windSpeed = Math.round(wind.wind);
-                const windDir   = Math.round(wind.dir);
-                const directionText = getDirectionName(windDir);
-
-                const el = document.getElementById(windId);
-                const arrow = document.getElementById(`arrow-${poleId}`);
-
-                if (arrow) arrow.style.transform = `rotate(${windDir}deg)`;
-                if (el) el.innerText = `${directionText} ${windSpeed} kt`;
-            });
+        const refreshVisiblePoles = () => {
+            Object.values(windUpdateFunctions).forEach(fn => fn());
         };
-
         if (!window._windEventsBound) {
-            windyAPI.store.on('timestamp', updateAllPoles);
-            windyAPI.store.on('overlay', updateAllPoles);
-            windyAPI.store.on('product', updateAllPoles);
-            map.on('moveend zoomend', updateAllPoles);
+            windyAPI.store.on('timestamp', refreshVisiblePoles);
+            windyAPI.store.on('overlay', refreshVisiblePoles);
+            map.on('moveend zoomend', refreshVisiblePoles);
             window._windEventsBound = true;
         }
-
-        updateAllPoles();
-
     } catch (err) {
         console.error("LoadPoles Error:", err);
     }
 }
-
 function toggleWind(isOn) {
     if (!windyAPI) return;
     windOn = isOn;
