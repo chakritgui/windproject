@@ -100,33 +100,37 @@ async function renderWindAreas(map, picker, areaData, masterData) {
                     interactive: true
                 })
             });
-            geoLayer.addTo(featureGroup);
             geoLayer.on('touchend click', function (e) {
                 if (!e.latlng) return;
                 if (e.originalEvent) {
                     e.originalEvent.stopImmediatePropagation();
                     e.originalEvent.preventDefault();
                 }
-                map.off('click');
-                setTimeout(() => {
-                    handlePickerOpening(e.latlng, picker);
-                    setTimeout(() => {
-                        map.on('click', function(){});
-                    }, 300);
-                }, 120);
                 if (e.target.getBounds) {
                     map.flyToBounds(e.target.getBounds(), {
-                        padding: [40, 40], 
-                        duration: 1.5,
+                        padding: [50, 50],
+                        duration: 0.8,
                         easeLinearity: 0.25
                     });
+                    map.once('moveend', () => {
+                        if (typeof handlePickerOpening === 'function') {
+                            handlePickerOpening(e.latlng, picker);
+                        }
+                        setTimeout(() => {
+                            map.on('click', function(){});
+                        }, 100);
+                    });
                 }
+                map.off('click');
             });
+            geoLayer.addTo(featureGroup);
             if (isMaskMode) {
                 geoLayer.eachLayer(layer => {
                     if (layer.getLatLngs) {
                         const latlngs = layer.getLatLngs();
-                        const rings = Array.isArray(latlngs[0]) && !(latlngs[0][0] instanceof L.LatLng) ? latlngs.map(inner => inner[0]) : [latlngs[0]];
+                        const rings = Array.isArray(latlngs[0]) && !(latlngs[0][0] instanceof L.LatLng) 
+                                      ? latlngs.map(inner => inner[0]) 
+                                      : [latlngs[0]];
                         allHoles.push(...rings);
                     }
                 });
@@ -137,10 +141,14 @@ async function renderWindAreas(map, picker, areaData, masterData) {
     if (isMaskMode && allHoles.length > 0) {
         const world = [[90, -180], [90, 180], [-90, 180], [-90, -180]];
         L.polygon([world, ...allHoles], {
-            fillColor: '#C0C0C0', fillOpacity: 0.75, stroke: true, interactive: false
+            fillColor: '#C0C0C0', 
+            fillOpacity: 0.75, 
+            stroke: false,
+            interactive: false
         }).addTo(map).bringToBack();
     }
     if (featureGroup.getBounds().isValid()) {
+        map.fitBounds(featureGroup.getBounds(), { padding: [20, 20] });
         map.setMaxBounds(featureGroup.getBounds().pad(0.3));
         map.options.maxBoundsViscosity = 1.0;
     }
