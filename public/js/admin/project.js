@@ -90,7 +90,7 @@ function renderTable(data, isNewSearch) {
             <div class="mt-1 d-flex gap-1 flex-wrap">
                 ${activeLangs.map(lang => {
                     const status = item[`${lang}_status`]; 
-                    return renderLangStatus(lang, status);
+                    return typeof renderLangStatus === 'function' ? renderLangStatus(lang, status) : '';
                 }).join('')}
             </div>`;
         const globalIndex = cachedData.length - data.length + index;
