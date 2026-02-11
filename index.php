@@ -40,11 +40,6 @@
         }
     }
     $router = new Router();
-    error_reporting(E_ALL);
-ini_set('display_errors', 1);
-if (!is_writable(session_save_path())) {
-    echo 'Session path is NOT writable: ' . session_save_path();
-}
     if (empty($_SESSION)) {
         $router->get('/', 'AuthController@login');
         $router->get('/login', 'AuthController@login');
