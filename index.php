@@ -10,7 +10,6 @@
     require_once __DIR__ . '/app/core/Router.php';
     require_once __DIR__ . '/app/helpers/mediaHelper.php';
     require_once __DIR__ . '/app/helpers/mailHelper.php';
-    require_once __DIR__ . '/vendor/autoload.php';
     spl_autoload_register(function ($class) {
         $paths = [
             'app/controllers/',
@@ -41,7 +40,11 @@
         }
     }
     $router = new Router();
-    print_r($_SESSION); exit;
+    error_reporting(E_ALL);
+ini_set('display_errors', 1);
+if (!is_writable(session_save_path())) {
+    echo 'Session path is NOT writable: ' . session_save_path();
+}
     if (empty($_SESSION)) {
         $router->get('/', 'AuthController@login');
         $router->get('/login', 'AuthController@login');
