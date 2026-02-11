@@ -143,7 +143,7 @@ async function renderWindAreas(map, picker, areaData, masterData) {
         L.polygon([world, ...allHoles], {
             fillColor: '#C0C0C0', 
             fillOpacity: 0.75, 
-            stroke: false,
+            stroke: true,
             interactive: false
         }).addTo(map).bringToBack();
     }
