@@ -110,6 +110,10 @@
             $router->post('/api/contracts/delete', 'ContractsController@delete');
             $router->post('/api/contracts/get', 'ContractsController@get');
             $router->post('/api/contracts/save', 'ContractsController@save');
+            $router->post('/api/group/list', 'GroupController@list');
+            $router->post('/api/group/delete', 'GroupController@delete');
+            $router->post('/api/group/get', 'GroupController@get');
+            $router->post('/api/group/save', 'GroupController@save');
             $router->post('/api/projects/list', 'ProjectsController@list');
             $router->post('/api/projects/filter', 'ProjectsController@filter');
             $router->post('/api/projects/delete', 'ProjectsController@delete');

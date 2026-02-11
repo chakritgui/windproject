@@ -22,6 +22,11 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="group-tab" data-bs-toggle="pill" data-bs-target="#group" data-page="group" type="button">
+                <i class="fa-solid fa-layer-group"></i> <span data-i18n="group"></span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="projects-tab" data-bs-toggle="pill" data-bs-target="#projects" data-page="projects" type="button">
                 <i class="fa-solid fa-folder-tree"></i> <span data-i18n="projects"></span>
             </button>
@@ -65,6 +70,30 @@
                             <th data-i18n="endDate"></th>
                             <th data-i18n="create_at"></th>
                             <th data-i18n="status"></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="group" role="tabpanel">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <select id="filter_group_status" class="form-select filter"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="tb_group">
+                    <thead>
+                        <tr>
+                            <th data-i18n="group_name"></th>
+                            <th data-i18n="create_at"></th>
                             <th></th>
                         </tr>
                     </thead>
@@ -216,6 +245,7 @@
 </div>
 <script src="<?=BASE_URL?>/public/js/admin/master.js?v=<?=time();?>"></script>
 <script src="<?=BASE_URL?>/public/js/admin/master/contracts.js?v=<?=time();?>"></script>
+<script src="<?=BASE_URL?>/public/js/admin/master/group.js?v=<?=time();?>"></script>
 <script src="<?=BASE_URL?>/public/js/admin/master/projects.js?v=<?=time();?>"></script>
 <script src="<?=BASE_URL?>/public/js/admin/master/types.js?v=<?=time();?>"></script>
 <script src="<?=BASE_URL?>/public/js/admin/master/installation.js?v=<?=time();?>"></script>
