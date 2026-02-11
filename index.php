@@ -1,14 +1,8 @@
 <?php
-    // 1. ตั้งค่า Session ให้ปลอดภัยสำหรับ HTTPS
-    ini_set('session.cookie_httponly', 1);
-    if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
-        ini_set('session.cookie_secure', 1);
-    }
     session_start();
     require_once __DIR__ . '/vendor/autoload.php';
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
     $dotenv->load();
-    // Load Helpers & Config
     require_once __DIR__ . '/app/helpers/helpers.php';
     require_once __DIR__ . '/config.php';
     require_once __DIR__ . '/app/core/Database.php';
@@ -16,9 +10,13 @@
     require_once __DIR__ . '/app/core/Router.php';
     require_once __DIR__ . '/app/helpers/mediaHelper.php';
     require_once __DIR__ . '/app/helpers/mailHelper.php';
-    // Autoload Classes
+    require_once __DIR__ . '/vendor/autoload.php';
     spl_autoload_register(function ($class) {
-        $paths = ['app/controllers/', 'app/models/', 'app/core/'];
+        $paths = [
+            'app/controllers/',
+            'app/models/',
+            'app/core/',
+        ];
         foreach ($paths as $path) {
             $file = __DIR__ . '/' . $path . $class . '.php';
             if (file_exists($file)) {
@@ -27,47 +25,33 @@
             }
         }
     });
-    // 2. ระบบ Remember Me
     if (!isset($_SESSION['user']) && isset($_COOKIE['remember_me'])) {
         $m = new Auth();
         $user = $m->checkRememberMe();
         if ($user) {
-            $_SESSION['session_id'] = session_id();
+            $session_id = session_id();
+            $_SESSION['session_id'] = $session_id;
             $_SESSION['user'] = [
                 'id'   => $user['member_id'],
                 'role' => $user['role']
             ];
-            $m->updateLogin($user['member_id'], $_SESSION['timezone'] ?? null, session_id());
-            header("Location: " . BASE_URL); // ใช้ Location แทน Refresh เพื่อความชัวร์
+            $m->updateLogin($user['member_id'], $_SESSION['timezone'] ?? null, $session_id);
+            header("Refresh:0");
             exit;
         }
     }
     $router = new Router();
-    // --- [A] รูทสาธารณะ (เข้าได้ทุกสถานะ) ---
-    $router->get('/forgot-password', 'AuthController@forgot');
-    $router->get('/reset-password', 'AuthController@reset');
-    $router->get('/logout', 'AuthController@logout');
-    $router->get('/api/setting/getPublicConfig', 'SettingController@getPublicConfig');
-    // API สาธารณะสำหรับ Auth
-    $router->post('/api/auth', 'AuthController@doLogin');
-    $router->post('/api/auth/forgot', 'AuthController@sendReset');
-    $router->post('/api/auth/update-password', 'AuthController@updatePassword');
-    // --- [B] จัดการหน้าหลัก (/) จุดเดียวจบ ---
-    $router->get('/', function() {
-        if (!isset($_SESSION['user'])) {
-            return (new AuthController())->login();
-        }
-        $role = $_SESSION['user']['role'] ?? '';
-        if ($role === 'admin' || $role === 'administrator') {
-            return (new AdminController())->index();
-        }
-        return (new UserController())->user();
-    });
-    // --- [C] รูทแยกตามสถานะการ Login ---
-    if (!empty($_SESSION['user'])) {
-        $role = $_SESSION['user']['role'] ?? '';
-        if ($role === 'admin' || $role === 'administrator') {
-            // Admin Routes
+    if (empty($_SESSION)) {
+        $router->get('/', 'AuthController@login');
+        $router->get('/login', 'AuthController@login');
+        $router->get('/reset-password', 'AuthController@reset');
+        $router->get('/forgot-password', 'AuthController@forgot');
+        $router->post('/api/auth', 'AuthController@doLogin');
+        $router->post('/api/auth/forgot', 'AuthController@sendReset');
+        $router->post('/api/auth/update-password', 'AuthController@updatePassword');
+    } else {
+        if (isset($_SESSION['user']['role']) && ($_SESSION['user']['role'] === 'admin') || ($_SESSION['user']['role'] === 'administrator')) {
+            $router->get('/', 'AdminController@index');
             $router->get('/member', 'AdminController@member');
             $router->get('/project', 'AdminController@project');
             $router->get('/map', 'AdminController@map');
@@ -77,7 +61,6 @@
             $router->get('/setting', 'AdminController@setting');
             $router->get('/shortcut', 'AdminController@shortcut');
             $router->get('/master', 'AdminController@master');
-            // Admin APIs
             $router->post('/api/member/list', 'MemberController@list');
             $router->post('/api/dashboard/getStats', 'DashboardController@getStats');
             $router->get('/api/dashboard/loginHistory', 'DashboardController@loginHistory');
@@ -146,25 +129,19 @@
             $router->post('/api/project/save-content', 'ProjectController@saveContent');
             $router->post('/api/project/delete-content', 'ProjectController@deleteContent');
         } else {
-            // User Routes
+            $router->get('/', 'UserController@user');
             $router->get('/map', 'UserController@user');
             $router->get('/news', 'UserController@news');
-            $router->get('/project', 'UserController@project');
-            $router->get('/document', 'UserController@document');
-            $router->get('/download', 'UserController@download');
             $router->get('/pole/{slug}', 'UserController@pole');
             $router->post('/api/document-list', 'UserController@documentList');
             $router->post('/api/document-download', 'UserController@documentDownload');
             $router->post('/api/document-download-history', 'UserController@documentDownloadHistory');
             $router->post('/api/new-list', 'UserController@newsList');
+            $router->get('/project', 'UserController@project');
+            $router->get('/document', 'UserController@document');
+            $router->get('/download', 'UserController@download');
         }
-        // Common Logged-in Routes
-        $router->get('/account', 'AuthController@account');
-        $router->post('/api/account/get', 'AccountControl@get');
-        $router->post('/api/account/update', 'AccountControl@update');
-        $router->post('/api/account/history', 'AccountControl@history');
     }
-    // --- [D] รูททั่วไปที่ต้องใช้ร่วมกัน ---
     $router->get('/content/{mode}/{slug}', 'ContentController@content');
     $router->post('/api/content/getBySlug', 'ContentController@getBySlug');
     $router->post('/api/document/filter', 'DocumentController@filter');
@@ -189,6 +166,16 @@
     $router->post('/api/push/subscribe', 'PushController@saveSubscription');
     $router->post('/api/push/unsubscribe', 'PushController@unsubscribe');
     $router->post('/api/setting/get', 'SettingController@get');
+    $router->get('/api/setting/getPublicConfig', 'SettingController@getPublicConfig');
+    $router->get('/account', 'AuthController@account');
+    $router->post('/api/account/get', 'AccountControl@get');
+    $router->post('/api/account/update', 'AccountControl@update');
+    $router->post('/api/account/history', 'AccountControl@history');
     $router->post('/api/project/get', 'ProjectController@get');
-    // 3. รัน Router
+    $router->get('/logout', 'AuthController@logout');
+    $currentRoute = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $basePath = dirname($_SERVER['SCRIPT_NAME']);
+    $basePath = ($basePath === '/') ? '' : $basePath;
+    $currentRoute = str_replace($basePath, '', $currentRoute);
+    $GLOBALS['currentRoute'] = $currentRoute;
     $router->run();
