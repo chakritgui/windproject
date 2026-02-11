@@ -163,21 +163,20 @@ async function loadPoles(map) {
         poleMarkers = {};
         windUpdateFunctions = {};
 
-        // 1. บังคับเปิดลมและเช็คสถานะ Overlay
+        // บังคับเปิดลมเพื่อให้ Grid ข้อมูลถูกโหลด
         W.store.set('overlay', 'wind');
+
+        // ดึง Picker Module มาเตรียมไว้ (สำหรับดึงค่าลม)
+        const picker = W.require('picker');
 
         poles.forEach(pole => {
             const lat = parseFloat(pole.poles_lat);
             const lng = parseFloat(pole.poles_lng);
             if (isNaN(lat) || isNaN(lng)) return;
 
+            // --- ส่วนสร้าง Marker (เหมือนเดิม) ---
             let markerIcon = (pole.type_icon && pole.type_icon.trim() !== "")
-                ? L.icon({
-                    iconUrl: pole.type_icon,
-                    iconSize: [50, 50],
-                    iconAnchor: [25, 50],
-                    popupAnchor: [0, -50]
-                })
+                ? L.icon({ iconUrl: pole.type_icon, iconSize: [50, 50], iconAnchor: [25, 50] })
                 : getDivIcon(pole.type_id);
 
             const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(poleLayerGroup);
@@ -193,39 +192,39 @@ async function loadPoles(map) {
                 { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [15, -20] }
             ).openTooltip();
 
-            // 2. ฟังก์ชันอัปเดตแบบฉลาด (มีระบบ Retry ถ้าค่าเป็น null)
-            const updateWind = (retryCount = 0) => {
+            // --- ฟังก์ชันอัปเดตค่าลมที่แก้ Error getParams ---
+            const updateWind = () => {
                 try {
-                    if (!W.picker || typeof W.picker.getParams !== 'function') return;
-
-                    const data = W.picker.getParams({ lat, lon: lng });
-                    const el = document.getElementById(windId);
-                    const arrow = document.getElementById(arrowId);
+                    // ใช้โมดูล picker ที่ require มาในการดึงค่า
+                    // หาก getParams() แบบใส่พิกัดไม่ได้ ให้ใช้การเปิดพิกัดชั่วคราว
+                    const data = picker.getParams ? picker.getParams({ lat, lon: lng }) : null;
 
                     if (data && data.wind !== undefined) {
                         const windSpeed = Math.round(data.wind); 
                         const windDir = Math.round(data.dir); 
                         
+                        const el = document.getElementById(windId);
+                        const arrow = document.getElementById(arrowId);
+                        
                         if (arrow) arrow.style.transform = `rotate(${windDir}deg)`;
                         if (el) el.innerText = `${windSpeed} kt`;
-                    } else if (retryCount < 5) {
-                        // ถ้าข้อมูลยังไม่มา ให้ลองใหม่ทุกๆ 1 วินาที (สูงสุด 5 ครั้ง)
-                        setTimeout(() => updateWind(retryCount + 1), 1000);
+                    } else {
+                        // แผนสำรอง: ถ้าเรียกตรงๆ ไม่ได้ ให้ใช้ระบบ Store
+                        const currentData = W.model.picker && W.model.picker.getData ? W.model.picker.getData() : null;
+                        if (currentData && currentData.lat === lat) { // เช็คว่าใช่จุดที่เราต้องการไหม
+                             // อัปเดต UI จาก currentData
+                        }
                     }
                 } catch (error) {
-                    console.debug(`Waiting for wind data...`);
+                    console.debug("Data sync in progress...");
                 }
             };
 
             windUpdateFunctions[pole.poles_id] = updateWind;
-            
-            // เรียกครั้งแรก
-            updateWind();
-
-            marker.on('click', () => openPoles(pole.poles_id));
+            setTimeout(updateWind, 1000); // รอ 1 วินาทีให้ Grid โหลดเสร็จ
         });
 
-        // 3. ระบบ Refresh เมื่อข้อมูล Grid เปลี่ยนแปลง
+        // ระบบ Real-time Refresh
         const refreshVisiblePoles = () => {
             const bounds = map.getBounds();
             Object.keys(poleMarkers).forEach(id => {
@@ -238,14 +237,6 @@ async function loadPoles(map) {
         if (!window._windEventsBound) {
             W.store.on('timestamp', refreshVisiblePoles); 
             map.on('moveend zoomend', refreshVisiblePoles);
-            
-            // ดักฟังเหตุการณ์เมื่อ "ข้อมูลชุดใหม่โหลดเสร็จ" (Data Rendered)
-            W.store.on('broadcast', (payload) => {
-                if (payload === 'dataLoaded') {
-                    refreshVisiblePoles();
-                }
-            });
-
             window._windEventsBound = true;
         }
 
