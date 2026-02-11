@@ -1,6 +1,14 @@
 <?php
     $publicPath   = dirname(__DIR__, 3) . "/public/";
     $manifestFile = $publicPath . "manifest.json";
+    $location = "";
+    if(!empty($_SESSION['user'])) {
+        if($_SESSION['user']['role'] == 'user') {
+            $location = "home";
+        } else {
+            $location = "dashboard";
+        }
+    }
 ?>
 <!doctype html>
 <html lang="th">
@@ -89,7 +97,7 @@
                 </button>
             <?php } ?>
             <div class="h4 m-0">
-                <a href="<?=BASE_URL?>/" class="logo text-decoration-none text-dark d-flex align-items-center">
+                <a href="<?=BASE_URL?>/<?php echo $location; ?>" class="logo text-decoration-none text-dark d-flex align-items-center">
                     <img class="logo-full" alt="" height="40" class="me-2">
                 </a>
             </div>
@@ -98,7 +106,7 @@
             <?php if(isset($_SESSION['user']) && !in_array($_SESSION['user']['role'], ['admin','administrator'])) { ?>
                 <ul class="nav d-none d-lg-flex align-items-center me-3">
                     <li class="nav-item">
-                        <a class="nav-link <?=($GLOBALS['currentRoute']=='/'?'active':'')?>" href="<?=BASE_URL?>/">
+                        <a class="nav-link <?=($GLOBALS['currentRoute']=='/home'?'active':'')?>" href="<?=BASE_URL?>/home">
                             <i class="fa-solid fa-house"></i> <span data-i18n="home"></span>
                         </a>
                     </li>

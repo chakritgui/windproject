@@ -28,7 +28,7 @@ function doLogin() {
         keepLoggedIn: keepLoggedIn
     }, function(res){
         if (res.status === 'success') {
-            window.location.href = `${BASE_URL}/`;
+            window.location.href = `${BASE_URL}/${res.location}`;
         } else {
             showError(langData[res.message] || res.message);
         }

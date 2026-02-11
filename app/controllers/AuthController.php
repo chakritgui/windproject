@@ -48,7 +48,13 @@ class AuthController extends Controller {
                     ]
                 );
             }
-            echo json_encode(['status' => 'success']);
+            $location = "";
+            if($user['role'] == 'user') {
+                $location = "home";
+            } else {
+                $location = "dashboard";
+            }
+            echo json_encode(['status' => 'success', 'location' => $location]);
         } else {
             $message = ($user && $user['status'] !== 'active') ? 'account_inactive' : 'invalid_credentials';
             echo json_encode(['status' => 'error', 'message' => $message]);
