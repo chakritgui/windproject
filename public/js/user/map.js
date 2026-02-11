@@ -176,24 +176,21 @@ async function loadPoles(map, picker) {
                 </div>`, 
                 { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [15, -20] }
             ).openTooltip();
-            const updateWind = async () => {
-                const el = document.getElementById(windId);
-                const arrow = document.getElementById(`arrow-${pole.poles_id}`);
-                if (!el || !windOn) return;
-                try {
-                    const currentModel = W.store.get('product') || 'ecmwf';
-                    const weather = await W.model.getPoint(currentModel, { lat, lon: lng });
-                    if (weather) {
-                        const windSpeed = Math.round(weather.wind);
-                        const windDir = Math.round(weather.dir);
-                        const directionText = getDirectionName(windDir);
-                        if (arrow) arrow.style.transform = `rotate(${windDir}deg)`;
-                        el.innerText = `${directionText} ${windSpeed}kt`;
-                    }
-                } catch (e) {
-                    console.warn(`Cannot get wind for pole ${pole.poles_id}:`, e);
-                    el.innerText = "N/A";
-                }
+            const updateWind = () => {
+                if (!windOn) return;
+                windyAPI.store.set('pickerLocation', { lat, lon: lng });
+                const handler = (data) => {
+                    if (!data || !data.values || !data.values.wind) return;
+                    const windSpeed = Math.round(data.values.wind);
+                    const windDir = Math.round(data.values.dir);
+                    const directionText = getDirectionName(windDir);
+                    const el = document.getElementById(windId);
+                    const arrow = document.getElementById(`arrow-${pole.poles_id}`);
+                    if (arrow) arrow.style.transform = `rotate(${windDir}deg)`;
+                    if (el) el.innerText = `${directionText} ${windSpeed}kt`;
+                    windyAPI.picker.off('pickerMoved', handler);
+                };
+                windyAPI.picker.on('pickerMoved', handler);
             };
             windUpdateFunctions[pole.poles_id] = updateWind;
             updateWind();
