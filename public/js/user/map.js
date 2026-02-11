@@ -154,64 +154,103 @@ function handlePickerOpening(latlng, picker) {
 }
 async function loadPoles(map) {
     try {
-        if (!windyAPI || !windyAPI.utils) return;
+        // ตรวจสอบ windyAPI พื้นฐาน
+        if (typeof W === 'undefined') return;
+        
         const poles = await fetchData(`${BASE_URL}/api/poles-location`);
         if (!Array.isArray(poles)) return;
+
+        // ล้าง Layer เก่า
         poleLayerGroup.clearLayers();
         poleMarkers = {};
         windUpdateFunctions = {};
+
+        // บังคับเปิด Overlay ลมเพื่อให้ API โหลด Dataset มาเตรียมไว้ (สำคัญมากสำหรับค่า Real-time)
+        if (W.store.get('overlay') !== 'wind') {
+            W.store.set('overlay', 'wind');
+        }
+
         poles.forEach(pole => {
             const lat = parseFloat(pole.poles_lat);
             const lng = parseFloat(pole.poles_lng);
             if (isNaN(lat) || isNaN(lng)) return;
+
+            // 1. สร้าง Icon
             let markerIcon = (pole.type_icon && pole.type_icon.trim() !== "")
                 ? L.icon({
                     iconUrl: pole.type_icon,
                     iconSize: [50, 50],
-                    iconAnchor: [25, 50], 
+                    iconAnchor: [25, 50],
                     popupAnchor: [0, -50]
                 })
                 : getDivIcon(pole.type_id);
+
+            // 2. สร้าง Marker และ Tooltip
             const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(poleLayerGroup);
             const windId = `wind-auto-${pole.poles_id}`;
+            const arrowId = `arrow-${pole.poles_id}`;
             poleMarkers[pole.poles_id] = marker;
+
             marker.bindTooltip(
                 `<div class="wind-pill">
-                    <span class="arrow-icon" id="arrow-${pole.poles_id}" style="display:inline-block;">➤</span>
+                    <span class="arrow-icon" id="${arrowId}" style="display:inline-block; transition: transform 0.3s ease;">➤</span>
                     <span class="wind-value" id="${windId}">...</span>
                 </div>`,
                 { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [15, -20] }
             ).openTooltip();
+
+            // 3. ฟังก์ชันอัปเดตค่าลม (ปรับปรุงเพื่อ Paid Key)
             const updateWind = () => {
-                if (typeof W === 'undefined' || !W.picker) return;
                 try {
+                    // ตรวจสอบว่า Picker พร้อมหรือไม่
+                    if (!W.picker || typeof W.picker.getParams !== 'function') return;
+
+                    // ใช้ getParams โดยระบุพิกัด (วิธีนี้จะดึงค่าจาก Grid ลมที่โหลดไว้)
                     const data = W.picker.getParams({ lat, lon: lng });
+
                     if (data && data.wind !== undefined) {
                         const windSpeed = Math.round(data.wind); 
                         const windDir = Math.round(data.dir); 
+                        
                         const el = document.getElementById(windId);
-                        const arrow = document.getElementById(`arrow-${pole.poles_id}`);
+                        const arrow = document.getElementById(arrowId);
+                        
                         if (arrow) arrow.style.transform = `rotate(${windDir}deg)`;
                         if (el) el.innerText = `${windSpeed} kt`;
-                    } else {
-                        W.store.set('pickerLocation', { lat, lon: lng });
                     }
                 } catch (error) {
-                    console.warn("Picker is not ready for pole:", pole.poles_id);
+                    console.debug(`Wind not ready for pole ${pole.poles_id}`);
                 }
             };
+
             windUpdateFunctions[pole.poles_id] = updateWind;
-            updateWind();
+            
+            // หน่วงเวลาเล็กน้อยให้ Map โหลดข้อมูลเบื้องต้นเสร็จก่อนอัปเดตครั้งแรก
+            setTimeout(updateWind, 500);
+
             marker.on('click', () => openPoles(pole.poles_id));
         });
+
+        // 4. ระบบ Refresh ข้อมูล (Real-time)
         const refreshVisiblePoles = () => {
-            Object.values(windUpdateFunctions).forEach(fn => fn());
+            // อัปเดตเฉพาะเสาที่อยู่บนหน้าจอเพื่อ Performance
+            const bounds = map.getBounds();
+            Object.keys(poleMarkers).forEach(id => {
+                if (bounds.contains(poleMarkers[id].getLatLng())) {
+                    if (windUpdateFunctions[id]) windUpdateFunctions[id]();
+                }
+            });
         };
+
+        // ผูก Event ครั้งเดียว
         if (!window._windEventsBound) {
+            // เมื่อเปลี่ยนเวลาใน Timeline
             W.store.on('timestamp', refreshVisiblePoles); 
+            // เมื่อเลื่อนแผนที่หรือซูม
             map.on('moveend zoomend', refreshVisiblePoles);
             window._windEventsBound = true;
         }
+
     } catch (err) {
         console.error("LoadPoles Error:", err);
     }
