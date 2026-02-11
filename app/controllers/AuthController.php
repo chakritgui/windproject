@@ -20,6 +20,7 @@ class AuthController extends Controller {
         $m = new Auth();
         $user = $m->findMember($username);
         if ($user && $pass === decryptToken($user['password_hash']) && $user['status'] === 'active') {
+            session_regenerate_id(true); 
             $session_id = session_id();  
             $m->updateLogin($user['member_id'], $timezone, $session_id);
             $_SESSION['session_id'] = $session_id;
@@ -48,12 +49,8 @@ class AuthController extends Controller {
                     ]
                 );
             }
-            $location = "";
-            if($user['role'] == 'user') {
-                $location = "home";
-            } else {
-                $location = "dashboard";
-            }
+            session_write_close();
+            $location = ($user['role'] == 'user') ? "home" : "dashboard";
             echo json_encode(['status' => 'success', 'location' => $location]);
         } else {
             $message = ($user && $user['status'] !== 'active') ? 'account_inactive' : 'invalid_credentials';
