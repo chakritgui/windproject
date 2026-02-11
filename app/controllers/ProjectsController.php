@@ -10,6 +10,7 @@ class ProjectsController extends BaseController {
         $filters = [
             'status'=> $_POST['status'] ?? '',
             'contract'=> $_POST['contract'] ?? '',
+            'group'=> $_POST['group'] ?? '',
         ];
         $search = $_POST['search']['value'] ?? '';
         $orderDir    = 'asc';
@@ -56,7 +57,8 @@ class ProjectsController extends BaseController {
             'project_name_display' => $_POST['project_name_display'] ?? '',
             'project_start' => $_POST['project_start'] ?? '',
             'project_end' => $_POST['project_end'] ?? '',
-            'status' => $_POST['status'] ?? ''
+            'status' => $_POST['status'] ?? '',
+            'group' => $_POST['group'] ?? ''
         ];
         $result = $this->model->save($data);
         if ($result === true) {

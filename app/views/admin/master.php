@@ -22,7 +22,7 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="group-tab" data-bs-toggle="pill" data-bs-target="#group" data-page="group" type="button">
+            <button class="nav-link" id="group-tab" data-bs-toggle="pill" data-bs-target="#groups" data-page="group" type="button">
                 <i class="fa-solid fa-layer-group"></i> <span data-i18n="group"></span>
             </button>
         </li>
@@ -82,7 +82,7 @@
                 </table>
             </div>
         </div>
-        <div class="tab-pane fade" id="group" role="tabpanel">
+        <div class="tab-pane fade" id="groups" role="tabpanel">
             <div class="table-responsive">
                 <table class="table table-striped table-hover" id="tb_group">
                     <thead>
@@ -123,6 +123,10 @@
                             <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
                             <select id="filter_project_status" class="form-select filter"></select>
                         </div>
+                        <div class="col-sm-2 col-12">
+                            <p><i class="fa-solid fa-layer-group"></i></i> <span data-i18n="group"></span></p>
+                            <select id="filter_group" class="form-select filter"></select>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -134,6 +138,7 @@
                             <th data-i18n="project_name"></th>
                             <th data-i18n="display"></th>
                             <th data-i18n="contract"></th>
+                            <th data-i18n="group"></th>
                             <th data-i18n="startDate"></th>
                             <th data-i18n="endDate"></th>
                             <th data-i18n="create_at"></th>

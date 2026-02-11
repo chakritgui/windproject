@@ -12,13 +12,14 @@ function initProjectsTable() {
     tb_project = $('#tb_project').DataTable({
         processing: true,
         serverSide: true,
-        order: [[6, 'desc']],
+        order: [[7, 'desc']],
         ajax: { 
             url: "api/projects/list", 
             type: "POST",
             data: function(d){
                 d.status = $('#filter_project_status').val();
                 d.contract = $('#filter_contract').val();
+                d.group = $('#filter_group').val();
             }
         },
         columns: [{ 
@@ -46,6 +47,9 @@ function initProjectsTable() {
             data: "contract_name",
             orderable: true, 
         },{ 
+            data: "project_group_name",
+            orderable: true, 
+        },{ 
             data: "project_start",
             orderable: true, 
         },{ 
@@ -55,24 +59,16 @@ function initProjectsTable() {
             data: "created_at",
             orderable: true,
         },{ 
-            data: 'status',
+            data: 'project_status_name',
             orderable: true,
-            render: function (status, type, row) {
-                let badge = "";
-                switch(status) {
-                    case 'active':
-                        badge = "success";
-                        break;
-                    case 'inactive':
-                        badge = "secondary";
-                        break;
-                    case 'expired':
-                        badge = "danger";
-                        break;
-                }
+            render: function (data, type, row) {
+                let color = row.project_status_color || '#3b82f6';
+                let name = data || "-";
+                
                 return `
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-circle me-2" style="color: ${color}; font-size: 0.8rem;"></i> 
+                        <span>${name.replace(/\r\n|\n/g, '<br />')}</span>
                     </div>
                 `;
             }
@@ -190,6 +186,10 @@ $(document).on('click', '.manage-project', function() {
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
+                            <label class="mb-2 required">${langData['group'] || 'Group'}</label>
+                            <select id="group" class="form-select obj-required"></select>
+                        </div>
+                        <div class="col-md-6 mb-3">
                             <label class="mb-2 required">${langData['status'] || 'Status'}</label>
                             <select id="status" class="form-select obj-required"></select>
                         </div>
@@ -197,6 +197,7 @@ $(document).on('click', '.manage-project', function() {
                 `);
                 initSelect2Remote('#status', `${BASE_URL}/api/projects/filter`, { type: 'status' });
                 initSelect2Remote('#contract', `${BASE_URL}/api/projects/filter`, { type: 'contract' });
+                initSelect2Remote('#group', `${BASE_URL}/api/projects/filter`, { type: 'group' });
                 initDatePicker('#project_start');
                 initDatePicker('#project_end');
                 if (projectData) {
@@ -212,14 +213,17 @@ $(document).on('click', '.manage-project', function() {
                         let endDate = new Date(projectData.project_end);
                         $('#project_end').datepicker('setDate', endDate);
                     }
-                    if (projectData.status) {
-                        let statusName = projectData.status.charAt(0).toUpperCase() + projectData.status.slice(1);
-                        var newOptionStatus = new Option(statusName, projectData.status, true, true);
+                    if (projectData.project_status_name) {
+                        var newOptionStatus = new Option(projectData.project_status_name, projectData.project_status_id, true, true);
                         $('#status').append(newOptionStatus).trigger('change');
                     }
                     if (projectData && projectData.contract_name) {
                         var newOptionContract = new Option(projectData.contract_name, projectData.contract_id, true, true);
                         $('#contract').append(newOptionContract).trigger('change');
+                    }
+                    if (projectData && projectData.project_group_name) {
+                        var newOptionGroup = new Option(projectData.project_group_name, projectData.project_group_id, true, true);
+                        $('#group').append(newOptionGroup).trigger('change');
                     }
                 }
             } else {
@@ -278,6 +282,7 @@ function saveProject() {
     formData.append("project_start", $("#project_start").val());
     formData.append("project_end", $("#project_end").val());
     formData.append("status", $("#status").val());
+    formData.append("group", $("#group").val());
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `

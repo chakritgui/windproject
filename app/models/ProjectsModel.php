@@ -4,9 +4,9 @@ class ProjectsModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 6, $orderDir = 'desc') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 7, $orderDir = 'desc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
-        $sqlTotal = "SELECT COUNT(*) FROM wp_project p LEFT JOIN wp_contract c on c.contract_id = p.contract_id {$where}";
+        $sqlTotal = "SELECT COUNT(*) FROM wp_project p LEFT JOIN wp_contract c on c.contract_id = p.contract_id LEFT JOIN wp_project_group g on g.project_group_id = p.project_group_id {$where}";
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = (int)$stmt->fetchColumn();
@@ -17,10 +17,11 @@ class ProjectsModel {
             1 => "p.project_name",
             2 => "p.project_name_display",
             3 => "c.contract_name",
-            4 => "p.project_start",
-            5 => "p.project_end",
-            6 => "p.created_at",
-            7 => "p.status"
+            4 => "g.project_group_name",
+            5 => "p.project_start",
+            6 => "p.project_end",
+            7 => "p.created_at",
+            8 => "s.project_status_name"
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -32,11 +33,15 @@ class ProjectsModel {
                 p.project_name_display, 
                 p.project_start, 
                 p.project_end, 
-                p.status,
+                s.project_status_name,
+                s.project_status_color,
                 c.contract_name,
+                g.project_group_name,
                 p.created_at
             FROM wp_project p
             LEFT JOIN wp_contract c on c.contract_id = p.contract_id 
+            LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id
+            LEFT JOIN wp_project_group g on g.project_group_id = p.project_group_id
             {$where}
             ORDER BY {$order} {$orderDir}
         ";
@@ -65,12 +70,16 @@ class ProjectsModel {
         $where  = " WHERE p.status != 'deleted' ";
         $params = [];
         if (!empty($filters['status'])) {
-            $where .= " AND p.status = :status";
+            $where .= " AND p.project_status_id = :status";
             $params[':status'] = $filters['status'];
         }
         if (!empty($filters['contract'])) {
             $where .= " AND c.contract_id = :contract";
             $params[':contract'] = $filters['contract'];
+        }
+        if (!empty($filters['group'])) {
+            $where .= " AND g.project_group_id = :group";
+            $params[':group'] = $filters['group'];
         }
         if (!empty($search)) {
             $where .= " AND (c.contract_name LIKE :search or p.project_name LIKE :search)";
@@ -95,41 +104,44 @@ class ProjectsModel {
         $offset = ($page - 1) * $limit;
         $items = [];
         $totalCount = 0;
-        switch($type) {
-            case 'status':
-                $staticData = [
-                    ['id' => 'active', 'text' => 'Active'],
-                    ['id' => 'inactive', 'text' => 'Inactive']
-                ];
-                if (!empty($searchTerm)) {
-                    $staticData = array_values(array_filter($staticData, function($item) use ($searchTerm) {
-                        return strpos(strtolower($item['text']), strtolower($searchTerm)) !== false;
-                    }));
-                }
-                $totalCount = count($staticData);
-                $items = array_slice($staticData, $offset, $limit);
-                break;
-            case 'contract':
-                $where = "";
-                if ($searchTerm !== '') {
-                    $where = "WHERE (contract_name LIKE :search or contract_no LIKE :search) ";
-                    $params[':search'] = "%{$searchTerm}%";
-                    $params[':search'] = "%{$searchTerm}%";
-                }
-                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_contract {$where}");
-                $stmtCount->execute($params);
-                $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
-                $sql = "SELECT contract_id AS id, contract_name AS text FROM wp_contract {$where} ORDER BY contract_id DESC LIMIT :limit OFFSET :offset";
-                $stmt = $this->db->prepare($sql);
-                foreach ($params as $k => $v) {
-                    $stmt->bindValue($k, $v);
-                }
-                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
-                $stmt->execute();
-                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                break;
+        $params = [];
+        $config = [
+            'status'   => ['table' => 'wp_project_status', 'id' => 'project_status_id', 'text' => 'project_status_name', 'search' => ['project_status_name']],
+            'contract' => ['table' => 'wp_contract',       'id' => 'contract_id',        'text' => 'contract_name',        'search' => ['contract_name', 'contract_no']],
+            'group'    => ['table' => 'wp_project_group',  'id' => 'project_group_id',   'text' => 'project_group_name',   'search' => ['project_group_name']]
+        ];
+        if (!isset($config[$type])) {
+            return ['items' => [], 'total_count' => 0];
         }
+        $cfg = $config[$type];
+        $conditions = ["status <> 'deleted'"];
+        if ($searchTerm !== '') {
+            $searchParts = [];
+            foreach ($cfg['search'] as $field) {
+                $searchParts[] = "{$field} LIKE :search";
+            }
+            $conditions[] = "(" . implode(" OR ", $searchParts) . ")";
+            $params[':search'] = "%{$searchTerm}%";
+        }
+        $whereClause = "WHERE " . implode(" AND ", $conditions);
+        $sqlCount = "SELECT COUNT(*) FROM {$cfg['table']} {$whereClause}";
+        $stmtCount = $this->db->prepare($sqlCount);
+        $stmtCount->execute($params);
+        $totalCount = (int)$stmtCount->fetchColumn();
+        $sql = "SELECT {$cfg['id']} AS id, {$cfg['text']} AS text 
+                FROM {$cfg['table']} 
+                {$whereClause} 
+                ORDER BY {$cfg['id']} DESC 
+                LIMIT :limit OFFSET :offset";
+              
+        $stmt = $this->db->prepare($sql);
+        if (isset($params[':search'])) {
+            $stmt->bindValue(':search', $params[':search']);
+        }
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return [
             'items' => $items,
             'total_count' => $totalCount
@@ -151,13 +163,18 @@ class ProjectsModel {
                 'project_end' => '',
                 'contract_id' => '',
                 'contract_name' => '',
-                'status' => 'active'
+                'project_status_id' => '',
+                'project_status_name' => '',
+                'project_group_id' => '',
+                'project_group_name' => ''
             ];
         } else {
             $sql = "SELECT 
-                p.*, c.contract_id, c.contract_name
+                p.*, c.contract_id, c.contract_name, s.project_status_id, s.project_status_name, g.project_group_id, g.project_group_name
             FROM wp_project p
             LEFT JOIN wp_contract c on c.contract_id = p.contract_id
+            LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id
+            LEFT JOIN wp_project_group g on g.project_group_id = p.project_group_id
             WHERE p.project_id  = ?";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([(int)$id]);
@@ -185,13 +202,14 @@ class ProjectsModel {
             ];
         }
         $status = $data['status'] ?? '';
+        $group = $data['group'] ?? '';
         $startObj = DateTime::createFromFormat('d/m/Y', trim($data['project_start']));
         $endObj   = DateTime::createFromFormat('d/m/Y', trim($data['project_end']));
         $project_start = ($startObj) ? $startObj->format('Y-m-d') : null;
         $project_end   = ($endObj) ? $endObj->format('Y-m-d') : null;
         $pdo = $this->db;
         if ($project_id) {
-            $sql = "UPDATE wp_project SET contract_id = :contract_id, project_code = :project_code, project_name = :project_name, project_name_display = :project_name_display, project_start = :project_start, project_end = :project_end, status = :status, updated_at = NOW() WHERE project_id = :project_id";
+            $sql = "UPDATE wp_project SET contract_id = :contract_id, project_code = :project_code, project_name = :project_name, project_name_display = :project_name_display, project_start = :project_start, project_end = :project_end, project_status_id = :status, project_group_id = :group, updated_at = NOW() WHERE project_id = :project_id";
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':project_id', (int)$project_id, PDO::PARAM_INT);
         } else {
@@ -202,7 +220,8 @@ class ProjectsModel {
                 project_name_display,
                 project_start,
                 project_end,
-                status,
+                project_status_id,
+                project_group_id,
                 created_at,
                 updated_at
             ) VALUES (
@@ -213,6 +232,7 @@ class ProjectsModel {
                 :project_start,
                 :project_end,
                 :status,
+                :group,
                 NOW(),
                 NOW()
             )";
@@ -225,6 +245,7 @@ class ProjectsModel {
         $stmt->bindValue(':project_start', $project_start);
         $stmt->bindValue(':project_end', $project_end);
         $stmt->bindValue(':status', $status);
+        $stmt->bindValue(':group', $group);
         return $stmt->execute();
     }
     private function isDuplicateProjectName($project_name, $contract_id, $project_id = null) {

@@ -26,6 +26,7 @@ function initTable() {
         case 'projects':
             initSelect2Remote('#filter_project_status', `${BASE_URL}/api/projects/filter`, { type: 'status' });
             initSelect2Remote('#filter_contract', `${BASE_URL}/api/projects/filter`, { type: 'contract' });
+            initSelect2Remote('#filter_group', `${BASE_URL}/api/projects/filter`, { type: 'group' });
             $(".filter").on("change", () => initProjectsTable());
             initProjectsTable();
             break;
