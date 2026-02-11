@@ -63,7 +63,7 @@ class AuthController extends Controller {
         exit;
     }
     public function forgot() {
-        $this->view('auth/forgot');
+        $this->view('/auth/forgot');
     }
     public function reset() {
         $this->view('auth/reset');
