@@ -31,7 +31,11 @@
     <div class="wind-grid">
         <div class="wind-spacer"></div>
         <?php for($i=0; $i<120; $i++): ?>
-            <img src="<?=BASE_URL?>/public/images/iwind.png" alt="wind">
+            <?php if($i % 2 == 0): ?>
+                <img src="<?=BASE_URL?>/public/images/iwind.png" alt="wind">
+            <?php else: ?>
+                <img src="<?=BASE_URL?>/public/images/logo.png" alt="logo">
+            <?php endif; ?>
         <?php endfor; ?>
     </div>
 </div>
