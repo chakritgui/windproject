@@ -1,0 +1,1 @@
+ALTER TABLE `wp_project` ADD `project_group_id` BIGINT NULL DEFAULT NULL AFTER `contract_id`;
