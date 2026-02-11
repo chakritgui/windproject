@@ -68,6 +68,7 @@
         $role = $_SESSION['user']['role'] ?? '';
         if ($role === 'admin' || $role === 'administrator') {
             // Admin Routes
+            $router->get('/', 'AdminController@index');
             $router->get('/member', 'AdminController@member');
             $router->get('/project', 'AdminController@project');
             $router->get('/map', 'AdminController@map');
