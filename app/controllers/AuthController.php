@@ -8,8 +8,6 @@ class AuthController extends Controller {
         $this->view('auth/login');
     }
     public function doLogin() {
-         error_reporting(E_ALL);
-ini_set('display_errors', 1);
         header('Content-Type: application/json; charset=utf-8');
         $username = $_POST['username'] ?? null;
         $pass = $_POST['password'] ?? null;

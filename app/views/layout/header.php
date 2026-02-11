@@ -58,11 +58,20 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     const BASE_URL = "<?=BASE_URL?>";
-<?php if (file_exists($manifestFile)) { ?>
+    <?php if (file_exists($manifestFile)) { ?>
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register(BASE_URL + '/sw.js');
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register(BASE_URL + '/sw.js')
+                .then(function(registration) {
+                    registration.update();
+                    console.log('SW Registered with scope:', registration.scope);
+                })
+                .catch(function(error) {
+                    console.error('SW Registration failed:', error);
+                });
+            });
         }
-<?php } ?>
+    <?php } ?>
 </script>
 </head>
 <body>
