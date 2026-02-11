@@ -25,8 +25,10 @@ class ProjectModel {
         $folderRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $finalItems = [];
         $config = [
+            'group'     => ['table' => 'wp_project_group',     'id' => 'project_group_id',      'name' => 'project_group_name'],
             'contract'     => ['table' => 'wp_contract',     'id' => 'contract_id',      'name' => 'contract_name'],
             'project'      => ['table' => 'wp_project',       'id' => 'project_id',       'name' => 'project_name'],
+            'projects'      => ['table' => 'wp_project',       'id' => 'project_id',       'name' => 'project_name'],
             'type'         => ['table' => 'wp_type',          'id' => 'type_id',          'name' => 'type_name'],
             'installation' => ['table' => 'wp_installations', 'id' => 'installations_id', 'name' => 'installations_name']
         ];
@@ -90,8 +92,10 @@ class ProjectModel {
         if (empty($nextFolders)) return 0;
         $totalChild = 0;
         $config = [
+            'group'     => ['table' => 'wp_project_group',     'id' => 'project_group_id'],
             'contract'     => ['table' => 'wp_contract',     'id' => 'contract_id'],
             'project'      => ['table' => 'wp_project',       'id' => 'project_id'],
+            'projects'      => ['table' => 'wp_project',       'id' => 'project_id'],
             'type'         => ['table' => 'wp_type',          'id' => 'type_id'],
             'installation' => ['table' => 'wp_installations', 'id' => 'installations_id']
         ];
@@ -107,12 +111,11 @@ class ProjectModel {
                 $subConditions = ["t.status <> 'deleted'"];
                 $joinSql = "";
                 if ($code === 'project' && !empty($refId)) {
-                    if ($refId === 'another') {
-                        $subConditions[] = "(t.contract_id IS NULL OR t.contract_id = '')";
-                    } else {
-                        $subConditions[] = "t.contract_id = :rid";
-                        $params[':rid'] = $refId;
-                    }
+                    $subConditions[] = "t.contract_id = :rid";
+                    $params[':rid'] = $refId;
+                } elseif ($code === 'projects' && !empty($refId)) {
+                    $subConditions[] = "t.project_group_id = :rid";
+                    $params[':rid'] = $refId;
                 } elseif ($code === 'type' && !empty($refId)) {
                     $joinSql = " LEFT JOIN wp_project_pole_type p ON p.type_id = t.{$cfg['id']} ";
                     $subConditions[] = "p.project_id = :rid";
@@ -144,8 +147,9 @@ class ProjectModel {
             $subParams[':search'] = "%$search%";
         }
         if ($code === 'project' && !empty($currentRefId)) {
-            if ($currentRefId === 'another') { $subConditions[] = "(t.contract_id IS NULL OR t.contract_id = '')"; } 
-            else { $subConditions[] = "t.contract_id = :ref_id"; $subParams[':ref_id'] = $currentRefId; }
+            $subConditions[] = "t.contract_id = :ref_id"; $subParams[':ref_id'] = $currentRefId;
+        } elseif ($code === 'projects' && !empty($currentRefId)) {
+            $subConditions[] = "t.project_group_id = :ref_id"; $subParams[':ref_id'] = $currentRefId;
         } elseif ($code === 'type' && !empty($currentRefId)) {
             $joinSql = " LEFT JOIN wp_project_pole_type p ON p.type_id = t.{$cfg['id']} ";
             $subConditions[] = "p.project_id = :ref_id";
