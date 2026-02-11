@@ -19,17 +19,7 @@ class Router {
             $path = substr($path, strlen($base));
         }
         $path = $this->normalize($path);
-        if (!isset($this->routes[$method])) {
-            if ($method === 'HEAD' && isset($this->routes['GET'])) {
-                $routesToSearch = $this->routes['GET'];
-            } else {
-                $this->notFound();
-                return;
-            }
-        } else {
-            $routesToSearch = $this->routes[$method];
-        }
-        foreach ($routesToSearch as $route => $handler) {
+        foreach ($this->routes[$method] as $route => $handler) {
             $pattern = preg_replace('/\{(\w+)\}/', '([^\/]+)', $route);
             $pattern = '#^' . $pattern . '$#u';
             if (preg_match($pattern, $path, $matches)) {
@@ -43,9 +33,6 @@ class Router {
                 }
             }
         }
-        $this->notFound();
-    }
-    private function notFound() {
         http_response_code(404);
         header("Location: " . BASE_URL . "/");
         exit;
