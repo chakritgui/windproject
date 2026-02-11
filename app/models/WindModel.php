@@ -201,7 +201,7 @@ class WindModel{
             return ['status' => false, 'message' => 'No file'];
         }
         if ($_FILES['wind_file']['error'] !== UPLOAD_ERR_OK) {
-            return ['status' => false, 'message' => 'Upload error'];
+            return ['status' => false, 'message' => 'Upload error code: ' . $_FILES['wind_file']['error']];
         }
         $importId = null;
         try {
