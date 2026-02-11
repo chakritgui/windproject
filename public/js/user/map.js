@@ -153,7 +153,10 @@ async function renderWindAreas(map, picker, areaData, masterData) {
     featureGroup.addTo(map);
     featureGroup.bringToFront();
     if (featureGroup.getBounds().isValid()) {
-        map.fitBounds(featureGroup.getBounds(), { padding: [20, 20] });
+        const bounds = featureGroup.getBounds();
+        map.fitBounds(bounds, { padding: [20, 20] });
+        map.setMaxBounds(bounds.pad(0.1)); 
+        map.options.minZoom = map.getBoundsZoom(bounds);
     }
 }
 function handlePickerOpening(latlng, picker) {
