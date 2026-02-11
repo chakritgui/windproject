@@ -121,8 +121,11 @@
             $router->post('/api/projects/list', 'ProjectsController@list');
             $router->post('/api/projects/filter', 'ProjectsController@filter');
             $router->post('/api/projects/delete', 'ProjectsController@delete');
+            $router->post('/api/projects/delete-bg', 'ProjectsController@deleteBg');
             $router->post('/api/projects/get', 'ProjectsController@get');
             $router->post('/api/projects/save', 'ProjectsController@save');
+            $router->post('/api/projects/background', 'ProjectsController@background');
+            $router->post('/api/projects/save-bg', 'ProjectsController@saveBg');
             $router->post('/api/types/list', 'TypesController@list');
             $router->post('/api/types/filter', 'TypesController@filter');
             $router->post('/api/types/delete', 'TypesController@delete');

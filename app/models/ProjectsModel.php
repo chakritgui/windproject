@@ -1,8 +1,10 @@
 <?php
 class ProjectsModel {
     private $db;
+    private $basePath;
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
+        $this->basePath = realpath(dirname(__DIR__, 2));
     }
     public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 7, $orderDir = 'desc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
@@ -37,7 +39,9 @@ class ProjectsModel {
                 s.project_status_color,
                 c.contract_name,
                 g.project_group_name,
-                p.created_at
+                p.created_at,
+                p.project_background,
+                p.project_opacity
             FROM wp_project p
             LEFT JOIN wp_contract c on c.contract_id = p.contract_id 
             LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id
@@ -152,6 +156,11 @@ class ProjectsModel {
         $stmt = $this->db->prepare($sql);
         return $stmt->execute(['deleted', (int)$id]);
     }
+    public function deleteBg($id) {
+        $sql = "UPDATE wp_project SET project_background=null, project_opacity=0 WHERE project_id=?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([(int)$id]);
+    }
     public function get($id) {
         if (!$id) {
             return [
@@ -188,6 +197,20 @@ class ProjectsModel {
             }
             return $row;
         }
+    }
+    public function background($id) {
+        $default = [
+            'project_background' => '',
+            'project_opacity' => 0
+        ];
+        if (!$id) {
+            return $default;
+        }
+        $sql = "SELECT project_background, project_opacity FROM wp_project WHERE project_id = ?"; 
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([(int)$id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: $default;
     }
     public function save($data) {
         $project_id = $data['project_id'] ?? null;
@@ -261,5 +284,58 @@ class ProjectsModel {
         }
         $stmt->execute();
         return $stmt->fetchColumn() > 0;
+    }
+    public function saveBg($data) {
+        $project_id = $data['project_id'];
+        $opacity    = $data['bg_opacity'] ?: 0;
+        $ex_cover   = $data['ex_cover']; 
+        $table      = "wp_project"; 
+        $col_bg     = "project_background";
+        $col_op     = "project_opacity";
+        $dir        = "uploads/project/";
+        $uploadPath = $this->basePath . DIRECTORY_SEPARATOR . $dir;
+        $dbPath     = null;
+        if (isset($data['cover']) && $data['cover']['error'] === UPLOAD_ERR_OK) {
+            $file = $data['cover'];
+            if (!is_dir($uploadPath)) mkdir($uploadPath, 0755, true);
+            $imgInfo  = @getimagesize($file['tmp_name']);
+            $baseName = md5($project_id . time());
+            if ($imgInfo && function_exists('imagewebp')) {
+                $image = match ($imgInfo['mime']) {
+                    'image/jpeg' => imagecreatefromjpeg($file['tmp_name']),
+                    'image/png'  => (function($path) {
+                        $img = imagecreatefrompng($path);
+                        imagepalettetotruecolor($img);
+                        imagealphablending($img, true);
+                        imagesavealpha($img, true);
+                        return $img;
+                    })($file['tmp_name']),
+                    'image/gif'  => imagecreatefromgif($file['tmp_name']),
+                    default      => false,
+                };
+                if ($image) {
+                    $newName = $baseName . ".webp";
+                    if (imagewebp($image, $uploadPath . $newName, 80)) {
+                        $dbPath = $dir . $newName;
+                    }
+                    imagedestroy($image);
+                }
+            }
+            if (empty($dbPath)) {
+                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                $newName = $baseName . "." . $ext;
+                if (move_uploaded_file($file['tmp_name'], $uploadPath . $newName)) {
+                    $dbPath = $dir . $newName;
+                }
+            }
+            if ($dbPath && !empty($ex_cover) && file_exists($this->basePath . '/' . $ex_cover)) {
+                @unlink($this->basePath . '/' . $ex_cover);
+            }
+        } else {
+            $dbPath = !empty($ex_cover) ? $ex_cover : null;
+        }
+        $sql = "UPDATE $table SET $col_bg = ?, $col_op = ? WHERE project_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$dbPath, $opacity, $project_id]);
     }
 }

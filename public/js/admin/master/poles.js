@@ -121,7 +121,7 @@ function initPolesTable() {
                     self.search(input.val()).draw();
                 }
             });
-            if ($filter.find('.manage-contract[data-id=""]').length === 0) {
+            if ($filter.find('.manage-pole[data-id=""]').length === 0) {
                 let btn = `
                     <button class="btn btn-primary btn-sm manage-pole" data-id="">
                         <i class="fa-solid fa-plus"></i> <span>${langData['poles'] || 'Poles'}</span>
@@ -465,7 +465,7 @@ $(document).on('click', '#btnSaveContent', function() {
         $('.is-invalid').first().focus();
         return;
     }
-     const formData = new FormData($('#contentForm')[0]);
+    const formData = new FormData($('#contentForm')[0]);
     const attachments = window.getAttachmentsData();
     attachments.forEach((att, index) => {
         if (att.type === 'new') {

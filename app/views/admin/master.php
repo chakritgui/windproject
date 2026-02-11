@@ -143,6 +143,7 @@
                             <th data-i18n="endDate"></th>
                             <th data-i18n="create_at"></th>
                             <th data-i18n="status"></th>
+                            <th data-i18n="background"></th>
                             <th></th>
                         </tr>
                     </thead>

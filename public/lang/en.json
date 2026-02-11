@@ -545,5 +545,6 @@
     "manageGroup": "Manage Group",
     "project_status": "Project Status",
     "manageStatus": "Manage Status",
-    "color": "Color"
+    "color": "Color",
+    "manageBackground": "Manage Background"
 }

@@ -546,5 +546,6 @@
     "manageGroup": "ຈັດການກຸ່ມ",
     "project_status": "ສະຖານະໂຄງການ",
     "manageStatus": "ຈັດການສະຖານະ",
-    "color": "ສີ"
+    "color": "ສີ",
+    "manageBackground": "ຈັດການຄວາມເປັນມາ"
 }

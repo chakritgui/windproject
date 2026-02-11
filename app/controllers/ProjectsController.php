@@ -40,9 +40,17 @@ class ProjectsController extends BaseController {
         $type = $_POST['type'] ?? '';
         $this->json(['status'=>true , 'data' => $this->model->filter($page, $limit, $type, $searchTerm)]);
     }
+    public function background() {
+        $id = intval($_POST['project_id'] ?? 0);
+        $this->json($this->model->background($id));
+    }
     public function delete() {
         $id = intval($_POST['id'] ?? 0);
         $this->json(['status'=>$this->model->delete($id)]);
+    }
+    public function deleteBg() {
+        $id = intval($_POST['id'] ?? 0);
+        $this->json(['status'=>$this->model->deleteBg($id)]);
     }
     public function get(){
         $id = intval($_POST['id'] ?? 0);
@@ -74,5 +82,14 @@ class ProjectsController extends BaseController {
             ]);
         }
     }
-
+    public function saveBg() {
+        $data = [
+            'project_id' => intval($_POST['project_id'] ?? 0),
+            'bg_opacity' => intval($_POST['bg_opacity'] ?? 0),
+            'ex_cover'   => $_POST['ex_cover'] ?? null,
+            'cover'      => $_FILES['cover'] ?? null,
+        ];
+        $result = $this->model->saveBg($data);
+        $this->json(['status' => $result ? 'success' : 'error']);
+    }
 }
