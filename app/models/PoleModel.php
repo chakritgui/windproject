@@ -3,10 +3,22 @@ class PoleModel {
     private PDO $db;
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
+        $this->db->exec("SET time_zone = '+00:00'"); 
     }
-    private function formatDbDate($dateStr) {
+    private function parseDate($dateStr, $isEndOfDay = false) {
+        date_default_timezone_set('UTC'); // หรือ Asia/Bangkok ตามโครงสร้าง DB
         $date = DateTime::createFromFormat('d/m/Y', $dateStr);
-        return $date ? $date->format('Y-m-d') : $dateStr;
+        if (!$date) {
+            try {
+                $date = new DateTime($dateStr);
+            } catch (Exception $e) {
+                return $dateStr;
+            }
+        }
+        if ($isEndOfDay) {
+            return $date->format('Y-m-d') . " 23:59:59";
+        }
+        return $date->format('Y-m-d') . " 00:00:00";
     }
     public function polestats($params) {
         $map = [
@@ -28,9 +40,16 @@ class PoleModel {
             }
         }
         $stats = [];
+        $sqlPole = "SELECT poles_lat, poles_lng FROM wp_poles WHERE poles_id = :poles_id";
+        $stmt1 = $this->db->prepare($sqlPole);
+        $stmt1->execute([':poles_id' => $params['poles_id']]);
+        $pole = $stmt1->fetch(PDO::FETCH_ASSOC);
+        $stats['lat'] = $pole['poles_lat'] ?? null;
+        $stats['lng'] = $pole['poles_lng'] ?? null;
         if (!empty($select)) {
-            $start = $this->formatDbDate($params['start']) . " 00:00:00";
-            $end   = $this->formatDbDate($params['end']) . " 23:59:59";
+            $start = $this->parseDate($params['start']);
+            $end   = $this->parseDate($params['end'], true);
+
             $sql = "SELECT " . implode(', ', $select) . "
                     FROM wp_winds
                     WHERE poles_id = ?
@@ -44,24 +63,18 @@ class PoleModel {
                 $start,
                 $end
             ]);
-            $stats = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+            $res = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($res) {
+                $stats = array_merge($stats, $res);
+            }
         }
-        $sqlPole = "SELECT poles_lat, poles_lng FROM wp_poles WHERE poles_id = :poles_id";
-        $stmt1 = $this->db->prepare($sqlPole);
-        $stmt1->execute([':poles_id' => $params['poles_id']]);
-        $pole = $stmt1->fetch(PDO::FETCH_ASSOC);
-        $stats['lat'] = $pole['poles_lat'] ?? null;
-        $stats['lng'] = $pole['poles_lng'] ?? null;
         return $stats;
     }
     public function poleval($params) {
         $map = [
-            'WS' => 'wind_speed',
-            'WD' => 'wind_direction',
-            'AD' => 'air_density',
-            'SP' => 'pressure',
-            'RH' => 'humidity',
-            'TI' => 'turbulence_intensity'
+            'WS' => 'wind_speed', 'WD' => 'wind_direction',
+            'AD' => 'air_density', 'SP' => 'pressure',
+            'RH' => 'humidity', 'TI' => 'turbulence_intensity'
         ];
         $select = ["DATE_FORMAT(wind_datetime, '%H:%i') AS time_label"];
         foreach ($params['sensors'] as $k) {
@@ -69,8 +82,8 @@ class PoleModel {
                 $select[] = "ROUND(AVG({$map[$k]}), 2) AS {$k}";
             }
         }
-        $start = $this->formatDbDate($params['start']) . " 00:00:00";
-        $end   = $this->formatDbDate($params['end']) . " 23:59:59";
+        $start = $this->parseDate($params['start']);
+        $end   = $this->parseDate($params['end'], true);
         $sql = "SELECT " . implode(', ', $select) . "
                 FROM wp_winds
                 WHERE poles_id = ? AND levels_id = ? 
@@ -79,21 +92,14 @@ class PoleModel {
                 GROUP BY DATE_FORMAT(wind_datetime, '%Y-%m-%d %H:%i')
                 ORDER BY wind_datetime ASC";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            $params['poles_id'], 
-            $params['height_id'], 
-            $start, 
-            $end
-        ]);
+        $stmt->execute([$params['poles_id'], $params['height_id'], $start, $end]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function info($params) {
         $poles_id = $params['poles_id'];
         $height_id = $params['height_id'];
-        $dateStart = DateTime::createFromFormat('d/m/Y', $params['start']);
-        $dateEnd   = DateTime::createFromFormat('d/m/Y', $params['end']);
-        if (!$dateStart) $dateStart = new DateTime($params['start']);
-        if (!$dateEnd) $dateEnd = new DateTime($params['end']);
+        $dateStart = new DateTime($this->parseDate($params['start']));
+        $dateEnd   = new DateTime($this->parseDate($params['end']));
         $interval = $dateStart->diff($dateEnd);
         $total_days = $interval->days + 1;
         $startStr = $dateStart->format('d/m/Y');
@@ -107,8 +113,7 @@ class PoleModel {
         $stmt1 = $this->db->prepare($sqlPole);
         $stmt1->execute([':poles_id' => $poles_id]);
         $poleInfo = $stmt1->fetch(PDO::FETCH_ASSOC);
-        $sqlHeight = "SELECT l.levels_id AS levels_id, 
-                            h.height_name AS levels_name 
+        $sqlHeight = "SELECT l.levels_id, h.height_name AS levels_name 
                     FROM wp_height h 
                     LEFT JOIN wp_height_levels l ON l.height_id = h.height_id 
                     WHERE l.levels_id = :height_id"; 
