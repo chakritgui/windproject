@@ -211,15 +211,19 @@ function showReportPWA(data) {
                     </span>
                 </div>
                 <div class="mt-1 border-opacity-25">
-                    <div class="d-flex align-items-center text-primary-emphasis">
+                    <div class="d-flex align-items-center text-white">
                         <i class="fa-solid fa-circle-info me-2 small"></i>
                         <div class="fw-bold" data-i18n="report_remark"></div>
                     </div>
                 </div>
             </div>
             <div class="report-section mb-4">
-                <h6 class="report-title mb-3"><i class="fas fa-chart-bar me-2"></i><span data-i18n="average_summary"></span></h6>
-                <div class="row g-2" id="statsContainer"></div>
+                <h6 class="report-title"><i class="fa-solid fa-cloud-meatball me-2"></i><span data-i18n="weather_overview"></span></h6>
+                <div class="row g-2 mt-2" id="weatherContainer"></div>
+            </div>
+            <div class="report-section mb-4">
+                <h6 class="report-title"><i class="fas fa-chart-bar me-2"></i><span data-i18n="average_summary"></span></h6>
+                <div class="row g-3" id="statsContainer"></div>
             </div>
             <div class="report-section">
                 <h6 class="report-title"><i class="fas fa-chart-line me-2"></i><span data-i18n="visualization"></span></h6>

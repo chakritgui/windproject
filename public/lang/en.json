@@ -548,5 +548,9 @@
     "color": "Color",
     "manageBackground": "Manage Background",
     "report_remark": "Remark: Data Output is review version only. Future Validation and Analysis is required.",
-    "level": "Level"
+    "level": "Level",
+    "temp": "Temp",
+    "humid": "Humid",
+    "pm2.5": "PM 2.5",
+    "rain": "Rain"
 }

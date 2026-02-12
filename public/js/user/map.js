@@ -174,68 +174,70 @@ function handlePickerOpening(latlng, picker) {
         }, 50);
     }
 }
+let windRefreshInterval = null;
 async function loadPoles(map) {
     try {
-        if (!windyAPI || !windyAPI.utils) return;
         const poles = await fetchData(`${BASE_URL}/api/poles-location`);
         if (!Array.isArray(poles)) return;
         poleLayerGroup.clearLayers();
         poleMarkers = {};
-        windUpdateFunctions = {};
-        poles.forEach(pole => {
+        for (const pole of poles) {
             const lat = parseFloat(pole.poles_lat);
             const lng = parseFloat(pole.poles_lng);
-            if (isNaN(lat) || isNaN(lng)) return;
+            if (isNaN(lat) || isNaN(lng)) continue;
             let markerIcon = (pole.type_icon && pole.type_icon.trim() !== "")
                 ? L.icon({
                     iconUrl: pole.type_icon,
                     iconSize: [50, 50],
-                    iconAnchor: [25, 50], 
+                    iconAnchor: [25, 50],
                     popupAnchor: [0, -50]
                 })
                 : getDivIcon(pole.type_id);
             const marker = L.marker([lat, lng], { icon: markerIcon }).addTo(poleLayerGroup);
             const windId = `wind-auto-${pole.poles_id}`;
-            poleMarkers[pole.poles_id] = marker;
+            const arrowId = `arrow-${pole.poles_id}`;
+            poleMarkers[pole.poles_id] = { marker, lat, lng, windId, arrowId };
             marker.bindTooltip(
                 `<div class="wind-pill">
-                    <span class="arrow-icon" id="arrow-${pole.poles_id}" style="display:inline-block;">➤</span>
+                    <span class="arrow-icon" id="${arrowId}" style="display:inline-block; transition: transform 1s ease-in-out;">➤</span>
                     <span class="wind-value" id="${windId}">...</span>
                 </div>`,
                 { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [15, -20] }
             ).openTooltip();
-            const updateWind = () => {
-                if (typeof W === 'undefined' || !W.picker) return;
-                try {
-                    const data = W.picker.getParams({ lat, lon: lng });
-                    if (data && data.wind !== undefined) {
-                        const windSpeed = Math.round(data.wind); 
-                        const windDir = Math.round(data.dir); 
-                        const el = document.getElementById(windId);
-                        const arrow = document.getElementById(`arrow-${pole.poles_id}`);
-                        if (arrow) arrow.style.transform = `rotate(${windDir}deg)`;
-                        if (el) el.innerText = `${windSpeed} kt`;
-                    } else {
-                        W.store.set('pickerLocation', { lat, lon: lng });
-                    }
-                } catch (error) {
-                    console.warn("Picker is not ready for pole:", pole.poles_id);
-                }
-            };
-            windUpdateFunctions[pole.poles_id] = updateWind;
-            updateWind();
+
             marker.on('click', () => openPoles(pole.poles_id));
-        });
-        const refreshVisiblePoles = () => {
-            Object.values(windUpdateFunctions).forEach(fn => fn());
-        };
-        if (!window._windEventsBound) {
-            W.store.on('timestamp', refreshVisiblePoles); 
-            map.on('moveend zoomend', refreshVisiblePoles);
-            window._windEventsBound = true;
         }
+        const refreshAllWindData = async () => {
+            console.log("Auto Refreshing Wind Data...");
+            for (const id in poleMarkers) {
+                const p = poleMarkers[id];
+                updatePoleWind(p.lat, p.lng, p.windId, p.arrowId);
+            }
+        };
+        refreshAllWindData();
+        if (windRefreshInterval) clearInterval(windRefreshInterval);
+        windRefreshInterval = setInterval(refreshAllWindData, 60000);
     } catch (err) {
         console.error("LoadPoles Error:", err);
+    }
+}
+async function updatePoleWind(lat, lng, windId, arrowId) {
+    try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=ms`;
+        const res = await fetch(url);
+        const weather = await res.json();
+        if (weather.current) {
+            const speed = weather.current.wind_speed_10m;
+            const dir = weather.current.wind_direction_10m;
+            const el = document.getElementById(windId);
+            const arrow = document.getElementById(arrowId);
+            if (el) el.innerText = `${speed.toFixed(1)} m/s`;
+            if (arrow) {
+                arrow.style.transform = `rotate(${dir - 90}deg)`;
+            }
+        }
+    } catch (e) {
+        console.error("Point Forecast failed", e);
     }
 }
 function toggleWind(isOn) {

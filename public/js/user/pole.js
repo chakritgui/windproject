@@ -103,37 +103,81 @@ function generateReport() {
 }
 async function generateStats(selectedSensors) {
     const statsContainer = document.getElementById('statsContainer');
-    statsContainer.innerHTML = '<div class="spinner-border"></div>';
+    const weatherContainer = document.getElementById('weatherContainer');
+    statsContainer.innerHTML = '<div class="spinner-border text-primary"></div>';
+    weatherContainer.innerHTML = '';
     const payload = {
         poles_id,
-        start: startDate,
+        start: startDate, 
         end: endDate,
         height_id,
         sensors: selectedSensors.map(i => sensors[i].key)
     };
     updateHeader(payload);
-    const res = await fetch(`${BASE_URL}/api/pole-stats`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    statsContainer.innerHTML = '';
-    selectedSensors.forEach(idx => {
-        const sensor = sensors[idx];
-        const value = data[sensor.key] ?? '-';
-        const icon = sensorIcons[sensor.key];
+    try {
+        const res = await fetch(`${BASE_URL}/api/pole-stats`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        const lat = data.lat; 
+        const lon = data.lng; 
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m&air_quality=pm2_5&timezone=Asia%2FBangkok`;
+        const weatherRes = await fetch(weatherUrl);
+        const weatherData = await weatherRes.json();
+        statsContainer.innerHTML = '';
+        weatherContainer.innerHTML = '';
+        selectedSensors.forEach(idx => {
+            const sensor = sensors[idx];
+            const value = data[sensor.key] ?? '-';
+            const icon = sensorIcons[sensor.key];
+            renderCard(statsContainer, 'col-lg-2 col-md-4 col-6', sensor.color, icon, (langData[sensor.lang] || sensor.name), value, (langData[sensor.unit] || sensor.unit), false);
+        });
+        if (weatherData.current) {
+            const cur = weatherData.current;
+            const air = weatherData.air_quality || {};
+            const weatherItems = [
+                { name: 'temp',  val: cur.temperature_2m.toFixed(1), unit: '°C', icon: 'fa-thermometer-half', grad: 'linear-gradient(135deg, #FF512F, #DD2476)', ani: 'ani-temp' },
+                { name: 'humid', val: cur.relative_humidity_2m.toFixed(0), unit: '%', icon: 'fa-tint', grad: 'linear-gradient(135deg, #2193b0, #6dd5ed)', ani: 'ani-rain' },
+                { name: 'wind',  val: cur.wind_speed_10m.toFixed(1), unit: 'km/h', icon: 'fa-wind', grad: 'linear-gradient(135deg, #11998e, #38ef7d)', ani: 'ani-wind' },
+                { name: 'pm2.5', val: air.pm2_5 ? air.pm2_5.toFixed(1) : '-', unit: '', icon: 'fa-smog', grad: 'linear-gradient(135deg, #485563, #29323c)', ani: 'ani-temp' },
+                { name: 'rain',  val: cur.precipitation.toFixed(1), unit: 'mm', icon: 'fa-cloud-showers-heavy', grad: 'linear-gradient(135deg, #4b6cb7, #182848)', ani: 'ani-rain' }
+            ];
+            weatherContainer.innerHTML = '';
+            weatherItems.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'weather-card-rect';
+                div.style.background = item.grad;
+                div.innerHTML = `
+                    <i class="fas ${item.icon} ${item.ani}"></i>
+                    <div class="info">
+                        <span class="title">${langData[item.name] || item.name}</span>
+                        <span class="value">${item.val} <small style="font-size:0.7em">${item.unit}</small></span>
+                    </div>
+                `;
+                weatherContainer.appendChild(div);
+            });
+        }
+    } catch (error) {
+        console.error("Generate Stats Error:", error);
+        statsContainer.innerHTML = '<div class="alert alert-danger">Error loading data</div>';
+    }
+    function renderCard(container, colClass, color, icon, title, value, unit, isSmall) {
         const col = document.createElement('div');
-        col.className = 'col-lg-2 col-md-3';
+        col.className = colClass;
+        const cardStyle = `padding: 12px; background: ${color}; border-radius: 10px; min-height: 85px; color: white; position: relative; overflow: hidden;`;
         col.innerHTML = `
-            <div class="stat-card" style="background:${sensor.color}">
-                <i class="fas ${icon} stat-icon"></i>
-                <h6>${langData[sensor.lang] || sensor.name} ${(sensor.unit) ? `(${langData[sensor.unit] || sensor.unit})`  : ``}</h6>
-                <div class="stat-value">${value}</div>
+            <div class="stat-card" style="${cardStyle}">
+                <i class="fas ${icon} stat-icon" style="position: absolute; right: 10px; top: 10px; opacity: 0.3; font-size: 1.5rem;"></i>
+                <h6 style="font-size: 0.85rem; margin-bottom: 5px; opacity: 0.9;">${title}</h6>
+                <div class="stat-value" style="font-size: 1.5rem; font-weight: bold;">
+                    ${value} <small style="font-size: 0.6em; font-weight: normal;">${unit || ''}</small>
+                </div>
             </div>
         `;
-        statsContainer.appendChild(col);
-    });
+        container.appendChild(col);
+    }
 }
 async function updateHeader(payload) {
     try {

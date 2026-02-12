@@ -9,23 +9,25 @@ class PoleModel {
         return $date ? $date->format('Y-m-d') : $dateStr;
     }
     public function polestats($params) {
-        $map = [
-            'WS' => ['col' => 'wind_speed', 'dec' => 2],
-            'WD' => ['col' => 'wind_direction', 'dec' => 2],
-            'AD' => ['col' => 'air_density', 'dec' => 3],
-            'SP' => ['col' => 'pressure', 'dec' => 2],
-            'RH' => ['col' => 'humidity', 'dec' => 2],
-            'TI' => ['col' => 'turbulence_intensity', 'dec' => 2]
-        ];
-        $select = [];
-        foreach ($params['sensors'] as $k) {
-            if (isset($map[$k])) {
-                $column = $map[$k]['col'];
-                $decimal = $map[$k]['dec'];
-                $select[] = "ROUND(AVG({$column}), {$decimal}) AS {$k}";
-            }
+    $map = [
+        'WS' => ['col' => 'wind_speed', 'dec' => 2],
+        'WD' => ['col' => 'wind_direction', 'dec' => 2],
+        'AD' => ['col' => 'air_density', 'dec' => 3],
+        'SP' => ['col' => 'pressure', 'dec' => 2],
+        'RH' => ['col' => 'humidity', 'dec' => 2],
+        'TI' => ['col' => 'turbulence_intensity', 'dec' => 2]
+    ];
+
+    $select = [];
+    foreach ($params['sensors'] as $k) {
+        if (isset($map[$k])) {
+            $column = $map[$k]['col'];
+            $decimal = $map[$k]['dec'];
+            $select[] = "ROUND(AVG({$column}), {$decimal}) AS {$k}";
         }
-        if (empty($select)) return [];
+    }
+
+    if (empty($select)) return [];
         $start = $this->formatDbDate($params['start']) . " 00:00:00";
         $end   = $this->formatDbDate($params['end']) . " 23:59:59";
         $sql = "SELECT " . implode(', ', $select) . "
@@ -34,7 +36,6 @@ class PoleModel {
                 AND levels_id = ?
                 AND wind_datetime BETWEEN ? AND ?
                 AND status = 'active'";
-
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             $params['poles_id'],
@@ -42,7 +43,18 @@ class PoleModel {
             $start,
             $end
         ]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $stats = $stmt->fetch(PDO::FETCH_ASSOC);
+        $sqlPole = "SELECT poles_lat, poles_lng
+                    FROM wp_poles 
+                    WHERE poles_id = :poles_id";
+        $stmt1 = $this->db->prepare($sqlPole);
+        $stmt1->execute([':poles_id' => $params['poles_id']]);
+        $pole = $stmt1->fetch(PDO::FETCH_ASSOC);
+        if ($stats) {
+            $stats['lat'] = $pole['poles_lat'] ?? null;
+            $stats['lng'] = $pole['poles_lng'] ?? null;
+        }
+        return $stats;
     }
     public function poleval($params) {
         $map = [
