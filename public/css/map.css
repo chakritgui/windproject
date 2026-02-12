@@ -247,7 +247,7 @@
     margin-left: 5px;
 }
 .footer {
-    background: none !important;
+    background: rgba(0, 0, 0, 0.4);
     box-shadow: none !important;
 }
 .footer-text {
@@ -385,7 +385,6 @@ header .nav-link:hover {
     z-index: 500;
     pointer-events: none;
     overflow: hidden;
-
     -webkit-mask-image: linear-gradient(
         to bottom,
         rgba(0,0,0,1) 0%,

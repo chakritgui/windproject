@@ -1,7 +1,7 @@
 <link rel="stylesheet" href="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.css">
 <script src="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.js"></script>
 <script>
-    let options = { lat: 16.5, lon: 106.0, zoom: 8 };
+    let options = { lat: 16.5, lon: 106.0, zoom: 8, labels: false };
     function loadScript(src) {
         return new Promise((resolve, reject) => {
             const s = document.createElement('script');

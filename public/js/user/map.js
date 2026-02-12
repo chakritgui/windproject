@@ -5,7 +5,7 @@ let poleMarkers = {};
 let windUpdateFunctions = {};
 let menuState = {};
 let show_country_line = 'hide';
-let map_labels = 'no';
+let map_labels = 'yes';
 let country_layers_data = null;
 const DEFAULT_LEVEL = '100m';
 const isMobile = () => window.innerWidth <= 768;
@@ -35,9 +35,9 @@ function initMap() {
                     const geoData = typeof country_layers_data === 'string' ? JSON.parse(country_layers_data) : country_layers_data;
                     L.geoJSON(geoData, {
                         style: {
-                            color: "#161616", 
-                            weight: 1, 
-                            fillOpacity: 0, 
+                            color: "#161616",
+                            weight: 1,
+                            fillOpacity: 0,
                             interactive: false
                         }
                     }).addTo(map);
@@ -45,19 +45,14 @@ function initMap() {
                     console.error("Error drawing country lines:", error);
                 }
             }
-            if(map_labels === 'yes') {
-                try {
-                    const hasLabelsSpec = W.store.dataSpecs && W.store.dataSpecs.some(spec => spec.ident === 'labels');
-                    if (hasLabelsSpec) {
-                        store.set('labels', false);
+            if (map_labels === 'no') {
+                store.set('base', 'empty');
+                store.set('labels', false);
+                map.eachLayer(function (layer) {
+                    if (layer instanceof L.TileLayer) {
+                        map.removeLayer(layer);
                     }
-                    const hasBaseSpec = W.store.dataSpecs && W.store.dataSpecs.some(spec => spec.ident === 'base');
-                    if (hasBaseSpec) {
-                        store.set('base', 'gray'); 
-                    }
-                } catch (e) {
-                    console.warn("Windy premium settings skipped.");
-                }
+                });
             }
         } catch (error) {
             console.error("Initialization Error:", error);
@@ -129,9 +124,7 @@ async function renderWindAreas(map, picker, areaData, masterData) {
                 geoLayer.eachLayer(layer => {
                     if (layer.getLatLngs) {
                         const latlngs = layer.getLatLngs();
-                        const rings = Array.isArray(latlngs[0]) && !(latlngs[0][0] instanceof L.LatLng) 
-                            ? latlngs.map(inner => inner[0]) 
-                            : [latlngs[0]];
+                        const rings = Array.isArray(latlngs[0]) && !(latlngs[0][0] instanceof L.LatLng) ? latlngs.map(inner => inner[0]) : [latlngs[0]];
                         allHoles.push(...rings);
                     }
                 });
