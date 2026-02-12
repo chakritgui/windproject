@@ -26,6 +26,7 @@ body.loaded {
     left: 0;
     right: 0;
     overflow-y: auto;
+    min-width: 375px !important;
 }
 .main-container.blue-frame {
     background: linear-gradient(135deg, #7eb9e8 0%, #5a9fd4 100%);
@@ -43,6 +44,7 @@ header {
     display: flex;
     justify-content: center;
     align-items: center; 
+    min-width: 375px !important;
 }
 header h1 {
     font-size: 28px;
@@ -60,6 +62,7 @@ header h1 {
     width: 100%;
     box-shadow: 0 -3px 8px rgba(0,0,0,0.05);
     z-index: 1000;
+    min-width: 375px !important;
 }
 .footer-container {
     display: flex;
