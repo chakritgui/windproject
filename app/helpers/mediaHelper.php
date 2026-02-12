@@ -21,73 +21,65 @@ class MediaHelper {
             }
         }
     }
-    public function handleMultiUpload($content_id, $type, $inputKey){
+    public function handleMultiUpload($content_id, $type, $inputKey) {
         if (!isset($_FILES[$inputKey]) || empty($_FILES[$inputKey]['name'][0])) {
             return;
         }
         $files = $_FILES[$inputKey];
         $baseDir = "uploads/content/media/";
-        $uploadPath = $this->basePath . '/' . $baseDir;
+        $uploadPath = rtrim($this->basePath, '/') . '/' . $baseDir;
         if (!is_dir($uploadPath)) {
             mkdir($uploadPath, 0755, true);
         }
         foreach ($files['name'] as $i => $originalName) {
-            if ($files['error'][$i] !== UPLOAD_ERR_OK) {
-                continue;
-            }
-            $tmp  = $files['tmp_name'][$i];
-            $size = $files['size'][$i];
+            if ($files['error'][$i] !== UPLOAD_ERR_OK) continue;
+            $tmp      = $files['tmp_name'][$i];
+            $size     = $files['size'][$i];
             $baseName = md5($type . '_' . $content_id . '_' . $i);
+            $image    = false;
+            $isConverted = false;
             if ($type === 'image' && function_exists('imagewebp')) {
                 $imgInfo = @getimagesize($tmp);
                 if ($imgInfo !== false) {
                     switch ($imgInfo['mime']) {
-                        case 'image/jpeg':
-                            $image = imagecreatefromjpeg($tmp);
-                            break;
-                        case 'image/png':
+                        case 'image/jpeg': $image = imagecreatefromjpeg($tmp); break;
+                        case 'image/png': 
                             $image = imagecreatefrompng($tmp);
                             imagepalettetotruecolor($image);
                             imagealphablending($image, true);
                             imagesavealpha($image, true);
                             break;
-                        case 'image/gif':
-                            $image = imagecreatefromgif($tmp);
+                        case 'image/gif':  $image = imagecreatefromgif($tmp); break;
+                        case 'image/webp': 
+                            if (function_exists('imagecreatefromwebp')) {
+                                $image = imagecreatefromwebp($tmp);
+                            }
                             break;
-                        default:
-                            $image = false;
                     }
                     if ($image) {
                         $fileName = $baseName . ".webp";
                         $target   = $uploadPath . $fileName;
-                        imagewebp($image, $target, 80);
-                        imagedestroy($image);
-                        $dbPath = $baseDir . $fileName;
-                        $stmt = $this->db->prepare("INSERT INTO wp_content_media (content_id, file_path, file_name, file_type, file_size, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())");
-                        $stmt->execute([
-                            $content_id,
-                            $dbPath,
-                            $originalName,
-                            $type,
-                            filesize($target)
-                        ]);
-                        continue;
+                        if (imagewebp($image, $target, 80)) {
+                            imagedestroy($image);
+                            $dbPath = $baseDir . $fileName;
+                            $finalSize = filesize($target);
+                            $isConverted = true;
+                        } else {
+                            imagedestroy($image);
+                        }
                     }
                 }
             }
-            $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-            $fileName = $baseName . "." . $ext;
-            $dbPath   = $baseDir . $fileName;
-            if (move_uploaded_file($tmp, $uploadPath . $fileName)) {
-                $stmt = $this->db->prepare("INSERT INTO wp_content_media (content_id, file_path, file_name, file_type, file_size, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())");
-                $stmt->execute([
-                    $content_id,
-                    $dbPath,
-                    $originalName,
-                    $type,
-                    $size
-                ]);
+            if (!$isConverted) {
+                $ext      = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+                $fileName = $baseName . "." . $ext;
+                $target   = $uploadPath . $fileName;
+                $dbPath   = $baseDir . $fileName;
+                if (!move_uploaded_file($tmp, $target)) continue;
+                $finalSize = $size;
             }
+            $stmt = $this->db->prepare("INSERT INTO wp_content_media (content_id, file_path, file_name, file_type, file_size, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())");
+            $stmt->execute([$content_id, $dbPath, $originalName, $type, $finalSize]);
         }
     }
     public function handleSingleUpload($content_id, $file, $table = 'wp_content', $column = 'cover'){
