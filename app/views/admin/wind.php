@@ -43,7 +43,7 @@
                     <select id="filter_installation" class="form-select filter"></select>
                 </div>
                 <div class="col-sm-2 col-6">
-                    <p><i class="fa-solid fa-text-height"></i> <span data-i18n="height"></span></p>
+                    <p><i class="fa-solid fa-text-height"></i> <span data-i18n="level"></span></p>
                     <select id="filter_height" class="form-select filter"></select>
                 </div>
             </div>
@@ -65,7 +65,7 @@
                     <th data-i18n="installation"></th>
                     <th data-i18n="year"></th>
                     <th data-i18n="date"></th>
-                    <th data-i18n="height"></th>
+                    <th data-i18n="level"></th>
                     <th data-i18n="height_level"></th>
                     <th data-i18n="wind_speed"></th>
                     <th data-i18n="wind_direction"></th>

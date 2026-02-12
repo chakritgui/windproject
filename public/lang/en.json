@@ -547,5 +547,6 @@
     "manageStatus": "Manage Status",
     "color": "Color",
     "manageBackground": "Manage Background",
-    "report_remark": "Remark: Data Output is review version only. Future Validation and Analysis is required."
+    "report_remark": "Remark: Data Output is review version only. Future Validation and Analysis is required.",
+    "level": "Level"
 }

@@ -97,7 +97,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                         </div>
                         <div class="col-md-6 col-lg-4 mb-3">
                             <label class="form-label required">
-                                <i class="fas fa-arrows-alt-v me-2"></i><span data-i18n="height"></span>
+                                <i class="fas fa-arrows-alt-v me-2"></i><span data-i18n="level"></span>
                             </label>
                             <select class="form-select obj-required" id="heightSelect"></select>
                         </div>

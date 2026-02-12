@@ -24,7 +24,7 @@ function initWindTable() {
                 d.height = $("#filter_height").val();
             }
         },
-        order: [[6, 'desc']],
+        order: [[5, 'desc']],
         columns: [
             { data: "poles_code", orderable: true },
             { data: "project_name", orderable: true },
