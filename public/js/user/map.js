@@ -45,14 +45,29 @@ function initMap() {
                     console.error("Error drawing country lines:", error);
                 }
             }
-            if (map_labels === 'no') {
-                store.set('base', 'empty');
-                store.set('labels', false);
-                map.eachLayer(function (layer) {
-                    if (layer instanceof L.TileLayer) {
-                        map.removeLayer(layer);
+            if (map_labels === 'no') { 
+                try {
+                    const hasBaseKey = W.store.dataSpecs && W.store.dataSpecs.some(s => s.ident === 'base');
+                    if (hasBaseKey) {
+                        store.set('base', 'empty'); 
+                        console.log("Base map changed to empty to hide labels.");
                     }
-                });
+                    const hasLabelsKey = W.store.dataSpecs && W.store.dataSpecs.some(s => s.ident === 'labels');
+                    if (hasLabelsKey) {
+                        store.set('labels', false);
+                    }
+                } catch (e) {
+                    console.warn("Failed to hide labels:", e.message);
+                }
+            } else {
+                try {
+                    if (W.store.dataSpecs.some(s => s.ident === 'base')) {
+                        store.set('base', 'default'); 
+                    }
+                    if (W.store.dataSpecs.some(s => s.ident === 'labels')) {
+                        store.set('labels', true);
+                    }
+                } catch (e) {}
             }
         } catch (error) {
             console.error("Initialization Error:", error);
