@@ -174,6 +174,13 @@ function handlePickerOpening(latlng, picker) {
     }
 }
 let windRefreshInterval = null;
+let refreshAllWindData = async () => {
+    if (!windOn) return;
+    for (const id in poleMarkers) {
+        const p = poleMarkers[id];
+        updatePoleWind(p.lat, p.lng, p.windId, p.arrowId);
+    }
+};
 async function loadPoles(map) {
     try {
         const poles = await fetchData(`${BASE_URL}/api/poles-location`);
