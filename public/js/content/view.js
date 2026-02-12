@@ -37,9 +37,9 @@ function renderContent(data) {
     $('#contentTitle, #breadcrumbTitle').text(title);
     $('#contentBody').html(body);
     $('#contentDate').text(data.created_at);
-    if (data.cover) {
+    if (data.cover && data.cover_display === 'yes') {
         $('#contentCover').html(`
-            <div class="position-relative mb-4 overflow-hidden rounded-4 shadow-sm">
+            <div class="position-relative mb-4 overflow-hidden shadow-sm">
                 <img src="${BASE_URL}/${data.cover}" class="img-fluid w-100 object-fit-cover" style="max-height: 275px; min-height: 275px;">
                 <div class="position-absolute bottom-0 start-0 w-100 p-4 bg-gradient-dark text-white d-md-none">
                     <h4 class="fw-bold mb-0">${title}</h4>
@@ -62,20 +62,14 @@ function renderContent(data) {
         data.images360.forEach(vr => {
             const imageUrl = `${BASE_URL}/${vr.url || data.cover}`;
             extraHtml += `
-                <div class="col-6 col-md-3 col-lg-2">
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 vr-card cursor-pointer" 
-                        onclick="openVRModal('${imageUrl}')">
-                        <div class="position-relative h-100" style="min-height: 150px;">
+                <div class="col-4 col-md-2 col-lg-2">
+                    <div class="card border-0 shadow-sm rounded-3 overflow-hidden h-100 vr-card cursor-pointer" onclick="openVRModal('${imageUrl}')">
+                        <div class="position-relative h-100" style="max-height: 100px;">
                             <img src="${imageUrl}" class="w-100 h-100 object-fit-cover">
                             <div class="position-absolute top-0 start-0 m-2">
                                 <span class="badge rounded-pill bg-dark bg-opacity-75 fw-light">
                                     <i class="fa-solid fa-rotate me-1 fa-spin"></i> 360°
                                 </span>
-                            </div>
-                            <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-25 d-flex align-items-center justify-content-center">
-                                <div class="btn btn-light btn-sm rounded-pill shadow-sm fw-bold px-3">
-                                    <i class="fa-solid fa-expand me-1"></i> ${langData['view'] || 'View'}
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -96,7 +90,7 @@ function renderContent(data) {
             
         data.images.forEach((img, index) => {
             extraHtml += `
-                <div class="col-4 col-md-3 col-lg-2">
+                <div class="col-4 col-md-2 col-lg-2">
                     <a href="${BASE_URL}/${img.url}" data-fancybox="gallery" data-caption="${data.title[lang] || ''}" class="d-block ratio ratio-1x1 overflow-hidden rounded-3 border bg-light">
                         <img src="${BASE_URL}/${img.url}" class="img-fluid object-fit-cover hover-zoom" loading="lazy">
                     </a>
@@ -113,7 +107,7 @@ function renderContent(data) {
                 </span>
                 ${langData['documents'] || 'Documents'}
             </h5>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">`; 
+            <div class="row row-cols-1 row-cols-md-4 row-cols-lg-4 g-3">`; 
         data.attachments.forEach(file => {
             const isPdf = file.url.toLowerCase().endsWith('.pdf');
             const fileName = file.name || file.url.split('/').pop();

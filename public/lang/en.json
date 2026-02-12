@@ -298,6 +298,7 @@
     "report": "Report",
     "degree": "Degree",
     "select_sensor_message": "Please select at least one sensor.",
+    "select_level_message": "Please select at least one level.",
     "average_summary": "Average Summary",
     "visualization": "Data overview",
     "wind_speed_trend": "Wind Speed Trend",
@@ -552,5 +553,7 @@
     "temp": "Temp",
     "humid": "Humid",
     "pm2.5": "PM 2.5",
-    "rain": "Rain"
+    "rain": "Rain",
+    "please_choose_height": "Please select height",
+    "monitoring_period": "Monitoring Period"
 }

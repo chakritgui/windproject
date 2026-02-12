@@ -363,3 +363,6 @@ $("input").attr("autocomplete", "off");
 window.onload = function() {
     document.body.classList.add('loaded');
 };
+function renderErrorAlert(type, message) {
+    return `<div class="p-5 text-center"><div class="alert alert-${type} shadow-sm rounded-4">${message}</div></div>`;
+}

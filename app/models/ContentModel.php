@@ -6,7 +6,7 @@ class ContentModel {
     }
     public function getBySlug($slug, $mode = 'preview') {
         $pdo = $this->db;
-        $stmt = $pdo->prepare("SELECT content_id, status, cover, created_at, type FROM wp_content WHERE content_slug = ? AND status != 'deleted'");
+        $stmt = $pdo->prepare("SELECT content_id, status, cover, created_at, type, cover_display FROM wp_content WHERE content_slug = ? AND status != 'deleted'");
         $stmt->execute([$slug]);
         $n = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$n) return null;
@@ -44,6 +44,7 @@ class ContentModel {
             "status" => $n['status'],
             "type" => $n['type'],
             "cover" => $n['cover'],
+            "cover_display" => $n['cover_display'],
             "title" => $title,
             "content" => $body,
             "images" => $images,

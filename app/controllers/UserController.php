@@ -44,6 +44,10 @@ class UserController extends Controller {
         if (!empty($filters['s'])) {
             $sensors = array_values(array_filter(explode(',', $filters['s'])));
         }
+        $levels = [];
+        if (!empty($filters['lv'])) {
+            $levels = array_values(array_filter(explode(',', $filters['lv'])));
+        }
         $startDateUTC = null;
         $endDateUTC   = null;
         $dateFormats = ['d/m/Y', 'Y-m-d'];
@@ -74,7 +78,8 @@ class UserController extends Controller {
             'startDate' => $startDateUTC,
             'endDate'   => $endDateUTC,
             'height_id' => $height_id,
-            'sensors'   => $sensors
+            'sensors'   => $sensors,
+            'levels'   => $levels,
         ]);
     }
     public function documentList() {

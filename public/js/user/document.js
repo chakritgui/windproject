@@ -250,22 +250,23 @@ function renderListView(items) {
     $('#listView').append(html);
 }
 function setView(view) {
-    if (currentView === view || isLoading) return;
+    if (currentView === view) return; 
     currentView = view;
-    isLoading   = false;
     docPage = 1;
     hasMore = true;
-    $('#gridView, #listView').empty();
-    $('.view-toggle .btn').removeClass('active').attr('aria-pressed', 'false');
-    $('.view-toggle .btn[data-view="' + view + '"]').addClass('active').attr('aria-pressed', 'true');
+    const $toggleButtons = $('.view-toggle .btn');
+    $toggleButtons.removeClass('active').attr('aria-pressed', 'false');
+    $toggleButtons.filter('[data-view="' + view + '"]').addClass('active').attr('aria-pressed', 'true');
+    const $grid = $('#gridView');
+    const $list = $('#listView');
+    $grid.empty();
+    $list.empty();
     if (view === 'grid') {
-        $('#listView').fadeOut(150, function () {
-            $('#gridView').fadeIn(200);
-        });
+        $list.hide();
+        $grid.fadeIn(300);
     } else {
-        $('#gridView').fadeOut(150, function () {
-            $('#listView').fadeIn(200);
-        });
+        $grid.hide();
+        $list.fadeIn(300);
     }
     loadDocuments();
 }

@@ -298,6 +298,7 @@
     "report": "รายงาน",
     "degree": "องศา",
     "select_sensor_message": "กรุณาเลือกเซนเซอร์อย่างน้อยหนึ่งตัว",
+    "select_level_message": "โปรดเลือกอย่างน้อยหนึ่งระดับ",
     "average_summary": "สรุปค่าเฉลี่ย",
     "visualization": "ภาพรวมข้อมูล",
     "wind_speed_trend": "แนวโน้มความเร็วลม",
@@ -553,5 +554,7 @@
     "temp": "อุณหภูมิ",
     "humid": "ความชื้น",
     "pm2.5": "ฝุ่น PM 2.5",
-    "rain": "ปริมาณฝน"
+    "rain": "ปริมาณฝน",
+    "please_choose_height": "กรุณาเลือกความสูง",
+    "monitoring_period": "ระยะเวลาการตรวจสอบ"
 }

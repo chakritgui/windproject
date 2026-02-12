@@ -102,11 +102,12 @@ class MapModel{
     }
     public function poledetails($poles_id, $start, $end, $height) {
         try {
-            $sqlPole = "SELECT p.*, t.type_name, l.installations_name, pj.project_name
+            $sqlPole = "SELECT p.*, t.type_name, l.installations_name, pj.project_name, s.project_status_name, s.project_status_color
                         FROM wp_poles p 
                         LEFT JOIN wp_type t on t.type_id = p.type_id 
                         LEFT JOIN wp_installations l on l.installations_id = p.installations_id
                         LEFT JOIN wp_project pj on pj.project_id = p.project_id
+                        LEFT JOIN wp_project_status s on s.project_status_id = pj.project_status_id
                         WHERE p.poles_id = :poles_id LIMIT 1";
             $stmt1 = $this->db->prepare($sqlPole);
             $stmt1->execute([':poles_id' => $poles_id]);
@@ -158,7 +159,7 @@ class MapModel{
             $poleInfo['height_name'] = $height_name;
             if (!empty($poleInfo['content_id'])) {
                 $cId = $poleInfo['content_id'];
-                $stC = $this->db->prepare("SELECT content_id, status, cover, created_at, type FROM wp_content WHERE content_id = :id AND status != 'deleted'");
+                $stC = $this->db->prepare("SELECT content_id, status, cover, created_at, type, cover_display FROM wp_content WHERE content_id = :id AND status != 'deleted'");
                 $stC->execute([':id' => $cId]);
                 $contentBase = $stC->fetch(PDO::FETCH_ASSOC);
                 if ($contentBase) {
@@ -189,6 +190,7 @@ class MapModel{
                         "status" => $contentBase['status'],
                         "type" => $contentBase['type'],
                         "cover" => $contentBase['cover'],
+                        "cover_display" => $contentBase['cover_display'],
                         "title" => $titles,
                         "content" => $bodies,
                         "images" => $images,

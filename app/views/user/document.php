@@ -37,11 +37,11 @@
                     </li>
                 </ul>
             </div>
-            <div class="btn-group shadow-sm" role="group">
-                <button class="btn btn-outline-primary active" data-view="grid" onclick="setView('grid')" title="Grid View">
-                    <i class="fas fa-th"></i>
+            <div class="btn-group shadow-sm rounded-pill overflow-hidden view-toggle" role="group">
+                <button type="button" class="btn btn-outline-primary border-0 px-3" data-view="grid" onclick="setView('grid')" title="Grid View">
+                    <i class="fas fa-th-large"></i>
                 </button>
-                <button class="btn btn-outline-primary" data-view="list" onclick="setView('list')" title="List View">
+                <button type="button" class="btn btn-outline-primary active border-0 px-3" data-view="list" onclick="setView('list')" title="List View">
                     <i class="fas fa-list"></i>
                 </button>
             </div>
@@ -52,50 +52,52 @@
             </button>
         </div>
     </div>
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="row g-3 align-items-end">
-                <div class="col-lg-2 col-md-3 col-6">
-                    <label class="form-label small text-muted">
-                        <i class="fa-regular fa-calendar"></i>
-                        <span data-i18n="month-year"></span>
-                    </label>
-                    <input type="text" id="filter_date" class="form-control" placeholder="MM/YYYY">
-                </div>
-                <div class="col-lg-2 col-md-3 col-6">
-                    <label class="form-label small text-muted">
-                        <i class="fa-solid fa-file-lines"></i>
-                        <span data-i18n="contract"></span>
-                    </label>
-                    <select id="filter_contract" class="form-select filter"></select>
-                </div>
-                <div class="col-lg-2 col-md-3 col-6">
-                    <label class="form-label small text-muted">
-                        <i class="fa-solid fa-folder-tree"></i>
-                        <span data-i18n="project"></span>
-                    </label>
-                    <select id="filter_project" class="form-select filter"></select>
-                </div>
-                <div class="col-lg-2 col-md-3 col-6">
-                    <label class="form-label small text-muted">
-                        <i class="fa-solid fa-tags"></i>
-                        <span data-i18n="pole_types"></span>
-                    </label>
-                    <select id="filter_type" class="form-select filter"></select>
-                </div>
-                <div class="col-lg-2 col-md-3 col-6">
-                    <label class="form-label small text-muted">
-                        <i class="fa-solid fa-location-dot"></i>
-                        <span data-i18n="installation"></span>
-                    </label>
-                    <select id="filter_installations" class="form-select filter"></select>
-                </div>
-                <div class="col-lg-2 col-md-3 col-6">
-                    <label class="form-label small text-muted">
-                        <i class="fa-solid fa-tower-broadcast"></i>
-                        <span data-i18n="poles"></span>
-                    </label>
-                    <select id="filter_poles" class="form-select filter"></select>
+    <div class="d-flex d-md-none justify-content-between align-items-center mb-3 px-1">
+        <h6 class="fw-bold mb-0 text-dark"><i class="fa-solid fa-filter me-2"></i><span data-i18n="filter"></span></h6>
+        <button class="btn btn-primary btn-sm rounded-pill px-3" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+            <i class="fa-solid fa-chevron-down me-1"></i> <span data-i18n="toggle_filter"><span data-i18n="show"></span>/<span data-i18n="hide"></span></span>
+        </button>
+    </div>
+    <div class="collapse d-md-block" id="filterCollapse">
+        <div class="card shadow-sm border-0 rounded-4 mb-4">
+            <div class="card-body p-3 p-lg-4">
+                <div class="row g-3 align-items-end">
+                    <div class="col-lg-2 col-md-3 col-6">
+                        <label class="form-label small fw-bold text-muted mb-1">
+                            <i class="fa-regular fa-calendar me-1"></i><span data-i18n="month-year"></span>
+                        </label>
+                        <input type="text" id="filter_date" class="form-control rounded-3" placeholder="MM/YYYY">
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-6">
+                        <label class="form-label small fw-bold text-muted mb-1">
+                            <i class="fa-solid fa-file-lines me-1"></i><span data-i18n="contract"></span>
+                        </label>
+                        <select id="filter_contract" class="form-select filter rounded-3"></select>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-6">
+                        <label class="form-label small fw-bold text-muted mb-1">
+                            <i class="fa-solid fa-folder-tree me-1"></i><span data-i18n="project"></span>
+                        </label>
+                        <select id="filter_project" class="form-select filter rounded-3"></select>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-6">
+                        <label class="form-label small fw-bold text-muted mb-1">
+                            <i class="fa-solid fa-tags me-1"></i><span data-i18n="pole_types"></span>
+                        </label>
+                        <select id="filter_type" class="form-select filter rounded-3"></select>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-6">
+                        <label class="form-label small fw-bold text-muted mb-1">
+                            <i class="fa-solid fa-location-dot me-1"></i><span data-i18n="installation"></span>
+                        </label>
+                        <select id="filter_installations" class="form-select filter rounded-3"></select>
+                    </div>
+                    <div class="col-lg-2 col-md-3 col-6">
+                        <label class="form-label small fw-bold text-muted mb-1">
+                            <i class="fa-solid fa-tower-broadcast me-1"></i><span data-i18n="poles"></span>
+                        </label>
+                        <select id="filter_poles" class="form-select filter rounded-3"></select>
+                    </div>
                 </div>
             </div>
         </div>

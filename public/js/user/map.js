@@ -47,20 +47,19 @@ function initMap() {
             }
             if (map_labels === 'no') {
                 const style = document.createElement('style');
+                style.id = 'hide-labels-style'; 
                 style.innerHTML = `
-                    /* ซ่อน Layer ที่มักจะเป็นที่อยู่ของ Label ใน Windy */
-                    .leaflet-tile-pane .leaflet-layer:nth-child(2), 
-                    .windy-labels, 
+                    .leaflet-label-pane,
+                    .windy-layer-labels,
                     .labels-layer {
                         display: none !important;
+                        pointer-events: none !important;
+                    }
+                    canvas.vector-field-layer {
+                        display: block !important;
                     }
                 `;
                 document.head.appendChild(style);
-                try {
-                    if (typeof store !== 'undefined') {
-                        store.set('base', 'empty');
-                    }
-                } catch (e) {}
             }
         } catch (error) {
             console.error("Initialization Error:", error);
@@ -204,11 +203,9 @@ async function loadPoles(map) {
                 </div>`,
                 { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [15, -20] }
             ).openTooltip();
-
             marker.on('click', () => openPoles(pole.poles_id));
         }
         const refreshAllWindData = async () => {
-            console.log("Auto Refreshing Wind Data...");
             for (const id in poleMarkers) {
                 const p = poleMarkers[id];
                 updatePoleWind(p.lat, p.lng, p.windId, p.arrowId);
@@ -246,10 +243,23 @@ function toggleWind(isOn) {
     const { store } = windyAPI;
     store.set('overlay', windOn ? 'wind' : 'none');
     Object.keys(poleMarkers).forEach(id => {
-        const marker = poleMarkers[id];
-        windOn ? marker.openTooltip() : marker.closeTooltip();
-        if (windOn && windUpdateFunctions[id]) windUpdateFunctions[id]();
+        const p = poleMarkers[id];
+        if (windOn) {
+            p.marker.openTooltip();
+        } else {
+            p.marker.closeTooltip();
+        }
     });
+    if (windOn) {
+        refreshAllWindData(); 
+        if (windRefreshInterval) clearInterval(windRefreshInterval);
+        windRefreshInterval = setInterval(refreshAllWindData, 60000);
+    } else {
+        if (windRefreshInterval) {
+            clearInterval(windRefreshInterval);
+            windRefreshInterval = null;
+        }
+    }
 }
 function getDivIcon(typeId) {
     const color = typeId == 1 ? '#e74c3c' : (typeId == 2 ? '#2ecc71' : '#3498db');
@@ -392,9 +402,10 @@ async function openPoles(poleId) {
                         <div class="row align-items-center">
                             <div class="col-md-12">
                                 <span class="badge bg-primary mb-2">${data.type_name}</span>
-                                <h3 class="fw-bolder text-primary mb-1">${data.installations_name}</h3>
+                                <h5 class="fw-bolder text-primary mb-1">${data.installations_name}</h5>
                                 <div class="d-flex flex-wrap gap-3 text-muted">
                                     <span><i class="fa-solid fa-diagram-project me-1"></i>${data.project_name}</span>
+                                    <span><i class="fa-solid fa-circle me-1" style="color: ${data.project_status_color || "#CCCCCC"}"></i>${data.project_status_name || '-'}</span>
                                     <span><i class="fa-solid fa-signal me-1"></i>${data.height_name}</span>
                                     <span><i class="fa-solid fa-location-dot me-1"></i>${data.poles_lat}, ${data.poles_lng}</span>
                                 </div>
@@ -404,8 +415,8 @@ async function openPoles(poleId) {
                     ${(data.content_id) ? `
                         <div class="row">
                             <div class="col-lg-12">
-                                ${data.content?.cover ? `
-                                    <div class="position-relative mb-4 overflow-hidden rounded-4 shadow-sm">
+                                ${data.content?.cover && data.content?.cover_display === 'yes' ? `
+                                    <div class="position-relative mb-4 overflow-hidden shadow-sm">
                                         <img src="${fullBaseUrl}/${data.content.cover}" class="w-100 h-100 object-fit-cover" alt="cover" style="max-height: 275px; min-height: 275px;">
                                     </div>
                                 ` : ''}
@@ -446,11 +457,11 @@ async function openPoles(poleId) {
             modalBody.html(html);
             modalTitle.text(`${data.poles_code}`);
         } else {
-            modalBody.html(renderErrorAlert('warning', currentLang['no_data_found'] || 'No data found'));
+            modalBody.html(renderErrorAlert('warning', langData['no_data_found'] || 'No data found'));
         }
     } catch (error) {
         console.error("OpenPoles Error:", error);
-        modalBody.html(renderErrorAlert('danger', currentLang['cannot_load'] || 'Failed to load data. Please try again later.'));
+        modalBody.html(renderErrorAlert('danger', langData['cannot_load'] || 'Failed to load data. Please try again later.'));
     }
 }
 function renderMultimedia(content, lang, baseUrl) {
@@ -460,25 +471,19 @@ function renderMultimedia(content, lang, baseUrl) {
         html += `
             <div class="section-title mb-3 mt-4">
                 <h5 class="fw-bold d-flex align-items-center text-dark">
-                    <i class="fa-solid fa-vr-cardboard text-info me-2"></i> ${currentLang['vr_experience'] || '360° Experience'}
+                    <i class="fa-solid fa-vr-cardboard text-info me-2"></i> ${langData['vr_experience'] || '360° Experience'}
                 </h5>
             </div>
             <div class="row g-3 mb-5">
                 ${content.images360.map(vr => `
-                    <div class="col-6 col-md-2 col-lg-2">
-                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 vr-card cursor-pointer" 
-                            onclick="openVRModal('${baseUrl}/${vr.url}')">
-                            <div class="position-relative h-100" style="min-height: 150px;">
+                    <div class="col-4 col-md-2 col-lg-2">
+                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 vr-card cursor-pointer" onclick="openVRModal('${baseUrl}/${vr.url}')">
+                            <div class="position-relative h-100" style="max-height: 100px;">
                                 <img src="${baseUrl}/${vr.url}" class="w-100 h-100 object-fit-cover">
                                 <div class="position-absolute top-0 start-0 m-2">
                                     <span class="badge rounded-pill bg-dark bg-opacity-75 fw-light">
                                         <i class="fa-solid fa-rotate me-1 fa-spin"></i> 360°
                                     </span>
-                                </div>
-                                <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-25 d-flex align-items-center justify-content-center">
-                                    <div class="btn btn-light btn-sm rounded-pill shadow-sm fw-bold px-3">
-                                        <i class="fa-solid fa-expand me-1"></i> ${langData['view'] || 'View'}
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -491,14 +496,14 @@ function renderMultimedia(content, lang, baseUrl) {
         html += `
             <div class="section-title mb-3">
                 <h5 class="fw-bold d-flex align-items-center text-dark">
-                    <i class="fa-solid fa-images text-primary me-2"></i> ${currentLang['gallery'] || 'Gallery'}
+                    <i class="fa-solid fa-images text-primary me-2"></i> ${langData['gallery'] || 'Gallery'}
                 </h5>
             </div>
             <div class="row g-2 mb-5">
                 ${content.images.map(img => `
-                    <div class="col-4 col-md-2">
+                    <div class="col-4 col-md-2 col-lg-2">
                         <a href="${baseUrl}/${img.url}" data-fancybox="pole-gallery" class="gallery-item d-block ratio ratio-1x1 overflow-hidden rounded-3 border bg-light">
-                            <img src="${baseUrl}/${img.url}" class="gallery-img" loading="lazy">
+                            <img src="${baseUrl}/${img.url}" class="gallery-img hover-zoom" loading="lazy">
                         </a>
                     </div>
                 `).join('')}
@@ -509,10 +514,10 @@ function renderMultimedia(content, lang, baseUrl) {
         html += `
             <div class="section-title mb-3">
                 <h5 class="fw-bold d-flex align-items-center text-dark">
-                    <i class="fa-solid fa-file-pdf text-danger me-2"></i> ${currentLang['attachments'] || 'Attachments'}
+                    <i class="fa-solid fa-file-pdf text-danger me-2"></i> ${langData['attachments'] || 'Attachments'}
                 </h5>
             </div>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+            <div class="row row-cols-1 row-cols-md-4 row-cols-lg-4 g-3">
                 ${content.attachments.map(file => {
                     const isPdf = file.url.toLowerCase().endsWith('.pdf');
                     return `
@@ -534,9 +539,6 @@ function renderMultimedia(content, lang, baseUrl) {
         `;
     }
     return html;
-}
-function renderErrorAlert(type, message) {
-    return `<div class="p-5 text-center"><div class="alert alert-${type} shadow-sm rounded-4">${message}</div></div>`;
 }
 $(document).ready(function () {
     $("header").hide();

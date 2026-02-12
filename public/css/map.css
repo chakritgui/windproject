@@ -128,22 +128,6 @@
     border-color: var(--secondary-color);
     box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
 }
-.sensor-checkbox {
-    background: #f8f9fa;
-    border-radius: 10px;
-    padding: .3rem;
-    margin-bottom: 0.5rem;
-    transition: all 0.3s ease;
-}
-.sensor-checkbox:hover {
-    background: #e9ecef;
-    transform: translateX(5px);
-}
-.sensor-checkbox input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-}
 .btn-generate {
     background: var(--bg-gradient);
     border: none;

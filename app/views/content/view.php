@@ -13,10 +13,7 @@
             <i class="fa-solid fa-xmark me-1"></i> <span data-i18n="close">ปิดหน้าต่าง</span>
         </button>
     </div>
-    <div id="previewBadge" class="d-none bg-warning text-dark text-center py-2 sticky-top shadow-sm fw-bold" style="z-index: 1060; font-size: 0.9rem;">
-        <i class="fa-solid fa-eye me-2"></i> PREVIEW MODE : ข้อมูลนี้ยังไม่ได้เผยแพร่สู่สาธารณะ
-    </div>
-    <article class="news-full-content bg-white p-md-0 rounded-4" id="contentArea" style="opacity: 0; transition: opacity 0.3s ease;">
+    <article class="news-full-content bg-white p-md-0" id="contentArea" style="opacity: 0; transition: opacity 0.3s ease;">
         <div id="contentCover"></div>
         <h4 class="fw-bolder mb-3" id="contentTitle"></h4>
         <div class="me-3">
@@ -52,7 +49,6 @@
     .article-body img {
         max-width: 100%;
         height: auto;
-        border-radius: 1rem;
         margin: 1.5rem 0;
     }
     @media (max-width: 768px) {

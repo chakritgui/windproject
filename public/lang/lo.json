@@ -298,6 +298,7 @@
     "report": "ບົດລາຍງານ",
     "degree": "ອົງສາ",
     "select_sensor_message": "ກະລຸນາເລືອກເຊັນເຊີຢ່າງໜ້ອຍໜຶ່ງຕົວ",
+    "select_level_message": "ກະລຸນາເລືອກຢ່າງໜ້ອຍໜຶ່ງລະດັບ.",
     "average_summary": "ສະຫຼຸບຄ່າສະເລ່ຍ",
     "visualization": "ພາບລວມຂອງຂໍ້ມູນ",
     "wind_speed_trend": "ແນວໂນ້ມຄວາມໄວລົມ",
@@ -553,5 +554,7 @@
     "temp": "ອຸນຫະພູມ",
     "humid": "ຄວາມຊຸ່ມຊື່ນ",
     "pm2.5": "ຝຸ່ນ PM 2.5",
-    "rain": "ປະລິມານຝົນ"
+    "rain": "ປະລິມານຝົນ",
+    "please_choose_height": "ກະລຸນາເລືອກຄວາມສູງ",
+    "monitoring_period": "ໄລຍະເວລາການຕິດຕາມ"
 }
