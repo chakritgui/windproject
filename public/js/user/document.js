@@ -362,13 +362,13 @@ function loadDownloadHistory() {
 }
 function renderHistoryRows(items) {
     let html = ``;
-    if(!items.length) {
+    if (!items || items.length === 0) {
         html = `
             <div class="text-center text-muted py-5">
                 <i class="fa-regular fa-folder-open" style="font-size:48px;"></i>
-                <p class="mt-3" data-i18n="no_documents_found"></p>
-            </div>
-        `;
+                <p class="mt-3" data-i18n="no_documents_found">ไม่พบข้อมูล</p>
+            </div>`;
+        $('#downloadHistoryList').html(html);
         return;
     }
     items.forEach((row) => {
