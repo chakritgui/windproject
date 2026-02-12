@@ -21,10 +21,12 @@ class MediaHelper {
             }
         }
     }
-    public function handleMultiUpload($content_id, $type, $inputKey) {
+    public function handleMultiUpload($content_id, $type, $inputKey){
         if (!isset($_FILES[$inputKey]) || empty($_FILES[$inputKey]['name'][0])) {
             return;
         }
+        $allowedImageExt = ['jpg','jpeg','png','gif','webp'];
+        $allowedFileExt  = ['pdf','doc','docx','xls','xlsx','txt'];
         $files = $_FILES[$inputKey];
         $baseDir = "uploads/content/media/";
         $uploadPath = rtrim($this->basePath, '/') . '/' . $baseDir;
@@ -32,54 +34,84 @@ class MediaHelper {
             mkdir($uploadPath, 0755, true);
         }
         foreach ($files['name'] as $i => $originalName) {
-            if ($files['error'][$i] !== UPLOAD_ERR_OK) continue;
-            $tmp      = $files['tmp_name'][$i];
-            $size     = $files['size'][$i];
-            $baseName = md5($type . '_' . $content_id . '_' . $i);
-            $image    = false;
+            if ($files['error'][$i] !== UPLOAD_ERR_OK) {
+                continue;
+            }
+            $tmp  = $files['tmp_name'][$i];
+            $size = $files['size'][$i];
+            if ($size > 10 * 1024 * 1024) {
+                continue;
+            }
+            $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+            if ($type === 'image' && !in_array($ext, $allowedImageExt)) {
+                continue;
+            }
+            if ($type !== 'image' && !in_array($ext, $allowedFileExt)) {
+                continue;
+            }
+            $baseName = md5($type . '_' . $content_id . '_' . uniqid('', true));
+            $image = false;
             $isConverted = false;
             if ($type === 'image' && function_exists('imagewebp')) {
                 $imgInfo = @getimagesize($tmp);
                 if ($imgInfo !== false) {
                     switch ($imgInfo['mime']) {
-                        case 'image/jpeg': $image = imagecreatefromjpeg($tmp); break;
-                        case 'image/png': 
-                            $image = imagecreatefrompng($tmp);
-                            imagepalettetotruecolor($image);
-                            imagealphablending($image, true);
-                            imagesavealpha($image, true);
+                        case 'image/jpeg':
+                            $image = imagecreatefromjpeg($tmp);
                             break;
-                        case 'image/gif':  $image = imagecreatefromgif($tmp); break;
-                        case 'image/webp': 
+                        case 'image/png':
+                            $image = imagecreatefrompng($tmp);
+                            break;
+                        case 'image/gif':
+                            $image = imagecreatefromgif($tmp);
+                            break;
+                        case 'image/webp':
                             if (function_exists('imagecreatefromwebp')) {
                                 $image = imagecreatefromwebp($tmp);
                             }
                             break;
                     }
                     if ($image) {
+                        imagealphablending($image, false);
+                        imagesavealpha($image, true);
                         $fileName = $baseName . ".webp";
                         $target   = $uploadPath . $fileName;
                         if (imagewebp($image, $target, 80)) {
-                            imagedestroy($image);
                             $dbPath = $baseDir . $fileName;
                             $finalSize = filesize($target);
                             $isConverted = true;
-                        } else {
-                            imagedestroy($image);
                         }
+                        imagedestroy($image);
                     }
                 }
             }
             if (!$isConverted) {
-                $ext      = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
                 $fileName = $baseName . "." . $ext;
                 $target   = $uploadPath . $fileName;
-                $dbPath   = $baseDir . $fileName;
-                if (!move_uploaded_file($tmp, $target)) continue;
+                if (!move_uploaded_file($tmp, $target)) {
+                    continue;
+                }
+                $dbPath    = $baseDir . $fileName;
                 $finalSize = $size;
             }
-            $stmt = $this->db->prepare("INSERT INTO wp_content_media (content_id, file_path, file_name, file_type, file_size, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())");
-            $stmt->execute([$content_id, $dbPath, $originalName, $type, $finalSize]);
+            try {
+                $stmt = $this->db->prepare("
+                    INSERT INTO wp_content_media 
+                    (content_id, file_path, file_name, file_type, file_size, created_at, updated_at) 
+                    VALUES (?, ?, ?, ?, ?, NOW(), NOW())
+                ");
+                $stmt->execute([
+                    $content_id,
+                    $dbPath,
+                    $originalName,
+                    $type,
+                    $finalSize
+                ]);
+            } catch (Exception $e) {
+                if (file_exists($target)) {
+                    unlink($target);
+                }
+            }
         }
     }
     public function handleSingleUpload($content_id, $file, $table = 'wp_content', $column = 'cover'){
