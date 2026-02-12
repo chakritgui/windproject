@@ -29,6 +29,12 @@
     </div>
 </div>
 <div class="container-fluid mt-3 mb-3">
+    <div class="report-section">
+        <h6 class="report-title"><i class="fa-solid fa-cloud-meatball me-2"></i><span data-i18n="weather_overview"></span></h6>
+        <div class="row g-2 mt-2" id="weatherContainer"></div>
+    </div>
+</div>
+<div class="container-fluid mt-3 mb-3">
     <div class="header-card">
         <div class="row align-items-center">
             <div class="col-lg-12">
@@ -56,12 +62,6 @@
                 <div class="fw-bold" data-i18n="report_remark"></div>
             </div>
         </div>
-    </div>
-</div>
-<div class="container-fluid mt-3 mb-3">
-    <div class="report-section">
-        <h6 class="report-title"><i class="fa-solid fa-cloud-meatball me-2"></i><span data-i18n="weather_overview"></span></h6>
-        <div class="row g-2 mt-2" id="weatherContainer"></div>
     </div>
 </div>
 <div class="container-fluid mt-3 mb-3">

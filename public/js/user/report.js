@@ -196,6 +196,10 @@ function showReportPWA(data) {
     `);
     modalBody.html(`
         <div class="container-fluid mt-3 mb-5">
+            <div class="report-section mb-4">
+                <h6 class="report-title"><i class="fa-solid fa-cloud-meatball me-2"></i><span data-i18n="weather_overview"></span></h6>
+                <div class="row g-2 mt-2" id="weatherContainer"></div>
+            </div>
             <div class="header-card p-3 border rounded bg-light mb-4">
                 <h5 class="mb-3">
                     <i class="fas fa-broadcast-tower me-2 text-white"></i>
@@ -216,10 +220,6 @@ function showReportPWA(data) {
                         <div class="fw-bold" data-i18n="report_remark"></div>
                     </div>
                 </div>
-            </div>
-            <div class="report-section mb-4">
-                <h6 class="report-title"><i class="fa-solid fa-cloud-meatball me-2"></i><span data-i18n="weather_overview"></span></h6>
-                <div class="row g-2 mt-2" id="weatherContainer"></div>
             </div>
             <div class="report-section mb-4">
                 <h6 class="report-title"><i class="fas fa-chart-bar me-2"></i><span data-i18n="average_summary"></span></h6>

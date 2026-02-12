@@ -6,7 +6,7 @@ class PoleModel {
     }
     private function formatDbDate($dateStr) {
         $date = DateTime::createFromFormat('d/m/Y', $dateStr);
-        return $date ? $date->format('Y-m-d') : $dateStr;
+        return $date ? convertTimeZoneUTC($date->format('Y-m-d')) : convertTimeZoneUTC($dateStr);
     }
     public function polestats($params) {
         $map = [
@@ -46,9 +46,7 @@ class PoleModel {
             ]);
             $stats = $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
         }
-        $sqlPole = "SELECT poles_lat, poles_lng
-                    FROM wp_poles 
-                    WHERE poles_id = :poles_id";
+        $sqlPole = "SELECT poles_lat, poles_lng FROM wp_poles WHERE poles_id = :poles_id";
         $stmt1 = $this->db->prepare($sqlPole);
         $stmt1->execute([':poles_id' => $params['poles_id']]);
         $pole = $stmt1->fetch(PDO::FETCH_ASSOC);
@@ -98,8 +96,8 @@ class PoleModel {
         if (!$dateEnd) $dateEnd = new DateTime($params['end']);
         $interval = $dateStart->diff($dateEnd);
         $total_days = $interval->days + 1;
-        $startStr = $dateStart->format('d/m/Y');
-        $endStr = $dateEnd->format('d/m/Y');
+        $startStr = convertTimeZone($dateStart->format('d/m/Y'), 'd/m/Y');
+        $endStr = convertTimeZone($dateEnd->format('d/m/Y'), 'd/m/Y');
         $sqlPole = "SELECT p.*, t.type_name, l.installations_name, pj.project_name
                     FROM wp_poles p 
                     LEFT JOIN wp_type t on t.type_id = p.type_id 
