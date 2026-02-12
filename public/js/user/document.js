@@ -361,7 +361,16 @@ function loadDownloadHistory() {
     });
 }
 function renderHistoryRows(items) {
-    let html = '';
+    let html = ``;
+    if(items.length === 0) {
+        html = `
+            <div class="text-center text-muted py-5">
+                <i class="fa-regular fa-folder-open" style="font-size:48px;"></i>
+                <p class="mt-3" data-i18n="no_documents_found"></p>
+            </div>
+        `;
+        return;
+    }
     items.forEach((row) => {
         const device = parseUA(row.download_device);
         const icon = getDocIcon(row.document_type);
