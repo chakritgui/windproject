@@ -512,7 +512,7 @@ $(document).on('click', '.save-content', function () {
 function executeSave() {
     const btn = $(".save-content");
     btn.prop("disabled", true);
-    const formData = new FormData($('#contentForm')[0]);
+    const formData = new FormData();
     const attachments = window.getAttachmentsData();
     attachments.forEach((att, index) => {
         if (att.type === 'new') {

@@ -262,7 +262,7 @@ $(document).on('click', '.save-news', function () {
 function executeSave() {
     const btn = $(".save-news");
     btn.prop("disabled", true);
-    const formData = new FormData($('#contentForm')[0]);
+    const formData = new FormData();
     const appendFiles = (getter, prefix) => {
         getter().forEach(item => {
             const key = item.type === 'new' ? `new_${prefix}[]` : `existing_${prefix}[]`;

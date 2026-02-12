@@ -465,7 +465,7 @@ $(document).on('click', '#btnSaveContent', function() {
         $('.is-invalid').first().focus();
         return;
     }
-    const formData = new FormData($('#contentForm')[0]);
+    const formData = new FormData();
     const attachments = window.getAttachmentsData();
     attachments.forEach((att, index) => {
         if (att.type === 'new') {
