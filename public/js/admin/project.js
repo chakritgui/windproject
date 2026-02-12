@@ -568,10 +568,7 @@ function executeSave() {
         html: `
             <p>${langData['please_do_not_close_this_page'] || 'Please do not close this page.'}</p>
             <div class="progress mt-2" style="height: 10px;">
-                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
-                    role="progressbar" 
-                    style="width: 100%">
-                </div>
+                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 100%"></div>
             </div>
         `,
         allowOutsideClick: false,

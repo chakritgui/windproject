@@ -516,8 +516,7 @@ $(document).on('click', '#btnSaveContent', function() {
         html: `
             <p>${langData['please_do_not_close_this_page'] || 'Please do not close this page.'}</p>
             <div class="progress mt-2" style="height: 20px;">
-                <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" 
-                    role="progressbar" style="width: 0%">0%</div>
+                <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%">0%</div>
             </div>
         `,
         allowOutsideClick: false,
