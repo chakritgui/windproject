@@ -362,7 +362,7 @@ function loadDownloadHistory() {
 }
 function renderHistoryRows(items) {
     let html = ``;
-    if(items.length === 0) {
+    if(!items.length) {
         html = `
             <div class="text-center text-muted py-5">
                 <i class="fa-regular fa-folder-open" style="font-size:48px;"></i>
