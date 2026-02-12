@@ -45,27 +45,20 @@ function initMap() {
                     console.error("Error drawing country lines:", error);
                 }
             }
-            if (map_labels === 'no') { 
+            if (map_labels === 'no') {
+                const style = document.createElement('style');
+                style.innerHTML = `
+                    /* ซ่อน Layer ที่มักจะเป็นที่อยู่ของ Label ใน Windy */
+                    .leaflet-tile-pane .leaflet-layer:nth-child(2), 
+                    .windy-labels, 
+                    .labels-layer {
+                        display: none !important;
+                    }
+                `;
+                document.head.appendChild(style);
                 try {
-                    const hasBaseKey = W.store.dataSpecs && W.store.dataSpecs.some(s => s.ident === 'base');
-                    if (hasBaseKey) {
-                        store.set('base', 'empty'); 
-                        console.log("Base map changed to empty to hide labels.");
-                    }
-                    const hasLabelsKey = W.store.dataSpecs && W.store.dataSpecs.some(s => s.ident === 'labels');
-                    if (hasLabelsKey) {
-                        store.set('labels', false);
-                    }
-                } catch (e) {
-                    console.warn("Failed to hide labels:", e.message);
-                }
-            } else {
-                try {
-                    if (W.store.dataSpecs.some(s => s.ident === 'base')) {
-                        store.set('base', 'default'); 
-                    }
-                    if (W.store.dataSpecs.some(s => s.ident === 'labels')) {
-                        store.set('labels', true);
+                    if (typeof store !== 'undefined') {
+                        store.set('base', 'empty');
                     }
                 } catch (e) {}
             }
