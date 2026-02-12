@@ -39,7 +39,7 @@ class MediaHelper {
             }
             $tmp  = $files['tmp_name'][$i];
             $size = $files['size'][$i];
-            if ($size > 10 * 1024 * 1024) {
+            if ($size > 512 * 1024 * 1024) {
                 continue;
             }
             $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
