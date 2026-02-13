@@ -284,7 +284,7 @@ function createStatCard(container, sensor, value) {
     col.innerHTML = `
         <div class="stat-card" style="padding:12px; background:${sensor.color}; border-radius:10px; color:white; position:relative; min-height:85px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             <i class="fas ${sensorIcons[sensor.key]}" style="position:absolute; right:10px; top:10px; opacity:0.3; font-size:1.5rem;"></i>
-            <h6 style="font-size:0.8rem; margin-bottom:5px; opacity:0.9; text-transform:uppercase;">${sensor.name}</h6>
+            <h6 style="font-size:0.8rem; margin-bottom:5px; opacity:0.9; text-transform:uppercase;" data-i18n="${sensor.lang}">${sensor.name}</h6>
             <div style="font-size:1.4rem; font-weight:bold;">
                 ${value} <small style="font-size:0.6em; font-weight:400;">${sensor.unit}</small>
             </div>
@@ -307,7 +307,7 @@ function show(name) {
 }
 function toggleLoading(show) {
     const loader = document.getElementById('statsContainer');
-    if (show) loader.innerHTML = '<div class="text-center w-100 p-5"><div class="spinner-border text-primary"></div><p>Loading report...</p></div>';
+    if (show) loader.innerHTML = '<div class="text-center w-100 p-5"><div class="spinner-border text-primary"></div><p data-i18n="loading"></p></div>';
 }
 async function updateHeaderInfo() {
     try {
@@ -382,7 +382,7 @@ async function fetchExternalWeather(lat, lon) {
             <div class="weather-card-rect" style="background: ${item.grad}; padding: 10px; border-radius: 8px; color: white; display: flex; align-items: center; gap: 10px; margin-bottom: 10px; animation: fadeIn 0.5s ease-in;">
                 <i class="fas ${item.icon} ${item.ani} fa-lg"></i>
                 <div class="info">
-                    <div style="font-size: 0.7rem; opacity: 0.8; text-transform: uppercase;">${item.name}</div>
+                    <div style="font-size: 0.7rem; opacity: 0.8; text-transform: uppercase;" data-i18n="${item.name}"></div>
                     <div style="font-weight: bold;">${item.val} ${item.unit}</div>
                 </div>
             </div>
