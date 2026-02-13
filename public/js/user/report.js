@@ -168,6 +168,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                         <label class="form-label required">
                             <i class="fa-solid fa-up-down me-2"></i><span data-i18n="height_level"></span>
                         </label>
+                        <div data-i18n="max_selection_reached"></div>
                         <div class="levelBody bg-white border rounded-3 p-3 shadow-sm d-flex flex-wrap gap-2"></div>
                     </div>
                     <div class="row mt-3">
@@ -265,7 +266,7 @@ async function renderLevel(height_id, levelsToCheck = []) {
         $container.html(renderErrorAlert('warning', langData['please_choose_height'] || 'Please select height'));
         return;
     }
-    $container.html('<div class="py-2 text-primary small"><div class="spinner-border spinner-border-sm me-2"></div>Loading levels...</div>');
+    $container.html('<div class="py-2 text-primary small"><div class="spinner-border spinner-border-sm me-2"></div><span data-i18n="loading"></span></div>');
     try {
         const response = await fetch(`${BASE_URL}/api/level`, {
             method: 'POST',
