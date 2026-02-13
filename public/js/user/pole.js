@@ -204,7 +204,15 @@ function renderWindRose16(canvasId, realData, distinctLevels) {
         };
     });
     renderChart(canvasId, 'radar', directions, datasets, {
-        scales: { r: { angleLines: { display: true }, suggestedMin: 0 } }
+        scales: {
+            r: {
+                angleLines: { display: true },
+                suggestedMin: 0,
+                ticks: {
+                    display: false 
+                }
+            }
+        }
     });
 }
 function renderHistogram(canvasId, sensor, realData, distinctLevels) {
