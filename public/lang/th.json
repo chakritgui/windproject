@@ -556,5 +556,6 @@
     "pm2.5": "ฝุ่น PM 2.5",
     "rain": "ปริมาณฝน",
     "please_choose_height": "กรุณาเลือกความสูง",
-    "monitoring_period": "ระยะเวลาการตรวจสอบ"
+    "monitoring_period": "ระยะเวลาการตรวจสอบ",
+    "max_selection_reached": "เลือกได้สูงสุดไม่เกิน 3 ระดับความสูง"
 }

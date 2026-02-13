@@ -304,13 +304,13 @@ async function renderLevel(height_id, levelsToCheck = []) {
         $container.html(renderErrorAlert('danger', langData['cannot_load'] || 'Connection error.'));
     }
 }
-function getSelectedLevels() {
-    let selected = [];
-    $('.level-checkbox:checked').each(function() {
-        selected.push($(this).val());
-    });
-    return selected;
-}
+$(document).on('change', '.level-checkbox', function() {
+    let selectedCount = $('.level-checkbox:checked').length;
+    if (selectedCount > 3) {
+        $(this).prop('checked', false);
+        showError(langData['max_selection_reached'] || 'You can select a maximum of 3 height levels.');
+    }
+});
 function showReportPWA(data) {
     const $modal = $("#reportModal");
     const modalBody = $modal.find(".modal-body");

@@ -51,11 +51,8 @@ function renderNews(items) {
             const emptyHtml = `
                 <div class="empty-state-container animated fadeIn">
                     <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
-                    <h3 class="empty-title">${langData['no_items'] || 'No items'}</h3>
-                    <p class="empty-subtitle"${langData['no_items_subtitle'] || 'No items available.'}</p>
-                    <button onclick="location.reload()" class="btn-refresh">
-                        <i class="fa-solid fa-rotate-right"></i> <span>${langData['refresh'] || 'Refresh'}</span>
-                    </button>
+                    <h3 class="empty-title" data-i18n="no_items"></h3>
+                    <p class="empty-subtitle" data-i18n="no_items_subtitle"></p>
                 </div>
             `;
             $container.html(emptyHtml);

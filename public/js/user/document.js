@@ -148,9 +148,10 @@ function loadDocuments() {
 function renderDocuments(items) {
     if (!items.length) {
         $('#listView').html(`
-            <div class="text-center text-muted py-5">
-                <i class="fa-regular fa-folder-open" style="font-size:48px;"></i>
-                <p class="mt-3" data-i18n="no_documents_found"></p>
+            <div class="empty-state-container animated fadeIn">
+                <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
+                <h3 class="empty-title" data-i18n="no_items"></h3>
+                <p class="empty-subtitle" data-i18n="no_items_subtitle"></p>
             </div>
         `);
         return;
@@ -364,9 +365,9 @@ function renderHistoryRows(items) {
     let html = ``;
     if (!items || items.length === 0) {
         html = `
-            <div class="text-center text-muted py-5">
-                <i class="fa-regular fa-folder-open" style="font-size:48px;"></i>
-                <p class="mt-3" data-i18n="no_documents_found">ไม่พบข้อมูล</p>
+            <div class="empty-state-container animated fadeIn">
+                <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
+                <h3 class="empty-title" data-i18n="no_data_found"></h3>
             </div>`;
         $('#downloadHistoryList').html(html);
         return;

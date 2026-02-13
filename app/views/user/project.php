@@ -1,7 +1,7 @@
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/news.css?v=<?=time();?>">
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/project.css?v=<?=time();?>">
 <div class="container py-5 mt-5">  
-    <div class="header-section mb-5">
+    <div class="header-section mb-3">
         <div class="header-top">
             <div class="header-title-wrapper">
                 <div class="header-icon">
@@ -26,12 +26,12 @@
         <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
         <span class="ms-2 small text-muted" data-i18n="loading"></span>
     </div>
-    <div id="scrollEnd" style="height: 50px;"></div>
-    <div id="emptyState" class="text-center py-5 d-none animated fadeIn">
-        <i class="fa-solid fa-folder-open fa-4x text-muted mb-3"></i>
-        <h5 class="text-muted" data-i18n="no_data_found"></h5>
+    <div id="emptyState" class="empty-state-container animated fadeIn">
+        <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
+        <h3 class="empty-title" data-i18n="no_items"></h3>
+        <p class="empty-subtitle" data-i18n="no_items_subtitle"></p>
     </div>
 </div>
-<div id="scrollEnd"></div>
+<div id="scrollEnd" style="height: 50px;"></div>
 <script src="<?=BASE_URL?>/public/js/user/project.js?v=<?=time();?>" defer></script>
 <script src="<?=BASE_URL?>/public/js/view.js?v=<?=time();?>" defer></script>

@@ -556,5 +556,6 @@
     "pm2.5": "ຝຸ່ນ PM 2.5",
     "rain": "ປະລິມານຝົນ",
     "please_choose_height": "ກະລຸນາເລືອກຄວາມສູງ",
-    "monitoring_period": "ໄລຍະເວລາການຕິດຕາມ"
+    "monitoring_period": "ໄລຍະເວລາການຕິດຕາມ",
+    "max_selection_reached": "ທ່ານສາມາດເລືອກໄດ້ສູງສຸດ 3 ລະດັບຄວາມສູງ."
 }

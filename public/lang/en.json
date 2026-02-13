@@ -293,7 +293,7 @@
     "complete": "Complete",
     "failed": "Failed",
     "pole": "Pole",
-    "no_data_found": "No data found",
+    "no_data_found": "No data available",
     "view_data": "View Data",
     "report": "Report",
     "degree": "Degree",
@@ -555,5 +555,6 @@
     "pm2.5": "PM 2.5",
     "rain": "Rain",
     "please_choose_height": "Please select height",
-    "monitoring_period": "Monitoring Period"
+    "monitoring_period": "Monitoring Period",
+    "max_selection_reached": "You can select a maximum of 3 height levels."
 }
