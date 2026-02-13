@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 07, 2026 at 01:26 PM
+-- Generation Time: Feb 13, 2026 at 06:16 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -164,6 +164,7 @@ CREATE TABLE `wp_content` (
   `content_id` int(11) NOT NULL,
   `type` enum('news','project','pole') NOT NULL DEFAULT 'news',
   `cover` longtext,
+  `cover_display` enum('yes','no') NOT NULL DEFAULT 'yes',
   `content_slug` varchar(255) DEFAULT NULL,
   `status` enum('scheduled','draft','published','deleted','active','inactive') NOT NULL DEFAULT 'draft',
   `publish_at` datetime DEFAULT NULL,
@@ -505,6 +506,8 @@ CREATE TABLE `wp_poles` (
 CREATE TABLE `wp_project` (
   `project_id` bigint(20) NOT NULL,
   `contract_id` bigint(20) DEFAULT NULL,
+  `project_group_id` bigint(20) DEFAULT NULL,
+  `project_status_id` bigint(20) DEFAULT NULL,
   `project_code` varchar(255) DEFAULT NULL,
   `project_name` varchar(255) NOT NULL,
   `project_name_display` varchar(255) DEFAULT NULL,
@@ -512,8 +515,24 @@ CREATE TABLE `wp_project` (
   `project_end` date DEFAULT NULL,
   `status` enum('active','inactive','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  `project_background` varchar(255) DEFAULT NULL,
+  `project_opacity` bigint(20) NOT NULL DEFAULT '0'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wp_project_group`
+--
+
+CREATE TABLE `wp_project_group` (
+  `project_group_id` bigint(20) NOT NULL,
+  `project_group_name` varchar(255) NOT NULL,
+  `status` enum('active','deleted') NOT NULL DEFAULT 'active',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -527,6 +546,21 @@ CREATE TABLE `wp_project_pole_type` (
   `type_id` bigint(20) NOT NULL,
   `created_at` datetime NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wp_project_status`
+--
+
+CREATE TABLE `wp_project_status` (
+  `project_status_id` bigint(20) NOT NULL,
+  `project_status_name` varchar(255) NOT NULL,
+  `project_status_color` varchar(255) DEFAULT '#3b82f6',
+  `status` enum('active','deleted') NOT NULL DEFAULT 'active',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -777,11 +811,23 @@ ALTER TABLE `wp_project`
   ADD UNIQUE KEY `uq_project_contract` (`project_name`,`contract_id`);
 
 --
+-- Indexes for table `wp_project_group`
+--
+ALTER TABLE `wp_project_group`
+  ADD PRIMARY KEY (`project_group_id`);
+
+--
 -- Indexes for table `wp_project_pole_type`
 --
 ALTER TABLE `wp_project_pole_type`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `project_id` (`project_id`,`type_id`);
+
+--
+-- Indexes for table `wp_project_status`
+--
+ALTER TABLE `wp_project_status`
+  ADD PRIMARY KEY (`project_status_id`);
 
 --
 -- Indexes for table `wp_setting`
@@ -973,10 +1019,22 @@ ALTER TABLE `wp_project`
   MODIFY `project_id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `wp_project_group`
+--
+ALTER TABLE `wp_project_group`
+  MODIFY `project_group_id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `wp_project_pole_type`
 --
 ALTER TABLE `wp_project_pole_type`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `wp_project_status`
+--
+ALTER TABLE `wp_project_status`
+  MODIFY `project_status_id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `wp_setting`

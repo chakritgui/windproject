@@ -42,6 +42,9 @@ function initTable() {
             $(".filter").on("change", () => initInstallationsTable());
             initInstallationsTable();
             break;
+        case 'level':
+            initLevelTable();
+            break;
         case 'poles':
             initSelect2Remote('#filter_pole_project', `${BASE_URL}/api/poles/filter`, { type: 'project' });
             initSelect2Remote('#filter_pole_type', `${BASE_URL}/api/poles/filter`, { type: 'type' });

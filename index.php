@@ -114,6 +114,10 @@
             $router->post('/api/group/delete', 'GroupController@delete');
             $router->post('/api/group/get', 'GroupController@get');
             $router->post('/api/group/save', 'GroupController@save');
+            $router->post('/api/level/list', 'LevelController@list');
+            $router->post('/api/level/delete', 'LevelController@delete');
+            $router->post('/api/level/get', 'LevelController@get');
+            $router->post('/api/level/save', 'LevelController@save');
             $router->post('/api/project-status/list', 'StatusController@list');
             $router->post('/api/project-status/delete', 'StatusController@delete');
             $router->post('/api/project-status/get', 'StatusController@get');

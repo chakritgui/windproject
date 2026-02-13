@@ -47,6 +47,11 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="level-tab" data-bs-toggle="pill" data-bs-target="#level" data-page="level" type="button">
+                <i class="fa-solid fa-signal"></i> <span data-i18n="level"></span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="poles-tab" data-bs-toggle="pill" data-bs-target="#poles" data-page="poles" type="button">
                 <i class="fa-solid fa-tower-broadcast"></i> <span data-i18n="poles"></span>
             </button>
@@ -214,6 +219,21 @@
                 </table>
             </div>
         </div>
+        <div class="tab-pane fade" id="level" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="tb_level">
+                    <thead>
+                        <tr>
+                            <th data-i18n="level"></th>
+                            <th data-i18n="height_level"></th>
+                            <th data-i18n="create_at"></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
         <div class="tab-pane fade" id="poles" role="tabpanel">
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
@@ -267,4 +287,5 @@
 <script src="<?=BASE_URL?>/public/js/admin/master/installation.js?v=<?=time();?>"></script>
 <script src="<?=BASE_URL?>/public/js/admin/master/poles.js?v=<?=time();?>"></script>
 <script src="<?=BASE_URL?>/public/js/admin/master/project-status.js?v=<?=time();?>"></script>
+<script src="<?=BASE_URL?>/public/js/admin/master/level.js?v=<?=time();?>"></script>
 <script src="<?=BASE_URL?>/public/js/view.js?v=<?=time();?>" defer></script>

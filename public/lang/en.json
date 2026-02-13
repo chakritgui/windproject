@@ -556,5 +556,7 @@
     "rain": "Rain",
     "please_choose_height": "Please select height",
     "monitoring_period": "Monitoring Period",
-    "max_selection_reached": "You can select a maximum of 3 height levels."
+    "max_selection_reached": "You can select a maximum of 3 height levels.",
+    "manageLevel": "Manage Level",
+    "enter_multiple_values": "Press Enter to add multiple values"
 }

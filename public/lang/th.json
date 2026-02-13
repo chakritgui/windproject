@@ -557,5 +557,7 @@
     "rain": "ปริมาณฝน",
     "please_choose_height": "กรุณาเลือกความสูง",
     "monitoring_period": "ระยะเวลาการตรวจสอบ",
-    "max_selection_reached": "เลือกได้สูงสุดไม่เกิน 3 ระดับความสูง"
+    "max_selection_reached": "เลือกได้สูงสุดไม่เกิน 3 ระดับความสูง",
+    "manageLevel": "จัดการระดับตวามสูง",
+    "enter_multiple_values": "กด Enter เพื่อเพิ่มค่าหลายค่า"
 }
