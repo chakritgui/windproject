@@ -130,10 +130,10 @@ $(document).on('click', '.manage-level', function() {
                     <div class="mb-3">
                         <label class="mb-2 required">${langData['height_level'] || 'Height Levels'}</label>
                         <div id="tag-container" class="form-control d-flex flex-wrap align-items-center gap-2" style="min-height: 45px; cursor: text;">
-                            <input type="text" id="tag-input" class="border-0 flex-grow-1 obj-required" style="outline: none; min-width: 100px;" placeholder="Type and press Enter...">
+                            <input type="text" id="tag-input" class="border-0 flex-grow-1" style="outline: none; min-width: 100px;" placeholder="Type and press Enter...">
                         </div>
                         <small class="text-muted"><span data-i18n="enter_multiple_values"></span> (e.g., 75, 120N)</small>
-                        <input type="hidden" name="height_levels" id="height_levels_hidden">
+                        <input type="hidden" class="obj-required" name="height_levels" id="height_levels_hidden">
                     </div>
                 `);
                 if (levelData) {
