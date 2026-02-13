@@ -165,11 +165,13 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                         </div>
                     </div>
                     <div class="row mt-3">
-                        <label class="form-label required">
-                            <i class="fa-solid fa-up-down me-2"></i><span data-i18n="height_level"></span>
-                        </label>
-                        <div data-i18n="max_selection_reached"></div>
-                        <div class="levelBody bg-white border rounded-3 p-3 shadow-sm d-flex flex-wrap gap-2"></div>
+                        <div class="col-12">
+                            <label class="form-label required">
+                                <i class="fa-solid fa-up-down me-2"></i><span data-i18n="height_level"></span>
+                            </label>
+                            <div class="mb-3 text-warning"><span data-i18n="max_selection_reached"></span> <span class="height_limit"></span> <span data-i18n="height_level"></span></div>
+                            <div class="levelBody bg-white border rounded-3 p-3 shadow-sm gap-2"></div>
+                        </div>
                     </div>
                     <div class="row mt-3">
                         <div class="col-12">
@@ -260,13 +262,19 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
         $('#poleModalBody').html(langData['cannot_load'] || 'Failed to load data. Please try again later.');
     }
 }
+let currentLimit = 3; 
 async function renderLevel(height_id, levelsToCheck = []) {
     const $container = $(".levelBody");
     if (!height_id) {
-        $container.html(renderErrorAlert('warning', langData['please_choose_height'] || 'Please select height'));
+        $container.html(`<div class="alert alert-danger" role="alert">${langData['please_choose_height'] || 'Please select height'}</div>`);
         return;
     }
-    $container.html('<div class="py-2 text-primary small"><div class="spinner-border spinner-border-sm me-2"></div><span data-i18n="loading"></span></div>');
+    $container.html(`
+        <div class="py-2 text-primary small">
+            <div class="spinner-border spinner-border-sm me-2"></div>
+            <span data-i18n="loading">${langData['loading'] || 'Loading...'}</span>
+        </div>
+    `);
     try {
         const response = await fetch(`${BASE_URL}/api/level`, {
             method: 'POST',
@@ -274,22 +282,22 @@ async function renderLevel(height_id, levelsToCheck = []) {
             body: JSON.stringify({ height_id: height_id })
         });
         if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
+        const result = await response.json();
         let html = '';
-        if (data && data.length > 0) {
-            data.forEach((item, index) => {
+        const levels = result.levels || [];
+        currentLimit = parseInt(result.height_limit) || 3;
+        if (levels && levels.length > 0) {
+            levels.forEach((item, index) => {
                 let isChecked = '';
                 if (levelsToCheck && levelsToCheck.length > 0) {
                     isChecked = levelsToCheck.some(lv => String(lv) === String(item.levels_id)) ? 'checked' : '';
                 } else {
-                    isChecked = index < 3 ? 'checked' : '';
+                    isChecked = index < currentLimit ? 'checked' : '';
                 }
                 html += `
                     <div class="level-item">
-                        <input class="btn-check level-checkbox" type="checkbox" name="levels[]" 
-                               value="${item.levels_id}" id="level_${item.levels_id}" ${isChecked} autocomplete="off">
-                        <label class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1 mb-2 me-2 shadow-sm fw-medium transition-all" 
-                               for="level_${item.levels_id}">
+                        <input class="btn-check level-checkbox" type="checkbox" name="levels[]" value="${item.levels_id}" id="level_${item.levels_id}" ${isChecked} autocomplete="off">
+                        <label class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1 mb-2 me-2 shadow-sm fw-medium transition-all"  for="level_${item.levels_id}">
                             <i class="fa-solid fa-layer-group me-1 small"></i> ${item.height_levels} m.
                         </label>
                     </div>
@@ -297,19 +305,22 @@ async function renderLevel(height_id, levelsToCheck = []) {
             });
             html = `<div class="d-flex flex-wrap align-items-center">${html}</div>`;
         } else {
-            html = renderErrorAlert('danger', langData['no_data_found'] || 'No levels found for this mast.');
+            html = `<div class="alert alert-danger" role="alert">${langData['no_data_found'] || 'No levels found for this mast.'}</div>`;
         }
+        $(".height_limit").html(currentLimit); 
+        $(".current_limit_display").html(currentLimit);
         $container.html(html);
     } catch (error) {
-        console.error("RenderLevel Error:", error);
-        $container.html(renderErrorAlert('danger', langData['cannot_load'] || 'Connection error.'));
+        $container.html(`<div class="alert alert-danger" role="alert">${langData['cannot_load'] || 'Connection error.'}</div>`);
     }
 }
 $(document).on('change', '.level-checkbox', function() {
     let selectedCount = $('.level-checkbox:checked').length;
-    if (selectedCount > 3) {
+    if (selectedCount > currentLimit) {
         $(this).prop('checked', false);
-        showError(langData['max_selection_reached'] || 'You can select a maximum of 3 height levels.');
+        let warningMsg = (langData['max_selection_reached'] || 'You can select a maximum of {count} height levels') + " " + currentLimit;
+        warningMsg = warningMsg.replace('{count}', currentLimit);
+        showError(warningMsg);
     }
 });
 function showReportPWA(data) {

@@ -557,7 +557,16 @@
     "rain": "ປະລິມານຝົນ",
     "please_choose_height": "ກະລຸນາເລືອກຄວາມສູງ",
     "monitoring_period": "ໄລຍະເວລາການຕິດຕາມ",
-    "max_selection_reached": "ທ່ານສາມາດເລືອກໄດ້ສູງສຸດ 3 ລະດັບຄວາມສູງ.",
+    "max_selection_reached": "ທ່ານສາມາດເລືອກໄດ້ສູງສຸດ",
+    "selection_reached": "ເລືອກໄດ້ສູງສຸດ",
     "manageLevel": "ຈັດການລະດັບຄວາມສູງ",
-    "enter_multiple_values": "ກົດ Enter ເພື່ອເພີ່ມຄ່າຫຼາຍອັນ"
+    "enter_multiple_values": "ກົດ Enter ເພື່ອເພີ່ມຄ່າຫຼາຍອັນ",
+    "password_reset": "ຣີເຊັດລະຫັດຜ່ານ",
+    "enable_email_reset": "ເປີດນຳໃຊ້ລິ້ງຕັ້ງຄ່າໃໝ່ທາງອີເມວ",
+    "enable_email_reset_remark": "ຜູ້ໃຊ້ສາມາດຂໍຮັບລິ້ງຕັ້ງຄ່າລະຫັດຜ່ານໃໝ່ ເຊິ່ງຈະສົ່ງໄປຍັງອີເມວທີ່ລົງທະບຽນໄວ້ໂດຍກົງ",
+    "enable_admin_contact": "ຕິດຕໍ່ພາກສ່ວນສະໜັບສະໜູນ (ຜູ້ດູແລລະບົບ)",
+    "other_channels": "ຊ່ອງທາງອື່ນໆ",
+    "enable_request_form": "ແບບຟອມສົ່ງຄຳຮ້ອງຜ່ານລະບົບ",
+    "enable_request_form_remark": "ອະນຸຍາດໃຫ້ຜູ້ໃຊ້ສົ່ງຄຳຮ້ອງຂໍກູ້ຄືນລະຫັດຜ່ານ ໂດຍການລະບຸອີເມວ ແລະ ໝາຍເຫດເພີ່ມເຕີມເພື່ອຢືນຢັນຕົວຕົນ",
+    "limit_must_be_1": "ຂີດຈຳກັດຕ້ອງມີຢ່າງໜ້ອຍ 1"
 }

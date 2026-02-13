@@ -129,12 +129,20 @@ class PoleModel {
         ];
     }
     public function level($params) {
-        $sql = "SELECT levels_id, height_levels
-                FROM wp_height_levels
-                WHERE height_id = ? AND status <> 'deleted'
-                ORDER BY CAST(height_levels AS UNSIGNED) DESC"; 
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([$params['height_id']]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $sqlLimit = "SELECT height_limit FROM wp_height WHERE height_id = ?";
+        $stmtLimit = $this->db->prepare($sqlLimit);
+        $stmtLimit->execute([$params['height_id']]);
+        $heightLimit = $stmtLimit->fetchColumn() ?: 3; 
+        $sqlLevels = "SELECT levels_id, height_levels
+                    FROM wp_height_levels
+                    WHERE height_id = ? AND status <> 'deleted'
+                    ORDER BY CAST(height_levels AS UNSIGNED) DESC"; 
+        $stmtLevels = $this->db->prepare($sqlLevels);
+        $stmtLevels->execute([$params['height_id']]);
+        $levels = $stmtLevels->fetchAll(PDO::FETCH_ASSOC);
+        return [
+            'height_limit' => (int)$heightLimit,
+            'levels' => $levels
+        ];
     }
 }

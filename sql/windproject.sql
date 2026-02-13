@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 13, 2026 at 06:16 PM
+-- Generation Time: Feb 13, 2026 at 09:05 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -299,6 +299,7 @@ CREATE TABLE `wp_folder` (
 CREATE TABLE `wp_height` (
   `height_id` bigint(20) NOT NULL,
   `height_name` varchar(255) DEFAULT NULL,
+  `height_limit` bigint(20) NOT NULL DEFAULT '3',
   `status` enum('active','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
@@ -476,6 +477,40 @@ CREATE TABLE `wp_password_resets` (
   `used` tinyint(1) DEFAULT '0',
   `is_valid` tinyint(1) DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wp_password_reset_requests`
+--
+
+CREATE TABLE `wp_password_reset_requests` (
+  `request_id` int(11) NOT NULL,
+  `user_email` varchar(255) NOT NULL,
+  `user_note` text,
+  `status` enum('pending','approved','rejected') DEFAULT 'pending',
+  `admin_remark` text,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `processed_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wp_password_reset_settings`
+--
+
+CREATE TABLE `wp_password_reset_settings` (
+  `id` int(11) NOT NULL,
+  `is_email_link_enabled` tinyint(1) DEFAULT '1',
+  `is_admin_contact_enabled` tinyint(1) DEFAULT '0',
+  `admin_email` varchar(255) DEFAULT NULL,
+  `admin_line_oa` varchar(100) DEFAULT NULL,
+  `admin_telegram` varchar(100) DEFAULT NULL,
+  `admin_others` text,
+  `is_system_request_enabled` tinyint(1) DEFAULT '0',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -793,6 +828,18 @@ ALTER TABLE `wp_password_resets`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `wp_password_reset_requests`
+--
+ALTER TABLE `wp_password_reset_requests`
+  ADD PRIMARY KEY (`request_id`);
+
+--
+-- Indexes for table `wp_password_reset_settings`
+--
+ALTER TABLE `wp_password_reset_settings`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `wp_poles`
 --
 ALTER TABLE `wp_poles`
@@ -1004,6 +1051,18 @@ ALTER TABLE `wp_notification_targets`
 -- AUTO_INCREMENT for table `wp_password_resets`
 --
 ALTER TABLE `wp_password_resets`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `wp_password_reset_requests`
+--
+ALTER TABLE `wp_password_reset_requests`
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `wp_password_reset_settings`
+--
+ALTER TABLE `wp_password_reset_settings`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --

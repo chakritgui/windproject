@@ -12,7 +12,7 @@ function initLevelTable() {
     tb_level = $('#tb_level').DataTable({
         processing: true,
         serverSide: true,
-        order: [[2, 'desc']],
+        order: [[3, 'desc']],
         ajax: { 
             url: "api/level/list", 
             type: "POST",
@@ -42,6 +42,9 @@ function initLevelTable() {
                 html += '</div>';
                 return html;
             }
+        },{ 
+            data: "height_limit",
+            orderable: true,
         },{ 
             data: "created_at",
             orderable: true,
@@ -140,7 +143,11 @@ $(document).on('click', '.manage-level', function() {
                         <input type="text" class="form-control obj-required" id="height_name" maxlength="255">
                     </div>
                     <div class="mb-3">
-                        <label class="mb-2 required">${langData['height_level'] || 'Height Levels'}</label>
+                        <label class="mb-2 required">${langData['level'] || 'Level'}</label>
+                        <input type="number" class="form-control obj-required" id="height_limit" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                    </div>
+                    <div class="mb-3">
+                        <label class="mb-2 required">${langData['max_selection_reached'] || 'Select a maximum of'}</label>
                         <div id="tag-container" class="form-control d-flex flex-wrap align-items-center gap-2" style="min-height: 45px; cursor: text;">
                             <input type="text" id="tag-input" class="border-0 flex-grow-1" style="outline: none; min-width: 100px;" placeholder="Type and press Enter...">
                         </div>
@@ -151,6 +158,7 @@ $(document).on('click', '.manage-level', function() {
                 if (levelData) {
                     $("#height_id").val(levelData.height_id);
                     $("#height_name").val(levelData.height_name);
+                    $("#height_limit").val(levelData.height_limit);
                     if (levelData.height_levels) {
                         levelsArray = levelData.height_levels.split(',').map(s => s.trim()).filter(s => s !== "");
                     }
@@ -182,11 +190,11 @@ $(document).on('click', '#tag-container', function() {
     $('#tag-input').focus();
 });
 $(document).on('keydown', '#tag-input', function(e) {
-    if (e.key === 'Enter' || e.key === ',') {
+    if (e.key === 'Enter') {
         e.preventDefault();
-        let val = $(this).val().replace(/,/g, '').trim(); 
+        let val = $(this).val().trim();
         if (val !== "") {
-            if (!levelsArray.includes(val)) {
+            if(!levelsArray.includes(val)) {
                 levelsArray.push(val);
                 renderTags();
             }
@@ -194,28 +202,41 @@ $(document).on('keydown', '#tag-input', function(e) {
         }
     }
 });
-$(document).on('click', '.remove-tag', function(e) {
-    e.stopPropagation();
+$(document).on('click', '.remove-tag', function() {
     const index = $(this).data('index');
     levelsArray.splice(index, 1);
     renderTags();
 });
 $(document).on('click', '.save-level', function () {
     let errors = [];
+    const limitVal = parseInt($('#height_limit').val()) || 0;
+    const totalLevels = levelsArray.length;
     $('.obj-required').each(function () {
         let value = $(this).val()?.trim() || '';
         if (!value) {
             $(this).addClass('is-invalid');
-            errors.push(this.name || this.id);
+            errors.push(this.id);
         } else {
             $(this).removeClass('is-invalid');
         }
     });
     if (errors.length) {
         showWarning(langData['required_star_message'] || 'Please fill all fields marked with *');
-        $('.is-invalid').first().focus();
         return;
     }
+    if (limitVal > totalLevels) {
+        $('#height_limit').addClass('is-invalid');
+        showWarning(
+            (langData['selection_reached'] || 'Select a maximum of') + " " + totalLevels
+        );
+        return;
+    }
+    if (limitVal < 1) {
+        $('#height_limit').addClass('is-invalid');
+        showWarning(langData['limit_must_be_1'] || 'Limit must be at least 1');
+        return;
+    }
+
     saveLevel();
 });
 function saveLevel() {
@@ -223,6 +244,7 @@ function saveLevel() {
     btn.prop("disabled", true);
     const formData = new FormData();
     formData.append("height_id", $("#height_id").val() || "");
+    formData.append("height_limit", $("#height_limit").val() || 3);
     formData.append("height_name", $("#height_name").val());
     formData.append("height_levels", $("#height_levels_hidden").val());
     Swal.fire({

@@ -36,6 +36,9 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link" data-bs-toggle="pill" data-bs-target="#notifications" type="button"><i class="fa-solid fa-bell me-2"></i><span data-i18n="notifications"></span></button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#password_reset" type="button"><i class="fa-solid fa-user-lock me-2"></i><span data-i18n="password_reset"></span></button>
+        </li>
     </ul>
     <div class="tab-content">
         <div class="tab-pane fade show active" id="general">
@@ -386,6 +389,76 @@
             </div>
             <div class="d-flex justify-content-end mt-4">
                 <button class="btn btn-lg btn-primary w-md-auto save-notification">
+                    <i class="fa-solid fa-floppy-disk me-2"></i>
+                    <span data-i18n="save"></span>
+                </button>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="password_reset">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">
+                        <i class="fa-solid fa-user-lock text-primary me-2"></i>
+                        <span data-i18n="password_reset"></span>
+                    </h5>
+                    <form id="passwordResetForm">
+                        <div class="mb-4 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label fw-bold mb-0">
+                                    <span data-i18n="enable_email_reset"></span>
+                                </label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="emailResetToggle" checked>
+                                </div>
+                            </div>
+                            <small class="text-muted d-block mb-2" data-i18n="enable_email_reset_remark"></small>
+                        </div>
+                        <div class="mb-4 pb-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label fw-bold mb-0">
+                                    <span data-i18n="enable_admin_contact"></span>
+                                </label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="adminContactToggle">
+                                </div>
+                            </div>
+                            <div class="admin-channels mt-3">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label"><i class="fa-solid fa-envelope-open me-2"></i><span data-i18n="email"></span></label>
+                                        <input type="email" class="form-control" placeholder="admin@example.com">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label"><i class="fa-brands fa-line me-2"></i>Line OA</label>
+                                        <input type="text" class="form-control" placeholder="@yourlineid">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label"><i class="fa-brands fa-telegram me-2"></i>Telegram</label>
+                                        <input type="text" class="form-control" placeholder="@username">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label"><i class="fa-solid fa-address-book me-2"></i><span data-i18n="other_channels"></span></label>
+                                        <input type="text" class="form-control" placeholder="Phone or other link">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label fw-bold mb-0">
+                                    <span data-i18n="enable_request_form"></span>
+                                </label>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="requestFormToggle">
+                                </div>
+                            </div>
+                            <p class="text-muted" data-i18n="enable_request_form_remark"></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="d-flex justify-content-end mt-4">
+                <button class="btn btn-lg btn-primary w-md-auto save-passwordreset">
                     <i class="fa-solid fa-floppy-disk me-2"></i>
                     <span data-i18n="save"></span>
                 </button>

@@ -47,6 +47,7 @@ class LevelController extends BaseController {
         }
         $data = [
             'height_id'     => intval($_POST['height_id'] ?? 0),
+            'height_limit'     => intval($_POST['height_limit'] ?? 3),
             'height_name'   => $height_name,
             'height_levels' => $height_levels 
         ];

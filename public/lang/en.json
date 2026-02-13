@@ -556,7 +556,16 @@
     "rain": "Rain",
     "please_choose_height": "Please select height",
     "monitoring_period": "Monitoring Period",
-    "max_selection_reached": "You can select a maximum of 3 height levels.",
+    "max_selection_reached": "You can select a maximum of",
+    "selection_reached": "Select a maximum of",
     "manageLevel": "Manage Level",
-    "enter_multiple_values": "Press Enter to add multiple values"
+    "enter_multiple_values": "Press Enter to add multiple values",
+    "password_reset": "Password Reset",
+    "enable_email_reset": "Enable Email Reset Link",
+    "enable_email_reset_remark": "Users can request a password reset link sent directly to their registered email address.",
+    "enable_admin_contact": "Contact Admin Support",
+    "other_channels": "Other Channels",
+    "enable_request_form": "System Request Form",
+    "enable_request_form_remark": "Allows users to submit a recovery request by providing their email and additional notes for verification.",
+    "limit_must_be_1": "Limit must be at least 1"
 }

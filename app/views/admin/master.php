@@ -226,6 +226,7 @@
                         <tr>
                             <th data-i18n="level"></th>
                             <th data-i18n="height_level"></th>
+                            <th data-i18n="max_selection_reached"></th>
                             <th data-i18n="create_at"></th>
                             <th></th>
                         </tr>

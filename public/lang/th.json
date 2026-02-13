@@ -557,7 +557,16 @@
     "rain": "ปริมาณฝน",
     "please_choose_height": "กรุณาเลือกความสูง",
     "monitoring_period": "ระยะเวลาการตรวจสอบ",
-    "max_selection_reached": "เลือกได้สูงสุดไม่เกิน 3 ระดับความสูง",
+    "max_selection_reached": "เลือกได้สูงสุดไม่เกิน",
+    "selection_reached": "เลือกได้สูงสุด",
     "manageLevel": "จัดการระดับตวามสูง",
-    "enter_multiple_values": "กด Enter เพื่อเพิ่มค่าหลายค่า"
+    "enter_multiple_values": "กด Enter เพื่อเพิ่มค่าหลายค่า",
+    "password_reset": "รีเซ็ตรหัสผ่าน",
+    "enable_email_reset": "เปิดใช้งานลิงก์รีเซ็ตทางอีเมล",
+    "enable_email_reset_remark": "ผู้ใช้สามารถขอรับลิงก์สำหรับรีเซ็ตรหัสผ่าน ซึ่งจะส่งไปยังอีเมลที่ลงทะเบียนไว้โดยตรง",
+    "enable_admin_contact": "ติดต่อฝ่ายสนับสนุน (ผู้ดูแลระบบ)",
+    "other_channels": "ช่องทางอื่นๆ",
+    "enable_request_form": "แบบฟอร์มส่งคำขอผ่านระบบ",
+    "enable_request_form_remark": "อนุญาตให้ผู้ใช้ส่งคำขอเพื่อกู้คืนรหัสผ่าน โดยการระบุอีเมลและหมายเหตุเพิ่มเติมเพื่อตรวจสอบตัวตน",
+    "limit_must_be_1": "ขีดจำกัดต้องมีอย่างน้อย 1"
 }
