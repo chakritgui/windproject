@@ -27,9 +27,21 @@ function initLevelTable() {
                 }
                 return data;
             }
-        },{ 
+        },{
             data: "height_levels",
             orderable: false,
+            render: function (data, type, row) {
+                if (!data) return '<span class="text-muted">-</span>';
+                let levels = data.split(',');
+                let html = '<div class="d-flex flex-wrap gap-1">'; 
+                levels.forEach(function (level) {
+                    if(level.trim() !== "") {
+                        html += `<span class="badge rounded-pill bg-light text-dark border shadow-sm px-2 py-1" style="font-weight: 500;">${level.trim()}</span>`;
+                    }
+                });
+                html += '</div>';
+                return html;
+            }
         },{ 
             data: "created_at",
             orderable: true,
