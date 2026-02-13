@@ -94,8 +94,8 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                         </div>
                     </div>
                     <hr class="text-muted opacity-25 mb-4">
-                    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-3">
-                        <div class="col">
+                    <div class="row g-3">
+                        <div class="col-12 col-lg-6">
                             <div class="d-flex align-items-start gap-3 p-2 rounded-3 hover-bg-light transition">
                                 <div class="text-primary opacity-50"><i class="fa-solid fa-diagram-project fs-4"></i></div>
                                 <div>
@@ -104,7 +104,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                                 </div>
                             </div>
                         </div>
-                        <div class="col">
+                        <div class="col-12 col-lg-6">
                             <div class="d-flex align-items-start gap-3 p-2 rounded-3 hover-bg-light transition">
                                 <div class="text-info opacity-50"><i class="fas fa-arrows-alt-v fs-4"></i></div>
                                 <div>
@@ -113,7 +113,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                                 </div>
                             </div>
                         </div>
-                        <div class="col">
+                        <div class="col-12 col-lg-6">
                             <div class="d-flex align-items-start gap-3 p-2 rounded-3 hover-bg-light transition">
                                 <div class="text-success opacity-50"><i class="fas fa-map-marker-alt fs-4"></i></div>
                                 <div>
@@ -122,7 +122,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                                 </div>
                             </div>
                         </div>
-                        <div class="col">
+                        <div class="col-12 col-lg-6">
                             <div class="d-flex align-items-start gap-3 p-2 rounded-3 hover-bg-light transition">
                                 <div class="text-warning opacity-50"><i class="fa-regular fa-calendar fs-4"></i></div>
                                 <div>
