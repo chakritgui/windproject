@@ -155,7 +155,17 @@ class DocumentModel {
             return true;
         } catch (Exception $e) {
             $this->db->rollBack();
-            return false;
+    // บันทึก Log ลงไฟล์ของระบบ
+    error_log("Save Document Error: " . $e->getMessage());
+    
+    // ส่ง Error กลับไปให้ JavaScript (เฉพาะช่วง Debug)
+    header('Content-Type: application/json');
+    echo json_encode([
+        'status' => false,
+        'message' => $e->getMessage(),
+        'trace' => $e->getTraceAsString() // ดูลำดับการทำงานว่าพังที่บรรทัดไหน
+    ]);
+    exit;
         }
     }
     public function delete($id) {
