@@ -48,7 +48,7 @@ $(document).on('change', '#enableTranslate', function() {
     }
 });
 function initSetting() {
-    apiPost(`${BASE_URL}/api/settings.get`, null).done(res => {
+    apiPost(`/api/settings.get`, null).done(res => {
         if (!res.status || !res.data) {
             showError(langData['cannot_load']);
             return;
@@ -256,7 +256,7 @@ $(document).on('click', '.save-language', function () {
     fd.append("language_default", $("input[name=language_default]:checked").val() || 'en');
     fd.append("language_content", $("input[name=language_content]:checked").val() || 'en');
     toggleButton('.save-language', true);
-    apiPost(`${BASE_URL}/api/settings.lang`, fd).done(res => {
+    apiPost(`/api/settings.lang`, fd).done(res => {
         res.status ? (showSuccess(langData['saved_successfully']), initSetting()) : showError(langData['cannot_save']);
     }).always(() => toggleButton('.save-language', false));
 });
