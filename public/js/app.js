@@ -367,3 +367,20 @@ window.onload = function() {
 function renderErrorAlert(type, message) {
     return `<div class="p-5 text-center"><div class="alert alert-${type} shadow-sm rounded-4">${message}</div></div>`;
 }
+$(document).ready(function () {
+    const $container = $(".main-container");
+    const backToTopBtn = $("#btn-back-to-top");
+    $container.on("scroll", function () {
+        if ($(this).scrollTop() > 300) {
+            backToTopBtn.fadeIn(300);
+        } else {
+            backToTopBtn.fadeOut(300);
+        }
+    });
+    backToTopBtn.click(function () {
+        $container.animate({ 
+            scrollTop: 0 
+        }, 600); 
+        return false;
+    });
+});

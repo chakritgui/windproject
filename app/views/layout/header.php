@@ -82,6 +82,9 @@
 <script src="<?=BASE_URL?>/public/js/alert.js?v=<?=time();?>" defer></script>
 <script src="<?=BASE_URL?>/public/js/object.js?v=<?=time();?>" defer></script>
 <script src="<?=BASE_URL?>/public/js/notification.js?v=<?=time();?>" defer></script>
+<button type="button" id="btn-back-to-top" class="btn btn-sm btn-primary rounded-circle shadow-lg transition-all" title="Back to Top">
+    <i class="fa-solid fa-angle-up"></i>
+</button>
 <div id="pageLoader" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="z-index: 1055; background: rgba(255,255,255,.7);">
     <div class="d-flex justify-content-center align-items-center h-100">
         <div class="spinner-border" role="status" aria-hidden="true"></div>

@@ -21,12 +21,12 @@ class MediaHelper {
             }
         }
     }
-    public function handleMultiUpload($content_id, $type, $inputKey){
+    public function handleMultiUpload($content_id, $type, $inputKey) {
         if (!isset($_FILES[$inputKey]) || empty($_FILES[$inputKey]['name'][0])) {
             return;
         }
-        $allowedImageExt = ['jpg','jpeg','png','gif','webp'];
-        $allowedFileExt  = ['pdf','doc','docx','xls','xlsx','txt'];
+        $allowedImageExt = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $allowedFileExt  = ['ppt', 'pptx', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'txt', 'zip', 'rar', 'jpg', 'jpeg', 'png', 'gif', 'webp'];
         $files = $_FILES[$inputKey];
         $baseDir = "uploads/content/media/";
         $uploadPath = rtrim($this->basePath, '/') . '/' . $baseDir;
@@ -34,83 +34,76 @@ class MediaHelper {
             mkdir($uploadPath, 0755, true);
         }
         foreach ($files['name'] as $i => $originalName) {
-            if ($files['error'][$i] !== UPLOAD_ERR_OK) {
-                continue;
-            }
+            if ($files['error'][$i] !== UPLOAD_ERR_OK) continue;
             $tmp  = $files['tmp_name'][$i];
             $size = $files['size'][$i];
-            if ($size > 512 * 1024 * 1024) {
-                continue;
+            $ext  = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+            if (in_array($type, ['image', 'image360'])) {
+                if (!in_array($ext, $allowedImageExt)) continue;
+            } else {
+                if (!in_array($ext, $allowedFileExt)) continue;
             }
-            $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-            if ($type === 'image' && !in_array($ext, $allowedImageExt)) {
-                continue;
-            }
-            if ($type !== 'image' && !in_array($ext, $allowedFileExt)) {
-                continue;
-            }
-            $baseName = md5($type . '_' . $content_id . '_' . uniqid('', true));
-            $image = false;
+            $baseName    = md5($type . '_' . $content_id . '_' . uniqid('', true));
+            $dbPath      = "";
+            $target      = "";
+            $finalSize   = $size;
             $isConverted = false;
-            if ($type === 'image' && function_exists('imagewebp')) {
+            if (in_array($type, ['image', 'image360']) && function_exists('imagewebp')) {
                 $imgInfo = @getimagesize($tmp);
                 if ($imgInfo !== false) {
-                    switch ($imgInfo['mime']) {
-                        case 'image/jpeg':
-                            $image = imagecreatefromjpeg($tmp);
-                            break;
-                        case 'image/png':
-                            $image = imagecreatefrompng($tmp);
-                            break;
-                        case 'image/gif':
-                            $image = imagecreatefromgif($tmp);
-                            break;
-                        case 'image/webp':
-                            if (function_exists('imagecreatefromwebp')) {
-                                $image = imagecreatefromwebp($tmp);
-                            }
-                            break;
+                    $width  = $imgInfo[0];
+                    $height = $imgInfo[1];
+                    $mime   = $imgInfo['mime'];
+                    $sourceImage = false;
+                    switch ($mime) {
+                        case 'image/jpeg': $sourceImage = imagecreatefromjpeg($tmp); break;
+                        case 'image/png':  $sourceImage = imagecreatefrompng($tmp); break;
+                        case 'image/gif':  $sourceImage = imagecreatefromgif($tmp); break;
+                        case 'image/webp': $sourceImage = @imagecreatefromwebp($tmp); break;
                     }
-                    if ($image) {
-                        imagealphablending($image, false);
-                        imagesavealpha($image, true);
+                    if ($sourceImage) {
+                        $maxDim = 2000;
+                        if ($width > $maxDim || $height > $maxDim) {
+                            $ratio = $width / $height;
+                            if ($ratio > 1) {
+                                $newWidth = $maxDim;
+                                $newHeight = $maxDim / $ratio;
+                            } else {
+                                $newHeight = $maxDim;
+                                $newWidth = $maxDim * $ratio;
+                            }
+                            $virtualImage = imagecreatetruecolor($newWidth, $newHeight);
+                            imagealphablending($virtualImage, false);
+                            imagesavealpha($virtualImage, true);    
+                            imagecopyresampled($virtualImage, $sourceImage, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+                            imagedestroy($sourceImage);
+                            $sourceImage = $virtualImage;
+                        }
                         $fileName = $baseName . ".webp";
                         $target   = $uploadPath . $fileName;
-                        if (imagewebp($image, $target, 80)) {
-                            $dbPath = $baseDir . $fileName;
-                            $finalSize = filesize($target);
+                        if (imagewebp($sourceImage, $target, 80)) {
+                            $dbPath      = $baseDir . $fileName;
+                            $finalSize   = filesize($target);
                             $isConverted = true;
                         }
-                        imagedestroy($image);
+                        imagedestroy($sourceImage);
                     }
                 }
             }
             if (!$isConverted) {
                 $fileName = $baseName . "." . $ext;
                 $target   = $uploadPath . $fileName;
-                if (!move_uploaded_file($tmp, $target)) {
+                if (move_uploaded_file($tmp, $target)) {
+                    $dbPath = $baseDir . $fileName;
+                } else {
                     continue;
                 }
-                $dbPath    = $baseDir . $fileName;
-                $finalSize = $size;
             }
             try {
-                $stmt = $this->db->prepare("
-                    INSERT INTO wp_content_media 
-                    (content_id, file_path, file_name, file_type, file_size, created_at, updated_at) 
-                    VALUES (?, ?, ?, ?, ?, NOW(), NOW())
-                ");
-                $stmt->execute([
-                    $content_id,
-                    $dbPath,
-                    $originalName,
-                    $type,
-                    $finalSize
-                ]);
+                $stmt = $this->db->prepare("INSERT INTO wp_content_media (content_id, file_path, file_name, file_type, file_size, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())");
+                $stmt->execute([$content_id, $dbPath, $originalName, $type, $finalSize]);
             } catch (Exception $e) {
-                if (file_exists($target)) {
-                    unlink($target);
-                }
+                if (file_exists($target)) unlink($target);
             }
         }
     }

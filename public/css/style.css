@@ -704,3 +704,30 @@ img {
     max-width: 400px;
     margin: 0 auto 24px;
 }
+#btn-back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: none;
+    width: 45px;
+    height: 45px;
+    z-index: 1050;
+    border: none;
+    background-color: var(--bs-primary);
+    color: white;
+}
+#btn-back-to-top:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
+}
+#btn-back-to-top i {
+    font-size: 18px;
+}
+@media (max-width: 576px) {
+    #btn-back-to-top {
+        bottom: 20px;
+        right: 20px;
+        width: 45px;
+        height: 45px;
+    }
+}

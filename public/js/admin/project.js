@@ -459,16 +459,16 @@ function getContentForm(d) {
                             <select id="status" class="form-select obj-required"></select>
                         </div>
                     </div>
-                </div>
-                <hr class="my-4">
-                <div class="card bg-light border-0">
-                    <div class="card-body">
-                        <h6 class="card-title fw-bold text-dark"><i class="fa-solid fa-bell me-2"></i>${langData['notification_settings']}</h6>
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="send_notification">
-                            <label class="form-check-label" for="send_notification">${isEdit ? langData['send_update'] : langData['send_publishing']}</label>
+                    <hr class="my-4">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold text-dark"><i class="fa-solid fa-bell me-2"></i>${langData['notification_settings']}</h6>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="send_notification">
+                                <label class="form-check-label" for="send_notification">${isEdit ? langData['send_update'] : langData['send_publishing']}</label>
+                            </div>
+                            <small class="text-muted d-block mt-1">${langData['if_enabled']}</small>
                         </div>
-                        <small class="text-muted d-block mt-1">${langData['if_enabled']}</small>
                     </div>
                 </div>
                 ${renderGallery()}
@@ -513,30 +513,15 @@ function executeSave() {
     const btn = $(".save-content");
     btn.prop("disabled", true);
     const formData = new FormData();
-    const attachments = window.getAttachmentsData();
-    attachments.forEach((att, index) => {
-        if (att.type === 'new') {
-            formData.append('new_attachments[]', att.file);
-        } else {
-            formData.append('existing_attachments[]', att.id);
-        }
-    });
-    const images = window.getImagesData();
-    images.forEach((img, index) => {
-        if (img.type === 'new') {
-            formData.append('new_images[]', img.file);
-        } else {
-            formData.append('existing_images[]', img.id);
-        }
-    });
-    const images360 = window.get360ImagesData();
-    images360.forEach((img, index) => {
-        if (img.type === 'new') {
-            formData.append('new_images360[]', img.file);
-        } else {
-            formData.append('existing_images360[]', img.id);
-        }
-    });
+    const appendFiles = (getter, prefix) => {
+        getter().forEach(item => {
+            const key = item.type === 'new' ? `new_${prefix}[]` : `existing_${prefix}[]`;
+            formData.append(key, item.type === 'new' ? item.file : item.id);
+        });
+    };
+    appendFiles(window.getAttachmentsData, 'attachments');
+    appendFiles(window.getImagesData, 'images');
+    appendFiles(window.get360ImagesData, 'images360');
     formData.append("parent_id", currentFolderId || 0);
     formData.append("level", currentLevel || 1);
     formData.append("ref_id", currentRefId || "");
@@ -568,16 +553,12 @@ function executeSave() {
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
-            <p>${langData['please_do_not_close_this_page'] || 'Please do not close this page.'}</p>
-            <div class="progress mt-2" style="height: 10px;">
-                <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 100%"></div>
-            </div>
-        `,
+            <div class="progress mt-3" style="height: 20px;">
+                <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
+            </div>`,
         allowOutsideClick: false,
         showConfirmButton: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
+        didOpen: () => Swal.showLoading()
     });
     $.ajax({
         url: `${BASE_URL}/api/project.content.save`,
@@ -590,11 +571,7 @@ function executeSave() {
             xhr.upload.addEventListener("progress", function (e) {
                 if (e.lengthComputable) {
                     let percent = Math.round((e.loaded / e.total) * 100);
-                    let bar = document.getElementById("swal-progress");
-                    if (bar) {
-                        bar.style.width = percent + "%";
-                        bar.innerText = percent + "%";
-                    }
+                    $("#swal-progress").css("width", percent + "%").text(percent + "%");
                 }
             });
             return xhr;
