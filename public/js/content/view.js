@@ -44,7 +44,6 @@ function renderContent(data) {
     $(".breadcrumb-item-first").html(`<a class="text-primary" onclick="closeOrRedirect()">${langData[type] || 'News'}</a>`);
     $('#contentTitle, #breadcrumbTitle').text(title);
     $('#contentBody').html(body);
-    $('#contentBody').html(body);
     $('#contentBody img').each(function() {
         const $img = $(this);
         const src = $img.attr('src');
@@ -62,6 +61,13 @@ function renderContent(data) {
         });
     }
     $('#contentDate').text(data.created_at);
+    if (data.cover && data.cover_display === 'yes') {
+        $('#contentCover').html(`
+            <div class="position-relative mb-4 overflow-hidden shadow-sm rounded-4">
+                <img src="${BASE_URL}/${data.cover}" class="img-fluid w-100 object-fit-cover" style="max-height: 400px; min-height: 275px;">
+            </div>
+        `);
+    }
     let extraHtml = '';
     const DISPLAY_LIMIT = 12;
     const sections = [
