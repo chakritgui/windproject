@@ -131,16 +131,16 @@ class DocumentModel {
     public function save($data) {
         $this->db->beginTransaction();
         try {
-            $document_id    = !empty($data['document_id']) ? $data['document_id'] : null;
-            $document_name  = $data['document_name'];
-            $status         = $data['status'];
-            $contract_id           = $data['contract_id'];
-            $project_id           = $data['project_id'];
-            $type_id           = $data['type_id'];
-            $installations_id           = $data['installations_id'];
-            $poles_id           = $data['poles_id'];
+            $document_id = !empty($data['document_id']) ? $data['document_id'] : null;
+            $document_name = $data['document_name'];
+            $status = $data['status'];
+            $contract_id = !empty($data['contract_id']) ? $data['contract_id'] : null;
+            $project_id = !empty($data['project_id']) ? $data['project_id'] : null;
+            $type_id = !empty($data['type_id']) ? $data['type_id'] : null;
+            $installations_id = !empty($data['installations_id']) ? $data['installations_id'] : null;
+            $poles_id = $data['poles_id'];
             $startObj = DateTime::createFromFormat('d/m/Y', trim($data['document_start']));
-            $endObj   = DateTime::createFromFormat('d/m/Y', trim($data['document_end']));
+            $endObj = DateTime::createFromFormat('d/m/Y', trim($data['document_end']));
             $document_start = ($startObj) ? convertTimeZoneUTC($startObj->format('Y-m-d'), 'Y-m-d') : null;
             $document_end   = ($endObj) ? convertTimeZoneUTC($endObj->format('Y-m-d'), 'Y-m-d') : null;
             if ($document_id) {
