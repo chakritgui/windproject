@@ -138,7 +138,7 @@ class DocumentModel {
             $project_id = !empty($data['project_id']) ? $data['project_id'] : null;
             $type_id = !empty($data['type_id']) ? $data['type_id'] : null;
             $installations_id = !empty($data['installations_id']) ? $data['installations_id'] : null;
-            $poles_id = $data['poles_id'];
+            $poles_id = !empty($data['poles_id']) ? $data['poles_id'] : null;
             $startObj = DateTime::createFromFormat('d/m/Y', trim($data['document_start']));
             $endObj = DateTime::createFromFormat('d/m/Y', trim($data['document_end']));
             $document_start = ($startObj) ? convertTimeZoneUTC($startObj->format('Y-m-d'), 'Y-m-d') : null;
