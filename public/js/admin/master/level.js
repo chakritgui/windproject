@@ -14,7 +14,7 @@ function initLevelTable() {
         serverSide: true,
         order: [[3, 'desc']],
         ajax: { 
-            url: "api/level/list", 
+            url: `${BASE_URL}/api/level.list`, 
             type: "POST",
             data: function(d){}
         },
@@ -95,7 +95,7 @@ $(document).on('click', '.delete-level', function() {
     let height_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: `${BASE_URL}/api/level/delete`,
+            url: `${BASE_URL}/api/level.delete`,
             method: 'POST',
             data: { id: height_id },
             dataType: 'json',
@@ -117,7 +117,7 @@ let levelsArray = [];
 $(document).on('click', '.manage-level', function() {
     let height_id = $(this).data("id");
     $.ajax({
-        url: `${BASE_URL}/api/level/get`,
+        url: `${BASE_URL}/api/level.info`,
         method: 'POST',
         data: { id: height_id },
         dataType: 'json',
@@ -259,7 +259,7 @@ function saveLevel() {
         didOpen: () => Swal.showLoading()
     });
     $.ajax({
-        url: "api/level/save",
+        url: `${BASE_URL}/api/level.save`,
         type: "POST",
         data: formData,
         contentType: false,

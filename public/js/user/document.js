@@ -12,20 +12,20 @@ $(document).on('change', '#filter_contract, #filter_project, #filter_type, #filt
     const getVal = (target) => $(prefix + target).val();
     if (id.includes('contract')) {
         $(`${prefix}project, ${prefix}type, ${prefix}installation, ${prefix}pole`).val(null).trigger('change.select2');
-        initSelect2Remote(`${prefix}project`, `${BASE_URL}/api/document/filter`, { 
+        initSelect2Remote(`${prefix}project`, `${BASE_URL}/api/document.filter`, { 
             type: 'project', 
             contract_id: val 
         });
     } else if (id.includes('project')) {
         $(`${prefix}type, ${prefix}installation, ${prefix}pole`).val(null).trigger('change.select2');
-        initSelect2Remote(`${prefix}type`, `${BASE_URL}/api/document/filter`, { 
+        initSelect2Remote(`${prefix}type`, `${BASE_URL}/api/document.filter`, { 
             type: 'type', 
             contract_id: getVal('contract'),
             project_id: val 
         });
     } else if (id.includes('type')) {
         $(`${prefix}installation, ${prefix}pole`).val(null).trigger('change.select2');
-        initSelect2Remote(`${prefix}installation`, `${BASE_URL}/api/document/filter`, { 
+        initSelect2Remote(`${prefix}installation`, `${BASE_URL}/api/document.filter`, { 
             type: 'installation', 
             contract_id: getVal('contract'),
             project_id: getVal('project'),
@@ -33,7 +33,7 @@ $(document).on('change', '#filter_contract, #filter_project, #filter_type, #filt
         });
     } else if (id.includes('installation')) {
         $(`${prefix}pole`).val(null).trigger('change.select2');
-        initSelect2Remote(`${prefix}pole`, `${BASE_URL}/api/document/filter`, { 
+        initSelect2Remote(`${prefix}pole`, `${BASE_URL}/api/document.filter`, { 
             type: 'pole', 
             contract_id: getVal('contract'),
             project_id: getVal('project'),
@@ -44,11 +44,11 @@ $(document).on('change', '#filter_contract, #filter_project, #filter_type, #filt
 });
 $(document).ready(function () {
     loadDocuments();
-    initSelect2Remote('#filter_contract', `${BASE_URL}/api/document/filter`, { type: 'contract' });
-    initSelect2Remote('#filter_project', `${BASE_URL}/api/document/filter`, { type: 'project' });
-    initSelect2Remote('#filter_type', `${BASE_URL}/api/document/filter`, { type: 'type' });
-    initSelect2Remote('#filter_installations', `${BASE_URL}/api/document/filter`, { type: 'installation' });
-    initSelect2Remote('#filter_poles', `${BASE_URL}/api/document/filter`, { type: 'pole' });
+    initSelect2Remote('#filter_contract', `${BASE_URL}/api/document.filter`, { type: 'contract' });
+    initSelect2Remote('#filter_project', `${BASE_URL}/api/document.filter`, { type: 'project' });
+    initSelect2Remote('#filter_type', `${BASE_URL}/api/document.filter`, { type: 'type' });
+    initSelect2Remote('#filter_installations', `${BASE_URL}/api/document.filter`, { type: 'installation' });
+    initSelect2Remote('#filter_poles', `${BASE_URL}/api/document.filter`, { type: 'pole' });
     initMonthYearPicker("#filter_date", function () {
         docPage = 1;
         hasMore = true;
@@ -113,7 +113,7 @@ function loadDocuments() {
     if (isLoading || !hasMore) return;
     isLoading = true;
     $.ajax({
-        url: `${BASE_URL}/api/document-list`,
+        url: `${BASE_URL}/api/document.get`,
         method: 'POST',
         dataType: 'json',
         data: { 
@@ -327,7 +327,7 @@ $(document).on('click', '.download-btn', function (e) {
     const fileName = btn.data('file-name') || '';
     if (!id || !path) return;
     $.ajax({
-        url: `${BASE_URL}/api/document-download`,
+        url: `${BASE_URL}/api/document.download`,
         method: 'POST',
         dataType: 'json',
         data: { id: id },
@@ -344,7 +344,7 @@ function loadDownloadHistory() {
     historyLoading = true;
     $('#historyLoading').show();
     $.ajax({
-        url: `${BASE_URL}/api/document-download-history`,
+        url: `${BASE_URL}/api/document.history`,
         method: 'POST',
         dataType: 'json',
         data: { page: historyPage },

@@ -38,7 +38,7 @@ $(document).on('click', '.btn-reset-submit', function() {
     let $btn = $(this);
     let originalText = $btn.html();
     $btn.prop('disabled', true).text(langData['processing...']);
-    $.post(`${BASE_URL}/api/auth/update-password`, {
+    $.post(`${BASE_URL}/api/auth.update`, {
         token: resetToken,
         password: newPassword,
         lang: currentLang

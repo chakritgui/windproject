@@ -37,7 +37,7 @@ function openContent(slugFromParam, modeFromParam) {
     const finalSlug = slugFromParam || decodeURIComponent(urlParts[urlParts.length - 1]);
     const finalMode = modeFromParam || urlParts[urlParts.length - 2];
     $.ajax({
-        url: `${BASE_URL}/api/content/getBySlug`,
+        url: `${BASE_URL}/api/content.slug`,
         method: 'POST',
         dataType: 'json',
         data: { 

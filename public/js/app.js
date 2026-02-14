@@ -62,7 +62,7 @@ async function requestAndSubscribe(registration) {
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
             });
-            const response = await fetch(`${BASE_URL}/api/push/subscribe`, {
+            const response = await fetch(`${BASE_URL}/api/push.subscribe`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(subscription)
@@ -106,7 +106,7 @@ async function unsubscribeUser() {
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.getSubscription();
     if (subscription) {
-        await fetch(`${BASE_URL}/api/push/unsubscribe`, {
+        await fetch(`${BASE_URL}/api/push.unsubscribe`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ endpoint: subscription.endpoint })
@@ -129,7 +129,7 @@ function urlBase64ToUint8Array(base64String) {
     return outputArray;
 }
 function initMeta() {
-    $.post(`${BASE_URL}/api/setting/shortcut`).done(res => {
+    $.post(`${BASE_URL}/api/shortcut.get`).done(res => {
         if (res.status && res.data?.short_name) {
             $('meta[name="apple-mobile-web-app-title"]').attr('content', res.data.short_name);
         }
@@ -138,7 +138,7 @@ function initMeta() {
 async function loadSetting() {
     try {
         const res = await $.ajax({
-            url: `${BASE_URL}/api/setting/get`,
+            url: `${BASE_URL}/api/settings.get`,
             method: 'POST',
             dataType: 'json'
         });
@@ -238,7 +238,7 @@ async function changeLanguage(lang) {
     sessionStorage.setItem('lang', lang);
     try {
         await $.ajax({
-            url: `${BASE_URL}/api/member/updateLanguage`,
+            url: `${BASE_URL}/api/member.lang`,
             method: 'POST',
             data: { language: lang },
             dataType: 'json'

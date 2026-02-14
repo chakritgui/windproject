@@ -52,7 +52,7 @@ function initProfilePage() {
 }
 function initProfileData() {
     $.ajax({
-        url: `${BASE_URL}/api/account/get`,
+        url: `${BASE_URL}/api/account.get`,
         method: 'POST',
         dataType: 'json',
         success: function(res) {
@@ -233,7 +233,7 @@ function saveField(fieldName) {
     btnSave.disabled = true;
     btnSave.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
     $.ajax({
-        url: `${BASE_URL}/api/account/update`,
+        url: `${BASE_URL}/api/account.update`,
         method: 'POST',
         data: {
             field: fieldName,
@@ -283,7 +283,7 @@ function loadUsageHistory() {
     isHistoryLoading = true;
     $('#scrollEnd').html('<div class="text-center p-3"><i class="fa-solid fa-spinner fa-spin text-primary fa-2x"></i></div>');
     $.ajax({
-        url: `${BASE_URL}/api/account/history`,
+        url: `${BASE_URL}/api/account.usage`,
         method: 'POST',
         data: { offset: historyOffset },
         dataType: 'json',

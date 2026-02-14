@@ -14,7 +14,7 @@ function initGroupTable() {
         serverSide: true,
         order: [[1, 'desc']],
         ajax: { 
-            url: "api/group/list", 
+            url: `${BASE_URL}/api/group.list`, 
             type: "POST",
             data: function(d){}
         },
@@ -77,7 +77,7 @@ $(document).on('click', '.delete-group', function() {
     let project_group_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: `${BASE_URL}/api/group/delete`,
+            url: `${BASE_URL}/api/group.delete`,
             method: 'POST',
             data: { id: project_group_id },
             dataType: 'json',
@@ -98,7 +98,7 @@ $(document).on('click', '.delete-group', function() {
 $(document).on('click', '.manage-group', function() {
     let project_group_id = $(this).data("id");
     $.ajax({
-        url: `${BASE_URL}/api/group/get`,
+        url: `${BASE_URL}/api/group.get`,
         method: 'POST',
         data: { id: project_group_id },
         dataType: 'json',
@@ -172,7 +172,7 @@ function saveGroup() {
         didOpen: () => Swal.showLoading()
     });
     $.ajax({
-        url: "api/group/save",
+        url: `${BASE_URL}/api/group.save`,
         type: "POST",
         data: formData,
         contentType: false,

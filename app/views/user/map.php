@@ -11,7 +11,7 @@
             document.body.appendChild(s);
         });
     }
-    fetch(`${BASE_URL}/api/setting/getPublicConfig`)
+    fetch(`${BASE_URL}/api/configs.get`)
         .then(response => response.text())
         .then(async base64Data => {
             const config = JSON.parse(atob(base64Data));

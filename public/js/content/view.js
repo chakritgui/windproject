@@ -5,7 +5,7 @@ function initViewContent() {
     const slug = decodeURIComponent(urlParts[urlParts.length - 1]);
     const mode = urlParts[urlParts.length - 2];
     $.ajax({
-        url: `${BASE_URL}/api/content/getBySlug`,
+        url: `${BASE_URL}/api/content.slug`,
         method: 'POST',
         dataType: 'json',
         data: { 

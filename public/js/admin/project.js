@@ -236,7 +236,7 @@ $(document).on('click', '.delete-project', function () {
     let id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: `${BASE_URL}/api/project/delete`,
+            url: `${BASE_URL}/api/project.delete`,
             method: 'POST',
             data: { folder_id: id },
             dataType: 'json',
@@ -275,7 +275,7 @@ function manageFolder(folder_id = '') {
     `);
     if(folder_id) {
         $.ajax({
-            url: `${BASE_URL}/api/project/data`,
+            url: `${BASE_URL}/api/project.info`,
             method: 'POST',
             data: { folder_id: folder_id },
             dataType: 'json',
@@ -333,7 +333,7 @@ function saveFolder() {
         didOpen: () => Swal.showLoading()
     });
     $.ajax({
-        url: "api/project/save",
+        url: `${BASE_URL}/api/project.save`,
         type: "POST",
         data: formData,
         contentType: false,
@@ -381,7 +381,7 @@ $(document).on('click', '.manage-content', function () {
     manageContent(id);
 });
 function manageContent(id) {
-    $.post("api/project/gets", { id }, function(res) {
+    $.post(`${BASE_URL}/api/project.gets`, { id }, function(res) {
         if(res.status !== "success") return;
         let d = res.data;
         const translates = d.translates;
@@ -428,7 +428,7 @@ function manageContent(id) {
             </div>
         `);
         $modal.find(".modal-body").html(getContentForm(d));
-        initSelect2Remote('#status', `${BASE_URL}/api/project/filter`, { type: 'status' });
+        initSelect2Remote('#status', `${BASE_URL}/api/project.filter`, { type: 'status' });
         let status = (d.status) ? d.status : 'active';
         if (status) {
             let statusName = status.charAt(0).toUpperCase() + status.slice(1);
@@ -578,7 +578,7 @@ function executeSave() {
         }
     });
     $.ajax({
-        url: "api/project/save-content",
+        url: `${BASE_URL}/api/project.content.save`,
         type: "POST",
         data: formData,
         contentType: false,
@@ -625,7 +625,7 @@ $(document).on('click', '.delete-content', function () {
     let id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: `${BASE_URL}/api/project/delete-content`,
+            url: `${BASE_URL}/api/project.content.delete`,
             method: 'POST',
             data: { content_id: id },
             dataType: 'json',

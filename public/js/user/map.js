@@ -20,7 +20,7 @@ function initMap() {
         try {
             const results = await Promise.allSettled([
                 fetchData(`${BASE_URL}/api/master`),
-                fetchData(`${BASE_URL}/api/wind-area`),
+                fetchData(`${BASE_URL}/api/wind.boundary`),
                 loadPoles(map, picker)
             ]);
             const masterData = results[0].status === 'fulfilled' ? results[0].value : null;
@@ -183,7 +183,7 @@ let refreshAllWindData = async () => {
 };
 async function loadPoles(map) {
     try {
-        const poles = await fetchData(`${BASE_URL}/api/poles-location`);
+        const poles = await fetchData(`${BASE_URL}/api/poles.get`);
         if (!Array.isArray(poles)) return;
         poleLayerGroup.clearLayers();
         poleMarkers = {};
@@ -296,9 +296,9 @@ function hideWindLoading() {
     $("header").show();
 }
 const MENU_LEVELS = {
-    1: { title: 'PROJECT', endpoint: `${BASE_URL}/api/project`, key: 'project_id', label: 'project_name' },
-    2: { title: 'POLE TYPE', endpoint: `${BASE_URL}/api/type`, key: 'type_id', label: 'type_name' },
-    3: { title: 'INSTALLATION', endpoint: `${BASE_URL}/api/station`, key: 'installations_id', label: 'installations_name', isLast: true }
+    1: { title: 'PROJECT', endpoint: `${BASE_URL}/api/project.get`, key: 'project_id', label: 'project_name' },
+    2: { title: 'POLE TYPE', endpoint: `${BASE_URL}/api/type.get`, key: 'type_id', label: 'type_name' },
+    3: { title: 'INSTALLATION', endpoint: `${BASE_URL}/api/installations.get`, key: 'installations_id', label: 'installations_name', isLast: true }
 };
 async function loadMenuLevel(level) {
     const cfg = MENU_LEVELS[level];
@@ -384,7 +384,7 @@ async function openPoles(poleId) {
     const modalInstance = bootstrap.Modal.getOrCreateInstance($modal[0]);
     modalInstance.show();
     try {
-        const response = await fetch(`${BASE_URL}/api/pole-details`, {
+        const response = await fetch(`${BASE_URL}/api/poles.info`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: poleId })

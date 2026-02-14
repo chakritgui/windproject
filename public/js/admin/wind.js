@@ -13,7 +13,7 @@ function initWindTable() {
         processing: true,
         serverSide: true,
         ajax: {
-            url: "api/wind/list",
+            url: `${BASE_URL}/api/wind.list`,
             type: "POST",
             data: function (d) {
                 d.date = $("#filter_date").val();
@@ -75,11 +75,11 @@ function initWindTable() {
 $(document).ready(function () {
     initWindTable();
     initDateRangePicker('#filter_date', initWindTable);
-    initSelect2Remote('#filter_project', `${BASE_URL}/api/wind/filter`, { type: 'project' });
-    initSelect2Remote('#filter_pole', `${BASE_URL}/api/wind/filter`, { type: 'pole' });
-    initSelect2Remote('#filter_type', `${BASE_URL}/api/wind/filter`, { type: 'type' });
-    initSelect2Remote('#filter_installation', `${BASE_URL}/api/wind/filter`, { type: 'installation' });
-    initSelect2Remote('#filter_height', `${BASE_URL}/api/wind/filter`, { type: 'height' });
+    initSelect2Remote('#filter_project', `${BASE_URL}/api/wind.filter`, { type: 'project' });
+    initSelect2Remote('#filter_pole', `${BASE_URL}/api/wind.filter`, { type: 'pole' });
+    initSelect2Remote('#filter_type', `${BASE_URL}/api/wind.filter`, { type: 'type' });
+    initSelect2Remote('#filter_installation', `${BASE_URL}/api/wind.filter`, { type: 'installation' });
+    initSelect2Remote('#filter_height', `${BASE_URL}/api/wind.filter`, { type: 'height' });
     $(".filter").on("change", () => initWindTable());
 });
 $(document).on('click', '.manage-wind', function () {
@@ -212,7 +212,7 @@ function importWindData() {
     let fakePercent = 0;
     let progressTimer;
     $.ajax({
-        url: "api/wind/import",
+        url: `${BASE_URL}/api/wind.import`,
         type: "POST",
         data: formData,
         contentType: false,
@@ -273,7 +273,7 @@ function importWindData() {
 $(document).on('click', '.clear-data', function() {
     showConfirm(langData['confirm'], langData['confirm_clear'], function(){
         $.ajax({
-            url: `${BASE_URL}/api/wind/clear`,
+            url: `${BASE_URL}/api/wind.clear`,
             method: 'POST',
             dataType: 'json',
             success: function(res) {
@@ -339,7 +339,7 @@ function loadImportHistory(){
         ordering: false,
         order: [[1, 'desc']],
         ajax: {
-            url: "api/wind/history",
+            url: `${BASE_URL}/api/wind.history`,
             type: "POST",
         },
         columns: [{

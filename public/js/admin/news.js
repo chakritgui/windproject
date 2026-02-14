@@ -11,7 +11,7 @@ function initNewsTable() {
         responsive: true,
         order: [[4, 'desc']],
         ajax: {
-            url: `${BASE_URL}/api/news/list`,
+            url: `${BASE_URL}/api/news.list`,
             type: "POST",
             data: d => { d.status = $("#filter_status").val(); }
         },
@@ -99,7 +99,7 @@ function initNewsTable() {
 }
 $(document).on("click", ".manage-news", function () {
     const id = $(this).data("id") || "";
-    $.post(`${BASE_URL}/api/news/get`, { id }, function(res) {
+    $.post(`${BASE_URL}/api/news.get`, { id }, function(res) {
         if(res.status !== "success") return;
         const d = res.data;
         const translates = d.translates;
@@ -135,7 +135,7 @@ $(document).on("click", ".manage-news", function () {
         const pubDate = d.publish_at ? d.publish_at.split(' ')[0] : '';
         const pubTime = d.publish_at ? d.publish_at.split(' ')[1].substring(0,5) : '';
         $modal.find(".modal-body").html(getContentForm(d, pubTime));
-        initSelect2Remote('#status', `${BASE_URL}/api/news/filter`, { type: 'status' });
+        initSelect2Remote('#status', `${BASE_URL}/api/news.filter`, { type: 'status' });
         if (d.status) {
             const statusLabel = d.status.charAt(0).toUpperCase() + d.status.slice(1);
             $('#status').append(new Option(statusLabel, d.status, true, true)).trigger('change');
@@ -299,7 +299,7 @@ function executeSave() {
         didOpen: () => Swal.showLoading()
     });
     $.ajax({
-        url: `${BASE_URL}/api/news/save`,
+        url: `${BASE_URL}/api/news.save`,
         type: "POST",
         data: formData,
         contentType: false,
@@ -331,7 +331,7 @@ function executeSave() {
 $(document).on('click', '.delete-news', function() {
     const id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
-        $.post(`${BASE_URL}/api/news/delete`, { id }, function(res) {
+        $.post(`${BASE_URL}/api/news.delete`, { id }, function(res) {
             if(res.status === true){
                 showSuccess(langData['deleted_successfully']);
                 initNewsTable();
@@ -349,6 +349,6 @@ $(document).on("click", "#btn-fullscreen", function() {
 });
 $(document).ready(function () {
     initNewsTable();
-    initSelect2Remote('#filter_status', `${BASE_URL}/api/news/filter`, { type: 'status' });
+    initSelect2Remote('#filter_status', `${BASE_URL}/api/news.filter`, { type: 'status' });
     $(".filter").on("change", () => initNewsTable());
 });

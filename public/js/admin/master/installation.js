@@ -14,7 +14,7 @@ function initInstallationsTable() {
         serverSide: true,
         order: [[3, 'desc']],
         ajax: { 
-            url: "api/installations/list", 
+            url: `${BASE_URL}/api/installations.list`, 
             type: "POST",
             data: function(d){
                 d.project = $('#filter_installation_project').val();
@@ -118,7 +118,7 @@ $(document).on('click', '.delete-installation', function() {
     let installations_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: `${BASE_URL}/api/installations/delete`,
+            url: `${BASE_URL}/api/installations.delete`,
             method: 'POST',
             data: { id: installations_id },
             dataType: 'json',
@@ -139,7 +139,7 @@ $(document).on('click', '.delete-installation', function() {
 $(document).on('click', '.manage-installation', function() {
     let installations_id = $(this).data("id");
     $.ajax({
-        url: `${BASE_URL}/api/installations/get`,
+        url: `${BASE_URL}/api/installations.get`,
         method: 'POST',
         data: { id: installations_id },
         dataType: 'json',
@@ -184,9 +184,9 @@ $(document).on('click', '.manage-installation', function() {
                         </div>
                     </div>
                 `);
-                initSelect2Remote('#status', `${BASE_URL}/api/installations/filter`, { type: 'status' });
-                initSelect2Remote('#project', `${BASE_URL}/api/installations/filter`, { type: 'project' });
-                initSelect2Remote('#type', `${BASE_URL}/api/installations/filter`, { type: 'type' });
+                initSelect2Remote('#status', `${BASE_URL}/api/installations.filter`, { type: 'status' });
+                initSelect2Remote('#project', `${BASE_URL}/api/installations.filter`, { type: 'project' });
+                initSelect2Remote('#type', `${BASE_URL}/api/installations.filter`, { type: 'type' });
                 if (installationData) {
                     $("#installations_id").val(installationData.installations_id);
                     $("#installations_name").val(installationData.installations_name);
@@ -254,7 +254,7 @@ function saveInstallation() {
         didOpen: () => Swal.showLoading()
     });
     $.ajax({
-        url: "api/installations/save",
+        url: `${BASE_URL}/api/installations.save`,
         type: "POST",
         data: formData,
         contentType: false,

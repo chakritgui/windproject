@@ -9,7 +9,7 @@ function initProjectStatusTable() {
         serverSide: true,
         order: [[2, 'desc']],
         ajax: { 
-            url: "api/project-status/list", 
+            url: `${BASE_URL}/api/project.status.list`, 
             type: "POST" 
         },
         columns: [{ 
@@ -118,7 +118,7 @@ function saveStatus() {
         didOpen: () => Swal.showLoading()
     });
     $.ajax({
-        url: "api/project-status/save",
+        url: `${BASE_URL}/api/api/project.status.save`,
         type: "POST",
         data: formData,
         contentType: false,
@@ -166,7 +166,7 @@ $(document).on('click', '.delete-sta', function() {
     let id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: `${BASE_URL}/api/project-status/delete`,
+            url: `${BASE_URL}/api/project.status.delete`,
             method: 'POST',
             data: { id: id },
             dataType: 'json',

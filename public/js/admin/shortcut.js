@@ -3,7 +3,7 @@ $(document).ready(function () {
 });
 function initShortcut() {
     $.ajax({
-        url: `${BASE_URL}/api/setting/shortcut`,
+        url: `${BASE_URL}/api/shortcut.get`,
         method: 'POST',
         dataType: 'json',
         success: function(res) {
@@ -127,7 +127,7 @@ $('#pwaForm').on('submit', function (e) {
         fd.append('iosIcon', $('#iosIcon')[0].files[0]);
     }
     $.ajax({
-        url: `${BASE_URL}/api/setting/saveShortcut`,
+        url: `${BASE_URL}/api/settings.shortcut`,
         method: 'POST',
         data: fd,
         processData: false,

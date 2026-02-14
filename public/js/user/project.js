@@ -28,7 +28,7 @@ function fetchFolders(isNewSearch = false) {
     isLoading = true;
     $('#loadingIndicator').removeClass('d-none');
     $.ajax({
-        url: `${BASE_URL}/api/project/get`,
+        url: `${BASE_URL}/api/project.info`,
         method: 'POST',
         data: {
             level: currentLevel,

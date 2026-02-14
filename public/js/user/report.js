@@ -62,7 +62,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
     myModal.show();
     $('#poleModalBody').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div></div>');
     try {
-        const response = await fetch(`${BASE_URL}/api/pole-details`, {
+        const response = await fetch(`${BASE_URL}/api/poles.info`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -245,7 +245,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
         let maxVal = data.max_datetime_val ? new Date(data.max_datetime_val) : null;
         initDatePicker('#startDate', minVal, maxVal);
         initDatePicker('#endDate', minVal, maxVal);
-        initSelect2Remote('#heightSelect', `${BASE_URL}/api/height`, { poles_id: poles_id });
+        initSelect2Remote('#heightSelect', `${BASE_URL}/api/level.get`, { poles_id: poles_id });
         $('#poleDetailModal .modal-footer').html(`
             <button class="btn btn-primary me-2" onclick="renderReport(${poles_id}, '${type}')" data-i18n="generate_report">${langData['generate_report'] || 'Generate Report'}</button>
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="close">${langData['close'] || 'Close'}</button>
@@ -276,7 +276,7 @@ async function renderLevel(height_id, levelsToCheck = []) {
         </div>
     `);
     try {
-        const response = await fetch(`${BASE_URL}/api/level`, {
+        const response = await fetch(`${BASE_URL}/api/heght.level`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ height_id: height_id })

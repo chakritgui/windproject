@@ -14,7 +14,7 @@ function initProjectsTable() {
         serverSide: true,
         order: [[7, 'desc']],
         ajax: { 
-            url: "api/projects/list", 
+            url: `${BASE_URL}/api/projects.list`, 
             type: "POST",
             data: function(d){
                 d.status = $('#filter_project_status').val();
@@ -134,7 +134,7 @@ function initProjectsTable() {
 }
 $(document).on('click', '.manage-background', function() {
     let project_id = $(this).data("id");
-    $.post("api/projects/background", {
+    $.post(`${BASE_URL}/api/projects/background`, {
         project_id
     }, function(res) {
         let bgData = res;
@@ -189,7 +189,7 @@ $(document).on('click', '.delete-background', function() {
     let project_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: `${BASE_URL}/api/projects/delete-bg`,
+            url: `${BASE_URL}/api/projects.deletebg`,
             method: 'POST',
             data: { id: project_id },
             dataType: 'json',
@@ -247,7 +247,7 @@ $(document).on('click', '.save-background', function() {
         }
     });
     $.ajax({
-        url: `${BASE_URL}/api/projects/save-bg`,
+        url: `${BASE_URL}/api/projects.savebg`,
         type: "POST",
         data: formData,
         contentType: false,
@@ -292,7 +292,7 @@ $(document).on('click', '.delete-project', function() {
     let project_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: `${BASE_URL}/api/projects/delete`,
+            url: `${BASE_URL}/api/projects.delete`,
             method: 'POST',
             data: { id: project_id },
             dataType: 'json',
@@ -313,7 +313,7 @@ $(document).on('click', '.delete-project', function() {
 $(document).on('click', '.manage-project', function() {
     let project_id = $(this).data("id");
     $.ajax({
-        url: `${BASE_URL}/api/projects/get`,
+        url: `${BASE_URL}/api/projects.get`,
         method: 'POST',
         data: { id: project_id },
         dataType: 'json',
@@ -370,9 +370,9 @@ $(document).on('click', '.manage-project', function() {
                         </div>
                     </div>
                 `);
-                initSelect2Remote('#status', `${BASE_URL}/api/projects/filter`, { type: 'status' });
-                initSelect2Remote('#contract', `${BASE_URL}/api/projects/filter`, { type: 'contract' });
-                initSelect2Remote('#group', `${BASE_URL}/api/projects/filter`, { type: 'group' });
+                initSelect2Remote('#status', `${BASE_URL}/api/projects.filter`, { type: 'status' });
+                initSelect2Remote('#contract', `${BASE_URL}/api/projects.filter`, { type: 'contract' });
+                initSelect2Remote('#group', `${BASE_URL}/api/projects.filter`, { type: 'group' });
                 initDatePicker('#project_start');
                 initDatePicker('#project_end');
                 if (projectData) {
@@ -470,7 +470,7 @@ function saveProject() {
         didOpen: () => Swal.showLoading()
     });
     $.ajax({
-        url: "api/projects/save",
+        url: `${BASE_URL}/api/projects.save`,
         type: "POST",
         data: formData,
         contentType: false,

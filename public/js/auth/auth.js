@@ -58,7 +58,7 @@ $(document).on('click', '.login-forgot', function() {
     let loadingText = (currentLang === 'th') ? 'กำลังส่ง...' : (currentLang === 'lo') ? 'ກຳລັງສົ່ງ...' : 'Sending...';
     $btn.prop('disabled', true).html(loadingText);
     $('#loading').show(); 
-    $.post(`${BASE_URL}/api/auth/forgot`, {
+    $.post(`${BASE_URL}/api/auth.forgot`, {
         email: email,
         lang: currentLang
     }, function(res){
@@ -99,7 +99,7 @@ async function initAuthApp() {
 async function loadAuthSetting() {
     try {
         const res = await $.ajax({
-            url: `${BASE_URL}/api/setting/get`,
+            url: `${BASE_URL}/api/settings.get`,
             type: 'POST',
             dataType: 'json'
         });

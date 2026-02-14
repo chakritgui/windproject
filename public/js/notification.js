@@ -1,7 +1,7 @@
 async function loadNotification() {
     try {
         const res = await $.ajax({
-            url: `${BASE_URL}/api/notification/load`,
+            url: `${BASE_URL}/api/notification.load`,
             method: 'POST',
             dataType: 'json'
         });
@@ -24,7 +24,7 @@ $(document).on('click', '.btn-notification', async function (e) {
 async function readNotification() {
     try {
         const res = await $.ajax({
-            url: `${BASE_URL}/api/notification/read`,
+            url: `${BASE_URL}/api/notification.read`,
             method: 'POST',
             dataType: 'json'
         });
@@ -48,7 +48,7 @@ async function loadNotificationItem() {
     notifyLoading = true;
     try {
         const res = await $.ajax({
-            url: `${BASE_URL}/api/notification/load-list`,
+            url: `${BASE_URL}/api/notification.get`,
             method: 'POST',
             data: {
                 page: notifyPage,

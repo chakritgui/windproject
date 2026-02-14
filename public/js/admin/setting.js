@@ -48,7 +48,7 @@ $(document).on('change', '#enableTranslate', function() {
     }
 });
 function initSetting() {
-    apiPost('/api/setting/get', null).done(res => {
+    apiPost(`${BASE_URL}/api/settings.get`, null).done(res => {
         if (!res.status || !res.data) {
             showError(langData['cannot_load']);
             return;
@@ -256,7 +256,7 @@ $(document).on('click', '.save-language', function () {
     fd.append("language_default", $("input[name=language_default]:checked").val() || 'en');
     fd.append("language_content", $("input[name=language_content]:checked").val() || 'en');
     toggleButton('.save-language', true);
-    apiPost('/api/setting/saveLang', fd).done(res => {
+    apiPost(`${BASE_URL}/api/settings.lang`, fd).done(res => {
         res.status ? (showSuccess(langData['saved_successfully']), initSetting()) : showError(langData['cannot_save']);
     }).always(() => toggleButton('.save-language', false));
 });
@@ -269,7 +269,7 @@ $(document).on('click', '.save-information', function () {
     fd.append('site_assessment', $('#site_assessment').val());
     fd.append('logoInput', $('#logoInput')[0].files[0] || null);
     fd.append('iconInput', $('#iconInput')[0].files[0] || null);
-    uploadWithProgress('/api/setting/saveInfo', fd, '.save-information').done(res => {
+    uploadWithProgress(`${BASE_URL}/api/settings.info`, fd, '.save-information').done(res => {
         res.status ? (showSuccess(langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError(langData['cannot_save']);
     }).fail(() => showError(langData['cannot_save']));
 });
@@ -281,7 +281,7 @@ $(document).on('click', '.save-background', function () {
     fd.append('oldLoginBg', $('#oldLoginBg').val());
     fd.append('oldLoginMobileBg', $('#oldLoginMobileBg').val());
     fd.append('oldinfographyBg', $('#oldinfographyBg').val());
-    uploadWithProgress('/api/setting/saveBgImage', fd, '.save-background').done(res => {
+    uploadWithProgress(`${BASE_URL}/api/settings.bg`, fd, '.save-background').done(res => {
         res.status ? (showSuccess(langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError(langData['cannot_save']);
     }).fail(() => showError(langData['cannot_save']));
 });
@@ -310,7 +310,7 @@ $(document).on('click', '.save-configuration', function () {
         }
         fd.append(name, value);
     });
-    uploadWithProgress('/api/setting/saveConfig', fd, '.save-configuration').done(res => {
+    uploadWithProgress(`${BASE_URL}/api/settings.config`, fd, '.save-configuration').done(res => {
         if (res.status) {
             showSuccess(langData['saved_successfully']);
             if (typeof initSetting === 'function') initSetting(); 
@@ -333,7 +333,7 @@ $(document).on('click', '.save-notification', function () {
         }
         fd.append(name, value);
     });
-    uploadWithProgress('/api/setting/saveNotification', fd, '.save-notification').done(res => {
+    uploadWithProgress(`${BASE_URL}/api/settings.notification`, fd, '.save-notification').done(res => {
         if (res.status) {
             showSuccess(langData['saved_successfully']);
             if (typeof initSetting === 'function') initSetting(); 

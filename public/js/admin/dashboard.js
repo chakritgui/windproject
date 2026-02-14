@@ -4,7 +4,7 @@ let charts = {
 };
 function initDashboard() {
     $.ajax({
-        url: `${BASE_URL}/api/dashboard/getStats`,
+        url: `${BASE_URL}/api/dashboard.stats`,
         method: 'POST',
         dataType: 'json',
         success: function(res) {
@@ -32,7 +32,7 @@ function loadWindData() {
         setTimeout(loadWindData, 200);
         return;
     }
-    $.getJSON(`${BASE_URL}/api/dashboard/getWindChartData`, function(res) {
+    $.getJSON(`${BASE_URL}/api/dashboard.chart`, function(res) {
         if (!res.status || !res.data.length) return;
         const data = res.data;
         const labels = data.map(i => i.time);
@@ -115,7 +115,7 @@ function getCommonOptions(label) {
     };
 }
 function loadLoginHistory() {
-    $.getJSON(`${BASE_URL}/api/dashboard/loginHistory`, function(res) {
+    $.getJSON(`${BASE_URL}/api/dashboard.usage`, function(res) {
         if (!res.status) return;
         let html = '';
         res.data.forEach(row => {

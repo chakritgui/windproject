@@ -14,7 +14,7 @@ function initDocumentTable() {
         serverSide: true,
         order: [[4, 'desc']],
         ajax: { 
-            url: "api/document/list", 
+            url: `${BASE_URL}/api/document.list`, 
             type: "POST",
             data: function(d){
                 d.date = $('#filter_date').val();
@@ -151,18 +151,18 @@ async function initDocument() {
 }
 $(document).ready(function () {
     initDocument();
-    initSelect2Remote('#filter_contract', `${BASE_URL}/api/document/filter`, { type: 'contract' });
-    initSelect2Remote('#filter_project', `${BASE_URL}/api/document/filter`, { type: 'project' });
-    initSelect2Remote('#filter_type', `${BASE_URL}/api/document/filter`, { type: 'type' });
-    initSelect2Remote('#filter_installations', `${BASE_URL}/api/document/filter`, { type: 'installation' });
-    initSelect2Remote('#filter_poles', `${BASE_URL}/api/document/filter`, { type: 'pole' });
-    initSelect2Remote('#filter_status', `${BASE_URL}/api/document/filter`, { type: 'status' });
+    initSelect2Remote('#filter_contract', `${BASE_URL}/api/document.filter`, { type: 'contract' });
+    initSelect2Remote('#filter_project', `${BASE_URL}/api/document.filter`, { type: 'project' });
+    initSelect2Remote('#filter_type', `${BASE_URL}/api/document.filter`, { type: 'type' });
+    initSelect2Remote('#filter_installations', `${BASE_URL}/api/document.filter`, { type: 'installation' });
+    initSelect2Remote('#filter_poles', `${BASE_URL}/api/document.filter`, { type: 'pole' });
+    initSelect2Remote('#filter_status', `${BASE_URL}/api/document.filter`, { type: 'status' });
     initDateRangePicker('#filter_date', initDocumentTable);
 });
 $(document).on('click', '.manage-document', function () {
     let document_id = $(this).data("id");
     $.ajax({
-        url: `${BASE_URL}/api/document/get`,
+        url: `${BASE_URL}/api/document.info`,
         method: 'POST',
         data: { id: document_id },
         dataType: 'json',
@@ -258,12 +258,12 @@ $(document).on('click', '.manage-document', function () {
                         </div>
                     </div>
                 `);
-                initSelect2Remote('#contract', `${BASE_URL}/api/document/filter`, { type: 'contract' });
-                initSelect2Remote('#project', `${BASE_URL}/api/document/filter`, { type: 'project' });
-                initSelect2Remote('#type', `${BASE_URL}/api/document/filter`, { type: 'type' });
-                initSelect2Remote('#installation', `${BASE_URL}/api/document/filter`, { type: 'installation' });
-                initSelect2Remote('#pole', `${BASE_URL}/api/document/filter`, { type: 'pole' });
-                initSelect2Remote('#status', `${BASE_URL}/api/document/filter`, { type: 'status' });
+                initSelect2Remote('#contract', `${BASE_URL}/api/document.filter`, { type: 'contract' });
+                initSelect2Remote('#project', `${BASE_URL}/api/document.filter`, { type: 'project' });
+                initSelect2Remote('#type', `${BASE_URL}/api/document.filter`, { type: 'type' });
+                initSelect2Remote('#installation', `${BASE_URL}/api/document.filter`, { type: 'installation' });
+                initSelect2Remote('#pole', `${BASE_URL}/api/document.filter`, { type: 'pole' });
+                initSelect2Remote('#status', `${BASE_URL}/api/document.filter`, { type: 'status' });
                 initDatePicker('#document_start');
                 initDatePicker('#document_end');
                 if (docData) {
@@ -332,20 +332,20 @@ $(document).on('change', '#contract, #filter_contract, #project, #filter_project
     const getVal = (target) => $(prefix + target).val();
     if (id.includes('contract')) {
         $(`${prefix}project, ${prefix}type, ${prefix}installation, ${prefix}pole`).val(null).trigger('change.select2');
-        initSelect2Remote(`${prefix}project`, `${BASE_URL}/api/document/filter`, { 
+        initSelect2Remote(`${prefix}project`, `${BASE_URL}/api/document.filter`, { 
             type: 'project', 
             contract_id: val 
         });
     } else if (id.includes('project')) {
         $(`${prefix}type, ${prefix}installation, ${prefix}pole`).val(null).trigger('change.select2');
-        initSelect2Remote(`${prefix}type`, `${BASE_URL}/api/document/filter`, { 
+        initSelect2Remote(`${prefix}type`, `${BASE_URL}/api/document.filter`, { 
             type: 'type', 
             contract_id: getVal('contract'),
             project_id: val 
         });
     } else if (id.includes('type')) {
         $(`${prefix}installation, ${prefix}pole`).val(null).trigger('change.select2');
-        initSelect2Remote(`${prefix}installation`, `${BASE_URL}/api/document/filter`, { 
+        initSelect2Remote(`${prefix}installation`, `${BASE_URL}/api/document.filter`, { 
             type: 'installation', 
             contract_id: getVal('contract'),
             project_id: getVal('project'),
@@ -353,7 +353,7 @@ $(document).on('change', '#contract, #filter_contract, #project, #filter_project
         });
     } else if (id.includes('installation')) {
         $(`${prefix}pole`).val(null).trigger('change.select2');
-        initSelect2Remote(`${prefix}pole`, `${BASE_URL}/api/document/filter`, { 
+        initSelect2Remote(`${prefix}pole`, `${BASE_URL}/api/document.filter`, { 
             type: 'pole', 
             contract_id: getVal('contract'),
             project_id: getVal('project'),
@@ -487,7 +487,7 @@ function saveDocument() {
         didOpen: () => Swal.showLoading()
     });
     $.ajax({
-        url: "api/document/save",
+        url: `${BASE_URL}/api/document.save`,
         type: "POST",
         data: formData,
         contentType: false,
@@ -534,7 +534,7 @@ $(document).on('click', '.delete-document', function() {
     let document_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: `${BASE_URL}api/document/delete`,
+            url: `${BASE_URL}/api/document.delete`,
             method: 'POST',
             data: { id: document_id },
             dataType: 'json',
@@ -605,7 +605,7 @@ function loadDownloadHistory(document_id){
         serverSide: true,
         order: [[2, 'desc']],
         ajax: {
-            url: "api/document/download_history",
+            url: `${BASE_URL}/api/document.history`,
             type: "POST",
             data: function(d){
                 d.document_id = document_id;

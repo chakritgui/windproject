@@ -66,7 +66,7 @@ async function fetchGraphData() {
         lv: reportState.levels_data.join(',')
     };
     try {
-        const res = await fetch(`${BASE_URL}/api/pole-val`, {
+        const res = await fetch(`${BASE_URL}/api/poles.val`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -85,7 +85,7 @@ async function renderStatsAndWeather() {
         sensors: selectedIdx.map(i => sensors[i].key),
         lv: reportState.levels_data.join(',')
     };
-    const res = await fetch(`${BASE_URL}/api/pole-stats`, {
+    const res = await fetch(`${BASE_URL}/api/poles.stats`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -311,7 +311,7 @@ function toggleLoading(show) {
 }
 async function updateHeaderInfo() {
     try {
-        const res = await fetch(`${BASE_URL}/api/pole-info`, {
+        const res = await fetch(`${BASE_URL}/api/poles.infos`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(reportState)

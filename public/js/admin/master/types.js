@@ -14,7 +14,7 @@ function initTypesTable() {
         serverSide: true,
         order: [[3, 'desc']],
         ajax: { 
-            url: "api/types/list", 
+            url: `${BASE_URL}/api/types.list`, 
             type: "POST",
             data: function(d){
                 d.status = $('#filter_type_status').val();
@@ -119,7 +119,7 @@ $(document).on('click', '.delete-type', function() {
     let type_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: `${BASE_URL}/api/types/delete`,
+            url: `${BASE_URL}/api/types.delete`,
             method: 'POST',
             data: { id: type_id },
             dataType: 'json',
@@ -140,7 +140,7 @@ $(document).on('click', '.delete-type', function() {
 $(document).on('click', '.manage-type', function() {
     let type_id = $(this).data("id");
     $.ajax({
-        url: `${BASE_URL}/api/types/get`,
+        url: `${BASE_URL}/api/types.get`,
         method: 'POST',
         data: { id: type_id },
         dataType: 'json',
@@ -177,7 +177,7 @@ $(document).on('click', '.manage-type', function() {
                         </div>
                     </div>
                 `);
-                initSelect2Remote('#status', `${BASE_URL}/api/types/filter`, { type: 'status' });
+                initSelect2Remote('#status', `${BASE_URL}/api/types.filter`, { type: 'status' });
                 if (typeData) {
                     $("#type_id").val(typeData.type_id);
                     $("#type_name").val(typeData.type_name);
@@ -295,7 +295,7 @@ function saveType() {
         didOpen: () => Swal.showLoading()
     });
     $.ajax({
-        url: "api/types/save",
+        url: `${BASE_URL}/api/types.save`,
         type: "POST",
         data: formData,
         contentType: false,

@@ -18,7 +18,7 @@ function initNews() {
     if (isLoading || !hasMore) return;
     isLoading = true;
     $.ajax({
-        url: `${BASE_URL}/api/new-list`,
+        url: `${BASE_URL}/api/news.load`,
         method: 'POST',
         dataType: 'json',
         data: { 

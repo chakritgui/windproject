@@ -14,7 +14,7 @@ function initPolesTable() {
         serverSide: true,
         order: [[6, 'desc']],
         ajax: { 
-            url: `${BASE_URL}/api/poles/list`, 
+            url: `${BASE_URL}/api/poles.list`, 
             type: "POST",
             data: function(d){
                 d.status = $('#filter_pole_status').val();
@@ -139,7 +139,7 @@ $(document).on('click', '.delete-pole', function() {
     let poles_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: `${BASE_URL}/api/poles/delete`,
+            url: `${BASE_URL}/api/poles.delete`,
             method: 'POST',
             data: { id: poles_id },
             dataType: 'json',
@@ -162,7 +162,7 @@ $(document).on('click', '.delete-content', function() {
     let content_id = $(this).data("content");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: `${BASE_URL}/api/poles/delete-content`,
+            url: `${BASE_URL}/api/poles.deletecontent`,
             method: 'POST',
             data: { poles_id: poles_id, content_id: content_id },
             dataType: 'json',
@@ -183,7 +183,7 @@ $(document).on('click', '.delete-content', function() {
 $(document).on('click', '.manage-pole', function() {
     let poles_id = $(this).data("id");
     $.ajax({
-        url: `${BASE_URL}/api/poles/get`,
+        url: `${BASE_URL}/api/poles.get`,
         method: 'POST',
         data: { id: poles_id },
         dataType: 'json',
@@ -238,10 +238,10 @@ $(document).on('click', '.manage-pole', function() {
                         </div>
                     </div>
                 `);
-                initSelect2Remote('#status', `${BASE_URL}/api/poles/filter`, { type: 'status' });
-                initSelect2Remote('#project', `${BASE_URL}/api/poles/filter`, { type: 'project' });
-                initSelect2Remote('#type', `${BASE_URL}/api/poles/filter`, { type: 'type' });
-                initSelect2Remote('#installation', `${BASE_URL}/api/poles/filter`, { type: 'installation' });
+                initSelect2Remote('#status', `${BASE_URL}/api/poles.filter`, { type: 'status' });
+                initSelect2Remote('#project', `${BASE_URL}/api/poles.filter`, { type: 'project' });
+                initSelect2Remote('#type', `${BASE_URL}/api/poles.filter`, { type: 'type' });
+                initSelect2Remote('#installation', `${BASE_URL}/api/poles.filter`, { type: 'installation' });
                 if (poleData) {
                     $("#poles_code").val(poleData.poles_code);
                     $("#latitude").val(poleData.poles_lat);
@@ -324,7 +324,7 @@ function savePole() {
         }
     });
     $.ajax({
-        url: "api/poles/save",
+        url: `${BASE_URL}/api/poles.save`,
         type: "POST",
         data: formData,
         contentType: false,
@@ -374,7 +374,7 @@ $(document).on('click', '.manage-content', function () {
     manageContent(pole, content);
 });
 function manageContent(poles_id, content_id) {
-    $.post("api/poles/gets", {
+    $.post(`${BASE_URL}/api/poles.gets`, {
         poles_id, content_id
     }, function(res) {
         if(res.status !== "success") return;
@@ -526,7 +526,7 @@ $(document).on('click', '#btnSaveContent', function() {
         }
     });
     $.ajax({
-        url: `${BASE_URL}/api/poles/save-content`,
+        url: `${BASE_URL}/api/poles.savecontent`,
         type: "POST",
         data: formData,
         contentType: false,
