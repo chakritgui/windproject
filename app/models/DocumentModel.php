@@ -141,8 +141,8 @@ class DocumentModel {
             $poles_id           = $data['poles_id'];
             $startObj = DateTime::createFromFormat('d/m/Y', trim($data['document_start']));
             $endObj   = DateTime::createFromFormat('d/m/Y', trim($data['document_end']));
-            $document_start = ($startObj) ? $startObj->format('Y-m-d') : null;
-            $document_end   = ($endObj) ? $endObj->format('Y-m-d') : null;
+            $document_start = ($startObj) ? convertTimeZoneUTC($startObj->format('Y-m-d'), 'Y-m-d') : null;
+            $document_end   = ($endObj) ? convertTimeZoneUTC($endObj->format('Y-m-d'), 'Y-m-d') : null;
             if ($document_id) {
                 $this->updateDocument($document_id, $document_name, $document_start, $document_end, $status, $type_id, $contract_id, $project_id, $installations_id, $poles_id);
             } else {
@@ -155,7 +155,17 @@ class DocumentModel {
             return true;
         } catch (Exception $e) {
             $this->db->rollBack();
-            return false;
+            // บันทึก Log ลงไฟล์ของระบบ
+            error_log("Save Document Error: " . $e->getMessage());
+            
+            // ส่ง Error กลับไปให้ JavaScript (เฉพาะช่วง Debug)
+            header('Content-Type: application/json');
+            echo json_encode([
+                'status' => false,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString() // ดูลำดับการทำงานว่าพังที่บรรทัดไหน
+            ]);
+            exit;
         }
     }
     public function delete($id) {

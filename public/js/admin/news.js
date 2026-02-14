@@ -293,6 +293,7 @@ function executeSave() {
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
+            <p>${langData['do_not_close'] || 'Please do not close this window.'}</p>
             <div class="progress mt-3" style="height: 20px;">
                 <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%">0%</div>
             </div>`,
