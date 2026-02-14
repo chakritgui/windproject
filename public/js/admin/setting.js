@@ -269,7 +269,7 @@ $(document).on('click', '.save-information', function () {
     fd.append('site_assessment', $('#site_assessment').val());
     fd.append('logoInput', $('#logoInput')[0].files[0] || null);
     fd.append('iconInput', $('#iconInput')[0].files[0] || null);
-    uploadWithProgress(`${BASE_URL}/api/settings.info`, fd, '.save-information').done(res => {
+    uploadWithProgress(`/api/settings.info`, fd, '.save-information').done(res => {
         res.status ? (showSuccess(langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError(langData['cannot_save']);
     }).fail(() => showError(langData['cannot_save']));
 });
@@ -281,7 +281,7 @@ $(document).on('click', '.save-background', function () {
     fd.append('oldLoginBg', $('#oldLoginBg').val());
     fd.append('oldLoginMobileBg', $('#oldLoginMobileBg').val());
     fd.append('oldinfographyBg', $('#oldinfographyBg').val());
-    uploadWithProgress(`${BASE_URL}/api/settings.bg`, fd, '.save-background').done(res => {
+    uploadWithProgress(`/api/settings.bg`, fd, '.save-background').done(res => {
         res.status ? (showSuccess(langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError(langData['cannot_save']);
     }).fail(() => showError(langData['cannot_save']));
 });
@@ -310,7 +310,7 @@ $(document).on('click', '.save-configuration', function () {
         }
         fd.append(name, value);
     });
-    uploadWithProgress(`${BASE_URL}/api/settings.config`, fd, '.save-configuration').done(res => {
+    uploadWithProgress(`/api/settings.config`, fd, '.save-configuration').done(res => {
         if (res.status) {
             showSuccess(langData['saved_successfully']);
             if (typeof initSetting === 'function') initSetting(); 
@@ -333,7 +333,7 @@ $(document).on('click', '.save-notification', function () {
         }
         fd.append(name, value);
     });
-    uploadWithProgress(`${BASE_URL}/api/settings.notification`, fd, '.save-notification').done(res => {
+    uploadWithProgress(`/api/settings.notification`, fd, '.save-notification').done(res => {
         if (res.status) {
             showSuccess(langData['saved_successfully']);
             if (typeof initSetting === 'function') initSetting(); 
