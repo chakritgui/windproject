@@ -480,18 +480,18 @@ function getContentForm(d) {
     `;
 }
 $(document).on('click', '.save-content', function () {
+    let hasError = [];
     $('.is-invalid').removeClass('is-invalid');
-    let errors = [];
     $('.obj-required').each(function () {
         let value = $(this).val()?.trim() || '';
         if (!value) {
             $(this).addClass('is-invalid');
-            errors.push(this.name || this.id);
+            hasError.push(this.name || this.id);
         } else {
             $(this).removeClass('is-invalid');
         }
     });
-    if (errors.length) {
+    if (hasError.length) {
         showWarning(langData['required_star_message'] || 'Please fill all fields marked with *');
         $('.is-invalid').first().focus();
         return;
@@ -545,6 +545,8 @@ function executeSave() {
     formData.append("publish_at", typeof buildPublishAt === "function" ? buildPublishAt() : "");
     formData.append("title_en", $("#title_en").val() || "");
     formData.append("title_lo", $("#title_lo").val() || "");
+    const coverDisplayStatus = $("input[name='cover_display']:checked").val() || "no";
+    formData.append("cover_display", coverDisplayStatus);
     formData.append("ex_cover", $("#ex_cover").val() || "");
     formData.append("title_th", $("#title_th").val() || "");
     formData.append("send_notification", $("#send_notification").is(":checked") ? 'yes' : 'no');

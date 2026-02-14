@@ -567,5 +567,6 @@
     "other_channels": "Other Channels",
     "enable_request_form": "System Request Form",
     "enable_request_form_remark": "Allows users to submit a recovery request by providing their email and additional notes for verification.",
-    "limit_must_be_1": "Limit must be at least 1"
+    "limit_must_be_1": "Limit must be at least 1",
+    "display_the_cover": "Would you like to display the cover image?"
 }

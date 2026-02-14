@@ -2,7 +2,7 @@
     "name": "PSTG Project",
     "short_name": "PSTG",
     "description": "",
-    "start_url": "http://localhost:8080/windproject",
+    "start_url": "https://www.pstgwind.com",
     "display": "standalone",
     "orientation": "any",
     "theme_color": "#0d6efd",

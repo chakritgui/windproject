@@ -109,9 +109,10 @@ class NewsModel {
                 "response" => ["th" => "", "lo" => "", "en" => ""],
                 "settings" => $settings,
                 "translates" => $translates,
+                "cover_display" => 'no',
             ];
         }
-        $stmt = $pdo->prepare("SELECT content_id, status, publish_at, cover FROM wp_content WHERE content_id = ?");
+        $stmt = $pdo->prepare("SELECT content_id, status, publish_at, cover, cover_display FROM wp_content WHERE content_id = ?");
         $stmt->execute([$id]);
         $n = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$n) return null;
@@ -156,6 +157,7 @@ class NewsModel {
             "id" => $n['content_id'],
             "status" => $n['status'],
             "cover" => $n['cover'],
+            "cover_display" => $n['cover_display'],
             "publish_at" => !empty($n['publish_at']) ? convertTimeZone($n['publish_at'], 'Y-m-d H:i') : "",
             "title" => $title,
             "content" => $content,
@@ -173,6 +175,7 @@ class NewsModel {
         $pdo = $this->db;
         $content_id = $data['content_id'] ?: null;
         $status = $data['status'] ?? 'draft';
+        $cover_display = $data['cover_display'] ?? 'no';
         $mediaHelper = new MediaHelper($pdo);
         $publish_at = null;
         if ($status !== 'draft') {
@@ -196,6 +199,7 @@ class NewsModel {
             if ($content_id) {
                 $stmt = $pdo->prepare("UPDATE wp_content SET 
                     status = :status, 
+                    cover_display = :cover_display, 
                     content_slug = :content_slug, 
                     publish_at = :publish_at, 
                     updated_at = NOW() 
@@ -203,10 +207,11 @@ class NewsModel {
                 $stmt->bindValue(':content_id', (int)$content_id, PDO::PARAM_INT);
             } else {
                 $stmt = $pdo->prepare("INSERT INTO wp_content 
-                    (status, content_slug, publish_at, created_at, updated_at) 
-                    VALUES (:status, :content_slug, :publish_at, NOW(), NOW())");
+                    (status, cover_display, content_slug, publish_at, created_at, updated_at) 
+                    VALUES (:status, :cover_display, :content_slug, :publish_at, NOW(), NOW())");
             }
             $stmt->bindValue(':status', $status);
+            $stmt->bindValue(':cover_display', $cover_display);
             $stmt->bindValue(':content_slug', $content_slug);
             $stmt->bindValue(':publish_at', $publish_at, $publish_at === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
             $stmt->execute();

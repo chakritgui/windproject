@@ -60,7 +60,8 @@ class NewsController extends BaseController {
             'existing_images360'   => $_POST['existing_images360'] ?? [],
             'new_images360'        => $_FILES['new_images360'] ?? null,
             'auto_translate'       => $_POST['auto_translate'] ?? 'no',
-            'send_notification'    => $_POST['send_notification'] ?? 'no'
+            'send_notification'    => $_POST['send_notification'] ?? 'no',
+            'cover_display'    => $_POST['cover_display'] ?? 'no'
         ];
         try {
             $result = $this->model->save($data);

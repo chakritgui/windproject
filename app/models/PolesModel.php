@@ -370,10 +370,11 @@ class PolesModel {
                 "images" => [],
                 "images360" => [],
                 "settings" => $settings,
-                "translates" => $translates
+                "translates" => $translates,
+                "cover_display" => 'no'
             ];
         }
-        $stmt = $pdo->prepare("SELECT content_id, status, cover FROM wp_content WHERE content_id = ?");
+        $stmt = $pdo->prepare("SELECT content_id, status, cover, cover_display FROM wp_content WHERE content_id = ?");
         $stmt->execute([$id]);
         $n = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$n) return null;
@@ -419,6 +420,7 @@ class PolesModel {
             "poles_id" => $poles_id,
             "status" => $n['status'],
             "cover" => $n['cover'],
+            "cover_display" => $n['cover_display'],
             "title" => $title,
             "content" => $content,
             "status_translate" => $status_translate,
@@ -436,17 +438,20 @@ class PolesModel {
         $content_id = $data['content_id'] ?: null;
         $ex_cover = $data['ex_cover'] ?? null;
         $auto_translate = $data['auto_translate'] ?? 'no';
+        $cover_display = $data['cover_display'] ?? 'no';
         $mediaHelper = new MediaHelper($pdo);
         $content_slug = $mediaHelper->generateSlug('pole', $data["title_en"], $content_id);
         try {
             $pdo->beginTransaction();
             if ($content_id) {
-                $stmt = $pdo->prepare("UPDATE wp_content SET status = 'active', content_slug = :content_slug, updated_at = NOW() WHERE content_id = :content_id");
+                $stmt = $pdo->prepare("UPDATE wp_content SET status = 'active', content_slug = :content_slug, cover_display = :cover_display, updated_at = NOW() WHERE content_id = :content_id");
                 $stmt->bindValue(':content_slug', $content_slug);
+                $stmt->bindValue(':cover_display', $cover_display);
                 $stmt->bindValue(':content_id', (int)$content_id, PDO::PARAM_INT);
             } else {
-                $stmt = $pdo->prepare("INSERT INTO wp_content (status, content_slug, type, created_at, updated_at) VALUES ('active', :content_slug, 'pole', NOW(), NOW())");
+                $stmt = $pdo->prepare("INSERT INTO wp_content (status, content_slug, cover_display, type, created_at, updated_at) VALUES ('active', :content_slug, :cover_display, 'pole', NOW(), NOW())");
                 $stmt->bindValue(':content_slug', $content_slug);
+                $stmt->bindValue(':cover_display', $cover_display);
             }
             $stmt->execute();
             if (!$content_id) {

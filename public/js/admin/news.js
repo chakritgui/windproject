@@ -283,6 +283,8 @@ function executeSave() {
         formData.append(`title_${lang}`, $(`#title_${lang}`).val() || "");
     });
     formData.append("content_id", $("#content_id").val() || "");
+    const coverDisplayStatus = $("input[name='cover_display']:checked").val() || "no";
+    formData.append("cover_display", coverDisplayStatus);
     formData.append("ex_cover", $("#ex_cover").val() || "");
     const cover = $("#cover")[0].files[0] || null;
     if (cover) {

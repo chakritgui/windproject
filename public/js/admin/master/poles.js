@@ -450,14 +450,15 @@ function getContentForm(d, poles_id, content_id) {
     `;
 }
 $(document).on('click', '#btnSaveContent', function() {
-    const btn = $(this); 
-    $('.is-invalid').removeClass('is-invalid');
     let errors = [];
+    $('.is-invalid').removeClass('is-invalid');
     $('.obj-required').each(function () {
         let value = $(this).val()?.trim() || '';
         if (!value) {
             $(this).addClass('is-invalid');
             errors.push(this.name || this.id);
+        } else {
+            $(this).removeClass('is-invalid');
         }
     });
     if (errors.length) {
@@ -465,6 +466,10 @@ $(document).on('click', '#btnSaveContent', function() {
         $('.is-invalid').first().focus();
         return;
     }
+    executeSave();
+});
+function executeSave() {
+    const btn = $(this); 
     const formData = new FormData();
     const attachments = window.getAttachmentsData();
     attachments.forEach((att, index) => {
@@ -511,6 +516,8 @@ $(document).on('click', '#btnSaveContent', function() {
         formData.append("cover", cover);
     }
     formData.append("ex_cover", $("#ex_cover").val());
+    const coverDisplayStatus = $("input[name='cover_display']:checked").val() || "no";
+    formData.append("cover_display", coverDisplayStatus);
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
@@ -567,4 +574,4 @@ $(document).on('click', '#btnSaveContent', function() {
             if (Swal.isVisible() && !Swal.isLoading()) Swal.close();
         }
     });
-});
+}

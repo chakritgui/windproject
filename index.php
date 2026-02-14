@@ -152,6 +152,7 @@
             $router->post('/api/project.info', 'ProjectController@data');
             $router->post('/api/project.delete', 'ProjectController@delete');
             $router->post('/api/project.get', 'ProjectController@get');
+            $router->post('/api/project.gets', 'ProjectController@gets');
             $router->post('/api/project.filter', 'ProjectController@filter');
             $router->post('/api/project.content.save', 'ProjectController@saveContent');
             $router->post('/api/project.content.delete', 'ProjectController@deleteContent');

@@ -97,7 +97,8 @@ class PolesController extends BaseController {
             'new_images'           => $_FILES['new_images'] ?? null,
             'existing_images360'   => $_POST['existing_images360'] ?? [],
             'new_images360'        => $_FILES['new_images360'] ?? null,
-            'auto_translate' => $_POST['auto_translate'] ?? 'no'
+            'auto_translate' => $_POST['auto_translate'] ?? 'no',
+            'cover_display' => $_POST['cover_display'] ?? 'no'
         ];
         $result = $this->model->saveContent($data);
         $this->json(['status' => $result ? 'success' : 'error']);
