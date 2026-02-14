@@ -48,8 +48,8 @@
     background: var(--content-color);
 }
 .folder-icon-box {
-    width: 56px;
-    height: 56px;
+    width: 75px;
+    height: 75px;
     background: var(--bg-light);
     border-radius: 12px;
     display: flex;
