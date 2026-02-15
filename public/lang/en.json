@@ -342,6 +342,8 @@
     "change": "Save Changes",
     "map_layers": "Map Layers",
     "support_json": "Supports .json, .geojson, and .geojsonl only.",
+    "support_image": "Supports .jpg, .jpeg, .png, .gif, .webp only.",
+    "support_file": "Supports .ppt, .pptx, .pdf, .doc, .docx, .xls, .xlsx, .txt, .zip, .rar, .jpg, .jpeg, .png, .gif, .webp only.",
     "master_data": "Master Data",
     "map_and_boundary": "Map & Boundary",
     "contracts": "Contracts",
@@ -569,5 +571,6 @@
     "enable_request_form_remark": "Allows users to submit a recovery request by providing their email and additional notes for verification.",
     "limit_must_be_1": "Limit must be at least 1",
     "display_the_cover": "Would you like to display the cover image?",
-    "view_more": "View More"
+    "view_more": "View More",
+    "only_allowed_file_types": "Only allowed file types will be accepted; others will be automatically discarded."
 }

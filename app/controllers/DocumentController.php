@@ -55,7 +55,7 @@ class DocumentController extends BaseController {
             'poles_id' => $_POST['poles_id'] ?? '',
             'document_file' => $_FILES['document_file'] ?? null,
         ];
-        $this->json(['status'=>$this->model->save($data)]);
+        $this->json($this->model->save($data));
     }
     public function delete() {
         $id = intval($_POST['id'] ?? 0);

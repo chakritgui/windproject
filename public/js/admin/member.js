@@ -459,7 +459,8 @@ $(document).on('click', '.save-member', function () {
     saveMember();
 });
 function saveMember() {
-    $(".save-member").attr("disabled", true);
+    const btn = $(".save-member");
+    btn.prop("disabled", true);
     $.ajax({
         url: `${BASE_URL}/api/member.save`,
         method: 'POST',
@@ -475,19 +476,29 @@ function saveMember() {
             username: $("#username_").val().trim()
         },
         dataType: 'json',
-        success: function(res) {
-            if(res.status === true){
+        success: function (res) {
+            Swal.close();
+            btn.prop("disabled", false);
+            if (res.status === true) {
                 showSuccess(langData['saved_successfully']);
-                initMemberTable();
-                $('#windModal').modal('hide');
+                if (typeof initMemberTable === "function") initMemberTable();
+                $("#member_id").val(res.member_id);
             } else {
-                showError(langData['cannot_save']);
-            }   
-            $(".save-member").attr("disabled", false);
+                showError((langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
+            }
         },
-        error: function(){
-            showError(langData['cannot_save']);
-            $(".save-member").attr("disabled", false);
+        error: function (xhr, status, error) {
+            Swal.close();
+            btn.prop("disabled", false);
+            let msg = langData['cannot_save'];
+            try {
+                let res = JSON.parse(xhr.responseText);
+                if (res.message) msg += ": " + res.message;
+            } catch (e) {}
+            showError(msg);
+        },
+        complete: function() {
+            btn.prop("disabled", false);
         }
     });
 }

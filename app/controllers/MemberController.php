@@ -53,7 +53,7 @@ class MemberController extends BaseController {
             'status' => $_POST['status'] ?? '',
             'password' => $_POST['password'] ?? ''
         ];
-        $this->json(['status'=>$this->model->save($data)]);
+        $this->json($this->model->save($data));
     }
     public function checkemail() {
         $email = $_POST['email'] ?? '';

@@ -142,45 +142,56 @@ class MemberModel {
             $password_hash = encryptToken($password);
         }
         $pdo = $this->db;
-        if ($member_id) {
-            $sql = "UPDATE wp_members SET first_name = :first_name, last_name = :last_name, email = :email, phone = :phone, role = :role, status = :status, updated_at = NOW(), username = :username, password_hash = :password_hash WHERE member_id = :member_id";
-            $stmt = $pdo->prepare($sql);
-            $stmt->bindValue(':member_id', (int)$member_id, PDO::PARAM_INT);
-        } else {
-            $sql = "INSERT INTO wp_members (
-                first_name,
-                last_name,
-                email,
-                phone,
-                role,
-                status,
-                created_at,
-                updated_at, 
-                username,
-                password_hash
-            ) VALUES (
-                :first_name,
-                :last_name,
-                :email,
-                :phone,
-                :role,
-                :status,
-                NOW(),
-                NOW(), 
-                :username,
-                :password_hash
-            )";
-            $stmt = $pdo->prepare($sql);
+        try {
+            if ($member_id) {
+                $sql = "UPDATE wp_members SET 
+                            first_name = :first_name, 
+                            last_name = :last_name, 
+                            email = :email, 
+                            phone = :phone, 
+                            role = :role, 
+                            status = :status, 
+                            updated_at = NOW(), 
+                            username = :username, 
+                            password_hash = :password_hash 
+                        WHERE member_id = :member_id";
+                $stmt = $pdo->prepare($sql);
+                $stmt->bindValue(':member_id', (int)$member_id, PDO::PARAM_INT);
+            } else {
+                $sql = "INSERT INTO wp_members (
+                            first_name, last_name, email, phone, role, status, 
+                            created_at, updated_at, username, password_hash
+                        ) VALUES (
+                            :first_name, :last_name, :email, :phone, :role, :status, 
+                            NOW(), NOW(), :username, :password_hash
+                        )";
+                $stmt = $pdo->prepare($sql);
+            }
+            $stmt->bindValue(':first_name', $first_name);
+            $stmt->bindValue(':last_name', $last_name);
+            $stmt->bindValue(':email', $email);
+            $stmt->bindValue(':phone', $phone);
+            $stmt->bindValue(':role', $role);
+            $stmt->bindValue(':status', $status);
+            $stmt->bindValue(':username', $username);
+            $stmt->bindValue(':password_hash', $password_hash);
+            if ($stmt->execute()) {
+                return [
+                    'status' => true,
+                    'member_id' => $member_id ?: $pdo->lastInsertId()
+                ];
+            } else {
+                return [
+                    'status' => false,
+                    'message' => 'Failed to execute query.'
+                ];
+            }
+        } catch (PDOException $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage()
+            ];
         }
-        $stmt->bindValue(':first_name', $first_name);
-        $stmt->bindValue(':last_name', $last_name);
-        $stmt->bindValue(':email', $email);
-        $stmt->bindValue(':phone', $phone);
-        $stmt->bindValue(':role', $role);
-        $stmt->bindValue(':status', $status);
-        $stmt->bindValue(':username', $username);
-        $stmt->bindValue(':password_hash', $password_hash);
-        return $stmt->execute();
     }
     public function checkEmailExists($email, $exclude_member_id = null) {
         $pdo = $this->db;

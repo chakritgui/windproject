@@ -188,13 +188,37 @@ $(document).on('click', '.manage-document', function () {
                         <div id="drop_zone" class="border rounded-3 p-4 text-center" style="cursor:pointer; border-style:dashed;">
                             <div id="drop_text">
                                 <i class="fa-solid fa-folder-open fa-4x text-warning"></i>
-                                <div>${langData['dropHere'] || 'Drag & Drop file here'}</div>
-                                <div>— <span>${langData['or'] || 'Or'}</span> —</div>
+                                <p class="mb-0 mt-2 text-muted">${langData['drop_here'] || 'Drop here or click to browse'}</p>
                             </div>
                             <div id="file_preview" class="mt-3 d-none"></div>
                             <div id="drop_button">
                                 <button class="btn btn-primary mt-2" type="button" id="btn_select_file">${langData['choose'] || 'Choose'}</button>
-                                <input type="file" class="d-none obj-required" id="document_file">
+                                <input type="file" class="d-none obj-required" id="document_file" accept=".ppt,.pptx,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar,.jpg,.jpeg,.png,.gif,.webp">
+                            </div>
+                        </div>
+                        <div class="mt-3 px-2">
+                            <div class="d-flex align-items-start justify-content-center text-center">
+                                <i class="fa-solid fa-circle-info text-warning me-2 mt-1"></i>
+                                <div class="small text-muted">
+                                    <div>${langData['only_allowed_file_types'] || 'Only allowed file types will be accepted; others will be automatically discarded.'}</div>
+                                </div>
+                            </div>
+                            <div class="text-center mt-2">
+                                <span class="badge rounded-pill bg-light text-dark border">.ppt</span>
+                                <span class="badge rounded-pill bg-light text-dark border">.pptx</span>
+                                <span class="badge rounded-pill bg-light text-dark border">.pdf</span>
+                                <span class="badge rounded-pill bg-light text-dark border">.doc</span>
+                                <span class="badge rounded-pill bg-light text-dark border">.docx</span>
+                                <span class="badge rounded-pill bg-light text-dark border">.xls</span>
+                                <span class="badge rounded-pill bg-light text-dark border">.xlsx</span>
+                                <span class="badge rounded-pill bg-light text-dark border">.txt</span>
+                                <span class="badge rounded-pill bg-light text-dark border">.zip</span>
+                                <span class="badge rounded-pill bg-light text-dark border">.rar</span>
+                                <span class="badge rounded-pill bg-light text-dark border">.jpg</span>
+                                <span class="badge rounded-pill bg-light text-dark border">.jpeg</span>
+                                <span class="badge rounded-pill bg-light text-dark border">.png</span>
+                                <span class="badge rounded-pill bg-light text-dark border">.gif</span>
+                                <span class="badge rounded-pill bg-light text-dark border">.webp</span>
                             </div>
                         </div>
                     </div>
@@ -283,7 +307,8 @@ $(document).on('click', '.manage-document', function () {
                         const fileSize = docData.document_size;
                         const fakeFile = {
                             name: fileName,
-                            size: fileSize
+                            size: fileSize,
+                            type: fileType,
                         };
                         handleFile(fakeFile, 'edit');
                         $("#document_file").removeClass("obj-required");
@@ -384,6 +409,13 @@ $(document).on("click", "#btn_select_file", function () {
 });
 function handleFile(file, mode = 'edit') {
     if (!file) return;
+    const validExt = ["ppt","pptx","pdf","doc","docx", "xls", "xlsx", "txt", "zip", "rar", "jpg", "jpeg", "png", "gif", "webp"];
+    const ext = file.name.split(".").pop().toLowerCase();
+    if (!file.type.startsWith("image/") && !validExt.includes(ext)) {
+        showWarning(langData['support_file'] || 'Supports .ppt, .pptx, .pdf, .doc, .docx, .xls, .xlsx, .txt, .zip, .rar, .jpg, .jpeg, .png, .gif, .webp only.)');
+        input.value = "";
+        return;
+    } 
     let baseName = file.name.replace(/\.[^/.]+$/, "");
     baseName = baseName.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
     if (mode === 'new' ||  $("#document_name").val() === "") {
@@ -394,7 +426,6 @@ function handleFile(file, mode = 'edit') {
     $("#document_size").val(readableSize(file.size));
     $("#drop_text").addClass("d-none");
     $("#drop_button").addClass("d-none");
-    const ext = file.name.split(".").pop();
     const iconClass = getFileIconClass(ext);
     $("#file_preview").removeClass("d-none").html(`
         <div class="justify-content-between align-items-center p-2"> 
@@ -508,16 +539,18 @@ function saveDocument() {
         },
         success: function (res) {
             Swal.close();
+            btn.prop("disabled", false);
             if (res.status === true) {
                 showSuccess(langData['saved_successfully']);
                 if (typeof initDocumentTable === "function") initDocumentTable();
-                $('#windModal').modal('hide');
+                $("#document_id").val(res.document_id);
             } else {
                 showError((langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
             }
         },
         error: function (xhr, status, error) {
             Swal.close();
+            btn.prop("disabled", false);
             let msg = langData['cannot_save'];
             try {
                 let res = JSON.parse(xhr.responseText);

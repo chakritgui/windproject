@@ -342,6 +342,8 @@
     "change": "บันทึกการเปลี่ยนแปลง",
     "map_layers": "ชั้นแผนที่",
     "support_json": "รองรับเฉพาะไฟล์ .json, .geojson และ .geojsonl เท่านั้น",
+    "support_image": "รองรับเฉพาะไฟล์ .jpg, .jpeg, .png, .gif, .webp เท่านั้น",
+    "support_file": "รองรับเฉพาะไฟล์ .ppt, .pptx, .pdf, .doc, .docx, .xls, .xlsx, .txt, .zip, .rar, .jpg, .jpeg, .png, .gif, .webp เท่านั้น",
     "master_data": "ข้อมูลหลัก",
     "map_and_boundary": "แผนที่และขอบเขต",
     "contracts": "สัญญา",
@@ -570,5 +572,6 @@
     "enable_request_form_remark": "อนุญาตให้ผู้ใช้ส่งคำขอเพื่อกู้คืนรหัสผ่าน โดยการระบุอีเมลและหมายเหตุเพิ่มเติมเพื่อตรวจสอบตัวตน",
     "limit_must_be_1": "ขีดจำกัดต้องมีอย่างน้อย 1",
     "display_the_cover": "ต้องการให้แสดงภาพหน้าปกในการแสดงผลหรือไม่?",
-    "view_more": "ดูเพิ่มเติม"
+    "view_more": "ดูเพิ่มเติม",
+    "only_allowed_file_types": "ระบบจะรับเฉพาะไฟล์ที่กำหนดเท่านั้น ไฟล์ประเภทอื่นจะถูกคัดออกโดยอัตโนมัติ"
 }

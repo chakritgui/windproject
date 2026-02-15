@@ -215,7 +215,10 @@ function initAttachmentsUpload(existingAttachments = []) {
         })
     );
     dropArea.addEventListener("drop", e => {
-        const files = Array.from(e.dataTransfer.files);
+        const allowedExtensions = /(\.ppt|\.pptx|\.pdf|\.doc|\.docx|\.xls|\.xlsx|\.txt|\.zip|\.rar|\.jpg|\.jpeg|\.png|\.gif|\.webp)$/i;
+        const files = Array.from(e.dataTransfer.files).filter(f => {
+            return f.type.startsWith('image/') && allowedExtensions.test(f.name);
+        });
         addFiles(files);
     });
     input.addEventListener("change", e => {
@@ -224,15 +227,29 @@ function initAttachmentsUpload(existingAttachments = []) {
         input.value = ""; 
     });
     function addFiles(files) {
+        const allowedExtensions = /(\.ppt|\.pptx|\.pdf|\.doc|\.docx|\.xls|\.xlsx|\.txt|\.zip|\.rar|\.jpg|\.jpeg|\.png|\.gif|\.webp)$/i;
+        let hasInvalidFile = false;
         files.forEach(file => {
-            attachmentsData.push({
-                type: 'new',
-                file: file,
-                name: file.name,
-                size: file.size
-            });
+            if (!allowedExtensions.test(file.name)) {
+                hasInvalidFile = true;
+                return; 
+            }
+            const reader = new FileReader();
+            reader.onload = e => {
+                attachmentsData.push({
+                    type: 'new',
+                    file: file,
+                    preview: e.target.result,
+                    name: file.name,
+                    size: file.size || null,
+                });
+                renderAttachments();
+            };
+            reader.readAsDataURL(file);
         });
-        renderAttachments();
+        if (hasInvalidFile) {
+            showError(langData['only_allowed_file_types'] || 'Only allowed file types will be accepted; others will be automatically discarded.');
+        }
     }
     function renderAttachments() {
         if (attachmentsData.length === 0) {
@@ -240,16 +257,22 @@ function initAttachmentsUpload(existingAttachments = []) {
             return;
         }
         list.innerHTML = '<div class="list-group sortable-attachments">' +
-            attachmentsData.map((att, index) => `
-                <div class="list-group-item d-flex align-items-center" data-index="${index}">
-                    <i class="fa-solid fa-file text-primary me-2 fs-5"></i>
-                    <div class="flex-grow-1">
-                        <div class="fw-medium">${att.name}</div>
-                        <small class="text-muted">${formatFileSize(att.size)}</small>
+            attachmentsData.map((att, index) => {
+                const ext = att.name.split('.').pop().toLowerCase();
+                const iconClass = getFileIconClass(ext);
+                return `
+                    <div class="list-group-item d-flex align-items-center" data-index="${index}">
+                        <i class="fa-solid ${iconClass} me-3 fs-4"></i>
+                        <div class="flex-grow-1">
+                            <div class="fw-medium text-truncate" style="max-width: 250px;">${att.name}</div>
+                            <small class="text-muted">${formatFileSize(att.size)}</small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeAttachment(${index})">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeAttachment(${index})"><i class="fa-solid fa-trash-can"></i></button>
-                </div>
-            `).join('') +
+                `;
+            }).join('') +
             '</div>';
     }
     window.removeAttachment = function(index) {
@@ -288,7 +311,10 @@ function initImagesUpload(existingImages = []) {
         })
     );
     dropArea.addEventListener("drop", e => {
-        const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+        const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.webp)$/i;
+        const files = Array.from(e.dataTransfer.files).filter(f => {
+            return f.type.startsWith('image/') && allowedExtensions.test(f.name);
+        });
         addFiles(files);
     });
     input.addEventListener("change", e => {
@@ -297,7 +323,13 @@ function initImagesUpload(existingImages = []) {
         input.value = "";
     });
     function addFiles(files) {
+        const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.webp)$/i;
+        let hasInvalidFile = false;
         files.forEach(file => {
+            if (!allowedExtensions.test(file.name)) {
+                hasInvalidFile = true;
+                return; 
+            }
             const reader = new FileReader();
             reader.onload = e => {
                 imagesData.push({
@@ -310,6 +342,9 @@ function initImagesUpload(existingImages = []) {
             };
             reader.readAsDataURL(file);
         });
+        if (hasInvalidFile) {
+            showError(langData['only_allowed_file_types'] || 'Only allowed file types will be accepted; others will be automatically discarded.');
+        }
     }
     function renderImages() {
         if (imagesData.length === 0) {
@@ -366,7 +401,10 @@ function init360ImagesUpload(existing360Images = []) {
         })
     );
     dropArea.addEventListener("drop", e => {
-        const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+        const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.webp)$/i;
+        const files = Array.from(e.dataTransfer.files).filter(f => {
+            return f.type.startsWith('image/') && allowedExtensions.test(f.name);
+        });
         addFiles(files);
     });
     input.addEventListener("change", e => {
@@ -375,7 +413,13 @@ function init360ImagesUpload(existing360Images = []) {
         input.value = "";
     });
     function addFiles(files) {
+        const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.webp)$/i;
+        let hasInvalidFile = false;
         files.forEach(file => {
+            if (!allowedExtensions.test(file.name)) {
+                hasInvalidFile = true;
+                return; 
+            }
             const reader = new FileReader();
             reader.onload = e => {
                 images360Data.push({
@@ -388,6 +432,9 @@ function init360ImagesUpload(existing360Images = []) {
             };
             reader.readAsDataURL(file);
         });
+        if (hasInvalidFile) {
+            showError(langData['only_allowed_file_types'] || 'Only allowed file types will be accepted; others will be automatically discarded.');
+        }
     }
     function render360Images() {
         if (images360Data.length === 0) {
@@ -458,11 +505,26 @@ function renderGallery() {
             <div class="mb-4">
                 <label class="form-label fw-bold">${langData['upload2'] || 'Images'}</label>
                 <div class="border border-2 border-dashed rounded-3 p-4 text-center" id="imagesDropArea" style="cursor: pointer; min-height: 120px;">
-                    <input type="file" id="images" name="images[]" class="d-none" accept="image/*" multiple>
+                    <input type="file" id="images" name="images[]" class="d-none" accept=".jpg,.jpeg,.png,.gif,.webp" multiple>
                     <div id="imagesDropLabel">
                         <i class="fa-solid fa-image fs-1 text-muted"></i>
                         <p class="mb-0 mt-2 text-muted">${langData['drop_here'] || 'Drop here or click to browse'}</p>
                         <small class="text-muted">${langData['multiple_upload'] || 'Multiple upload supported'}</small>
+                    </div>
+                </div>
+                <div class="mt-3 px-2">
+                    <div class="d-flex align-items-start justify-content-center text-center">
+                        <i class="fa-solid fa-circle-info text-warning me-2 mt-1"></i>
+                        <div class="small text-muted">
+                            <div>${langData['only_allowed_file_types'] || 'Only allowed file types will be accepted; others will be automatically discarded.'}</div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-2">
+                        <span class="badge rounded-pill bg-light text-dark border">.jpg</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.jpeg</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.png</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.gif</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.webp</span>
                     </div>
                 </div>
                 <div id="imagesList" class="mt-3 row g-2"></div>
@@ -477,11 +539,26 @@ function render360() {
                 <label class="form-label fw-bold">${langData['upload3'] || '360° Images'}</label>
                 <div class="border border-2 border-dashed rounded-3 p-4 text-center" 
                     id="images360DropArea" style="cursor: pointer; min-height: 120px;">
-                    <input type="file" id="images360" name="images360[]" class="d-none" accept="image/*" multiple>
+                    <input type="file" id="images360" name="images360[]" class="d-none" accept=".jpg,.jpeg,.png,.gif,.webp" multiple>
                     <div id="images360DropLabel">
                         <i class="fa-solid fa-maximize fs-1 text-muted"></i>
                         <p class="mb-0 mt-2 text-muted">${langData['drop_here'] || 'Drop here or click to browse'}</p>
                         <small class="text-muted">${langData['multiple_upload'] || 'Multiple upload supported'}</small>
+                    </div>
+                </div>
+                <div class="mt-3 px-2">
+                    <div class="d-flex align-items-start justify-content-center text-center">
+                        <i class="fa-solid fa-circle-info text-warning me-2 mt-1"></i>
+                        <div class="small text-muted">
+                            <div>${langData['only_allowed_file_types'] || 'Only allowed file types will be accepted; others will be automatically discarded.'}</div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-2">
+                        <span class="badge rounded-pill bg-light text-dark border">.jpg</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.jpeg</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.png</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.gif</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.webp</span>
                     </div>
                 </div>
                 <div id="images360List" class="mt-3 row g-2"></div>
@@ -495,11 +572,36 @@ function renderFiles() {
             <div class="mb-4">
                 <label class="form-label fw-bold">${langData['upload1'] || 'Attachments (PDF, DOC, etc.)'}</label>
                 <div class="border border-2 border-dashed rounded-3 p-4 text-center" id="attachmentsDropArea" style="cursor: pointer; min-height: 120px;">
-                    <input type="file" id="attachments" name="attachments[]" class="d-none" multiple>
+                    <input type="file" id="attachments" name="attachments[]" class="d-none" multiple accept=".ppt,.pptx,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar,.jpg,.jpeg,.png,.gif,.webp">
                     <div id="attachmentsDropLabel">
                         <i class="fa-solid fa-paperclip fs-1 text-muted"></i>
                         <p class="mb-0 mt-2 text-muted">${langData['drop_here'] || 'Drop here or click to browse'}</p>
                         <small class="text-muted">${langData['multiple_upload'] || 'Multiple upload supported'}</small>
+                    </div>
+                </div>
+                <div class="mt-3 px-2">
+                    <div class="d-flex align-items-start justify-content-center text-center">
+                        <i class="fa-solid fa-circle-info text-warning me-2 mt-1"></i>
+                        <div class="small text-muted">
+                            <div>${langData['only_allowed_file_types'] || 'Only allowed file types will be accepted; others will be automatically discarded.'}</div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-2">
+                        <span class="badge rounded-pill bg-light text-dark border">.ppt</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.pptx</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.pdf</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.doc</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.docx</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.xls</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.xlsx</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.txt</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.zip</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.rar</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.jpg</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.jpeg</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.png</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.gif</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.webp</span>
                     </div>
                 </div>
                 <div id="attachmentsList" class="mt-3"></div>
@@ -523,7 +625,7 @@ function renderCover(d) {
                     <span>${langData['or'] || 'Or'}</span> <span>${langData['choose'] || 'Choose'}</span>
                 </div>
             </div>
-            <div class="text-muted small mt-2">${langData['allow_images_only'] || 'Allow images only (jpg, jpeg, png, gif, webp)'}</div>
+            <div class="text-muted small mt-2">${langData['support_image'] || 'Supports .jpg, .jpeg, .png, .gif, .webp only.'}</div>
             <button type="button" id="btnRemoveCover" class="btn btn-sm btn-outline-danger mt-2 ${d.cover ? '' : 'd-none'}">${langData['remove'] || 'Remove'}</button>
         </div>
         <input type="hidden" id="ex_cover" value="${d.cover ? d.cover : ''}">

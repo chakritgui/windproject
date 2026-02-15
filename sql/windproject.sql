@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 13, 2026 at 09:05 PM
+-- Generation Time: Feb 15, 2026 at 06:56 AM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -243,11 +243,11 @@ CREATE TABLE `wp_documents` (
   `installations_id` bigint(20) DEFAULT NULL,
   `poles_id` bigint(20) DEFAULT NULL,
   `document_name` varchar(255) NOT NULL,
-  `document_type` varchar(255) NOT NULL,
+  `document_type` varchar(255) DEFAULT NULL,
   `document_size` bigint(20) NOT NULL DEFAULT '0',
   `document_start` datetime NOT NULL,
   `document_end` datetime NOT NULL,
-  `document_path` longtext NOT NULL,
+  `document_path` longtext,
   `status` enum('public','private','deleted') NOT NULL,
   `document_file_name` varchar(255) DEFAULT NULL,
   `document_download` bigint(20) NOT NULL DEFAULT '0',

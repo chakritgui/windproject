@@ -342,6 +342,8 @@
     "change": "ບັນທຶກການປ່ຽນແປງ",
     "map_layers": "ຊັ້ນແຜນທີ່",
     "support_json": "ຮອງຮັບສະເພາະໄຟລ໌ .json, .geojson ແລະ .geojsonl ເທົ່ານັ້ນ",
+    "support_image": "ຮອງຮັບສະເພາະໄຟລ໌ .jpg, .jpeg, .png, .gif, .webp ເທົ່ານັ້ນ",
+    "support_file": "ຮອງຮັບສະເພາະໄຟລ໌ .ppt, .pptx, .pdf, .doc, .docx, .xls, .xlsx, .txt, .zip, .rar, .jpg, .jpeg, .png, .gif, .webp ເທົ່ານັ້ນ",
     "master_data": "ຂໍ້ມູນຫຼັກ",
     "map_and_boundary": "ແຜນທີ່ ແລະ ຂອບເຂດ",
     "contracts": "ສັນຍາ",
@@ -570,5 +572,6 @@
     "enable_request_form_remark": "ອະນຸຍາດໃຫ້ຜູ້ໃຊ້ສົ່ງຄຳຮ້ອງຂໍກູ້ຄືນລະຫັດຜ່ານ ໂດຍການລະບຸອີເມວ ແລະ ໝາຍເຫດເພີ່ມເຕີມເພື່ອຢືນຢັນຕົວຕົນ",
     "limit_must_be_1": "ຂີດຈຳກັດຕ້ອງມີຢ່າງໜ້ອຍ 1",
     "display_the_cover": "ຕ້ອງການໃຫ້ສະແດງຮູບໜ້າປົກໃນການສະແດງຜົນຫຼືບໍ່?",
-    "view_more": "ເບິ່ງເພີ່ມເຕີມ"
+    "view_more": "ເບິ່ງເພີ່ມເຕີມ",
+    "only_allowed_file_types": "ລະບົບຈະຮັບເອົາສະເພາະໄຟລ໌ທີ່ກຳນົດເທົ່ານັ້ນ, ໄຟລ໌ປະເພດອື່ນຈະຖືກຄັດອອກໂດຍອັດຕະໂນມັດ"
 }

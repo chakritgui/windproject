@@ -90,8 +90,7 @@ function renderContent(data) {
                 </div>
                 ${hasMore ? `
                     <div class="text-center mt-4" id="btn-container-${sec.type}">
-                        <button class="btn btn-outline-primary rounded-pill px-5 py-2 shadow-sm transition-all" 
-                                onclick="loadMoreItems('${sec.type}', ${JSON.stringify(items.slice(DISPLAY_LIMIT)).replace(/"/g, '&quot;')}, '${data.cover}')">
+                        <button class="btn btn-outline-primary rounded-pill px-5 py-2 shadow-sm transition-all" onclick="loadMoreItems('${sec.type}', ${JSON.stringify(items.slice(DISPLAY_LIMIT)).replace(/"/g, '&quot;')}, '${data.cover}')">
                             <i class="fa-solid fa-chevron-down me-2"></i> 
                             ${langData['view_more'] || 'View More'} ${items.length - DISPLAY_LIMIT} ${langData['item'] || 'Items'}
                         </button>
@@ -110,11 +109,13 @@ function renderGridItems(type, items, defaultCover) {
         const url = `${BASE_URL}/${item.url}`;
         if (type === 'docs') {
             const isPdf = item.url.toLowerCase().endsWith('.pdf');
+            const ext = item.name.split('.').pop().toLowerCase();
+            const iconClass = getFileIconClass(ext);
             html += `
                 <div class="col-lg-3 col-md-4 col-sm-6 item-fade-in">
                     <a href="${url}" download class="text-decoration-none h-100 d-block">
                         <div class="d-flex align-items-center p-3 rounded-4 border bg-white shadow-sm hover-shadow h-100 transition-all">
-                            <i class="fa-regular ${isPdf ? 'fa-file-pdf text-danger' : 'fa-file-lines text-primary'} fs-2 me-3"></i>
+                            <i class="fa-solid ${iconClass} fs-2 me-3"></i>
                             <div class="overflow-hidden">
                                 <div class="text-dark fw-bold text-truncate small">${item.name}</div>
                                 <div class="text-muted extra-small" data-i18n="download"></div>

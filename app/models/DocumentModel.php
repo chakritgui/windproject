@@ -152,10 +152,16 @@ class DocumentModel {
                 $this->handleFileUpload($document_id, $_FILES['document_file']);
             }
             $this->db->commit();
-            return true;
+            return [
+                'status' => true,
+                'document_id' => $document_id
+            ];
         } catch (Exception $e) {
             $this->db->rollBack();
-            return false;
+            return [
+                'status' => false,
+                'document_id' => null
+            ];
         }
     }
     public function delete($id) {
