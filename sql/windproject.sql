@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 15, 2026 at 06:56 AM
+-- Generation Time: Feb 15, 2026 at 06:04 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -784,7 +784,10 @@ ALTER TABLE `wp_installations`
 -- Indexes for table `wp_login_logs`
 --
 ALTER TABLE `wp_login_logs`
-  ADD PRIMARY KEY (`logs_id`);
+  ADD PRIMARY KEY (`logs_id`),
+  ADD KEY `idx_member_id` (`member_id`),
+  ADD KEY `idx_login_at` (`login_at`),
+  ADD KEY `idx_log_type` (`log_type`);
 
 --
 -- Indexes for table `wp_map_master`
