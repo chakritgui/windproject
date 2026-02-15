@@ -91,8 +91,20 @@ class MemberModel {
             $params[':member_id'] = $filters['member'];
         }
         if (!empty($filters['date'])) {
-            $where .= " AND DATE(l.login_at) = :login_date ";
-            $params[':login_date'] = $filters['date'];
+            $dateParts = explode(' - ', $filters['date']);
+            if (count($dateParts) == 2) {
+                $startObj = DateTime::createFromFormat('d/m/Y', trim($dateParts[0]));
+                $endObj   = DateTime::createFromFormat('d/m/Y', trim($dateParts[1]));
+                if ($startObj && $endObj) {
+                    $startDate = $startObj->format('Y-m-d');
+                    $endDate   = $endObj->format('Y-m-d');
+                    $startDateUTC = convertTimeZoneUTC($startDate, 'Y-m-d');
+                    $endDateUTC   = convertTimeZoneUTC($endDate, 'Y-m-d');
+                    $where .= " AND (DATE(l.login_at) BETWEEN :start AND :end)";
+                    $params[':start'] = $startDateUTC;
+                    $params[':end']   = $endDateUTC;
+                }
+            }
         }
         if (!empty($filters['log_type'])) {
             $where .= " AND l.log_type = :log_type ";
