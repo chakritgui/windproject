@@ -613,11 +613,24 @@ function initHistoryTable() {
             orderable: true, 
             render: function(data) {
                 let icon = 'fa-laptop';
-                if(data === 'Windows') icon = 'fa-brands fa-windows text-primary';
-                else if(data === 'Android') icon = 'fa-brands fa-android text-success';
-                else if(data === 'iOS' || data === 'Mac OS') icon = 'fa-brands fa-apple text-dark';
-                
-                return `<span class="fw-semibold"><i class="${icon} me-2"></i>${data}</span>`;
+                let color = 'text-secondary';
+                if(data === 'Windows') {
+                    icon = 'fa-brands fa-windows';
+                    color = 'text-primary';
+                } else if(data === 'Android') {
+                    icon = 'fa-brands fa-android';
+                    color = 'text-success';
+                } else if(data === 'iPhone (iOS)') {
+                    icon = 'fa-mobile-screen-button';
+                    color = 'text-dark';
+                } else if(data === 'iPad (iOS)') {
+                    icon = 'fa-tablet-screen-button';
+                    color = 'text-dark';
+                } else if(data === 'Mac OS') {
+                    icon = 'fa-brands fa-apple';
+                    color = 'text-dark';
+                }
+                return `<span class="fw-semibold ${color}"><i class="fa-solid ${icon} me-2"></i>${data}</span>`;
             }
         },{ 
             data: "device_browser",
