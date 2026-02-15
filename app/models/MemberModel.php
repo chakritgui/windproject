@@ -166,8 +166,8 @@ class MemberModel {
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($rows as &$r) {
-            $r['login_at_formatted'] = !empty($r['login_at']) ? convertTimeZone($r['login_at'], 'd/m/Y H:i:s') : '-';
-            $r['logout_at_formatted'] = !empty($r['logout_at']) ? convertTimeZone($r['logout_at'], 'd/m/Y H:i:s') : '-';
+            $r['login_at'] = !empty($r['login_at']) ? convertTimeZone($r['login_at'], 'd/m/Y H:i:s') : '-';
+            $r['logout_at'] = !empty($r['logout_at']) ? convertTimeZone($r['logout_at'], 'd/m/Y H:i:s') : '-';
             $ua_info = $this->parse_user_agent($r['login_device']);
             $r['device_os'] = $ua_info['os'];
             $r['device_browser'] = $ua_info['browser'];
