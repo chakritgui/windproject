@@ -285,7 +285,8 @@ function refreshAllTables() {
         'tb_wind': typeof initWindTable === 'function' ? initWindTable : null,
         'tb_group': typeof initGroupTable === 'function' ? initGroupTable : null,
         'tb_group': typeof initProjectStatusTable === 'function' ? initProjectStatusTable : null,
-        'tb_level': typeof initLevelTable === 'function' ? initLevelTable : null
+        'tb_level': typeof initLevelTable === 'function' ? initLevelTable : null,
+        'tb_history': typeof initHistoryTable === 'function' ? initHistoryTable : null
     };
     $('.dataTable').each(function () {
         const initFn = tableMappings[this.id];

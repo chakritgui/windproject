@@ -190,7 +190,7 @@
                             <th class="hide-mobile" data-i18n="logout_time"></th>
                             <th data-i18n="ip_address"></th>
                             <th class="hide-mobile" data-i18n="device"></th>
-                            <th class="text-center pe-4" data-i18n="tatus"></th>
+                            <th class="text-center pe-4" data-i18n="status"></th>
                         </tr>
                     </thead>
                     <tbody></tbody>

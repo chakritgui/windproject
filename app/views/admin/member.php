@@ -19,39 +19,103 @@
     </div>
 </div>
 <div class="container-fluid mt-3 mb-5">
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="row g-2 mb-3">
-                <div class="col-sm-2">
-                    <p><i class="fa-solid fa-user-gear"></i> <span data-i18n="role"></span></p>
-                    <select id="filter_role" class="form-select filter"></select>
-                </div>
-                <div class="col-sm-2">
-                    <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
-                    <select id="filter_status" class="form-select filter"></select>
+    <ul class="nav nav-pills mb-4" id="mainTabs" role="tablist">
+         <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="member-tab" data-bs-toggle="pill" data-bs-target="#member_management" data-page="member" type="button">
+                <i class="fa-solid fa-users"></i> <span data-i18n="member"></span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="history-tab" data-bs-toggle="pill" data-bs-target="#login_history" data-page="history" type="button">
+                <i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="usage_history"></span>
+            </button>
+        </li>
+    </ul>
+    <div class="tab-content" id="mainTabContent">
+        <div class="tab-pane fade show active" id="member_management" role="tabpanel">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-user-gear"></i> <span data-i18n="role"></span></p>
+                            <select id="filter_role" class="form-select filter"></select>
+                        </div>
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <select id="filter_status" class="form-select filter"></select>
+                        </div>
+                    </div>
                 </div>
             </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="tb_member">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th data-i18n="full_name"></th>
+                            <th data-i18n="email"></th>
+                            <th data-i18n="mobile"></th>
+                            <th data-i18n="role"></th>
+                            <th data-i18n="create_at"></th>
+                            <th data-i18n="last_login"></th>
+                            <th data-i18n="status"></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</div>
-<div class="container-fluid mt-3 mb-5">
-    <div class="table-responsive">
-        <table class="table table-striped table-hover" id="tb_member">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th data-i18n="full_name"></th>
-                    <th data-i18n="email"></th>
-                    <th data-i18n="mobile"></th>
-                    <th data-i18n="role"></th>
-                    <th data-i18n="create_at"></th>
-                    <th data-i18n="last_login"></th>
-                    <th data-i18n="status"></th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+        <div class="tab-pane fade" id="login_history" role="tabpanel">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-2">
+                            <p><i class="fa-regular fa-calendar"></i> <span data-i18n="date"></span></p>
+                            <input type="text" class="form-control filter-history" id="filter_history_date" autocomplete="off">
+                        </div>
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-user"></i> <span data-i18n="member"></span></p>
+                            <select id="filter_history_member" class="form-select filter-history"></select>
+                        </div>
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-user-gear"></i> <span data-i18n="role"></span></p>
+                            <select id="filter_history_role" class="form-select filter-history"></select>
+                        </div>
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-arrow-right-to-bracket"></i> <span data-i18n="device"></span></p>
+                            <select id="filter_history_device" class="form-select filter-history"></select>
+                        </div>
+                        <div class="col-sm-2">
+                            <p><i class="fa-regular fa-window-maximize"></i> <span data-i18n="browsers"></span></p>
+                            <select id="filter_history_browser" class="form-select filter-history"></select>
+                        </div>
+                        <div class="col-sm-2">
+                            <p><i class="fa-regular fa-clock"></i> <span data-i18n="timezone"></span></p>
+                            <select id="filter_history_timezone" class="form-select filter-history"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="tb_history">
+                    <thead>
+                        <tr>
+                            <th data-i18n="member"></th>
+                            <th data-i18n="role"></th>
+                            <th data-i18n="login_time"></th>
+                            <th data-i18n="logout_time"></th>
+                            <th data-i18n="ip_address"></th>
+                            <th data-i18n="device"></th>
+                            <th data-i18n="browsers"></th>
+                            <th data-i18n="timezone"></th>
+                            <th data-i18n="status"></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 <script src="<?=BASE_URL?>/public/js/admin/member.js?v=<?=time()?>"></script>

@@ -1,3 +1,4 @@
+let pages = 'member';
 let tb_member;
 function initMemberTable() {
     let oldPage = 0;
@@ -129,14 +130,32 @@ function initMemberTable() {
 $('.filter').on('change', function () {
     initMemberTable();
 });
-async function initMember() {
-    initMemberTable(); 
-}
 $(document).ready(function () {
-    initMember();
-    initSelect2Remote('#filter_role', `${BASE_URL}/api/member.filter`, { type: 'role' });
-    initSelect2Remote('#filter_status', `${BASE_URL}/api/member.filter`, { type: 'status' });
+    initTable();
+    $(".nav-link").click(function() {
+        let p = $(this).data("page");
+        pages = p;
+        initTable();
+    });
 });
+function initTable() {
+    switch(pages) {
+        case 'member':
+            initSelect2Remote('#filter_role', `${BASE_URL}/api/member.filter`, { type: 'role' });
+            initSelect2Remote('#filter_status', `${BASE_URL}/api/member.filter`, { type: 'status' });
+            initMemberTable();
+            break;
+        case 'history':
+            initDateRangePicker('#filter_history_date', initHistoryTable);
+            initSelect2Remote('#filter_history_role', `${BASE_URL}/api/member.filter`, { type: 'role' });
+            initSelect2Remote('#filter_history_member', `${BASE_URL}/api/member.filter`, { type: 'member' });
+            initSelect2Remote('#filter_history_device', `${BASE_URL}/api/member.filter`, { type: 'device' });
+            initSelect2Remote('#filter_history_browser', `${BASE_URL}/api/member.filter`, { type: 'browser' });
+            initSelect2Remote('#filter_history_timezone', `${BASE_URL}/api/member.filter`, { type: 'timezone' });
+            initHistoryTable();
+            break;
+    }
+}
 $(document).on('click', '.delete-member', function() {
     let member_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
@@ -517,3 +536,131 @@ $(document).on('input change', '.obj-required', function () {
         $(this).removeClass('is-invalid');
     }
 });
+$('.filter-history').on('change', function () {
+    initHistoryTable();
+});
+let tb_history;
+function initHistoryTable() {
+    let oldPage = 0;
+    if ($.fn.DataTable.isDataTable('#tb_history')) {
+        oldPage = $('#tb_history').DataTable().page();
+        $('#tb_history').DataTable().destroy();
+    }
+    if ($.fn.DataTable.isDataTable('#tb_history')) {
+        $('#tb_history').DataTable().ajax.reload(null, false);
+        return;
+    }
+    tb_history = $('#tb_history').DataTable({
+        processing: true,
+        serverSide: true,
+        responsive: true, 
+        order: [[2, 'desc']],
+        ajax: { 
+            url: `${BASE_URL}/api/history.list`,
+            type: "POST",
+            data: function(d){
+                d.date = $('#filter_history_date').val();
+                d.member = $('#filter_history_member').val();
+                d.role = $('#filter_history_role').val();
+                d.device = $('#filter_history_device').val();
+                d.browser = $('#filter_history_browser').val();
+                d.timezone = $('#filter_history_timezone').val();
+            }
+        },
+        columns: [{
+            data: null,
+            orderable: true, 
+            render: function(row){
+                return `<div class="d-flex align-items-center">
+                            <div class="symbol symbol-35px symbol-circle me-2" style="width:30px; height:30px; background:#f3f6f9; display:flex; align-items:center; justify-content:center; border-radius:50%">
+                                <i class="fa fa-user text-primary" style="font-size:12px"></i>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <span class="fw-bold text-gray-800 text-hover-primary mb-1">${row.first_name} ${row.last_name}</span>
+                            </div>
+                        </div>`;
+            }
+        },{ 
+            data: "role",
+            orderable: true, 
+            render: function(data, type, row) {
+                return `<div class="d-flex flex-column" data-i18n="${row.role}">${row.role}</div>`;
+            }
+        },{ 
+            data: "login_at",
+            orderable: true, 
+            render: function(data, type, row) {
+                let login = `<span class="text-muted fs-8 mt-1"><i class="fas fa-sign-in-alt me-1"></i>${row.login_at}</span>`;
+                return `<div class="d-flex flex-column">${login}</div>`;
+            }
+        },{ 
+            data: "logout_at",
+            orderable: true, 
+            render: function(data, type, row) {
+                let logout = row.logout_at && row.logout_at !== '-' 
+                    ? `<span class="text-muted fs-8 mt-1"><i class="fas fa-sign-out-alt me-1"></i>${row.logout_at}</span>`
+                    : ``;
+                return `<div class="d-flex flex-column">${logout}</div>`;
+            }
+        },{ 
+            data: "ip_address",
+            orderable: true, 
+            render: function(data) {
+                return `<code class="px-2 py-1 bg-light rounded text-danger fw-bold">${data}</code>`;
+            }
+        },{ 
+            data: "device_os",
+            orderable: true, 
+            render: function(data) {
+                let icon = 'fa-laptop';
+                if(data === 'Windows') icon = 'fa-brands fa-windows text-primary';
+                else if(data === 'Android') icon = 'fa-brands fa-android text-success';
+                else if(data === 'iOS' || data === 'Mac OS') icon = 'fa-brands fa-apple text-dark';
+                
+                return `<span class="fw-semibold"><i class="${icon} me-2"></i>${data}</span>`;
+            }
+        },{ 
+            data: "device_browser",
+            orderable: true, 
+            render: function(data) {
+                let bIcon = 'fa-globe';
+                if(data === 'Chrome') bIcon = 'fa-brands fa-chrome text-warning';
+                else if(data === 'Firefox') bIcon = 'fa-brands fa-firefox text-orange';
+                else if(data === 'Safari') bIcon = 'fa-brands fa-safari text-info';
+                return `<span class="text-gray-600 small"><i class="${bIcon} me-1"></i>${data}</span>`;
+            }
+        },{
+            data: "timezone",
+            orderable: true,
+        },{
+            data: "log_type",
+            orderable: true, 
+            className: "text-center",
+            render: function(data) {
+                let badgeClass = data === 'kick' ? 'bg-light-danger text-danger' : 'bg-light-success text-success';
+                let label = data === 'kick' ? 'Kicked' : 'Normal';
+                return `<span class="badge ${badgeClass} border-0 px-3 py-2 text-uppercase" style="font-size: 10px;">${label}</span>`;
+            }
+        }],      
+        pageLength: pageLength,
+        lengthMenu: lengthMenu,
+        stateLoadParams: function (settings, data) {
+            data.start = oldPage;
+            data.length = pageLength; 
+        },
+        language: getTableLang(),
+        initComplete: function() {
+            let $filter = $('#tb_history_filter');
+            let self = this.api();
+            let $input = $filter.find('input').unbind();
+            $input.bind('keypress', function(e) {
+                if (e.keyCode == 13) {
+                    self.search(this.value).draw();
+                }
+            });
+        },
+        drawCallback: function(){
+            getTableLang();
+        }
+    });
+}

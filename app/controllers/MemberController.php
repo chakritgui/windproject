@@ -33,6 +33,38 @@ class MemberController extends BaseController {
             "data" => $res['data']
         ]);
     }
+    public function history(){
+        $start = intval($_POST['start'] ?? 0);
+        $length= intval($_POST['length'] ?? 10);
+        $filters = [
+            'date'=> $_POST['date'] ?? '',
+            'member'=> $_POST['member'] ?? '',
+            'role'=> $_POST['role'] ?? '',
+            'device'=> $_POST['device'] ?? '',
+            'browser'=> $_POST['browser'] ?? '',
+            'timezone'=> $_POST['timezone'] ?? '',
+        ];
+        $search = $_POST['search']['value'] ?? '';
+        $orderDir    = 'asc';
+        if (!empty($_POST['order'][0])) {
+            $colIndex   = intval($_POST['order'][0]['column']);
+            $orderDir   = $_POST['order'][0]['dir'] === 'desc' ? 'desc' : 'asc';
+        }
+        $res = $this->model->history(
+            $start,
+            $length,
+            $filters,
+            $search,
+            $colIndex,
+            $orderDir
+        );
+        $this->json([
+            "draw" => intval($_POST['draw'] ?? 1),
+            "recordsTotal" => $res['total'],
+            "recordsFiltered" => $res['total'],
+            "data" => $res['data']
+        ]);
+    }
     public function get(){
         $id = intval($_POST['id'] ?? 0);
         $this->json(['status'=>true,'data'=>$this->model->get($id)]);

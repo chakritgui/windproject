@@ -77,7 +77,8 @@
             $router->get('/api/dashboard.usage', 'DashboardController@loginHistory');
             $router->get('/api/dashboard.chart', 'DashboardController@getWindChartData');
             $router->post('/api/member.list', 'MemberController@list');
-            $router->post('/api/member.get', 'MemberController@get');
+            $router->post('/api/member.list', 'MemberController@list');
+            $router->post('/api/history.list', 'MemberController@history');
             $router->post('/api/member.save', 'MemberController@save');
             $router->post('/api/member.delete', 'MemberController@delete');
             $router->post('/api/member.exitsmail', 'MemberController@checkemail');
