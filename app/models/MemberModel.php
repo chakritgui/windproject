@@ -93,16 +93,20 @@ class MemberModel {
         if (!empty($filters['date'])) {
             $dateParts = explode(' - ', $filters['date']);
             if (count($dateParts) == 2) {
-                $startObj = DateTime::createFromFormat('d/m/Y', trim($dateParts[0]));
-                $endObj   = DateTime::createFromFormat('d/m/Y', trim($dateParts[1]));
-                if ($startObj && $endObj) {
-                    $startDate = $startObj->format('Y-m-d');
-                    $endDate   = $endObj->format('Y-m-d');
-                    $startDateUTC = convertTimeZoneUTC($startDate, 'Y-m-d');
-                    $endDateUTC   = convertTimeZoneUTC($endDate, 'Y-m-d');
-                    $where .= " AND (DATE(l.login_at) BETWEEN :start AND :end)";
-                    $params[':start'] = $startDateUTC;
-                    $params[':end']   = $endDateUTC;
+                $userTzStr = $_SESSION['timezone'] ?? 'Asia/Bangkok';
+                try {
+                    $userTz = new DateTimeZone($userTzStr);
+                    $utcTz  = new DateTimeZone('UTC');
+                    $startObj = DateTime::createFromFormat('d/m/Y H:i:s', trim($dateParts[0]) . ' 00:00:00', $userTz);
+                    $endObj   = DateTime::createFromFormat('d/m/Y H:i:s', trim($dateParts[1]) . ' 23:59:59', $userTz);
+                    if ($startObj && $endObj) {
+                        $startObj->setTimezone($utcTz);
+                        $endObj->setTimezone($utcTz);
+                        $where .= " AND l.login_at BETWEEN :start_utc AND :end_utc";
+                        $params[':start_utc'] = $startObj->format('Y-m-d H:i:s');
+                        $params[':end_utc']   = $endObj->format('Y-m-d H:i:s');
+                    }
+                } catch (Exception $e) {
                 }
             }
         }

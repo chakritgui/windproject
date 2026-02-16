@@ -49,6 +49,10 @@ function initDateRangePicker(selector, callback) {
         autoUpdateInput: false,
         alwaysShowCalendars: true, 
         ranges: {
+            [langData['today'] || 'Today']: [moment(), moment()],
+            [langData['yesterday'] || 'Yesterday']: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            [langData['last_7_days'] || 'Last 7 Days']: [moment().subtract(6, 'days'), moment()],
+            [langData['last_30_days'] || 'Last 30 Days']: [moment().subtract(29, 'days'), moment()],
             [langData['this_week'] || 'This Week']: [moment().startOf('week'), moment().endOf('week')],
             [langData['last_week'] || 'Last Week']: [moment().subtract(1, 'week').startOf('week'), moment().subtract(1, 'week').endOf('week')],
             [langData['this_month'] || 'This Month']: [moment().startOf('month'), moment().endOf('month')],

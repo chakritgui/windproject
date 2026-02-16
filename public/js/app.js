@@ -17,7 +17,8 @@ async function initApp() {
         await Promise.all([
             loadSetting(),
             loadLang(currentLang),
-            loadNotification()
+            loadNotification(),
+            syncTimezone()
         ]);
         bindSidebar();
         bindNotification();
@@ -30,6 +31,18 @@ async function initApp() {
     } catch (error) {
         console.error("Initialization failed:", error);
         showError(langData['process_failed']);
+    }
+}
+async function syncTimezone() {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    try {
+        await fetch(`${BASE_URL}/api/timezone.update`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ timezone: tz })
+        });
+    } catch (e) {
+        console.warn("Timezone sync failed", e);
     }
 }
 async function handlePWANotifications() {

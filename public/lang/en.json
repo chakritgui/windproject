@@ -575,5 +575,9 @@
     "limit_must_be_1": "Limit must be at least 1",
     "display_the_cover": "Would you like to display the cover image?",
     "view_more": "View More",
-    "only_allowed_file_types": "Only allowed file types will be accepted; others will be automatically discarded."
+    "only_allowed_file_types": "Only allowed file types will be accepted; others will be automatically discarded.",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "last_7_days": "Last 7 Days",
+    "last_30_days": "Last 30 Days"
 }

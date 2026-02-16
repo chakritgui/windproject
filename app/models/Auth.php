@@ -83,4 +83,20 @@
                 return 'process_failed';
             }
         }
+        public function updateTimeZone($timezone) {
+            $member_id = $_SESSION['user']['id'];
+            $_SESSION['timezone'] = $timezone;
+            $sql = "UPDATE wp_login_logs 
+                    SET timezone = :timezone 
+                    WHERE member_id = :member_id 
+                    ORDER BY logs_id DESC 
+                    LIMIT 1";
+
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':timezone'  => $timezone,
+                ':member_id' => $member_id
+            ]);
+            return 'success';
+        }
     }

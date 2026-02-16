@@ -24,7 +24,7 @@
             <div class="row g-2 mb-3">
                 <div class="col-sm-2">
                     <p><i class="fa-regular fa-calendar"></i> <span data-i18n="document_date"></span></p>
-                    <input type="text" class="form-control filter" id="filter_date">
+                    <input type="text" class="form-control filter" id="filter_date" autocomplete="off">
                 </div>
                 <div class="col-sm-2 col-6">
                     <p><i class="fa-solid fa-file-lines"></i> <span data-i18n="contract"></span></p>

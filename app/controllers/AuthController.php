@@ -125,4 +125,31 @@ class AuthController extends Controller {
         }
         exit;
     }
+    public function updateTimeZone() {
+        header('Content-Type: application/json; charset=utf-8');
+        $json = file_get_contents('php://input');
+        $data = json_decode($json, true);
+        $timezone = $data['timezone'] ?? null;
+        if (!$timezone) {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => 'timezone_invalid_format'
+            ]);
+            exit;
+        }
+        $m = new Auth();
+        $result = $m->updateTimeZone($timezone);
+        if ($result === 'success') {
+            echo json_encode([
+                'status'  => 'success',
+                'message' => 'timezone_updated_success'
+            ]);
+        } else {
+            echo json_encode([
+                'status'  => 'error',
+                'message' => $result 
+            ]);
+        }
+        exit;
+    }
 }
