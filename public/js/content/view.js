@@ -168,17 +168,6 @@ function closeOrRedirect() {
         }, 200);
     }
 }
-Fancybox.bind("[data-fancybox='gallery']", {
-    Hash: false,
-    Thumbs: { autoStart: false },
-    Toolbar: {
-        display: {
-            left: ["infobar"],
-            middle: [],
-            right: ["iterateZoom", "close"],
-        },
-    },
-});
 let vrViewer = null;
 function openVRModal(imgUrl) {
     const modal = new bootstrap.Modal(document.getElementById('vrModal'));
