@@ -64,40 +64,56 @@ class SettingModel {
             return false;
         }
     }
-    public function getAll() {
-        $sql = "SELECT * FROM wp_setting";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
-        $settings = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $sqlConfig = "SELECT setting_key, setting_value FROM system_settings";
-        $stmtConfig = $this->db->prepare($sqlConfig);
-        $stmtConfig->execute();
-        $configsRaw = $stmtConfig->fetchAll(PDO::FETCH_ASSOC);
-        $systemConfigs = [];
-        $secureKeys = ['MAIL_PASS', 'WINDY_KEY', 'GOOGLE_API_KEY'];
-        foreach ($configsRaw as $row) {
-            $key = $row['setting_key'];
-            $value = $row['setting_value'];
-            if (in_array($key, $secureKeys) && !empty($value)) {
-                $value = decryptToken($value);
+    public function getAll(){
+        try {
+            $stmt = $this->db->prepare("SELECT * FROM wp_setting");
+            $stmt->execute();
+            $settings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stmtConfig = $this->db->prepare("SELECT setting_key, setting_value FROM system_settings");
+            $stmtConfig->execute();
+            $configsRaw = $stmtConfig->fetchAll(PDO::FETCH_ASSOC);
+            $systemConfigs = [];
+            $secureKeys = ['MAIL_PASS', 'WINDY_KEY', 'GOOGLE_API_KEY'];
+            foreach ($configsRaw as $row) {
+                $key   = $row['setting_key'];
+                $value = $row['setting_value'];
+                if (in_array($key, $secureKeys, true) && !empty($value)) {
+                    $value = decryptToken($value);
+                }
+                $systemConfigs[$key] = $value;
             }
-            $systemConfigs[$key] = $value;
-        }
-        $userLanguage = null;
-        if(!empty($_SESSION['user']['id'])) {
-            $sql = "SELECT language FROM wp_members_language WHERE member_id = ?";
-            $stmtLang = $this->db->prepare($sql); 
-            $stmtLang->execute([(int)$_SESSION['user']['id']]);
-            $row = $stmtLang->fetch(PDO::FETCH_ASSOC);
-            if ($row) {
-                $userLanguage = $row['language'];
+            $userLanguage = null;
+            $userId = !empty($_SESSION['user']['id']) 
+                ? (int)$_SESSION['user']['id'] 
+                : null;
+            if ($userId) {
+                $stmtLang = $this->db->prepare("SELECT language FROM wp_members_language WHERE member_id = :member_id LIMIT 1");
+                $stmtLang->execute([
+                    ':member_id' => $userId
+                ]);
+                $row = $stmtLang->fetch(PDO::FETCH_ASSOC);
+                if ($row) {
+                    $userLanguage = $row['language'];
+                }
             }
+            $stmtForgot = $this->db->prepare("SELECT * FROM wp_password_reset_settings WHERE id = 1 LIMIT 1");
+            $stmtForgot->execute();
+            $forgotSystem = $stmtForgot->fetch(PDO::FETCH_ASSOC);
+            return [
+                'settings'        => $settings,
+                'system_configs'  => $userId ? $systemConfigs : [],
+                'user_lang'       => $userLanguage,
+                'forgot_system'   => $forgotSystem ?: []
+            ];
+        } catch (Exception $e) {
+            error_log("Get Settings Error: " . $e->getMessage());
+            return [
+                'settings'        => [],
+                'system_configs'  => [],
+                'user_lang'       => null,
+                'forgot_system'   => []
+            ];
         }
-        return [
-            'settings' => $settings,
-            'system_configs' => (!empty($_SESSION['user']['id'])) ? $systemConfigs : [],
-            'user_lang' => $userLanguage
-        ];
     }
     private function updateSettings(array $settings) {
         foreach ($settings as $type => $value) {
@@ -315,6 +331,47 @@ class SettingModel {
         } catch (Exception $e) {
             $this->db->rollBack();
             error_log("Update Settings Error: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function savePasswordSettings($data){
+        try {
+            $this->db->beginTransaction();  
+            $sql = "INSERT INTO wp_password_reset_settings (
+                        id, is_email_link_enabled, is_admin_contact_enabled, 
+                        admin_email, admin_line_oa, admin_telegram, 
+                        admin_others, is_system_request_enabled, updated_at
+                    ) VALUES (
+                        1, :is_email_link, :is_admin_contact, 
+                        :admin_email, :admin_line, :admin_tele, 
+                        :admin_others, :is_system_req, NOW()
+                    )
+                    ON DUPLICATE KEY UPDATE
+                        is_email_link_enabled      = VALUES(is_email_link_enabled),
+                        is_admin_contact_enabled   = VALUES(is_admin_contact_enabled),
+                        admin_email                = VALUES(admin_email),
+                        admin_line_oa              = VALUES(admin_line_oa),
+                        admin_telegram             = VALUES(admin_telegram),
+                        admin_others               = VALUES(admin_others),
+                        is_system_request_enabled  = VALUES(is_system_request_enabled),
+                        updated_at                 = NOW()";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':is_email_link'   => ($data['is_email_link_enabled'] == '1') ? 1 : 0,
+                ':is_admin_contact'=> ($data['is_admin_contact_enabled'] == '1') ? 1 : 0,
+                ':admin_email'     => $data['admin_email'] ?? null,
+                ':admin_line'      => $data['admin_line_oa'] ?? null,
+                ':admin_tele'      => $data['admin_telegram'] ?? null,
+                ':admin_others'    => $data['admin_others'] ?? null,
+                ':is_system_req'   => ($data['is_system_request_enabled'] == '1') ? 1 : 0
+            ]);
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            error_log("Save Password Settings Error: " . $e->getMessage());
             return false;
         }
     }

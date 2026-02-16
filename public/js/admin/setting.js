@@ -14,7 +14,7 @@ const toggleButton = (selector, disabled) => {
 };
 const showUploadProgress = () => {
     Swal.fire({
-        title: 'Uploading...',
+        title: langData['saving'],
         html: `
             <div class="progress mt-2">
                 <div id="swal-progress" class="progress-bar" style="width:0%">0%</div>
@@ -78,6 +78,21 @@ function initSetting() {
             currentLang = targetLang;
             sessionStorage.setItem('lang', currentLang);
             if (typeof loadLang === 'function') loadLang(currentLang);
+        }
+        const forgot_system = res.data.forgot_system;
+        if (forgot_system && typeof forgot_system === 'object') {
+            Object.keys(forgot_system).forEach(key => {
+                const value = forgot_system[key];
+                const $el = $(`#passwordResetForm [name="${key}"], #passwordResetForm [id="${key}"]`);
+                if ($el.length) {
+                    if ($el.is(':checkbox')) {
+                        const isChecked = (value == 1 || value == "1");
+                        $el.prop('checked', isChecked).trigger('change');
+                    } else {
+                        $el.val(value || '').trigger('change');
+                    }
+                }
+            });
         }
     });
 }
@@ -337,6 +352,28 @@ $(document).on('click', '.save-notification', function () {
         if (res.status) {
             showSuccess(langData['saved_successfully']);
             if (typeof initSetting === 'function') initSetting(); 
+        } else {
+            showError(langData['cannot_save']);
+        }
+    }).fail(() => showError(langData['cannot_save']));
+});
+$(document).on('click', '.save-passwordreset', function () {
+    const fd = new FormData();
+    const $form = $('#passwordResetForm');
+    $form.find('input').each(function() {
+        const name = $(this).attr('name');
+        if (name) {
+            if ($(this).is(':checkbox')) {
+                fd.append(name, $(this).prop('checked') ? 1 : 0);
+            } else {
+                fd.append(name, $(this).val());
+            }
+        }
+    });
+    uploadWithProgress(`/api/settings.password`, fd, '.save-passwordreset').done(res => {
+        if (res.status) {
+            showSuccess(langData['saved_successfully']);
+            initSetting();
         } else {
             showError(langData['cannot_save']);
         }

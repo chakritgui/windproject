@@ -81,7 +81,7 @@ class ProjectModel {
     }
     private function countChildren($folderId, $currentLevel, $refId, $project_id = null) {
         $nextLevel = (int)$currentLevel + 1;
-        $sqlFolder = "SELECT id, code FROM wp_folder WHERE parent_id = :pid AND level = :lvl AND status <> 'deleted' AND (ref_id = :rid OR ref_id IS NULL OR ref_id = '')";
+        $sqlFolder = "SELECT id, code FROM wp_folder WHERE parent_id = :pid AND level = :lvl AND status = 'active' AND (ref_id = :rid OR ref_id IS NULL OR ref_id = '')";
         $stmt = $this->db->prepare($sqlFolder);
         $stmt->execute([
             ':pid' => $folderId, 
@@ -108,7 +108,7 @@ class ProjectModel {
             if (isset($config[$code])) {
                 $cfg = $config[$code];
                 $params = [];
-                $subConditions = ["t.status <> 'deleted'"];
+                $subConditions = ["t.status = 'active'"];
                 $joinSql = "";
                 if ($code === 'project' && !empty($refId)) {
                     $subConditions[] = "t.contract_id = :rid";
@@ -139,7 +139,7 @@ class ProjectModel {
     }
     private function fetchDynamicData($cfg, $code, $currentRefId, $currentProjectId, $search) {
         $subParams = [];
-        $subConditions = ["t.status <> 'deleted'"];
+        $subConditions = ["t.status = 'active'"];
         $joinSql = ""; 
         $extraSelect = ""; 
         if (!empty($search)) {
@@ -192,7 +192,7 @@ class ProjectModel {
     }
     public function data($data) {
         $folder_id = intval($data['folder_id']);
-        $sql = "SELECT id, name as folder_name, parent_id, level FROM wp_folder WHERE id = :id AND status <> 'deleted' LIMIT 1";
+        $sql = "SELECT id, name as folder_name, parent_id, level FROM wp_folder WHERE id = :id AND status = 'active' LIMIT 1";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':id' => $folder_id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -211,7 +211,7 @@ class ProjectModel {
         return $row;
     }
     private function buildListWhere($filters) {
-        $where  = " WHERE f.status != 'deleted' ";
+        $where  = " WHERE f.status = 'active' ";
         $params = [];
         if (!empty($filters['level'])) {
             $where .= " AND f.level = :level";

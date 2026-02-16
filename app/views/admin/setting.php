@@ -404,55 +404,47 @@
                     <form id="passwordResetForm">
                         <div class="mb-4 pb-3 border-bottom">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label class="form-label fw-bold mb-0">
-                                    <span data-i18n="enable_email_reset"></span>
-                                </label>
+                                <label class="form-label fw-bold mb-0"><span data-i18n="enable_email_reset"></span></label>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="emailResetToggle" checked>
+                                    <input class="form-check-input" type="checkbox" id="emailResetToggle" name="is_email_link_enabled">
                                 </div>
                             </div>
-                            <small class="text-muted d-block mb-2" data-i18n="enable_email_reset_remark"></small>
                         </div>
                         <div class="mb-4 pb-3 border-bottom">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label class="form-label fw-bold mb-0">
-                                    <span data-i18n="enable_admin_contact"></span>
-                                </label>
+                                <label class="form-label fw-bold mb-0"><span data-i18n="enable_admin_contact"></span></label>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="adminContactToggle">
+                                    <input class="form-check-input" type="checkbox" id="adminContactToggle" name="is_admin_contact_enabled">
                                 </div>
                             </div>
                             <div class="admin-channels mt-3">
                                 <div class="row g-3">
                                     <div class="col-md-6">
-                                        <label class="form-label"><i class="fa-solid fa-envelope-open me-2"></i><span data-i18n="email"></span></label>
-                                        <input type="email" class="form-control" placeholder="admin@example.com">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" name="admin_email" placeholder="admin@example.com">
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label"><i class="fa-brands fa-line me-2"></i>Line OA</label>
-                                        <input type="text" class="form-control" placeholder="@yourlineid">
+                                        <label class="form-label">Line OA</label>
+                                        <input type="text" class="form-control" name="admin_line_oa" placeholder="@yourlineid">
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label"><i class="fa-brands fa-telegram me-2"></i>Telegram</label>
-                                        <input type="text" class="form-control" placeholder="@username">
+                                        <label class="form-label">Telegram</label>
+                                        <input type="text" class="form-control" name="admin_telegram" placeholder="@username">
                                     </div>
                                     <div class="col-md-6">
-                                        <label class="form-label"><i class="fa-solid fa-address-book me-2"></i><span data-i18n="other_channels"></span></label>
-                                        <input type="text" class="form-control" placeholder="Phone or other link">
+                                        <label class="form-label">Other</label>
+                                        <input type="text" class="form-control" name="admin_others" placeholder="Phone or other link">
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label class="form-label fw-bold mb-0">
-                                    <span data-i18n="enable_request_form"></span>
-                                </label>
+                                <label class="form-label fw-bold mb-0"><span data-i18n="enable_request_form"></span></label>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="requestFormToggle">
+                                    <input class="form-check-input" type="checkbox" id="requestFormToggle" name="is_system_request_enabled">
                                 </div>
                             </div>
-                            <p class="text-muted" data-i18n="enable_request_form_remark"></p>
                         </div>
                     </form>
                 </div>

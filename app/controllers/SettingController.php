@@ -139,4 +139,30 @@ class SettingController extends BaseController {
             echo json_encode(['status' => false, 'message' => 'Failed to save settings']);
         }
     }
+    public function savePassword() {
+        $keys = [
+            'is_email_link_enabled', 
+            'is_admin_contact_enabled', 
+            'is_system_request_enabled', 
+            'admin_email', 
+            'admin_line_oa', 
+            'admin_telegram', 
+            'admin_others'
+        ];
+        $updateData = [];
+        foreach ($keys as $key) {
+            if (isset($_POST[$key])) {
+                $updateData[$key] = htmlspecialchars($_POST[$key]);
+            }
+        }
+        if (empty($updateData)) {
+            echo json_encode(['status' => false, 'message' => 'No data to update']);
+            return;
+        }
+        $result = $this->model->savePasswordSettings($updateData);
+        echo json_encode([
+            'status' => $result, 
+            'message' => $result ? 'Settings saved successfully' : 'Failed to save settings'
+        ]);
+    }
 }
