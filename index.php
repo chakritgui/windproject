@@ -15,6 +15,7 @@
     require_once __DIR__ . '/app/core/Router.php';
     require_once __DIR__ . '/app/helpers/mediaHelper.php';
     require_once __DIR__ . '/app/helpers/mailHelper.php';
+    require_once __DIR__ . '/app/helpers/userAgent.php';
     spl_autoload_register(function ($class) {
         $paths = ['app/controllers/', 'app/models/', 'app/core/'];
         foreach ($paths as $path) {
@@ -89,7 +90,8 @@
             $router->post('/api/document.info', 'DocumentController@get');
             $router->post('/api/document.save', 'DocumentController@save');
             $router->post('/api/document.delete', 'DocumentController@delete');
-            $router->post('/api/document.history', 'DocumentController@downloadHistory');
+            $router->post('/api/document.history', 'DocumentController@documentHistory');
+            $router->post('/api/download.history', 'DocumentController@downloadHistory');
             $router->post('/api/wind.list', 'WindController@list');
             $router->post('/api/wind.import', 'WindController@import');
             $router->post('/api/wind.clear', 'WindController@clear');

@@ -173,7 +173,7 @@ class NewsModel {
     }
     public function save($data) {
         $pdo = $this->db;
-        echo $content_id = $data['content_id'] ?: null;
+        $content_id = $data['content_id'] ?: null;
         $status = $data['status'] ?? 'draft';
         $cover_display = $data['cover_display'] ?? 'no';
         $mediaHelper = new MediaHelper($pdo);

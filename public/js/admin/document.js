@@ -1,3 +1,4 @@
+let pages = 'document';
 let tb_document;
 function initDocumentTable() {
     let oldPage = 0;
@@ -120,7 +121,7 @@ function initDocumentTable() {
             data.length = pageLength; 
         },
         language: getTableLang(),
-       initComplete: function() {
+        initComplete: function() {
             let self = this.api();
             let $filter = $('#tb_document_filter');
             if ($filter.find('.manage-document').length === 0) {
@@ -150,15 +151,35 @@ async function initDocument() {
     initDocumentTable(); 
 }
 $(document).ready(function () {
-    initDocument();
-    initSelect2Remote('#filter_contract', `${BASE_URL}/api/document.filter`, { type: 'contract' });
-    initSelect2Remote('#filter_project', `${BASE_URL}/api/document.filter`, { type: 'project' });
-    initSelect2Remote('#filter_type', `${BASE_URL}/api/document.filter`, { type: 'type' });
-    initSelect2Remote('#filter_installations', `${BASE_URL}/api/document.filter`, { type: 'installation' });
-    initSelect2Remote('#filter_poles', `${BASE_URL}/api/document.filter`, { type: 'pole' });
-    initSelect2Remote('#filter_status', `${BASE_URL}/api/document.filter`, { type: 'status' });
-    initDateRangePicker('#filter_date', initDocumentTable);
+    initTable();
+    $(".nav-link").click(function() {
+        let p = $(this).data("page");
+        pages = p;
+        initTable();
+    });
 });
+function initTable() {
+     switch(pages) {
+        case 'document':
+            initSelect2Remote('#filter_contract', `${BASE_URL}/api/document.filter`, { type: 'contract' });
+            initSelect2Remote('#filter_project', `${BASE_URL}/api/document.filter`, { type: 'project' });
+            initSelect2Remote('#filter_type', `${BASE_URL}/api/document.filter`, { type: 'type' });
+            initSelect2Remote('#filter_installations', `${BASE_URL}/api/document.filter`, { type: 'installation' });
+            initSelect2Remote('#filter_poles', `${BASE_URL}/api/document.filter`, { type: 'pole' });
+            initSelect2Remote('#filter_status', `${BASE_URL}/api/document.filter`, { type: 'status' });
+            initDateRangePicker('#filter_date', initDocumentTable);
+            initDocumentTable();
+            break;
+        case 'history':
+            initSelect2Remote('#filter_history_document', `${BASE_URL}/api/document.filter`, { type: 'document' });
+            initSelect2Remote('#filter_history_member', `${BASE_URL}/api/member.filter`, { type: 'member' });
+            initSelect2Remote('#filter_history_device', `${BASE_URL}/api/member.filter`, { type: 'device' });
+            initSelect2Remote('#filter_history_browser', `${BASE_URL}/api/member.filter`, { type: 'browser' });
+            initDateRangePicker('#filter_history_date', initHistoryTable);
+            initHistoryTable();
+            break;
+    }
+}
 $(document).on('click', '.manage-document', function () {
     let document_id = $(this).data("id");
     $.ajax({
@@ -595,20 +616,6 @@ $(document).on('click', '.history-download', function(){
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     `);
     modalEl.find(".modal-body").html(`
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <label>${langData['startDate'] || 'Start Date'}</label>
-                <input type="date" id="filter_start" class="form-control">
-            </div>
-            <div class="col-md-4">
-                <label>${langData['endDate'] || 'End Date'}</label>
-                <input type="date" id="filter_end" class="form-control">
-            </div>
-            <div class="col-md-4">
-                <label>&nbsp;</label>
-                <button id="btnFilter" class="btn btn-primary w-100">${langData['filter'] || 'Filter'}</button>
-            </div>
-        </div>
         <div class="alert alert-info">
             <span>${langData['total_downloads'] || 'Total Downloads'}</span>: <strong id="total_downloads">0</strong>
         </div>
@@ -619,6 +626,7 @@ $(document).on('click', '.history-download', function(){
                     <th>${langData['member'] || 'Member'}</th>
                     <th>${langData['date'] || 'Date'}</th>
                     <th>${langData['device'] || 'Device'}</th>
+                    <th>${langData['browsers'] || 'Browser'}</th>
                 </tr>
             </thead>
         </table>
@@ -627,9 +635,6 @@ $(document).on('click', '.history-download', function(){
         <button class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
     `);
     loadDownloadHistory(document_id);
-    $(document).off("click", "#btnFilter").on("click", "#btnFilter", function(){
-        $('#downloadHistoryTable').DataTable().ajax.reload();
-    });
 });
 function loadDownloadHistory(document_id){
     $('#downloadHistoryTable').DataTable({
@@ -657,16 +662,28 @@ function loadDownloadHistory(document_id){
         },{ 
             data: "download_date",
             orderable: true, 
-        },{ 
-            data: "download_device",
-            orderable: true,
-            render: function(d){
-                d = (d || '').toLowerCase();
-                if(d.includes("mobile"))
-                    return `<span class="badge bg-success">Mobile</span>`;
-                if(d.includes("tablet"))
-                    return `<span class="badge bg-warning text-dark">Tablet</span>`;
-                return `<span class="badge bg-primary">Desktop</span>`;
+        }, { 
+            data: "device_os",
+            className: 'align-middle',
+            render: function(data) {
+                let icon = 'fa-laptop', color = 'text-secondary';
+                if(data === 'Windows') { icon = 'fa-brands fa-windows'; color = 'text-primary'; }
+                else if(data === 'Android') { icon = 'fa-brands fa-android'; color = 'text-success'; }
+                else if(data.includes('iPhone') || data.includes('iPad')) { icon = 'fa-solid fa-mobile-screen'; color = 'text-dark'; }
+                else if(data === 'Mac OS') { icon = 'fa-brands fa-apple'; color = 'text-dark'; }
+                
+                return `<span class="${color} fw-medium"><i class="${icon} me-2"></i>${data}</span>`;
+            }
+        },
+        { 
+            data: "device_browser",
+            className: 'align-middle',
+            render: function(data) {
+                let bIcon = 'fa-globe';
+                if(data === 'Chrome') bIcon = 'fa-brands fa-chrome text-warning';
+                else if(data === 'Firefox') bIcon = 'fa-brands fa-firefox text-danger';
+                else if(data === 'Safari') bIcon = 'fa-brands fa-safari text-info';
+                return `<span class="text-muted small"><i class="${bIcon} me-1"></i>${data}</span>`;
             }
         }],
         pageLength: pageLength,
@@ -674,6 +691,111 @@ function loadDownloadHistory(document_id){
         language: getTableLang(),
         drawCallback: function(settings){
             $("#total_downloads").text(settings.json.recordsTotal);
+        }
+    });
+}
+$('.filter-history').on('change', function () {
+    initHistoryTable();
+});
+let tb_history;
+function initHistoryTable() {
+    let oldPage = 0;
+    if ($.fn.DataTable.isDataTable('#tb_history')) {
+        oldPage = $('#tb_history').DataTable().page();
+        $('#tb_history').DataTable().destroy();
+    }
+    tb_history = $('#tb_history').DataTable({
+        processing: true,
+        serverSide: true,
+        order: [[2, 'desc']],
+        ajax: { 
+            url: `${BASE_URL}/api/download.history`, 
+            type: "POST",
+            data: function(d){
+                d.date = $('#filter_history_date').val();
+                d.document = $('#filter_history_document').val();
+                d.member = $('#filter_history_member').val();
+                d.device = $('#filter_history_device').val();
+                d.browser = $('#filter_history_browser').val();
+            }
+        },
+        columns: [
+            { 
+                data: "document_name",
+                className: 'align-middle',
+                render: function (data, type, row) {
+                    const iconClass = typeof getFileIconClass === 'function' ? getFileIconClass(row.document_type) : 'fa-file';
+                    return `
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="${iconClass} fa-2x text-secondary"></i>
+                            <div class="d-flex flex-column">
+                                <span class="fw-bold text-dark">${data}</span>
+                            </div>
+                        </div>`;
+                }
+            },
+            { 
+                data: null,
+                className: 'align-middle',
+                render: function(row) {
+                    return `
+                        <div class="d-flex align-items-center">
+                            <div class="symbol symbol-30px symbol-circle bg-primary-subtle d-flex align-items-center justify-content-center me-2" style="width:30px; height:30px; border-radius:50%">
+                                <i class="fa fa-user text-primary" style="font-size:10px"></i>
+                            </div>
+                            <span class="fw-semibold text-gray-800">${row.first_name} ${row.last_name}</span>
+                        </div>`;
+                }
+            },
+            { 
+                data: "download_date",
+                className: 'align-middle text-nowrap',
+                render: data => `<small class="text-muted"><i class="fa-solid fa-clock me-1"></i>${data}</small>`
+            },
+            { 
+                data: "device_os",
+                className: 'align-middle',
+                render: function(data) {
+                    let icon = 'fa-laptop', color = 'text-secondary';
+                    if(data === 'Windows') { icon = 'fa-brands fa-windows'; color = 'text-primary'; }
+                    else if(data === 'Android') { icon = 'fa-brands fa-android'; color = 'text-success'; }
+                    else if(data.includes('iPhone') || data.includes('iPad')) { icon = 'fa-solid fa-mobile-screen'; color = 'text-dark'; }
+                    else if(data === 'Mac OS') { icon = 'fa-brands fa-apple'; color = 'text-dark'; }
+                    
+                    return `<span class="${color} fw-medium"><i class="${icon} me-2"></i>${data}</span>`;
+                }
+            },
+            { 
+                data: "device_browser",
+                className: 'align-middle',
+                render: function(data) {
+                    let bIcon = 'fa-globe';
+                    if(data === 'Chrome') bIcon = 'fa-brands fa-chrome text-warning';
+                    else if(data === 'Firefox') bIcon = 'fa-brands fa-firefox text-danger';
+                    else if(data === 'Safari') bIcon = 'fa-brands fa-safari text-info';
+                    return `<span class="text-muted small"><i class="${bIcon} me-1"></i>${data}</span>`;
+                }
+            }
+        ],
+        pageLength: pageLength,
+        lengthMenu: lengthMenu,
+        stateLoadParams: function (settings, data) {
+            data.start = oldPage;
+            data.length = pageLength; 
+        },
+        language: getTableLang(),
+        initComplete: function() {
+            let $filter = $('#tb_history_filter');
+            let self = this.api();
+            let $input = $filter.find('input').unbind();
+            $input.bind('keypress', function(e) {
+                if (e.keyCode == 13) {
+                    self.search(this.value).draw();
+                }
+            });
+        },
+        drawCallback: function(){
+            getTableLang();
         }
     });
 }

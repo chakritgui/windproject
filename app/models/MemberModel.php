@@ -169,43 +169,15 @@ class MemberModel {
         }
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $userAgent = new AgentHelper($pdo);
         foreach ($rows as &$r) {
             $r['login_at'] = !empty($r['login_at']) ? convertTimeZone($r['login_at'], 'd/m/Y H:i:s') : '-';
             $r['logout_at'] = !empty($r['logout_at']) ? convertTimeZone($r['logout_at'], 'd/m/Y H:i:s') : '-';
-            $ua_info = $this->parse_user_agent($r['login_device']);
+            $ua_info = $userAgent->parse_user_agent($r['login_device']);
             $r['device_os'] = $ua_info['os'];
             $r['device_browser'] = $ua_info['browser'];
         }
         return ["total" => (int)$total, "data" => $rows];
-    }
-    private function parse_user_agent($ua) {
-        $browser = "Unknown Browser";
-        $platform = "Unknown OS";
-        if (preg_match('/iphone/i', $ua)) {
-            $platform = 'iPhone (iOS)';
-        } else if (preg_match('/ipad/i', $ua)) {
-            $platform = 'iPad (iOS)';
-        } else if (preg_match('/android/i', $ua)) {
-            $platform = 'Android';
-        } else if (preg_match('/windows|win32/i', $ua)) {
-            $platform = 'Windows';
-        } else if (preg_match('/macintosh|mac os x/i', $ua)) {
-            $platform = 'Mac OS';
-        } else if (preg_match('/linux/i', $ua)) {
-            $platform = 'Linux';
-        }
-        if (preg_match('/chrome/i', $ua) && !preg_match('/edg/i', $ua)) {
-            $browser = 'Chrome';
-        } else if (preg_match('/firefox/i', $ua)) {
-            $browser = 'Firefox';
-        } else if (preg_match('/safari/i', $ua) && !preg_match('/chrome/i', $ua)) {
-            $browser = 'Safari';
-        } else if (preg_match('/msie|trident/i', $ua)) {
-            $browser = 'IE';
-        } else if (preg_match('/edg/i', $ua)) {
-            $browser = 'Edge';
-        }
-        return ['os' => $platform, 'browser' => $browser];
     }
     public function get($id) {
         if($id) {

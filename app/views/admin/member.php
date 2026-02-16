@@ -78,19 +78,19 @@
                             <p><i class="fa-solid fa-user"></i> <span data-i18n="member"></span></p>
                             <select id="filter_history_member" class="form-select filter-history"></select>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-2 col-6">
                             <p><i class="fa-solid fa-user-gear"></i> <span data-i18n="role"></span></p>
                             <select id="filter_history_role" class="form-select filter-history"></select>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-2 col-6">
                             <p><i class="fa-solid fa-arrow-right-to-bracket"></i> <span data-i18n="device"></span></p>
                             <select id="filter_history_device" class="form-select filter-history"></select>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-2 col-6">
                             <p><i class="fa-regular fa-window-maximize"></i> <span data-i18n="browsers"></span></p>
                             <select id="filter_history_browser" class="form-select filter-history"></select>
                         </div>
-                        <div class="col-sm-2">
+                        <div class="col-sm-2 col-6">
                             <p><i class="fa-regular fa-clock"></i> <span data-i18n="timezone"></span></p>
                             <select id="filter_history_timezone" class="form-select filter-history"></select>
                         </div>

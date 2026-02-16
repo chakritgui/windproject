@@ -37,6 +37,37 @@ class DocumentController extends BaseController {
             "data" => $res['data']
         ]);
     }
+    public function downloadHistory(){
+        $start = intval($_POST['start'] ?? 0);
+        $length= intval($_POST['length'] ?? 10);
+        $filters = [
+            'date'=> $_POST['date'] ?? '',
+            'document'=> $_POST['document'] ?? '',
+            'member'=> $_POST['member'] ?? '',
+            'device'=> $_POST['device'] ?? '',
+            'browser'=> $_POST['browser'] ?? '',
+        ];
+        $search = $_POST['search']['value'] ?? '';
+        $orderDir    = 'asc';
+        if (!empty($_POST['order'][0])) {
+            $colIndex   = intval($_POST['order'][0]['column']);
+            $orderDir   = $_POST['order'][0]['dir'] === 'desc' ? 'desc' : 'asc';
+        }
+        $res = $this->model->downloadHistory(
+            $start,
+            $length,
+            $filters,
+            $search,
+            $colIndex,
+            $orderDir
+        );
+        $this->json([
+            "draw" => intval($_POST['draw'] ?? 1),
+            "recordsTotal" => $res['total'],
+            "recordsFiltered" => $res['total'],
+            "data" => $res['data']
+        ]);
+    }
     public function get(){
         $id = intval($_POST['id'] ?? 0);
         $this->json(['status'=>'success','data'=>$this->model->get($id)]);
@@ -74,24 +105,20 @@ class DocumentController extends BaseController {
         $type = $_POST['type'] ?? '';
         $this->json(['status'=>true , 'data' => $this->model->filter($page, $limit, $type, $searchTerm, $filter)]);
     }
-    public function downloadHistory(){
+    public function documentHistory(){
         $start  = intval($_POST['start'] ?? 0);
         $length = intval($_POST['length'] ?? 10);
-        $filters = [
-            'date_start' => $_POST['start_date'] ?? '',
-            'date_end'   => $_POST['end_date'] ?? '',
-            'document_id'=> $_POST['document_id'] ?? ''
-        ];
+        $document_id = $_POST['document_id'] ?? '';
         $search = $_POST['search']['value'] ?? '';
         $orderDir    = 'asc';
         if (!empty($_POST['order'][0])) {
             $colIndex   = intval($_POST['order'][0]['column']);
             $orderDir   = $_POST['order'][0]['dir'] === 'desc' ? 'desc' : 'asc';
         }
-        $res = $this->model->downloadHistory(
+        $res = $this->model->documentHistory(
             $start,
             $length,
-            $filters,
+            $document_id,
             $search,
             $colIndex,
             $orderDir

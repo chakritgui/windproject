@@ -70,6 +70,93 @@ class DocumentModel {
             'data'  => $rows
         ];
     }
+    public function downloadHistory($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 2, $orderDir = 'desc') {
+        $where = " WHERE 1=1 ";
+        $params = [];
+        if (!empty($filters['member'])) {
+            $where .= " AND l.member_id = :member_id ";
+            $params[':member_id'] = $filters['member'];
+        }
+        if (!empty($filters['date'])) {
+            $dateParts = explode(' - ', $filters['date']);
+            if (count($dateParts) == 2) {
+                $userTzStr = $_SESSION['timezone'] ?? 'Asia/Bangkok';
+                try {
+                    $userTz = new DateTimeZone($userTzStr);
+                    $utcTz  = new DateTimeZone('UTC');
+                    $startObj = DateTime::createFromFormat('d/m/Y H:i:s', trim($dateParts[0]) . ' 00:00:00', $userTz);
+                    $endObj   = DateTime::createFromFormat('d/m/Y H:i:s', trim($dateParts[1]) . ' 23:59:59', $userTz);
+                    if ($startObj && $endObj) {
+                        $startObj->setTimezone($utcTz);
+                        $endObj->setTimezone($utcTz);
+                        $where .= " AND l.download_date BETWEEN :start_utc AND :end_utc";
+                        $params[':start_utc'] = $startObj->format('Y-m-d H:i:s');
+                        $params[':end_utc']   = $endObj->format('Y-m-d H:i:s');
+                    }
+                } catch (Exception $e) {
+                }
+            }
+        }
+        if (!empty($filters['device'])) {
+            if ($filters['device'] === 'Mac OS') {
+                $where .= " AND l.download_device LIKE :device AND l.download_device NOT LIKE '%iPhone%' AND l.download_device NOT LIKE '%iPad%' ";
+            } else {
+                $where .= " AND l.download_device LIKE :device ";
+            }
+            $params[':device'] = '%' . $filters['device'] . '%';
+        }
+        if (!empty($filters['browser'])) {
+            $where .= " AND l.download_device LIKE :browser ";
+            $params[':browser'] = '%' . $filters['browser'] . '%';
+        }
+        if(!empty($search)) {
+            $where .= " AND (d.document_name LIKE :search OR m.first_name LIKE :search OR m.last_name LIKE :search OR l.ip_address LIKE :search OR l.download_device LIKE :search) ";
+            $params[':search'] = '%' . $search . '%';
+        }
+        $sqlTotal = "SELECT COUNT(*) FROM wp_documents_download_logs l LEFT JOIN wp_documents d ON d.document_id = l.document_id {$where}";
+        $stmt = $this->db->prepare($sqlTotal);
+        $stmt->execute($params);
+        $total = (int)$stmt->fetchColumn();
+        $orderMap = [
+            0 => "d.document_name",
+            1 => "m.first_name",
+            2 => "l.download_date",
+            3 => "l.download_device"
+        ];
+        $order = $orderMap[$colIndex] ?? 'l.download_date';
+        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
+        $sql = "SELECT
+                    d.document_name, d.document_type, d.document_size, 
+                    m.first_name, m.last_name,
+                    l.download_date, l.download_device
+                FROM wp_documents_download_logs l
+                LEFT JOIN wp_documents d ON d.document_id = l.document_id
+                LEFT JOIN wp_members m ON l.member_id = m.member_id 
+                {$where}
+                ORDER BY {$order} {$orderDir}";
+
+        if ($length != -1) {
+            $sql .= " LIMIT :start, :length";
+        }
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
+        if ($length != -1) {
+            $stmt->bindValue(':start', (int)$start, PDO::PARAM_INT);
+            $stmt->bindValue(':length', (int)$length, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $userAgent = new AgentHelper($this->db);
+        foreach ($rows as &$row) {
+            $ua_info = $userAgent->parse_user_agent($row['download_device']);
+            $row['device_os'] = $ua_info['os']; 
+            $row['device_browser'] = $ua_info['browser'];
+            if (method_exists($this, 'formatDocumentRow')) {
+                $this->formatDocumentRow($row);
+            }
+        }
+        return ['total' => $total, 'data' => $rows];
+    }
     public function get($id) {
         if (!$id) {
             return [
@@ -167,38 +254,60 @@ class DocumentModel {
     public function delete($id) {
         return $this->updateStatus($id, 'deleted');
     }
-    public function downloadHistory($start, $length, $filters, $search, $colIndex = 2, $orderDir = 'desc') {
-        list($where, $params) = $this->buildDownloadWhere($filters, $search);
-        $sqlTotal = "SELECT COUNT(*) FROM wp_documents_download_logs d LEFT JOIN wp_members m ON m.member_id = d.member_id {$where}";
+    public function documentHistory($start, $length, $document_id, $search, $colIndex = 2, $orderDir = 'desc') {
+        $params = [];
+        $whereClauses = [];
+        if (!empty($document_id)) {
+            $whereClauses[] = "d.document_id = :document_id";
+            $params[':document_id'] = $document_id;
+        }
+        if (!empty($search)) {
+            $whereClauses[] = "(m.first_name LIKE :search OR m.last_name LIKE :search OR d.download_device LIKE :search)";
+            $params[':search'] = "%$search%";
+        }
+        $whereSql = !empty($whereClauses) ? " WHERE " . implode(" AND ", $whereClauses) : "";
+        $sqlTotal = "SELECT COUNT(*) FROM wp_documents_download_logs d LEFT JOIN wp_members m ON m.member_id = d.member_id {$whereSql}";
         $stmt = $this->db->prepare($sqlTotal);
-        $stmt->execute($params);
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val);
+        }
+        $stmt->execute();
         $total = $stmt->fetchColumn();
         $order = 'd.download_date';
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
-            1 => "m.first_name, m.last_name",
+            1 => "m.first_name",
             2 => "d.download_date",
-            3 => "d.download_device"
+            3 => "d.download_device",
+            4 => "d.download_device"
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
         }
         $sql = "SELECT
-                d.*,
-                CONCAT(m.first_name, ' ', m.last_name) AS member_name
-            FROM wp_documents_download_logs d
-            LEFT JOIN wp_members m ON m.member_id = d.member_id
-            {$where}
-            ORDER BY {$order} {$orderDir}
-            LIMIT {$start}, {$length}
-        ";
+                    d.*,
+                    CONCAT(m.first_name, ' ', m.last_name) AS member_name
+                FROM wp_documents_download_logs d
+                LEFT JOIN wp_members m ON m.member_id = d.member_id
+                {$whereSql}
+                ORDER BY {$order} {$orderDir}
+                LIMIT :start, :length";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val);
+        }
+        $stmt->bindValue(':start', (int)$start, PDO::PARAM_INT);
+        $stmt->bindValue(':length', (int)$length, PDO::PARAM_INT);
+        $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $userAgent = new AgentHelper($this->db);
         foreach ($rows as &$r) {
             if (!empty($r['download_date'])) {
                 $r['download_date'] = convertTimeZone($r['download_date'], 'd/m/Y H:i:s');
             }
+            $ua_info = $userAgent->parse_user_agent($r['download_device'] ?? '');
+            $r['device_os'] = $ua_info['os']; 
+            $r['device_browser'] = $ua_info['browser'];
         }
         return [
             'total' => $total,
@@ -262,6 +371,9 @@ class DocumentModel {
         if (!empty($row['created_at'])) {
             $row['created_at'] = convertTimeZone($row['created_at'], 'd/m/Y H:i:s');
         }
+        if (!empty($row['download_date'])) {
+            $row['download_date'] = convertTimeZone($row['download_date'], 'd/m/Y H:i:s');
+        }
         if (!empty($row['document_download'])) {
             $row['document_download'] = number_format($row['document_download']);
         }
@@ -311,25 +423,6 @@ class DocumentModel {
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$path, $ext, $size, $name, $document_id]);
     }
-    private function buildDownloadWhere($filters, $search) {
-        $where = " WHERE 1=1 ";
-        $params = [];
-        if (!empty($filters['document_id'])) {
-            $where .= " AND d.document_id = ?";
-            $params[] = $filters['document_id'];
-        }
-        if (!empty($filters['date_start']) && !empty($filters['date_end'])) {
-            $where .= " AND d.download_date BETWEEN ? AND ?";
-            $params[] = convertTimeZoneUTC($filters['date_start'].' 00:00:00', 'Y-m-d H:i:s');
-            $params[] = convertTimeZoneUTC($filters['date_end'].' 23:59:59', 'Y-m-d H:i:s');
-        }
-        if (!empty($search)) {
-            $where .= " AND (m.first_name LIKE ? OR m.last_name LIKE ?)";
-            $params[] = "%{$search}%";
-            $params[] = "%{$search}%";
-        }
-        return [$where, $params];
-    }
     public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '', $filter = []) {
         $offset = ($page - 1) * $limit;
         $params = [];
@@ -378,6 +471,12 @@ class DocumentModel {
                 'text'  => 'pl.poles_code',
                 'join'  => "LEFT JOIN wp_project p ON p.project_id = pl.project_id",
                 'where' => "pl.status <> 'deleted'"
+            ],
+            'document' => [
+                'table' => 'wp_documents',
+                'id'    => 'document_id',
+                'text'  => 'document_name',
+                'where' => "status <> 'deleted'"
             ]
         ];
         if (!isset($config[$type])) return ['items' => [], 'total_count' => 0];
