@@ -259,7 +259,8 @@ async function loadAuthSetting() {
             res.data.settings.forEach(parseAuthSetting);
         }
         const forgot = res.data.forgot_system;
-        if (forgot) {
+        const hasData = forgot && (Array.isArray(forgot) ? forgot.length > 0 : Object.keys(forgot).length > 0);
+        if (hasData) {
             renderForgotOptions(forgot);
         } else {
             $(".forgot-password-link").addClass("d-none");
