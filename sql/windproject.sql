@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 15, 2026 at 06:04 PM
+-- Generation Time: Feb 17, 2026 at 08:40 AM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -486,6 +486,7 @@ CREATE TABLE `wp_password_resets` (
 
 CREATE TABLE `wp_password_reset_requests` (
   `request_id` int(11) NOT NULL,
+  `visitorId` varchar(255) DEFAULT NULL,
   `user_email` varchar(255) NOT NULL,
   `user_note` text,
   `status` enum('pending','approved','rejected') DEFAULT 'pending',
@@ -507,6 +508,7 @@ CREATE TABLE `wp_password_reset_settings` (
   `admin_email` varchar(255) DEFAULT NULL,
   `admin_line_oa` varchar(100) DEFAULT NULL,
   `admin_telegram` varchar(100) DEFAULT NULL,
+  `admin_tel` varchar(100) DEFAULT NULL,
   `admin_others` text,
   `is_system_request_enabled` tinyint(1) DEFAULT '0',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -745,7 +747,10 @@ ALTER TABLE `wp_documents`
 -- Indexes for table `wp_documents_download_logs`
 --
 ALTER TABLE `wp_documents_download_logs`
-  ADD PRIMARY KEY (`logs_id`);
+  ADD PRIMARY KEY (`logs_id`),
+  ADD KEY `document_id` (`document_id`),
+  ADD KEY `member_id` (`member_id`),
+  ADD KEY `download_date` (`download_date`);
 
 --
 -- Indexes for table `wp_folder`

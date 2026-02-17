@@ -91,12 +91,52 @@
                     WHERE member_id = :member_id 
                     ORDER BY logs_id DESC 
                     LIMIT 1";
-
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
                 ':timezone'  => $timezone,
                 ':member_id' => $member_id
             ]);
             return 'success';
+        }
+        public function getForgotSettings() {
+            try {
+                $sql = "SELECT * FROM wp_password_reset_settings WHERE id = 1 LIMIT 1";
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute();
+                return $stmt->fetch(PDO::FETCH_ASSOC);
+            } catch (PDOException $e) {
+                error_log("Get Forgot Settings Error: " . $e->getMessage());
+                return null;
+            }
+        }
+        public function saveRequest($request_email, $request_remark, $visitorId) {
+            $stmt = $this->db->prepare('SELECT member_id FROM wp_members WHERE email = ? OR username = ? LIMIT 1');
+            $stmt->execute([$request_email, $request_email]); 
+            $user = $stmt->fetch();
+            if (!$user) {
+                return 'email_or_user_not_found';
+            }
+            $stmt = $this->db->prepare("SELECT request_id FROM wp_password_reset_requests WHERE visitorId = ? AND status = 'pending' LIMIT 1");
+            $stmt->execute([$visitorId]);
+            $existingRequest = $stmt->fetch();
+            if ($existingRequest) {
+                $stmt = $this->db->prepare("UPDATE wp_password_reset_requests SET user_email = ?, user_note = ?, created_at = NOW() WHERE request_id = ?");
+                $stmt->execute([$request_email, $request_remark, $existingRequest['request_id']]);
+                return 'success';
+            } else {
+                $stmt = $this->db->prepare("INSERT INTO wp_password_reset_requests (visitorId, user_email, user_note, status, created_at) VALUES (?, ?, ?, 'pending', NOW())");
+                $stmt->execute([$visitorId, $request_email, $request_remark]);
+                return 'success';
+            }
+        }
+        public function getPendingByVisitor($visitor_id) {
+            $stmt = $this->db->prepare("SELECT user_email, user_note, status, created_at FROM wp_password_reset_requests WHERE visitorId = ? AND status = 'pending' ORDER BY created_at DESC LIMIT 1");    
+            $stmt->execute([$visitor_id]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($result) {
+                $result['created_at'] = convertTimeZone($result['created_at'], 'd/m/Y H:i:s');
+                return $result;
+            }
+            return null; 
         }
     }

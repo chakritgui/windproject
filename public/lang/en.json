@@ -30,6 +30,7 @@
     "continue": "Continue",
     "return_to_login": "Return to login",
     "email_not_found": "Email not found",
+    "email_or_user_not_found": "Email or Username not found",
     "invalid_credentials": "Invalid credentials",
     "account_inactive": "Account inactive",
     "reset_success": "A password reset link has been sent to your email. Please check your inbox.",
@@ -58,6 +59,8 @@
     "lastname": "Last Name",
     "full_name": "Member Name",
     "mobile": "Mobile",
+    "contact_number": "Contact Number",
+    "form": "Form",
     "role": "Role",
     "status": "Status",
     "create_at": "Created At",
@@ -554,6 +557,7 @@
     "color": "Color",
     "manageBackground": "Manage Background",
     "report_remark": "Remark: Data Output is review version only. Future Validation and Analysis is required.",
+    "submission": "Submission",
     "level": "Level",
     "temp": "Temp",
     "humid": "Humid",
@@ -579,5 +583,12 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "last_7_days": "Last 7 Days",
-    "last_30_days": "Last 30 Days"
+    "last_30_days": "Last 30 Days",
+    "contact_admin_to_reset": "Contact admin to reset password",
+    "send_system_request": "Send a system request",
+    "more_channels": "More Channels",
+    "missing_email": "Missing Email",
+    "request_success": "Request submitted successfully. Awaiting processing by the administrator.",
+    "update_system_request": "Update Request",
+    "pending": "Pending"
 }

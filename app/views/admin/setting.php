@@ -419,21 +419,25 @@
                             </div>
                             <div class="admin-channels mt-3">
                                 <div class="row g-3">
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <label class="form-label">Email</label>
                                         <input type="email" class="form-control" name="admin_email" placeholder="admin@example.com">
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <label class="form-label">Line OA</label>
                                         <input type="text" class="form-control" name="admin_line_oa" placeholder="@yourlineid">
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
                                         <label class="form-label">Telegram</label>
                                         <input type="text" class="form-control" name="admin_telegram" placeholder="@username">
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-4">
+                                        <label class="form-label" data-i18n="contact_number"></label>
+                                        <input type="text" class="form-control" name="admin_tel">
+                                    </div>
+                                    <div class="col-md-4">
                                         <label class="form-label">Other</label>
-                                        <input type="text" class="form-control" name="admin_others" placeholder="Phone or other link">
+                                        <input type="text" class="form-control" name="admin_others">
                                     </div>
                                 </div>
                             </div>

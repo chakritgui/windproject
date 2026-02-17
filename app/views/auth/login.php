@@ -24,7 +24,7 @@
                         <label class="form-check-label" for="keepLoggedIn" data-i18n="keep_me_login" style="cursor: pointer;"></label>
                     </div>
                     <button type="button" class="btn-login login-btn w-100" data-i18n="login"></button>
-                    <div class="mt-3 text-center">
+                    <div class="mt-3 text-center forgot-password-link">
                         <a href="forgot-password" data-i18n="forgot_password"></a>
                     </div>
                 </div>

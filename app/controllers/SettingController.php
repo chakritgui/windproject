@@ -147,6 +147,7 @@ class SettingController extends BaseController {
             'admin_email', 
             'admin_line_oa', 
             'admin_telegram', 
+            'admin_tel', 
             'admin_others'
         ];
         $updateData = [];

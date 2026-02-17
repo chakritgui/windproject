@@ -339,11 +339,11 @@ class SettingModel {
             $this->db->beginTransaction();  
             $sql = "INSERT INTO wp_password_reset_settings (
                         id, is_email_link_enabled, is_admin_contact_enabled, 
-                        admin_email, admin_line_oa, admin_telegram, 
+                        admin_email, admin_line_oa, admin_telegram, admin_tel,
                         admin_others, is_system_request_enabled, updated_at
                     ) VALUES (
                         1, :is_email_link, :is_admin_contact, 
-                        :admin_email, :admin_line, :admin_tele, 
+                        :admin_email, :admin_line, :admin_tele, :admin_tel,
                         :admin_others, :is_system_req, NOW()
                     )
                     ON DUPLICATE KEY UPDATE
@@ -352,6 +352,7 @@ class SettingModel {
                         admin_email                = VALUES(admin_email),
                         admin_line_oa              = VALUES(admin_line_oa),
                         admin_telegram             = VALUES(admin_telegram),
+                        admin_tel             = VALUES(admin_tel),
                         admin_others               = VALUES(admin_others),
                         is_system_request_enabled  = VALUES(is_system_request_enabled),
                         updated_at                 = NOW()";
@@ -362,6 +363,7 @@ class SettingModel {
                 ':admin_email'     => $data['admin_email'] ?? null,
                 ':admin_line'      => $data['admin_line_oa'] ?? null,
                 ':admin_tele'      => $data['admin_telegram'] ?? null,
+                ':admin_tel'      => $data['admin_tel'] ?? null,
                 ':admin_others'    => $data['admin_others'] ?? null,
                 ':is_system_req'   => ($data['is_system_request_enabled'] == '1') ? 1 : 0
             ]);

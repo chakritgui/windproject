@@ -165,6 +165,20 @@ async function loadSetting() {
         currentLang = res.data.user_lang || sessionStorage.getItem('lang') || dbDefault || 'en';
         sessionStorage.setItem('lang', currentLang);
         await loadLang(currentLang); 
+        const forgot_system = res.data.forgot_system;
+        if (!forgot_system) {
+            $('.forgot-password-section').hide();
+            return;
+        }
+        const isAllDisabled = 
+            forgot_system.is_email_link_enabled == 0 && 
+            forgot_system.is_admin_contact_enabled == 0 && 
+            forgot_system.is_system_request_enabled == 0;
+        if (isAllDisabled) {
+            $('.forgot-password-link').addClass('d-none');
+        } else {
+            $('.forgot-password-link').removeClass('d-none');
+        }
     } catch (err) {
         console.error("loadSetting Error:", err);
     }

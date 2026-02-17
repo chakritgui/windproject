@@ -42,8 +42,7 @@ html, body {
     margin: auto;
 }
 .logo-header img.logo {
-    max-height: 70px;
-    margin-bottom: 16px;
+    max-height: 50px;
 }
 .login-title {
     font-size: clamp(16px, 2vw, 20px);

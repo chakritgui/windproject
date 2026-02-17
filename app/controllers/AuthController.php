@@ -66,6 +66,16 @@ class AuthController extends Controller {
         exit;
     }
     public function forgot() {
+        $m = new Auth();
+        $settings = $m->getForgotSettings();
+        if (!$settings || (
+            $settings['is_email_link_enabled'] == 0 && 
+            $settings['is_admin_contact_enabled'] == 0 && 
+            $settings['is_system_request_enabled'] == 0
+        )) {
+            $this->redirect('login'); 
+            exit;
+        }
         $this->view('auth/forgot');
     }
     public function reset() {
@@ -90,6 +100,30 @@ class AuthController extends Controller {
             echo json_encode([
                 'status'  => 'error', 
                 'message' => ($result === 'email_not_found') ? 'email_not_found' : 'process_failed'
+            ]);
+        }
+        exit;
+    }
+    public function saveRequest() {
+        header('Content-Type: application/json; charset=utf-8');
+        $request_email = $_POST['request_email'] ?? null;
+        $request_remark = $_POST['request_remark'] ?? null;
+        $visitorId = $_POST['visitorId'] ?? null;
+        if (!$request_email) {
+            echo json_encode(['status' => 'error', 'message' => 'missing_email']);
+            exit;
+        }
+        $m = new Auth();
+        $result = $m->saveRequest($request_email, $request_remark, $visitorId);
+        if ($result === 'success') {
+            echo json_encode([
+                'status'  => 'success', 
+                'message' => 'request_success'
+            ]);
+        } else {
+            echo json_encode([
+                'status'  => 'error', 
+                'message' => ($result === 'email_or_user_not_found') ? 'email_or_user_not_found' : 'process_failed'
             ]);
         }
         exit;
@@ -150,6 +184,21 @@ class AuthController extends Controller {
                 'message' => $result 
             ]);
         }
+        exit;
+    }
+    public function getLatestPendingRequest() {
+        header('Content-Type: application/json');
+        $visitor_id = $_POST['visitor_id'] ?? null;
+        if (!$visitor_id) {
+            echo json_encode(['status' => 'error', 'message' => 'no_id']);
+            exit;
+        }
+        $m = new Auth();
+        $data = $m->getPendingByVisitor($visitor_id);
+        echo json_encode([
+            'status' => 'success',
+            'data' => $data
+        ]);
         exit;
     }
 }

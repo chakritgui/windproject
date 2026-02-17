@@ -62,6 +62,8 @@
     $router->post('/api/auth.forgot', 'AuthController@sendReset');
     $router->post('/api/auth.update', 'AuthController@updatePassword');
     $router->post('/api/timezone.update', 'AuthController@updateTimeZone');
+    $router->post('/api/request.save', 'AuthController@saveRequest');
+    $router->post('/api/auth.request', 'AuthController@getLatestPendingRequest');
     if (isset($_SESSION['user'])) {
         $role = $_SESSION['user']['role'] ?? '';
         if ($role === 'admin' || $role === 'administrator') {
