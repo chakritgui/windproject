@@ -203,7 +203,7 @@ async function loadPoles(map) {
             const arrowId = `arrow-${pole.poles_id}`;
             poleMarkers[pole.poles_id] = { marker, lat, lng, windId, arrowId };
             marker.bindTooltip(
-                `<div class="wind-pill" style="z-index:1263;">
+                `<div class="wind-pill">
                     <span class="arrow-icon" id="${arrowId}" style="display:inline-block; transition: transform 1s ease-in-out;">➤</span>
                     <span class="wind-value" id="${windId}">...</span>
                 </div>`,
