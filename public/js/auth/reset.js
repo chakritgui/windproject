@@ -55,5 +55,4 @@ $(document).on('click', '.btn-reset-submit', function() {
         showError(langData['connection_error']);
     });
 });
-
 $(document).ready(initResetApp);

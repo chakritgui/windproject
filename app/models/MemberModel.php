@@ -179,23 +179,87 @@ class MemberModel {
         }
         return ["total" => (int)$total, "data" => $rows];
     }
+    public function request($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 5, $orderDir = 'desc') {
+        $pdo = $this->db;
+        $where = " WHERE 1=1 ";
+        $params = [];
+        if (!empty($filters['status'])) {
+            $where .= " AND r.status = :status ";
+            $params[':status'] = $filters['status'];
+        }
+        if (!empty($filters['member'])) {
+            $where .= " AND m.member_id = :member ";
+            $params[':member'] = $filters['member'];
+        }
+        if (!empty($filters['role'])) {
+            $where .= " AND m.role = :role ";
+            $params[':role'] = $filters['role'];
+        }
+        if(!empty($search)) {
+            $where .= " AND (m.first_name LIKE :search OR m.last_name LIKE :search) ";
+            $params[':search'] = '%' . $search . '%';
+        }
+        if (!empty($filters['date'])) {
+            $dateParts = explode(' - ', $filters['date']);
+            if (count($dateParts) == 2) {
+                $userTzStr = $_SESSION['timezone'] ?? 'Asia/Bangkok';
+                try {
+                    $userTz = new DateTimeZone($userTzStr);
+                    $utcTz  = new DateTimeZone('UTC');
+                    $startObj = DateTime::createFromFormat('d/m/Y H:i:s', trim($dateParts[0]) . ' 00:00:00', $userTz);
+                    $endObj   = DateTime::createFromFormat('d/m/Y H:i:s', trim($dateParts[1]) . ' 23:59:59', $userTz);
+                    if ($startObj && $endObj) {
+                        $startObj->setTimezone($utcTz);
+                        $endObj->setTimezone($utcTz);
+                        $where .= " AND r.created_at BETWEEN :start_utc AND :end_utc";
+                        $params[':start_utc'] = $startObj->format('Y-m-d H:i:s');
+                        $params[':end_utc']   = $endObj->format('Y-m-d H:i:s');
+                    }
+                } catch (Exception $e) {
+                }
+            }
+        }
+        $sqlTotal = "SELECT COUNT(*) FROM wp_password_reset_requests r LEFT JOIN wp_members m ON r.user_email = m.email or r.user_email = m.username " . $where;
+        $stmtTotal = $pdo->prepare($sqlTotal);
+        $stmtTotal->execute($params);
+        $total = $stmtTotal->fetchColumn();
+        $orderMap = [
+            0 => "m.first_name",
+            1 => "m.role",
+            2 => "m.email",
+            3 => "m.username",
+            4 => "m.status",
+            5 => "r.user_note",
+            6 => "r.created_at",
+            7 => "r.status",
+            8 => "r.admin_remark"
+        ];
+        $order = $orderMap[$colIndex] ?? 'r.created_at';
+        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
+        $sql = "SELECT r.*, m.first_name, m.last_name, m.role, m.status as member_status, m.email, m.username, m.member_id FROM wp_password_reset_requests r LEFT JOIN wp_members m ON r.user_email = m.email or r.user_email = m.username $where ORDER BY {$order} {$orderDir}";
+        if ($length != -1) {
+            $sql .= " LIMIT :start, :length";
+        }
+        $stmt = $pdo->prepare($sql);
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val);
+        }
+        if ($length != -1) {
+            $stmt->bindValue(':start', (int)$start, PDO::PARAM_INT);
+            $stmt->bindValue(':length', (int)$length, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as &$r) {
+            $r['created_at'] = !empty($r['created_at']) ? convertTimeZone($r['created_at'], 'd/m/Y H:i:s') : '-';
+            $r['processed_at'] = !empty($r['processed_at']) ? convertTimeZone($r['processed_at'], 'd/m/Y H:i:s') : '-';
+        }
+        return ["total" => (int)$total, "data" => $rows];
+    }
     public function get($id) {
         if($id) {
             $pdo = $this->db;
-            $sql = "SELECT 
-                member_id,
-                username,
-                first_name,
-                last_name,
-                email,
-                phone,
-                role,
-                status,
-                username,
-                password_hash
-            FROM wp_members
-            WHERE member_id = :id
-            LIMIT 1";
+            $sql = "SELECT member_id,username,first_name,last_name,email,phone,role,status,username,password_hash FROM wp_members WHERE member_id = :id LIMIT 1";
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
             $stmt->execute();
@@ -227,6 +291,51 @@ class MemberModel {
             return $stmt->execute();
         }
         return false;
+    }
+    public function reject($id, $note) {
+        if($id) {
+            $pdo = $this->db;
+            $sql = "UPDATE wp_password_reset_requests set status = 'rejected', processed_at = NOW(), admin_remark = :note WHERE request_id = :id";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+            $stmt->bindValue(':note', $note);
+            return $stmt->execute();
+        }
+        return false;
+    }
+    public function approved($id, $member_id, $password, $send_notification) {
+        if(!$id) return false;
+        try {
+            $this->db->beginTransaction();
+            $hashedPassword = encryptToken($password);
+            $updateUser = $this->db->prepare("UPDATE wp_members SET password_hash = ? WHERE member_id = ?");
+            $updateUser->execute([$hashedPassword, $member_id]);
+            $sql = "UPDATE wp_password_reset_requests SET status = 'approved', processed_at = NOW() WHERE request_id = :id";
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+            $stmt->execute();
+            if($send_notification === 'yes') {
+                $stmtUser = $this->db->prepare("SELECT email,username FROM wp_members WHERE member_id = :id LIMIT 1");
+                $stmtUser->execute([':id' => (int)$member_id]);
+                $userData = $stmtUser->fetch(PDO::FETCH_ASSOC);
+                if ($userData) {
+                    $userLanguage = 'en';
+                    $stmtLang = $this->db->prepare("SELECT language FROM wp_members_language WHERE member_id = :member_id LIMIT 1");
+                    $stmtLang->execute([':member_id' => $member_id]);
+                    $langDataRow = $stmtLang->fetch(PDO::FETCH_ASSOC);
+                    if ($langDataRow) {
+                        $userLanguage = $langDataRow['language'];
+                    }
+                    $mailHelper = new MailHelper($this->db);
+                    $mailHelper->sendApproved($userData['email'], $userLanguage, $password, $userData['username']);
+                }
+            }
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            return false;
+        }
     }
     public function save($data) {
         $member_id = $data['member_id'] ?? null;
@@ -335,6 +444,13 @@ class MemberModel {
                     ['id' => 'administrator', 'text' => 'Administrator'],
                     ['id' => 'admin', 'text' => 'Admin'],
                     ['id' => 'user', 'text' => 'User']
+                ];
+                $this->filterStatic($staticData, $searchTerm, $offset, $limit, $items, $totalCount);
+                break;
+            case 'status':
+                $staticData = [
+                    ['id' => 'active', 'text' => 'Active'],
+                    ['id' => 'inactive', 'text' => 'Inactive']
                 ];
                 $this->filterStatic($staticData, $searchTerm, $offset, $limit, $items, $totalCount);
                 break;

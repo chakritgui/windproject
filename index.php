@@ -84,10 +84,14 @@
             $router->post('/api/member.list', 'MemberController@list');
             $router->post('/api/history.list', 'MemberController@history');
             $router->post('/api/member.save', 'MemberController@save');
+            $router->post('/api/member.get', 'MemberController@get');
             $router->post('/api/member.delete', 'MemberController@delete');
             $router->post('/api/member.exitsmail', 'MemberController@checkemail');
             $router->post('/api/member.exitsuser', 'MemberController@checkusername');
             $router->post('/api/member.filter', 'MemberController@filter');
+            $router->post('/api/request.list', 'MemberController@request');
+            $router->post('/api/member.reject', 'MemberController@reject');
+            $router->post('/api/member.approved', 'MemberController@approved');
             $router->post('/api/document.list', 'DocumentController@list');
             $router->post('/api/document.info', 'DocumentController@get');
             $router->post('/api/document.save', 'DocumentController@save');

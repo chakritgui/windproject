@@ -141,7 +141,9 @@
     "banned": "Banned",
     "confirm": "Confirm",
     "confirm_delete": "Are you sure you want to delete this item?",
+    "confirm_reject": "Are you sure you want to reject this request?",
     "deleted_successfully": "Deleted successfully",
+    "reject_successfully": "Rejected successfully",
     "cannot_delete": "Could not delete this item",
     "confirm_change": "Are you sure you want to save these changes?",
     "change_successfully": "Changes saved successfully",
@@ -557,6 +559,7 @@
     "color": "Color",
     "manageBackground": "Manage Background",
     "report_remark": "Remark: Data Output is review version only. Future Validation and Analysis is required.",
+    "remark": "Remark",
     "submission": "Submission",
     "level": "Level",
     "temp": "Temp",
@@ -590,5 +593,9 @@
     "missing_email": "Missing Email",
     "request_success": "Request submitted successfully. Awaiting processing by the administrator.",
     "update_system_request": "Update Request",
-    "pending": "Pending"
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "password_change_request": "Password change request",
+    "status_date": "Status Date"
 }

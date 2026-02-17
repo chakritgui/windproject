@@ -30,6 +30,11 @@
                 <i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="usage_history"></span>
             </button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="request-tab" data-bs-toggle="pill" data-bs-target="#change_request" data-page="request" type="button">
+                <i class="fa-solid fa-user-lock"></i> <span data-i18n="password_change_request"></span>
+            </button>
+        </li>
     </ul>
     <div class="tab-content" id="mainTabContent">
         <div class="tab-pane fade show active" id="member_management" role="tabpanel">
@@ -113,6 +118,61 @@
                         </tr>
                     </thead>
                     <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="change_request" role="tabpanel">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-2">
+                            <p><i class="fa-regular fa-calendar"></i> <span data-i18n="date"></span></p>
+                            <input type="text" class="form-control filter-request" id="filter_request_date" autocomplete="off">
+                        </div>
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-user"></i> <span data-i18n="member"></span></p>
+                            <select id="filter_request_member" class="form-select filter-request"></select>
+                        </div>
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-user-gear"></i> <span data-i18n="role"></span></p>
+                            <select id="filter_request_role" class="form-select filter-request"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 mb-3">
+                <div class="btn-group w-100 shadow-sm" role="group" aria-label="Status selection">
+                    <input type="radio" class="btn-check" name="status" id="pending" value="pending" autocomplete="off" checked>
+                    <label class="btn btn-outline-warning" for="pending">
+                        <i class="fa-solid fa-hourglass-half"></i> <span data-i18n="pending"></span>
+                    </label>
+                    <input type="radio" class="btn-check" name="status" id="approved" value="approved" autocomplete="off">
+                    <label class="btn btn-outline-success" for="approved">
+                        <i class="fa-solid fa-check"></i> <span data-i18n="approved"></span>
+                    </label>
+                    <input type="radio" class="btn-check" name="status" id="rejected" value="rejected" autocomplete="off">
+                    <label class="btn btn-outline-danger" for="rejected">
+                        <i class="fa-solid fa-xmark"></i> <span data-i18n="rejected"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="tb_request">
+                    <thead>
+                        <tr>
+                            <th data-i18n="member"></th>
+                            <th data-i18n="role"></th>
+                            <th data-i18n="email"></th>
+                            <th data-i18n="username"></th>
+                            <th data-i18n="status"></th>
+                            <th data-i18n="submission"></th>
+                            <th data-i18n="date"></th>
+                            <th data-i18n="status"></th>
+                            <th data-i18n="remark"></th>
+                            <th data-i18n="status_date"></th>
+                            <th></th>
+                        </tr>
+                    </thead>
                 </table>
             </div>
         </div>

@@ -65,6 +65,36 @@ class MemberController extends BaseController {
             "data" => $res['data']
         ]);
     }
+    public function request(){
+        $start = intval($_POST['start'] ?? 0);
+        $length= intval($_POST['length'] ?? 10);
+        $filters = [
+            'status'=> $_POST['status'] ?? '',
+            'date'=> $_POST['date'] ?? '',
+            'member'=> $_POST['member'] ?? '',
+            'role'=> $_POST['role'] ?? '',
+        ];
+        $search = $_POST['search']['value'] ?? '';
+        $orderDir    = 'asc';
+        if (!empty($_POST['order'][0])) {
+            $colIndex   = intval($_POST['order'][0]['column']);
+            $orderDir   = $_POST['order'][0]['dir'] === 'desc' ? 'desc' : 'asc';
+        }
+        $res = $this->model->request(
+            $start,
+            $length,
+            $filters,
+            $search,
+            $colIndex,
+            $orderDir
+        );
+        $this->json([
+            "draw" => intval($_POST['draw'] ?? 1),
+            "recordsTotal" => $res['total'],
+            "recordsFiltered" => $res['total'],
+            "data" => $res['data']
+        ]);
+    }
     public function get(){
         $id = intval($_POST['id'] ?? 0);
         $this->json(['status'=>true,'data'=>$this->model->get($id)]);
@@ -72,6 +102,18 @@ class MemberController extends BaseController {
     public function delete() {
         $id = intval($_POST['id'] ?? 0);
         $this->json(['status'=>$this->model->delete($id)]);
+    }
+    public function reject() {
+        $id = intval($_POST['id'] ?? 0);
+        $note = $_POST['note'] ?? null;
+        $this->json(['status'=>$this->model->reject($id, $note)]);
+    }
+    public function approved() {
+        $id = intval($_POST['id'] ?? 0);
+        $member_id = intval($_POST['member_id'] ?? 0);
+        $password = $_POST['password'] ?? null;
+        $send_notification = $_POST['send_notification'] ?? 'no';
+        $this->json(['status'=>$this->model->approved($id, $member_id, $password, $send_notification)]);
     }
     public function save() {
         $data = [
