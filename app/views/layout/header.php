@@ -186,4 +186,4 @@
         </div>
     </div>
 </header>
-<div class="main-container <?=(empty($_SESSION)?'blue-frame':'')?>">
+<div class="main-container <?=(empty($_SESSION['user']['id'])?'blue-frame':'')?>">
