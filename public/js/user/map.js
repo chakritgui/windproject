@@ -7,7 +7,6 @@ let menuState = {};
 let show_country_line = 'hide';
 let map_labels = 'yes';
 let country_layers_data = null;
-const DEFAULT_LEVEL = '100m';
 const isMobile = () => window.innerWidth <= 768;
 function initMap() {
     windyInit(options, async api => {
@@ -208,7 +207,7 @@ async function loadPoles(map) {
                     <span class="arrow-icon" id="${arrowId}" style="display:inline-block; transition: transform 1s ease-in-out;">➤</span>
                     <span class="wind-value" id="${windId}">...</span>
                 </div>`,
-                { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [15, -20] }
+                { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [15, -15] }
             ).openTooltip();
             marker.on('click', () => openPoles(pole.poles_id));
         }
@@ -272,7 +271,7 @@ function getDivIcon(typeId) {
     const color = typeId == 1 ? '#e74c3c' : (typeId == 2 ? '#2ecc71' : '#3498db');
     return L.divIcon({
         className: 'custom-pole-icon',
-        html: `<i class="fa-solid fa-tower-broadcast" style="color: ${color}; font-size: 18px; text-shadow: 1px 1px 2px #000;"></i>`,
+        html: `<i class="fa-solid fa-tower-broadcast" style="color: ${color}; font-size: 24px; text-shadow: 1px 1px 2px #000;"></i>`,
         iconSize: [24, 24], iconAnchor: [12, 24]
     });
 }

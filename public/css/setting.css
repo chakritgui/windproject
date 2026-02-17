@@ -63,3 +63,34 @@
 .preview-box:hover .remove-btn {
     display: block;
 }
+.custom-windy-slider {
+    height: 8px;
+    border-radius: 5px;
+    background: #dee2e6;
+    outline: none;
+    -webkit-appearance: none;
+}
+.custom-windy-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    background: #0d6efd;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.custom-windy-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    background: #0d6efd;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    cursor: pointer;
+}
+#height-display {
+    transition: all 0.2s ease;
+    min-width: 120px;
+    text-align: center;
+}

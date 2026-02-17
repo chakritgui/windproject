@@ -10,6 +10,7 @@ INSERT INTO `system_settings`
 ('ENABLE_TRANSLATE', '0', 'GENERAL', 'ใช้งานระบบแปลภาษา (Google Translate)'),
 ('NOTIFY_EMAIL', '1', 'GENERAL', 'การแจ้งเตือนผ่านอีเมล'),
 ('NOTIFY_PWA', '1', 'GENERAL', 'การแจ้งเตือนผ่าน PWA Push');
+('DEFAULT_LEVEL', '100m', 'API', 'DEFAULT MAP LEVEL');
 
 INSERT INTO `wp_setting`
 (`setting_type`, `setting_value`, `created_at`, `updated_at`) VALUES

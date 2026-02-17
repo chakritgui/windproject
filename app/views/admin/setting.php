@@ -208,7 +208,7 @@
                                     <small class="text-muted"><span data-i18n="image"></span> (<span data-i18n="recommend"></span> 2560 × 1440px)</small>
                                 </div>
                             </div>
-                            <input type="file" id="loginInput" class="d-none" accept="image/*" onchange="previewImage(this, 'loginPreview')">
+                            <input type="file" id="loginInput" class="d-none" accept="image/*" onchange="previewImage(this, 'loginPreview', 'pc')">
                             <input type="hidden" id="oldLoginBg">
                             <div style="display: flex; gap: 10px;">
                                 <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('loginInput').click()"><i class="fa-solid fa-upload me-2"></i><span data-i18n="choose"></span></button>
@@ -224,7 +224,7 @@
                                     <small class="text-muted"><span data-i18n="image"></span> (<span data-i18n="recommend"></span> 1080 × 1920px)</small>
                                 </div>
                             </div>
-                            <input type="file" id="loginMobileInput" class="d-none" accept="image/*" onchange="previewImage(this, 'loginMobilePreview')">
+                            <input type="file" id="loginMobileInput" class="d-none" accept="image/*" onchange="previewImage(this, 'loginMobilePreview', 'mobile')">
                             <input type="hidden" id="oldLoginMobileBg">
                             <div style="display: flex; gap: 10px;">
                                 <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('loginMobileInput').click()"><i class="fa-solid fa-upload me-2"></i><span data-i18n="choose"></span></button> 
@@ -322,6 +322,21 @@
                                     <div class="col-md-12">
                                         <label class="form-label fw-bold" data-i18n="windy_key"></label>
                                         <input type="text" name="WINDY_KEY" class="form-control">
+                                    </div>
+                                    <div class="col-md-12 mb-4">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <label class="form-label fw-bold mb-0" data-i18n="height_level">Height Level</label>
+                                            <span id="height-display" class="badge bg-primary">100m</span>
+                                        </div>
+                                        <div class="position-relative px-2">
+                                            <input type="range" class="form-range custom-windy-slider" id="heightSlider" min="0" max="13" step="1" value="0">
+                                            <div class="d-flex justify-content-between mt-2 text-muted" style="font-size: 10px;">
+                                                <span>100m</span>
+                                                <span>500h</span>
+                                                <span>10h</span>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" name="DEFAULT_LEVEL" id="actual_level" value="100m">
                                     </div>
                                     <div class="col-md-12">
                                         <div class="form-check form-switch">

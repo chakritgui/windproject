@@ -2,6 +2,7 @@
 <script src="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.js"></script>
 <script>
     let options = { lat: 16.5, lon: 106.0, zoom: 8, labels: false };
+    let DEFAULT_LEVEL = '100m';
     function loadScript(src) {
         return new Promise((resolve, reject) => {
             const s = document.createElement('script');
@@ -11,19 +12,16 @@
             document.body.appendChild(s);
         });
     }
-    fetch(`${BASE_URL}/api/configs.get`)
-        .then(response => response.text())
-        .then(async base64Data => {
-            const config = JSON.parse(atob(base64Data));
-            if (config.WINDY_KEY) {
-                options.key = config.WINDY_KEY;
-                await loadScript("https://api.windy.com/assets/map-forecast/libBoot.js");
-                await loadScript("<?=BASE_URL?>/public/js/user/map.js?v=<?=time();?>");
-                await loadScript("<?=BASE_URL?>/public/js/user/report.js?v=<?=time();?>"); 
-                console.log("Windy and Scripts Ready");
-            }
-        })
-        .catch(err => console.error("Config error:", err));
+    fetch(`${BASE_URL}/api/configs.get`).then(response => response.text()).then(async base64Data => {
+        const config = JSON.parse(atob(base64Data));
+        DEFAULT_LEVEL = config.DEFAULT_LEVEL;
+        if (config.WINDY_KEY) {
+            options.key = config.WINDY_KEY;
+            await loadScript("https://api.windy.com/assets/map-forecast/libBoot.js");
+            await loadScript("<?=BASE_URL?>/public/js/user/map.js?v=<?=time();?>");
+            await loadScript("<?=BASE_URL?>/public/js/user/report.js?v=<?=time();?>"); 
+        }
+    }).catch(err => console.error("Config error:", err));
 </script>
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/map.css?v=<?=time();?>">
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/pole.css?v=<?=time();?>">

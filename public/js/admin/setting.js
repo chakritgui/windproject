@@ -48,6 +48,16 @@ $(document).on('change', '#enableTranslate', function() {
     }
 });
 function initSetting() {
+    const levels = [
+        "100m", "950h", "925h", "900h", "850h", "800h", "700h", 
+        "600h", "500h", "400h", "300h", "250h", "200h", "150h", "10h"
+    ];
+    const labels = [
+        "100m (330ft)", "950hPa (600m)", "925hPa (750m)", "900hPa (900m)",
+        "850hPa (1.5km)", "800hPa (2km)", "700hPa (3km)", "600hPa (4.2km)",
+        "500hPa (5.5km)", "400hPa (7km)", "300hPa (9km)", "250hPa (10km)",
+        "200hPa (11.7km)", "150hPa (13.5km)", "10hPa (30km)"
+    ];
     apiPost(`/api/settings.get`, null).done(res => {
         if (!res.status || !res.data) {
             showError(langData['cannot_load']);
@@ -61,6 +71,14 @@ function initSetting() {
         if (systemConfigs && typeof systemConfigs === 'object') {
             Object.keys(systemConfigs).forEach(key => {
                 const value = systemConfigs[key];
+                if (key === 'DEFAULT_LEVEL') {
+                    const levelIndex = levels.indexOf(value);
+                    if (levelIndex !== -1) {
+                        $('#heightSlider').val(levelIndex);
+                        $('#height-display').text(labels[levelIndex]);
+                        $('#actual_level').val(value);
+                    }
+                }
                 const $el = $(`#systemConfigForm [name="${key}"], #notificationSettingForm [name="${key}"]`);
                 if ($el.length) {
                     if ($el.is(':checkbox')) {
@@ -94,6 +112,13 @@ function initSetting() {
                 }
             });
         }
+    });
+    $('#heightSlider').on('input change', function() {
+        const index = $(this).val();
+        const selectedValue = levels[index];
+        const displayLabel = labels[index];
+        $('#height-display').text(displayLabel);
+        $('#actual_level').val(selectedValue);
     });
 }
 const settingHandlers = {
