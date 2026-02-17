@@ -261,6 +261,8 @@ async function loadAuthSetting() {
         const forgot = res.data.forgot_system;
         if (forgot) {
             renderForgotOptions(forgot);
+        } else {
+            $(".forgot-password-link").addClass("d-none");
         }
     } catch (err) {
         console.error('[AuthSetting]', err);
