@@ -609,7 +609,7 @@ function renderFiles() {
         </div>
     `;
 }
-function renderCover(d) {
+function renderCover(d, type = '') {
     return `
         <div id="coverDropArea" class="cover-drop-area text-center mb-3">
             <input type="file" id="cover" accept="image/*" hidden>
@@ -629,15 +629,17 @@ function renderCover(d) {
             <button type="button" id="btnRemoveCover" class="btn btn-sm btn-outline-danger mt-2 ${d.cover ? '' : 'd-none'}">${langData['remove'] || 'Remove'}</button>
         </div>
         <input type="hidden" id="ex_cover" value="${d.cover ? d.cover : ''}">
-        <div class="mb-3">
-            <label class="form-label fw-bold" data-i18n="display_the_cover"></label>
+        ${(type !== 'poles') ? `
             <div class="mb-3">
-                <input type="radio" id="display_yes" name="cover_display" value="yes" ${(d.cover_display === 'yes') ? 'checked' : ''}>
-                <label class="form-check-label me-3" for="display_yes" data-i18n="show" style="cursor: pointer;"></label>
-                <input type="radio" id="display_no" name="cover_display" value="no" ${(d.cover_display === 'no') ? 'checked' : ''}>
-                <label class="form-check-label" for="display_no" data-i18n="hide" style="cursor: pointer;"></label>
+                <label class="form-label fw-bold" data-i18n="display_the_cover"></label>
+                <div class="mb-3">
+                    <input type="radio" id="display_yes" name="cover_display" value="yes" ${(d.cover_display === 'yes') ? 'checked' : ''}>
+                    <label class="form-check-label me-3" for="display_yes" data-i18n="show" style="cursor: pointer;"></label>
+                    <input type="radio" id="display_no" name="cover_display" value="no" ${(d.cover_display === 'no') ? 'checked' : ''}>
+                    <label class="form-check-label" for="display_no" data-i18n="hide" style="cursor: pointer;"></label>
+                </div>
             </div>
-        </div>
+        ` : ``}
     `;
 }
 function renderLangTabs(d) {

@@ -160,7 +160,7 @@ $(document).on('click', '.manage-type', function() {
                 `);
                 modalEl.find(".modal-body").html(`
                     <input type="hidden" name="type_id" id="type_id" value="${type_id ?? ''}">
-                    ${renderCover(typeData)}
+                    ${renderCover(typeData, 'poles')}
                     <input type="hidden" id="ex_type_icon" value="${typeData.type_icon ? typeData.type_icon : ''}">
                     <div class="mb-3">
                         <label class="mb-2 required">${langData['type_name'] || 'Type Name'}</label>

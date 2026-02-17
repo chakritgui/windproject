@@ -108,11 +108,11 @@ class TypesModel {
                 'type_id' => '',
                 'type_name' => '',
                 'type_name_display' => '',
-                'type_icon' => '',
+                'cover' => '',
                 'status' => 'active'
             ];
         } else {
-            $sql = "SELECT * FROM wp_type WHERE type_id  = ?";
+            $sql = "SELECT *, type_icon as cover FROM wp_type WHERE type_id  = ?";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([(int)$id]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);

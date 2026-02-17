@@ -207,7 +207,7 @@ async function loadPoles(map) {
                     <span class="arrow-icon" id="${arrowId}" style="display:inline-block; transition: transform 1s ease-in-out;">➤</span>
                     <span class="wind-value" id="${windId}">...</span>
                 </div>`,
-                { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [15, -15] }
+                { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [20, -15] }
             ).openTooltip();
             marker.on('click', () => openPoles(pole.poles_id));
         }
@@ -272,7 +272,7 @@ function getDivIcon(typeId) {
     return L.divIcon({
         className: 'custom-pole-icon',
         html: `<i class="fa-solid fa-tower-broadcast" style="color: ${color}; font-size: 24px; text-shadow: 1px 1px 2px #000;"></i>`,
-        iconSize: [24, 24], iconAnchor: [12, 24]
+        iconSize: [24, 24], iconAnchor: [10, 40]
     });
 }
 async function fetchData(url, bodyData = {}) {
