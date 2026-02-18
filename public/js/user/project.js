@@ -2,7 +2,7 @@ let currentFolderId = null;
 let currentLevel = 1; 
 let currentRefId = null;
 let currentProjectId = null;
-let currentPath = [{id: null, name: 'PSTG PROJECT', level: 1, ref_id: null, project_id: null}];
+let currentPath = [{id: null, name: 'PSTG PROJECT', level: 1, ref_id: null}];
 let cachedData = []; 
 let offset = 0;
 const limit = 20;
@@ -34,7 +34,6 @@ function fetchFolders(isNewSearch = false) {
             level: currentLevel,
             item: currentFolderId,
             ref_id: currentRefId,
-            project_id: currentProjectId,
             start: offset,
             length: limit,
             search: { value: currentSearch }
@@ -94,7 +93,7 @@ function renderView(data, isNewSearch) {
                 ` :``}
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center">
-                        <div class="folder-icon-box me-3">
+                        <div class="folder-icon-box me-3 flex-shrink-0">
                             ${iconHtml}
                         </div>
                         <div class="flex-grow-1">
@@ -107,7 +106,6 @@ function renderView(data, isNewSearch) {
                                     <span class="text-truncate"><i class="fa-regular fa-calendar me-1"></i>${item.created_at || '-'}</span>
                                 </div>
                                 ` :``}
-                            
                         </div>
                         <div class="ms-2">
                             ${isContent ? `` :`<i class="fa-solid fa-chevron-right btn-navigate"></i>`}
@@ -127,13 +125,11 @@ function renderView(data, isNewSearch) {
             currentFolderId = rowData.id;
             currentLevel = parseInt(rowData.level) + 1;
             currentRefId = rowData.ref_id || null;
-            currentProjectId = rowData.project_id || currentProjectId;
             currentPath.push({
                 id: currentFolderId,
                 name: rowData.folder_name, 
                 level: currentLevel,
                 ref_id: currentRefId,
-                project_id: currentProjectId
             });
             fetchFolders(true); 
         }
@@ -162,7 +158,6 @@ function renderBreadcrumb() {
         currentFolderId = target.id;
         currentLevel = target.level;
         currentRefId = target.ref_id;
-        currentProjectId = target.project_id; 
         fetchFolders(true);
     });
 }

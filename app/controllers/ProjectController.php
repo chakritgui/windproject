@@ -11,15 +11,12 @@ class ProjectController extends BaseController {
         $length = intval($_POST['length'] ?? 20);
         $itemId = $_POST['item'] ?? null;
         $ref_id = $_POST['ref_id'] ?? null;
-        $project_id = $_POST['project_id'] ?? null;
         if (in_array($itemId, ['', 'null', 'undefined'])) $itemId = null;
         if (in_array($ref_id, ['', 'null', 'undefined'])) $ref_id = null;
-        if (in_array($project_id, ['', 'null', 'undefined'])) $project_id = null;
         $filters = [
             'level' => intval($_POST['level'] ?? 1),
             'item'  => $itemId,
             'ref_id'  => $ref_id,
-            'project_id'  => $project_id,
         ];
         $search = $_POST['search']['value'] ?? '';
         $order = $_POST['order'] ?? 'asc';

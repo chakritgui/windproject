@@ -1,7 +1,6 @@
 let currentFolderId = null;
 let currentLevel = 1; 
 let currentRefId = null;
-let currentProjectId = null;
 let currentPath = [{id: null, name: 'PSTG PROJECT', level: 1, ref_id: null, project_id: null}];
 let cachedData = []; 
 let offset = 0;
@@ -32,7 +31,6 @@ function fetchFolders(isNewSearch = false) {
             level: currentLevel,
             item: currentFolderId,
             ref_id: currentRefId,
-            project_id: currentProjectId,
             start: offset,
             length: limit,
             search: { value: currentSearch },
@@ -169,13 +167,11 @@ function renderTable(data, isNewSearch) {
             currentFolderId = rowData.id;
             currentLevel = parseInt(rowData.level) + 1;
             currentRefId = rowData.ref_id || null;
-            currentProjectId = rowData.project_id || currentProjectId;
             currentPath.push({
                 id: currentFolderId,
                 name: rowData.folder_name, 
                 level: currentLevel,
                 ref_id: currentRefId,
-                project_id: currentProjectId
             });
             fetchFolders(true); 
         }
@@ -224,8 +220,7 @@ function renderBreadcrumb() {
         currentFolderId = target.id;
         currentLevel = target.level;
         currentRefId = target.ref_id;
-        currentProjectId = target.project_id; 
-        fetchFolders(currentLevel, currentFolderId, currentRefId, currentProjectId);
+        fetchFolders(currentLevel, currentFolderId, currentRefId);
     });
 }
 $(document).on('click', '.manage-project', function () {
