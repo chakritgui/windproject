@@ -14,7 +14,7 @@
             <li><a href="<?=BASE_URL?>/document" class="sidebar-link <?=($GLOBALS['currentRoute']=='/document'?'active':'')?>"><i class="fa-solid fa-folder-tree"></i> <span data-i18n="document"></span></a></li>
             <li><a href="<?=BASE_URL?>/news" class="sidebar-link <?=($GLOBALS['currentRoute']=='/news'?'active':'')?>"><i class="fa-solid fa-newspaper" style="font-size:1.5rem"></i> <span data-i18n="news"></span></a></li>
             <li><a href="<?=BASE_URL?>/wind" class="sidebar-link <?=($GLOBALS['currentRoute']=='/wind'?'active':'')?>"><i class="fa-solid fa-wind"></i> <span data-i18n="wind"></span></a></li>
-            <li><a href="<?=BASE_URL?>/pstg" class="sidebar-link <?=($GLOBALS['currentRoute']=='/pstg'?'active':'')?>"><i class="fa-solid fa-diagram-project"></i> <span data-i18n="project"></span></a></li>
+            <li><a href="<?=BASE_URL?>/project" class="sidebar-link <?=($GLOBALS['currentRoute']=='/project'?'active':'')?>"><i class="fa-solid fa-diagram-project"></i> <span data-i18n="project"></span></a></li>
             <li><a href="<?=BASE_URL?>/map" class="sidebar-link <?=($GLOBALS['currentRoute']=='/map'?'active':'')?>"><i class="fa-solid fa-map-location-dot"></i> <span data-i18n="map_and_boundary"></span></a></li>
             <li><a href="<?=BASE_URL?>/master" class="sidebar-link <?=($GLOBALS['currentRoute']=='/master'?'active':'')?>"><i class="fa-solid fa-database"></i> <span data-i18n="master_data"></span></a></li>
             <li><a href="<?=BASE_URL?>/setting" class="sidebar-link <?=($GLOBALS['currentRoute']=='/setting'?'active':'')?>"><i class="fa-solid fa-gear"></i> <span data-i18n="setting"></span></a></li>
@@ -22,7 +22,7 @@
         <?php } else { ?>
             <li><a href="<?=BASE_URL?>/home" class="sidebar-link <?=($GLOBALS['currentRoute']=='/home'?'active':'')?>"><i class="fa-solid fa-house"></i> <span data-i18n="home"></span></a></li>
             <li><a href="<?=BASE_URL?>/news" class="sidebar-link <?=($GLOBALS['currentRoute']=='/news'?'active':'')?>"><i class="fa-solid fa-newspaper"></i> <span data-i18n="news"></span></a></li>
-            <li><a href="<?=BASE_URL?>/pstgproject" class="sidebar-link <?=($GLOBALS['currentRoute']=='/pstgproject'?'active':'')?>"><i class="fa-solid fa-diagram-project"></i> <span data-i18n="project"></span></a></li>
+            <li><a href="<?=BASE_URL?>/pstg" class="sidebar-link <?=($GLOBALS['currentRoute']=='/pstg'?'active':'')?>"><i class="fa-solid fa-diagram-project"></i> <span data-i18n="project"></span></a></li>
             <li><a href="<?=BASE_URL?>/document" class="sidebar-link <?=($GLOBALS['currentRoute']=='/document'?'active':'')?>"><i class="fa-regular fa-folder-open"></i> <span data-i18n="document"></span></a></li>
             <li><a href="<?=BASE_URL?>/download" class="sidebar-link <?=($GLOBALS['currentRoute']=='/download'?'active':'')?>"><i class="fa-solid fa-download"></i> <span data-i18n="download"></span></a></li>
         <?php } ?>
