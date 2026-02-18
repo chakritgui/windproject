@@ -34,14 +34,7 @@ INSERT INTO `wp_folder`
 (1, 'PROJECT', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW()),
 (2, 'MEASUREMENT STATION', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW()),
 (3, 'EIA / EHIA', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW()),
-(4, 'PDA / PPA / CA', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW()),
-(5, 'CONTRACT', 'contract', 'root', 2, 1, NULL, NULL, 'no', 'active', NOW(), NOW()),
-(6, 'PROJECT', 'project', 'root', 3, 5, NULL, NULL, 'no', 'active', NOW(), NOW()),
-(7, 'PROCESS', 'process', 'root', 4, 6, NULL, NULL, 'no', 'deleted', NOW(), NOW()),
-(8, 'CONTRACT', 'contract', 'root', 2, 2, NULL, NULL, 'no', 'active', NOW(), NOW()),
-(9, 'PROJECT', 'project', 'root', 3, 8, NULL, NULL, 'no', 'active', NOW(), NOW()),
-(10, 'TYPE', 'type', 'root', 4, 9, NULL, NULL, 'no', 'active', NOW(), NOW()),
-(11, 'INSTALLATION', 'installation', 'root', 5, 10, NULL, NULL, 'no', 'active', NOW(), NOW());
+(4, 'PDA / PPA / CA', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW());
 
 INSERT INTO `wp_members`
 (`member_id`, `username`, `password_hash`, `first_name`, `last_name`,
@@ -49,18 +42,4 @@ INSERT INTO `wp_members`
  `created_at`, `updated_at`,
  `remember_selector`, `remember_validator_hash`, `remember_expires_at`)
 VALUES
-(1,
- 'admin@windproject',
- MD5('Wp2026'),
- 'Admin',
- 'System',
- 'admin@windproject.wp',
- NULL,
- 'admin',
- 'active',
- NULL,
- NOW(),
- NOW(),
- NULL,
- NULL,
- NULL);
+(1,'admin@windproject',MD5('Wp2026'),'Admin','System','admin@windproject.wp',NULL,'admin','active',NULL,NOW(),NOW(),NULL,NULL,NULL);
