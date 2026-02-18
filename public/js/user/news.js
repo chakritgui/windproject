@@ -85,7 +85,7 @@ function renderNews(items) {
             ${(isPWA()) ? `
                 <a class="news-item ${isRead ? '' : 'unread'}" onclick="openContent('${item.content_slug}', 'view')">
             ` : `
-                <a class="news-item ${isRead ? '' : 'unread'}" href="${BASE_URL}/content/preview/${item.content_slug}" target="_blank">
+                <a class="news-item ${isRead ? '' : 'unread'}" href="${BASE_URL}/content/view/${item.content_slug}" target="_blank">
             `}
                 ${thumbHtml}
                 <div class="news-content">

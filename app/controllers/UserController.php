@@ -3,14 +3,29 @@ require_once __DIR__ . '/BaseController.php';
 require_once __DIR__ . '/../models/UserModel.php';
 class UserController extends Controller {
     private $model;
-    public function __construct(){ $this->model = new UserModel(); }
+    private $db;
+    public function __construct(){ 
+        $this->model = new UserModel(); 
+        $this->db = Database::getInstance()->pdo;
+    }
     public function user() {
         ensure_login();
         $this->view('user/map');
     }
-    public function project() {
+    public function project($path = null){
         ensure_login();
-        $this->view('user/project');
+        $folderIds = [];
+        if ($path) {
+            $segments = explode('/', trim($path, '/'));
+            foreach ($segments as $seg) {
+                if (is_numeric($seg)) {
+                    $folderIds[] = $seg;
+                }
+            }
+        }
+        $this->view('user/project', [
+            'folderIds' => $folderIds
+        ]);
     }
     public function document() {
         ensure_login();
@@ -147,6 +162,48 @@ class UserController extends Controller {
         $this->json([
             'status' => true,
             'data'   => $data
+        ]);
+    }
+    public function info() {
+        $start  = intval($_POST['start'] ?? 0);
+        $length = intval($_POST['length'] ?? 20);
+        $ref_id = $_POST['ref_id'] ?? null;
+        if (in_array($ref_id, ['', 'null', 'undefined'])) {
+            $ref_id = null;
+        }
+        $order  = $_POST['currentSort'] ?? 'asc';
+        $breadcrumbs = [];
+        $parentId = null;
+        if (!empty($_POST['path']) && is_array($_POST['path'])) {
+            foreach ($_POST['path'] as $slug) {
+                $stmt = $this->db->prepare("
+                    SELECT id, name, slug, level, parent_id, ref_id
+                    FROM wp_folder
+                    WHERE slug = :slug
+                    AND parent_id <=> :parent
+                    AND status = 'active'
+                    LIMIT 1
+                ");
+                $stmt->execute([
+                    ':slug'   => $slug,
+                    ':parent' => $parentId
+                ]);
+                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                if (!$row) break;
+                $breadcrumbs[] = $row;
+                $parentId = $row['id'];
+            }
+        }
+        $filters = [
+            'level'  => intval($_POST['level'] ?? 1),
+            'item'   => $parentId,
+            'ref_id' => $ref_id,
+        ];
+        $result = $this->model->info($start, $length, $filters, $order);
+        $this->json([
+            'status' => true,
+            'data' => $result,
+            'breadcrumbs' => $breadcrumbs
         ]);
     }
 }

@@ -8,7 +8,7 @@ class ProjectModel {
         $currentRefId = $filters['ref_id'] ?? null;
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
         $sql = "SELECT 
-            f.id, f.name as folder_name, f.code, f.level, f.parent_id, f.created_at, f.type, f.ref_id as folder_ref_id, f.content_id, f.notification_status, c.cover, c.content_slug, 
+            f.id, f.name as folder_name, f.level, f.parent_id, f.created_at, f.type, f.ref_id as folder_ref_id, f.content_id, f.notification_status, c.cover, c.content_slug, 
             iEn.status as en_status,
             iLo.status as lo_status,
             iTh.status as th_status
@@ -47,7 +47,7 @@ class ProjectModel {
     }
     private function countChildren($folderId, $currentLevel, $refId) {
         $nextLevel = (int)$currentLevel + 1;
-        $sqlFolder = "SELECT id, code FROM wp_folder WHERE parent_id = :pid AND level = :lvl AND status = 'active' AND (ref_id = :rid OR ref_id IS NULL OR ref_id = '')";
+        $sqlFolder = "SELECT id FROM wp_folder WHERE parent_id = :pid AND level = :lvl AND status = 'active' AND (ref_id = :rid OR ref_id IS NULL OR ref_id = '')";
         $stmt = $this->db->prepare($sqlFolder);
         $stmt->execute([
             ':pid' => $folderId, 
@@ -63,26 +63,79 @@ class ProjectModel {
         }
         return $totalChild;
     }
-    public function save($data) {
+    public function save($data){
+        $parentId = (!empty($data['parent_id']) && $data['parent_id'] > 0)
+            ? $data['parent_id']
+            : null;
+        $ref_id = (!empty($data['ref_id']) && $data['ref_id'] > 0)
+            ? $data['ref_id']
+            : null;
         if ($data['folder_id'] > 0) {
-            $sql = "UPDATE wp_folder SET name = :name, updated_at = NOW() WHERE id = :id";
+            $slug = $this->generateUniqueSlug(
+                $data['folder_name'],
+                $parentId,
+                $data['folder_id']
+            );
+            $sql = "UPDATE wp_folder 
+                    SET name = :name,
+                        slug = :slug,
+                        updated_at = NOW()
+                    WHERE id = :id";
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
                 ':name' => $data['folder_name'],
+                ':slug' => $slug,
                 ':id'   => $data['folder_id']
             ]);
         } else {
-            $parentId = (!empty($data['parent_id']) && $data['parent_id'] > 0) ? $data['parent_id'] : null;
-            $ref_id = (!empty($data['ref_id']) && $data['ref_id'] > 0) ? $data['ref_id'] : null;
-            $sql = "INSERT INTO wp_folder (name, parent_id, level, status, type, created_at, updated_at, ref_id) VALUES (:name, :parent_id, :level, 'active', 'folder', NOW(), NOW(), :ref_id)";
+            $slug = $this->generateUniqueSlug(
+                $data['folder_name'],
+                $parentId
+            );
+            $sql = "INSERT INTO wp_folder 
+                    (name, slug, parent_id, level, status, type, created_at, updated_at, ref_id)
+                    VALUES 
+                    (:name, :slug, :parent_id, :level, 'active', 'folder', NOW(), NOW(), :ref_id)";
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
                 ':name'      => $data['folder_name'],
+                ':slug'      => $slug,
                 ':parent_id' => $parentId,
                 ':level'     => $data['level'],
-                ':ref_id'     => $ref_id
+                ':ref_id'    => $ref_id
             ]);
         }
+    }
+    private function generateSlug($text){
+        $text = trim($text);
+        $text = mb_strtolower($text, 'UTF-8');
+        $text = preg_replace('/[^a-z0-9ก-๙]+/u', '-', $text);
+        $text = trim($text, '-');
+        return $text ?: 'folder';
+    }
+    private function generateUniqueSlug($name, $parentId, $excludeId = null){
+        $slug = $this->generateSlug($name);
+        $baseSlug = $slug;
+        $i = 1;
+        while (true) {
+            $sql = "SELECT id FROM wp_folder WHERE slug = :slug AND parent_id <=> :parent";
+            if ($excludeId) {
+                $sql .= " AND id != :exclude";
+            }
+            $stmt = $this->db->prepare($sql);
+            $params = [
+                ':slug' => $slug,
+                ':parent' => $parentId
+            ];
+            if ($excludeId) {
+                $params[':exclude'] = $excludeId;
+            }
+            $stmt->execute($params);
+            if (!$stmt->fetch()) break;
+            $slug = $baseSlug . '-' . $i;
+            $i++;
+        }
+        return $slug;
     }
     public function data($data) {
         $folder_id = intval($data['folder_id']);

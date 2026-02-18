@@ -170,7 +170,8 @@
         } else {
             $router->get('/home', 'UserController@user');
             $router->get('/news', 'UserController@news');
-            $router->get('/project', 'UserController@project');
+            $router->get('/pstg', 'UserController@project');
+            $router->get('/project/(.*)', 'UserController@project');
             $router->get('/document', 'UserController@document');
             $router->get('/download', 'UserController@download');
             $router->get('/pole/{slug}', 'UserController@pole');
@@ -178,7 +179,7 @@
             $router->post('/api/document.download', 'UserController@documentDownload');
             $router->post('/api/document.history', 'UserController@documentDownloadHistory');
             $router->post('/api/news.load', 'UserController@newsList');
-            $router->post('/api/project.info', 'ProjectController@get');
+            $router->post('/api/project.info', 'UserController@info');
             $router->post('/api/master', 'MapController@master');
             $router->post('/api/wind.boundary', 'MapController@windarea');
             $router->post('/api/poles.get', 'MapController@poleslocation');

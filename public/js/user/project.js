@@ -1,169 +1,213 @@
-let currentFolderId = null;
-let currentLevel = 1; 
-let currentRefId = null;
-let currentProjectId = null;
-let currentPath = [{id: null, name: 'PSTG PROJECT', level: 1, ref_id: null}];
-let cachedData = []; 
-let offset = 0;
-const limit = 20;
-let isLoading = false;
-let isFull = false;
-let currentSearch = '';
-$(document).ready(function() {
-    initProject();
+const API_URL = `${BASE_URL}/api/project.info`;
+const LIMIT = 20;
+let state = {
+    folderId: null,
+    level: 1,
+    refId: null,
+    path: [{ id: null, slug: null, name: 'PSTG PROJECT', level: 1, ref_id: null }],
+    sort: 'asc',
+    offset: 0,
+    isLoading: false,
+    isFull: false,
+    cachedData: []
+};
+let currentAjaxRequest = null;
+$(document).ready(function () {
+    restoreFromUrl();
     setupObservers();
+    initEventListeners();
 });
-function initProject() {
-    fetchFolders(true);
+function initEventListeners() {
+    $(document).on('click', '.sort-option', function() {
+        state.sort = $(this).data('sort');
+        $('#selectedSortLabel').text(langData[$(this).data('label')]);
+        fetchFolders(true);
+    });
+    $('#listView').on('click', '.doc-item', function () {
+        const index = $(this).data('index');
+        const rowData = state.cachedData[index];
+        if (!rowData || rowData.type === 'content') return;
+        state.folderId = rowData.id;
+        state.level = parseInt(rowData.level) + 1;
+        state.refId = rowData.ref_id || null;
+        state.path.push({
+            id: rowData.id,
+            slug: rowData.slug,
+            name: rowData.folder_name,
+            level: state.level,
+            ref_id: state.refId
+        });
+        updateUrlPath();
+        fetchFolders(true);
+    });
+    $('#breadcrumb').on('click', 'a[data-idx], .dropdown-item[data-idx]', function (e) {
+        e.preventDefault();
+        const idx = $(this).data('idx');
+        state.path = state.path.slice(0, idx + 1);
+        const target = state.path[idx];
+        state.folderId = target.id;
+        state.refId = target.ref_id;
+        state.level = (idx === 0) ? 1 : (Number(target.level) + 1);
+        updateUrlPath();
+        fetchFolders(true);
+    });
 }
 function fetchFolders(isNewSearch = false) {
-    if (isLoading) return;
+    if (state.isLoading && !isNewSearch) return;
+    if (currentAjaxRequest) currentAjaxRequest.abort();
     if (isNewSearch) {
-        offset = 0;
-        isFull = false;
-        cachedData = [];
-        $('#listView').html(''); 
+        state.offset = 0;
+        state.isFull = false;
+        state.cachedData = [];
+        $('#listView').empty();
+        $('#emptyState').addClass('d-none');
     }
-    if (isFull) return;
-    isLoading = true;
+    if (state.isFull) return;
+    state.isLoading = true;
     $('#loadingIndicator').removeClass('d-none');
-    $.ajax({
-        url: `${BASE_URL}/api/project.info`,
+    currentAjaxRequest = $.ajax({
+        url: API_URL,
         method: 'POST',
         data: {
-            level: currentLevel,
-            item: currentFolderId,
-            ref_id: currentRefId,
-            start: offset,
-            length: limit,
-            search: { value: currentSearch }
+            level: state.level,
+            ref_id: state.refId,
+            start: state.offset,
+            length: LIMIT,
+            path: state.path.map(p => p.slug).filter(Boolean),
+            currentSort: state.sort
         },
         dataType: 'json',
-        success: function(res) {
-            if(res.status === true) {
-                const result = res.data;
-                const newData = result.data;
-                cachedData = cachedData.concat(newData);
-                renderView(newData, isNewSearch);
-                renderBreadcrumb();
-                if (!result.hasMore || newData.length < limit) {
-                    isFull = true;
-                }
-                offset += limit;
-            } else {
-                console.error('Data error');
+        success: function (res) {
+            if (!res.status) return;
+            const { data: result, breadcrumbs } = res;
+            const newData = result.data;
+            if (breadcrumbs && breadcrumbs.length > 0) {
+                const root = { id: null, slug: null, name: 'PSTG PROJECT', level: 1, ref_id: null };
+                state.path = [root, ...breadcrumbs];
+                const last = state.path[state.path.length - 1];
+                state.folderId = last.id;
+                state.level = state.path.length;
+                state.refId = last.ref_id;
             }
+            state.cachedData = isNewSearch ? newData : state.cachedData.concat(newData);
+            renderView(newData, isNewSearch);
+            renderBreadcrumb();
+            if (!result.hasMore || newData.length < LIMIT) {
+                state.isFull = true;
+            }
+            state.offset += LIMIT;
         },
-        complete: function() {
-            isLoading = false;
+        complete: function () {
+            state.isLoading = false;
+            currentAjaxRequest = null;
             $('#loadingIndicator').addClass('d-none');
         }
     });
 }
 function renderView(data, isNewSearch) {
     const $container = $('#listView');
-    const $empty = $('#emptyState');
     if (isNewSearch && (!data || data.length === 0)) {
-        $container.html('');
-        $empty.removeClass('d-none');
+        $('#emptyState').removeClass('d-none');
         return;
     }
-    $empty.addClass('d-none');
-    let html = '';
-    data.forEach((item, index) => {
-        const globalIndex = (isNewSearch ? 0 : cachedData.length - data.length) + index;
+    let html = data.map((item, index) => {
+        const globalIndex = isNewSearch ? index : (state.cachedData.length - data.length + index);
         const isContent = item.type === 'content';
-        let iconHtml = '';
-        if (isContent) {
-            iconHtml = item.cover 
-                ? `<img src="${BASE_URL}/${item.cover}" class="rounded-2" style="width: 100%; height: 100%; object-fit: cover;">`
-                : `<i class="fa-solid fa-file-lines text-primary fa-2x"></i>`;
-        } else {
-            iconHtml = `<i class="fa-solid fa-folder-open fa-2x"></i>`;
-        }
-        html += `
-            <div class="card doc-item border-0 shadow-none mb-2" data-index="${globalIndex}" style="cursor: pointer;">
-                ${isContent ? `
-                    ${(isPWA()) ? `
-                        <a onclick="openContent('${item.content_slug}', 'view')" style="text-decoration: none;">
-                    ` : `
-                        <a href="${BASE_URL}/content/preview/${item.content_slug}" target="_blank" style="text-decoration: none;">
-                    `}
-                    
-                ` :``}
+        const iconHtml = isContent
+            ? (item.cover 
+                ? `<img src="${BASE_URL}/${item.cover}" class="rounded-2" style="width:100%;height:100%;object-fit:cover;">`
+                : `<i class="fa-solid fa-file-lines text-primary fa-2x"></i>`)
+            : `<i class="fa-solid fa-folder-open fa-2x"></i>`;
+        return `
+            <div class="card doc-item border-0 shadow-none mb-2" data-index="${globalIndex}" style="cursor:pointer;">
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center">
-                        <div class="folder-icon-box me-3 flex-shrink-0">
-                            ${iconHtml}
+                        <div class="folder-icon-box me-3 flex-shrink-0">${iconHtml}</div>
+                        <div class="flex-grow-1 text-truncate">
+                            <div class="doc-title fw-bold text-dark">${item.folder_name || '-'}</div>
                         </div>
-                        <div class="flex-grow-1">
-                            <div class="doc-title fw-bold">
-                                ${item.folder_name || '-'}
-                                ${item.child_count > 0 ? `<span class="badge rounded-pill bg-light text-primary border ms-1" style="font-size: 0.65rem;">${item.child_count}</span>` : ''}
-                            </div>
-                            ${isContent ? `
-                                <div class="doc-meta d-flex align-items-center">
-                                    <span class="text-truncate"><i class="fa-regular fa-calendar me-1"></i>${item.created_at || '-'}</span>
-                                </div>
-                                ` :``}
-                        </div>
-                        <div class="ms-2">
-                            ${isContent ? `` :`<i class="fa-solid fa-chevron-right btn-navigate"></i>`}
+                        <div class="ms-2 flex-shrink-0">
+                            ${isContent ? '' : '<i class="fa-solid fa-chevron-right text-muted"></i>'}
                         </div>
                     </div>
                 </div>
-                ${isContent ? `</a>` :``}
             </div>`;
-    });
-    if (isNewSearch) { $container.html(html); } 
-    else { $container.append(html); }
-    $container.find('.doc-item').off('click').on('click', function(e) {
-        if ($(e.target).closest('a').length) return; 
-        const index = $(this).data('index');
-        const rowData = cachedData[index];
-        if (rowData && rowData.type !== 'content') {
-            currentFolderId = rowData.id;
-            currentLevel = parseInt(rowData.level) + 1;
-            currentRefId = rowData.ref_id || null;
-            currentPath.push({
-                id: currentFolderId,
-                name: rowData.folder_name, 
-                level: currentLevel,
-                ref_id: currentRefId,
-            });
-            fetchFolders(true); 
-        }
-    });
+    }).join('');
+    $container.append(html);
 }
 function renderBreadcrumb() {
+    const maxItems = 4;
+    const len = state.path.length;
     let html = '';
-    currentPath.forEach((p, idx) => {
-        const isHome = idx === 0;
-        const isActive = idx === currentPath.length - 1;
-        const homeIcon = isHome ? '<i class="fa-solid fa-house me-1"></i> ' : '';
-        let displayName = p.name;
-        if (!isActive && displayName.length > 25) {
-            displayName = displayName.substring(0, 25) + '...';
+    let itemsToRender = [];
+    if (len <= maxItems) {
+        itemsToRender = state.path.map((p, i) => ({ ...p, originalIndex: i }));
+    } else {
+        itemsToRender = [
+            { ...state.path[0], originalIndex: 0 },
+            { isEllipsis: true, hiddenItems: state.path.slice(1, -2) },
+            { ...state.path[len - 2], originalIndex: len - 2 },
+            { ...state.path[len - 1], originalIndex: len - 1 }
+        ];
+    }
+    itemsToRender.forEach(p => {
+        if (p.isEllipsis) {
+            const dropdownHtml = p.hiddenItems.map(item => {
+                const realIdx = state.path.indexOf(item);
+                return `<li><a class="dropdown-item py-2" href="#" data-idx="${realIdx}">${item.name}</a></li>`;
+            }).join('');
+            html += `
+                <li class="breadcrumb-item dropdown">
+                    <a class="dropdown-toggle btn btn-link btn-sm p-0 text-decoration-none" data-bs-toggle="dropdown">
+                        <i class="fa-solid fa-ellipsis px-1"></i>
+                    </a>
+                    <ul class="dropdown-menu shadow-sm border-0 animate slideIn">${dropdownHtml}</ul>
+                </li>`;
+        } else {
+            const isActive = p.originalIndex === len - 1;
+            const icon = p.originalIndex === 0 ? '<i class="fa-solid fa-house me-1"></i>' : '';
+            html += `
+                <li class="breadcrumb-item ${isActive ? 'active' : ''}">
+                    ${isActive 
+                        ? `<span class="fw-bold text-dark">${icon}${p.name}</span>`
+                        : `<a href="#" data-idx="${p.originalIndex}" class="link-primary text-decoration-none">${icon}${p.name}</a>`}
+                </li>`;
         }
-        html += `
-            <li class="breadcrumb-item ${isActive ? 'active text-muted' : ''}">
-                ${isActive ? `<span>${homeIcon}${displayName}</span>` : `<a href="javascript:void(0)" class="text-primary text-decoration-none fw-medium" data-idx="${idx}">${homeIcon}${displayName}</a>`}
-            </li>`;
     });
     $('#breadcrumb').html(html);
-    $('#breadcrumb a').off('click').on('click', function() {
-        const idx = $(this).data('idx');
-        currentPath = currentPath.slice(0, idx + 1);
-        const target = currentPath[idx];
-        currentFolderId = target.id;
-        currentLevel = target.level;
-        currentRefId = target.ref_id;
-        fetchFolders(true);
+}
+function updateUrlPath() {
+    let url = BASE_URL + '/pstg';
+    state.path.forEach((p, i) => {
+        if (i !== 0 && p.slug) url += '/' + p.slug;
     });
+    history.pushState(null, '', url);
+}
+window.addEventListener('popstate', restoreFromUrl);
+function restoreFromUrl() {
+    const baseUrlPath = BASE_URL.replace(window.location.origin, '');
+    const cleanPath = window.location.pathname.replace(baseUrlPath, '');
+    const parts = cleanPath.split('/').filter(Boolean);
+    state.path = [{ id: null, slug: null, name: 'PSTG PROJECT', level: 1, ref_id: null }];
+    if (parts.length > 1) {
+        parts.slice(1).forEach((slug, index) => {
+            state.path.push({
+                id: null,
+                slug: decodeURIComponent(slug),
+                name: 'Loading...',
+                level: index + 2,
+                ref_id: null
+            });
+        });
+    }
+    state.folderId = null;
+    state.level = state.path.length;
+    state.refId = null;
+    fetchFolders(true);
 }
 function setupObservers() {
     const observer = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting && !isLoading && !isFull) {
+        if (entries[0].isIntersecting && !state.isLoading && !state.isFull) {
             fetchFolders(false);
         }
     }, { rootMargin: '200px' });

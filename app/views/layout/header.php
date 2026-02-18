@@ -127,7 +127,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link <?=($GLOBALS['currentRoute']=='/project'?'active':'')?>" href="<?=BASE_URL?>/project">
+                        <a class="nav-link <?=($GLOBALS['currentRoute']=='/pstg'?'active':'')?>" href="<?=BASE_URL?>/pstg">
                             <i class="fa-solid fa-diagram-project"></i> <span data-i18n="project"></span>
                         </a>
                     </li>

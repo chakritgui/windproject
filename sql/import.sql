@@ -29,12 +29,12 @@ INSERT INTO `wp_setting`
 ('infography', NULL, NOW(), NOW());
 
 INSERT INTO `wp_folder`
-(`id`, `name`, `code`, `type`, `level`, `parent_id`, `ref_id`, `content_id`,
+(`id`, `name`, `slug`, `type`, `level`, `parent_id`, `ref_id`, `content_id`,
  `notification_status`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'PROJECT', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW()),
-(2, 'MEASUREMENT STATION', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW()),
-(3, 'EIA / EHIA', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW()),
-(4, 'PDA / PPA / CA', NULL, 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW());
+(1, 'PROJECT', 'project', 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW()),
+(2, 'MEASUREMENT STATION', 'measument-station', 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW()),
+(3, 'EIA / EHIA', 'eia-ehia', 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW()),
+(4, 'PDA / PPA / CA', 'pda-ppa-ca', 'root', 1, NULL, NULL, NULL, 'no', 'active', NOW(), NOW());
 
 INSERT INTO `wp_members`
 (`member_id`, `username`, `password_hash`, `first_name`, `last_name`,

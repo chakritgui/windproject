@@ -235,4 +235,89 @@ class UserModel {
             }
         }
     }
+    public function info($start = 0, $length = 20, $filters = [], $order = 'asc') {
+        $currentRefId = $filters['ref_id'] ?? null;
+        list($mainWhere, $mainParams) = $this->buildListWhere($filters);
+        $sql = "SELECT 
+            f.id, f.name as folder_name, f.slug, f.level, f.parent_id, f.created_at, f.type, f.ref_id as folder_ref_id, f.content_id, f.notification_status, c.cover, c.content_slug, 
+            iEn.status as en_status,
+            iLo.status as lo_status,
+            iTh.status as th_status
+        FROM wp_folder f 
+        LEFT JOIN wp_content c on c.content_id = f.content_id
+        LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang='en'
+        LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang='lo'
+        LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang='th'
+        {$mainWhere} ORDER BY f.id {$order}";
+        $stmt = $this->db->prepare($sql);
+        foreach ($mainParams as $k => $v) { $stmt->bindValue($k, $v); }
+        $stmt->execute();
+        $folderRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $finalItems = [];
+        $stmt = $this->db->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_content')");
+        $stmt->execute();
+        $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        foreach ($folderRows as $row) {
+            $item = $this->formatRows($row);
+            $activeRef = !empty($row['folder_ref_id']) ? $row['folder_ref_id'] : $currentRefId;
+            $item['ref_id'] = $activeRef;
+            $item['child_count'] = $this->countChildren($row['id'], $row['level'], $activeRef);
+            $item['settings'] = $settings;
+            $finalItems[] = $item;
+        }
+        $totalCount = count($finalItems);
+        if ($length > 0) {
+            $finalItems = array_slice($finalItems, $start, $length);
+        };
+        return [
+            'total' => $totalCount, 
+            'data' => $finalItems,
+            'hasMore' => ($length > 0) ? ($start + $length < $totalCount) : false
+        ];
+    }
+    private function formatRows($row) {
+        if (!empty($row['created_at'])) {
+            $row['created_at'] = convertTimeZone($row['created_at'], 'd/m/Y H:i:s');
+        }
+        return $row;
+    }
+    private function countChildren($folderId, $currentLevel, $refId) {
+        $nextLevel = (int)$currentLevel + 1;
+        $sqlFolder = "SELECT id FROM wp_folder WHERE parent_id = :pid AND level = :lvl AND status = 'active' AND (ref_id = :rid OR ref_id IS NULL OR ref_id = '')";
+        $stmt = $this->db->prepare($sqlFolder);
+        $stmt->execute([
+            ':pid' => $folderId, 
+            ':lvl' => $nextLevel,
+            ':rid' => $refId
+        ]);
+        $nextFolders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (empty($nextFolders)) return 0;
+        $totalChild = 0;
+        foreach ($nextFolders as $nf) {
+            $totalChild++; 
+            continue;
+        }
+        return $totalChild;
+    }
+    private function buildListWhere($filters) {
+        $where  = " WHERE f.status = 'active' ";
+        $params = [];
+        if (!empty($filters['level'])) {
+            $where .= " AND f.level = :level ";
+            $params[':level'] = $filters['level'];
+        }
+        if (isset($filters['item']) && ($filters['item'] !== '' && $filters['item'] !== null)) {
+            $where .= " AND f.parent_id = :item ";
+            $params[':item'] = $filters['item'];
+        } else {
+            $where .= " AND f.parent_id IS NULL ";
+        }
+        if (isset($filters['ref_id']) && $filters['ref_id'] !== '') {
+            $where .= " AND (f.ref_id = :ref_id OR f.ref_id IS NULL OR f.ref_id = '') ";
+            $params[':ref_id'] = $filters['ref_id'];
+        } else {
+            $where .= " AND (f.ref_id IS NULL OR f.ref_id = '') ";
+        }
+        return [$where, $params];
+    }
 }
