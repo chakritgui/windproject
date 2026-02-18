@@ -311,6 +311,7 @@
     "wind_speed_trend": "แนวโน้มความเร็วลม",
     "wind_speed_area": "พื้นที่ความเร็วลม",
     "wind_speed_distribution": "การกระจายตัวของความเร็วลม",
+    "distribution": "การกระจายตัว",
     "wind_rose": "ผังทิศทางลม (Wind Rose)",
     "weather_overview": "ภาพรวมสภาพอากาศ",
     "air_density_turbulence": "ความหนาแน่นอากาศและความแปรปรวน",

@@ -311,6 +311,7 @@
     "wind_speed_trend": "Wind Speed Trend",
     "wind_speed_area": "Wind Speed Area",
     "wind_speed_distribution": "Wind Speed Distribution",
+    "distribution": "Distribution",
     "wind_rose": "Wind Rose",
     "weather_overview": "Weather Overview",
     "air_density_turbulence": "Air Density & Turbulence",

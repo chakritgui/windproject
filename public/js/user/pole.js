@@ -110,7 +110,7 @@ function renderAllCharts(realData) {
     if (selectedKeys.includes('WS')) {
         const wsSensor = sensors.find(s => s.key === 'WS');
         const wsDatasets = distinctLevels.map((lvl, idx) => ({
-            label: `${langData[wsSensor.name] || wsSensor.name} (${lvl})`,
+            label: `${langData[wsSensor.lang] || wsSensor.name} (${lvl})`,
             data: labels.map(t => {
                 const row = realData.find(d => d.time_label === t && d.level_name === lvl);
                 return row ? row.WS : null;
@@ -150,7 +150,7 @@ function renderAllCharts(realData) {
         airKeys.forEach(k => {
             const s = sensors.find(x => x.key === k);
             const ds = distinctLevels.map((lvl, idx) => ({
-                label: `${langData[s.name] || s.name} (${lvl})`,
+                label: `${langData[s.lang] || s.name} (${lvl})`,
                 data: labels.map(t => {
                     const row = realData.find(d => d.time_label === t && d.level_name === lvl);
                     return row ? row[k] : null;
@@ -165,7 +165,7 @@ function renderAllCharts(realData) {
     if (selectedKeys.includes('SP')) {
         const spSensor = sensors.find(s => s.key === 'SP') || { name: 'Surface Pressure', color: '#ff9f40' }; 
         const spDatasets = distinctLevels.map((lvl, idx) => ({
-            label: `${langData[spSensor.name] || spSensor.name} (${lvl})`,
+            label: `${langData[spSensor.lang] || spSensor.name} (${lvl})`,
             data: labels.map(t => {
                 const row = realData.find(d => d.time_label === t && d.level_name === lvl);
                 return row ? row.SP : null;
@@ -222,7 +222,7 @@ function renderWindRose16(canvasId, realData, distinctLevels) {
         });
         const color = getLevelColor(idx, 'rgb(54, 162, 235)');
         return {
-            label: `Distribution (${lvl})`,
+            label: `${langData['distribution'] || 'Distribution'} (${lvl})`,
             data: counts,
             backgroundColor: color.replace('rgb', 'rgba').replace(')', ', 0.2)'),
             borderColor: color,
