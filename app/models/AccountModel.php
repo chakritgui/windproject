@@ -79,24 +79,13 @@ class AccountModel {
         $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT); 
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $userAgent = new AgentHelper($this->db);
         foreach ($rows as &$row) {
             $row['formatted_at'] = convertTimeZone($row['login_at'], 'd/m/Y H:i:s');
-            $row['browser_info'] = $this->parseUserAgent($row['login_device']);
+            $ua_info = $userAgent->parse_user_agent($row['login_device']);
+            $row['device_os'] = $ua_info['os'];
+            $row['device_browser'] = $ua_info['browser'];
         }
         return $rows;
-    }
-    private function parseUserAgent($ua) {
-        $browser = "Unknown Browser";
-        $platform = "Unknown OS";
-        if (preg_match('/MSIE/i', $ua) && !preg_match('/Opera/i', $ua)) $browser = 'Internet Explorer';
-        elseif (preg_match('/Firefox/i', $ua)) $browser = 'Firefox';
-        elseif (preg_match('/Chrome/i', $ua)) $browser = 'Chrome';
-        elseif (preg_match('/Safari/i', $ua)) $browser = 'Safari';
-        elseif (preg_match('/Opera/i', $ua)) $browser = 'Opera';
-        if (preg_match('/windows|win32/i', $ua)) $platform = 'Windows';
-        elseif (preg_match('/macintosh|mac os x/i', $ua)) $platform = 'Mac OS';
-        elseif (preg_match('/android/i', $ua)) $platform = 'Android';
-        elseif (preg_match('/iphone/i', $ua)) $platform = 'iPhone';
-        return "$browser on $platform";
     }
 }

@@ -142,7 +142,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                     </div>
                 </div>
             </div>
-            <div class="filter-card mt-3 mb-3" id="filterCard">
+            <div class="filter-card mt-3" id="filterCard">
                 <div class="filter-content" id="filterContent">
                     <div class="row">
                         <div class="col-md-4 col-lg-4 mb-3">
@@ -170,7 +170,7 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                                 <i class="fa-solid fa-up-down me-2"></i><span data-i18n="height_level"></span>
                             </label>
                             <div class="mb-3 text-warning"><span data-i18n="max_selection_reached"></span> <span class="height_limit"></span> <span data-i18n="height_level"></span></div>
-                            <div class="levelBody bg-white border rounded-3 p-3 shadow-sm gap-2"></div>
+                            <div class="levelBody bg-white border rounded-3 p-2 shadow-sm gap-2"></div>
                         </div>
                     </div>
                     <div class="row mt-3">
@@ -297,7 +297,7 @@ async function renderLevel(height_id, levelsToCheck = []) {
                 html += `
                     <div class="level-item">
                         <input class="btn-check level-checkbox" type="checkbox" name="levels[]" value="${item.levels_id}" id="level_${item.levels_id}" ${isChecked} autocomplete="off">
-                        <label class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1 mb-2 me-2 shadow-sm fw-medium transition-all"  for="level_${item.levels_id}">
+                        <label class="small btn btn-outline-primary btn-sm rounded-pill px-2 py-1 mb-2 me-2 shadow-sm fw-medium transition-all"  for="level_${item.levels_id}">
                             <i class="fa-solid fa-layer-group me-1 small"></i> ${item.height_levels} m.
                         </label>
                     </div>

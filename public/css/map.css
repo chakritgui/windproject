@@ -50,10 +50,6 @@
     font-weight: 600;
     text-transform: uppercase;
 }
-.form-check-input {
-    height: 1.5em !important;
-    cursor: pointer;
-}
 :root {
     --primary-color: #2c3e50;
     --secondary-color: #3498db;
@@ -79,46 +75,6 @@
         transform: translateY(0);
     }
 }
-.filter-card {
-    background: white;
-    border-radius: 15px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
-.filter-card.collapsed {
-    padding: 1rem;
-}
-.filter-toggle {
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: 2px solid #e0e0e0;
-    margin-bottom: 1rem;
-}
-.filter-toggle i {
-    transition: transform 0.3s ease;
-}
-.filter-toggle.collapsed i {
-    transform: rotate(180deg);
-}
-.filter-content {
-    max-height: 1000px;
-    overflow: hidden;
-    transition: max-height 0.3s ease, opacity 0.3s ease;
-}
-.filter-content.hide {
-    max-height: 0;
-    opacity: 0;
-}
-.form-label {
-    font-weight: 600;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-}
 .form-control, .form-select {
     border-radius: 10px;
     border: 2px solid #e0e0e0;
@@ -127,108 +83,6 @@
 .form-control:focus, .form-select:focus {
     border-color: var(--secondary-color);
     box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
-}
-.btn-generate {
-    background: var(--bg-gradient);
-    border: none;
-    color: white;
-    padding: 0.8rem 3rem;
-    border-radius: 50px;
-    font-weight: 600;
-    font-size: 1.1rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-}
-.btn-generate:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-    color: white;
-}
-.report-section {
-    background: white;
-    border-radius: 15px;
-    padding: 1rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-    animation: fadeIn 0.5s ease-out;
-}
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-.report-title {
-    color: var(--primary-color);
-    border-left: 5px solid var(--secondary-color);
-    padding-left: 1rem;
-    margin-bottom: 1.5rem;
-    font-weight: 700;
-}
-.stat-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 15px;
-    padding: 1.5rem;
-    text-align: center;
-    margin-bottom: 1rem;
-    transition: all 0.3s ease;
-}
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-.stat-label {
-    font-size: 0.9rem;
-    opacity: 0.9;
-}
-.chart-container {
-    background: white;
-    border-radius: 10px;
-    height: 400px;
-    position: relative;
-}
-@media (max-width: 768px) {
-    .header-card {
-        padding: 1.5rem;
-    }
-}
-.chart-container {
-    position: relative;
-    height: 320px; 
-}
-.chart-container canvas {
-    width: 100% !important;
-    height: 100% !important;
-}
-.stat-card {
-    color: #fff;
-    min-height: 130px;
-    position: relative;
-    overflow: hidden;
-}
-.stat-icon {
-    position: absolute;
-    bottom: 10px;
-    right: 15px;
-    font-size: 2.2rem;
-    opacity: 0.25;
-}
-.stat-value {
-    font-size: 1.8rem;
-    font-weight: 700;
-}
-.badge-days {
-    background: #e1f0ff;
-    color: #007bff;
-    padding: 5px 10px;
-    border-radius: 8px;
-    font-weight: 600;
-    margin-left: 5px;
 }
 .footer {
     background: rgba(0, 0, 0, 0.4);

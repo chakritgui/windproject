@@ -120,13 +120,31 @@ function loadLoginHistory() {
         let html = '';
         res.data.forEach(row => {
             let badge = row.log_type === 'login' ? 'bg-primary' : (row.log_type === 'kick' ? 'bg-danger' : 'bg-success');
+            let icon = 'fa-laptop';
+            let color = 'text-secondary';
+            if(row.device_os === 'Windows') {
+                icon = 'fa-brands fa-windows';
+                color = 'text-primary';
+            } else if(row.device_os === 'Android') {
+                icon = 'fa-brands fa-android';
+                color = 'text-success';
+            } else if(row.device_os === 'iPhone (iOS)') {
+                icon = 'fa-mobile-screen-button';
+                color = 'text-dark';
+            } else if(row.device_os === 'iPad (iOS)') {
+                icon = 'fa-tablet-screen-button';
+                color = 'text-dark';
+            } else if(row.device_os === 'Mac OS') {
+                icon = 'fa-brands fa-apple';
+                color = 'text-dark';
+            }
             html += `
                 <tr>
                     <td><div class="fw-bold">${row.member_name}</div></td>
                     <td><small>${row.login_at}</small></td>
                     <td class="hide-mobile"><small>${row.logout_at ?? '-'}</small></td>
                     <td><code class="small">${row.ip_address}</code></td>
-                    <td class="hide-mobile small text-muted text-truncate" style="max-width:150px">${row.login_device}</td>
+                    <td class="hide-mobile small text-muted text-truncate" style="max-width:150px"><i class="fa-solid ${icon} fa-lg ${color} me-2"></i> ${row.device_os} ${row.device_browser}</td>
                     <td><span class="badge ${badge} rounded-pill">${row.log_type.toUpperCase()}</span></td>
                 </tr>`;
         });

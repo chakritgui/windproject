@@ -295,7 +295,8 @@ function createStatCard(container, sensor, value) {
 function updateChartVisibility(keys) {
     document.querySelectorAll('.chart-box').forEach(el => el.style.display = 'none');
     if (keys.includes('WS')) {
-        show('wind-speed'); show('wind-speed-area'); show('wind-speed-hist');
+        show('wind-speed'); 
+        show('wind-speed-hist');
     }
     if (keys.includes('WD')) show('wind-direction');
     if (keys.some(k => ['AD', 'SP', 'RH'].includes(k))) show('weather');

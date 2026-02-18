@@ -214,71 +214,66 @@ class ProjectsModel {
     }
     public function save($data) {
         $project_id = $data['project_id'] ?? null;
-        $contract_id = $data['contract_id'] ?? null;
+        $contract_id = (!empty($data['contract_id'])) ? $data['contract_id'] : null;
+        $group = (!empty($data['group'])) ? $data['group'] : null;
         $project_code = $data['project_code'] ?? '';
         $project_name = $data['project_name'] ?? '';
         $project_name_display = $data['project_name_display'] ?? '';
-        if ($this->isDuplicateProjectName($project_name, $contract_id, $project_id)) {
+        if ($this->isDuplicateProjectName($project_name, $project_id)) {
             return [
                 'status'  => false,
                 'message' => 'already_project'
             ];
         }
         $status = $data['status'] ?? '';
-        $group = $data['group'] ?? '';
         $startObj = DateTime::createFromFormat('d/m/Y', trim($data['project_start']));
         $endObj   = DateTime::createFromFormat('d/m/Y', trim($data['project_end']));
-        $project_start = ($startObj) ? $startObj->format('Y-m-d') : null;
-        $project_end   = ($endObj) ? $endObj->format('Y-m-d') : null;
+        $project_start = ($startObj) ? convertTimeZoneUTC($startObj->format('Y-m-d'), 'Y-m-d') : null;
+        $project_end   = ($endObj) ? convertTimeZoneUTC($endObj->format('Y-m-d'), 'Y-m-d') : null;
         $pdo = $this->db;
         if ($project_id) {
-            $sql = "UPDATE wp_project SET contract_id = :contract_id, project_code = :project_code, project_name = :project_name, project_name_display = :project_name_display, project_start = :project_start, project_end = :project_end, project_status_id = :status, project_group_id = :group, updated_at = NOW() WHERE project_id = :project_id";
+            $sql = "UPDATE wp_project SET 
+                        contract_id = :contract_id, 
+                        project_code = :project_code, 
+                        project_name = :project_name, 
+                        project_name_display = :project_name_display, 
+                        project_start = :project_start, 
+                        project_end = :project_end, 
+                        project_status_id = :status, 
+                        project_group_id = :group, 
+                        updated_at = NOW() 
+                    WHERE project_id = :project_id";
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':project_id', (int)$project_id, PDO::PARAM_INT);
         } else {
             $sql = "INSERT INTO wp_project (
-                contract_id,
-                project_code,
-                project_name,
-                project_name_display,
-                project_start,
-                project_end,
-                project_status_id,
-                project_group_id,
-                created_at,
-                updated_at
-            ) VALUES (
-                :contract_id,
-                :project_code,
-                :project_name,
-                :project_name_display,
-                :project_start,
-                :project_end,
-                :status,
-                :group,
-                NOW(),
-                NOW()
-            )";
+                        contract_id, project_code, project_name, project_name_display, 
+                        project_start, project_end, project_status_id, project_group_id, 
+                        created_at, updated_at
+                    ) VALUES (
+                        :contract_id, :project_code, :project_name, :project_name_display, 
+                        :project_start, :project_end, :status, :group, 
+                        NOW(), NOW()
+                    )";
             $stmt = $pdo->prepare($sql);
         }
-        $stmt->bindValue(':contract_id', $contract_id);
+        $stmt->bindValue(':contract_id', $contract_id, $contract_id === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+        $stmt->bindValue(':group', $group, $group === null ? PDO::PARAM_NULL : PDO::PARAM_INT); 
         $stmt->bindValue(':project_code', $project_code);
         $stmt->bindValue(':project_name', $project_name);
         $stmt->bindValue(':project_name_display', $project_name_display);
         $stmt->bindValue(':project_start', $project_start);
         $stmt->bindValue(':project_end', $project_end);
         $stmt->bindValue(':status', $status);
-        $stmt->bindValue(':group', $group);
         return $stmt->execute();
     }
-    private function isDuplicateProjectName($project_name, $contract_id, $project_id = null) {
-        $sql = "SELECT COUNT(*) FROM wp_project WHERE project_name = :project_name AND contract_id = :contract_id";
+    private function isDuplicateProjectName($project_name, $project_id = null) {
+        $sql = "SELECT COUNT(*) FROM wp_project WHERE project_name = :project_name";
         if ($project_id) {
             $sql .= " AND project_id != :project_id";
         }
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':project_name', trim($project_name));
-        $stmt->bindValue(':contract_id', (int)$contract_id, PDO::PARAM_INT);
         if ($project_id) {
             $stmt->bindValue(':project_id', (int)$project_id, PDO::PARAM_INT);
         }

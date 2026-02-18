@@ -356,13 +356,13 @@ $(document).on('click', '.manage-project', function() {
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="mb-2 required">${langData['contracts'] || 'Contracts'}</label>
-                        <select class="form-select obj-required" id="contract"></select>
+                        <label class="mb-2">${langData['contracts'] || 'Contracts'}</label>
+                        <select class="form-select" id="contract"></select>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['group'] || 'Group'}</label>
-                            <select id="group" class="form-select obj-required"></select>
+                            <label class="mb-2">${langData['group'] || 'Group'}</label>
+                            <select id="group" class="form-select"></select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required">${langData['status'] || 'Status'}</label>

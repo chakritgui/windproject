@@ -294,6 +294,24 @@ function loadUsageHistory() {
                     const dateTimeParts = log.formatted_at.split(' ');
                     const displayDate = dateTimeParts[0];
                     const displayTime = dateTimeParts[1].substring(0, 5);
+                    let icon = 'fa-laptop';
+                    let color = 'text-secondary';
+                    if(log.device_os === 'Windows') {
+                        icon = 'fa-brands fa-windows';
+                        color = 'text-primary';
+                    } else if(log.device_os === 'Android') {
+                        icon = 'fa-brands fa-android';
+                        color = 'text-success';
+                    } else if(log.device_os === 'iPhone (iOS)') {
+                        icon = 'fa-mobile-screen-button';
+                        color = 'text-dark';
+                    } else if(log.device_os === 'iPad (iOS)') {
+                        icon = 'fa-tablet-screen-button';
+                        color = 'text-dark';
+                    } else if(log.device_os === 'Mac OS') {
+                        icon = 'fa-brands fa-apple';
+                        color = 'text-dark';
+                    }
                     html += `
                     <div class="activity-timeline-item">
                         <div class="activity-line"></div>
@@ -313,10 +331,10 @@ function loadUsageHistory() {
                                     <div class="row align-items-center">
                                         <div class="col-7 border-end">
                                             <div class="d-flex align-items-center">
-                                                <i class="fa-solid fa-laptop-code fa-lg text-primary me-2"></i>
+                                                <i class="fa-solid ${icon} fa-lg ${color} me-2"></i>
                                                 <div style="overflow: hidden;">
                                                     <small class="text-muted d-block" style="font-size: 0.7rem;" data-i18n="device"></small>
-                                                    <span class="device-text" title="${log.login_device}">${log.browser_info}</span>
+                                                    <span class="device-text" title="${log.device_browser}">${log.device_os} ${log.device_browser}</span>
                                                 </div>
                                             </div>
                                         </div>

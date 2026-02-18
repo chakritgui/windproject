@@ -424,6 +424,7 @@
                                     <input class="form-check-input" type="checkbox" id="emailResetToggle" name="is_email_link_enabled">
                                 </div>
                             </div>
+                            <div class="mt-1 text-muted small" data-i18n="users_can_specify_an_email"></div>
                         </div>
                         <div class="mb-4 pb-3 border-bottom">
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -434,25 +435,29 @@
                             </div>
                             <div class="admin-channels mt-3">
                                 <div class="row g-3">
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label">Email</label>
                                         <input type="email" class="form-control" name="admin_email" placeholder="admin@example.com">
+                                        <div class="mt-1 text-muted small" data-i18n="insert_a_comma"></div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label">Line OA</label>
                                         <input type="text" class="form-control" name="admin_line_oa" placeholder="@yourlineid">
+                                        <div class="mt-1 text-muted small" data-i18n="insert_a_comma"></div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label">Telegram</label>
                                         <input type="text" class="form-control" name="admin_telegram" placeholder="@username">
+                                        <div class="mt-1 text-muted small" data-i18n="insert_a_comma"></div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <label class="form-label" data-i18n="contact_number"></label>
                                         <input type="text" class="form-control" name="admin_tel">
+                                        <div class="mt-1 text-muted small" data-i18n="insert_a_comma"></div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <label class="form-label">Other</label>
-                                        <input type="text" class="form-control" name="admin_others">
+                                        <textarea class="form-control" name="admin_others"></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -464,6 +469,7 @@
                                     <input class="form-check-input" type="checkbox" id="requestFormToggle" name="is_system_request_enabled">
                                 </div>
                             </div>
+                            <div class="mt-1 text-muted small" data-i18n="accepting_requests"></div>
                         </div>
                     </form>
                 </div>

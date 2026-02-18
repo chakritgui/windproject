@@ -59,14 +59,14 @@ class ProjectsController extends BaseController {
     public function save() {
         $data = [
             'project_id' => intval($_POST['project_id'] ?? 0),
-            'contract_id' => intval($_POST['contract_id'] ?? 0),
+            'contract_id' => $_POST['contract_id'] ?? null,
             'project_code' => $_POST['project_code'] ?? '',
             'project_name' => $_POST['project_name'] ?? '',
             'project_name_display' => $_POST['project_name_display'] ?? '',
             'project_start' => $_POST['project_start'] ?? '',
             'project_end' => $_POST['project_end'] ?? '',
             'status' => $_POST['status'] ?? '',
-            'group' => $_POST['group'] ?? ''
+            'group' => $_POST['group'] ?? null
         ];
         $result = $this->model->save($data);
         if ($result === true) {

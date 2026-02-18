@@ -7,16 +7,16 @@ class DashboardModel {
     public function getStats() {
         $stats = [];
         $queries = [
-            'total_members'      => "SELECT COUNT(*) FROM wp_members WHERE status = 'active'",
-            'total_contracts'     => "SELECT COUNT(*) FROM wp_contract WHERE status = 'active'",
-            'total_projects'      => "SELECT COUNT(*) FROM wp_project WHERE status = 'active'",
-            'total_types'         => "SELECT COUNT(*) FROM wp_type WHERE status = 'active'",
+            'total_members' => "SELECT COUNT(*) FROM wp_members WHERE status = 'active'",
+            'total_contracts' => "SELECT COUNT(*) FROM wp_contract WHERE status = 'active'",
+            'total_projects' => "SELECT COUNT(*) FROM wp_project WHERE status = 'active'",
+            'total_types' => "SELECT COUNT(*) FROM wp_type WHERE status = 'active'",
             'total_installations' => "SELECT COUNT(*) FROM wp_installations WHERE status = 'active'",
-            'total_poles'         => "SELECT COUNT(*) FROM wp_poles WHERE status <> 'deleted'",
-            'total_documents'     => "SELECT COUNT(*) FROM wp_documents WHERE status = 'public'",
-            'total_news'          => "SELECT COUNT(*) FROM wp_content WHERE status <> 'deleted' AND type = 'news'",
-            'total_imports'       => "SELECT COUNT(*) FROM wp_imports WHERE status = 'complete'",
-            'total_winds'         => "SELECT COUNT(*) FROM wp_winds WHERE status = 'active'"
+            'total_poles' => "SELECT COUNT(*) FROM wp_poles WHERE status <> 'deleted'",
+            'total_documents' => "SELECT COUNT(*) FROM wp_documents WHERE status = 'public'",
+            'total_news' => "SELECT COUNT(*) FROM wp_content WHERE status <> 'deleted' AND type = 'news'",
+            'total_imports' => "SELECT COUNT(*) FROM wp_imports WHERE status = 'complete'",
+            'total_winds' => "SELECT COUNT(*) FROM wp_winds WHERE status = 'active'"
         ];
         foreach ($queries as $key => $sql) {
             $stats[$key] = (int)$this->db->query($sql)->fetchColumn();
@@ -32,48 +32,36 @@ class DashboardModel {
         $stmtMax->execute();
         $latestTime = $stmtMax->fetchColumn();
         if (!$latestTime) return [];
-        $stmt = $this->db->prepare("SELECT wind_datetime, wind_speed, wind_direction, air_density, pressure, humidity, temperature FROM wp_winds WHERE status = 'active' AND wind_datetime BETWEEN DATE_SUB(:latest, INTERVAL 24 HOUR) AND :latest_end ORDER BY wind_datetime ASC");
+        $sql = "SELECT MIN(wind_datetime) as target_time, AVG(wind_speed) as avg_speed, AVG(wind_direction) as avg_direction, AVG(air_density) as avg_density, AVG(pressure) as avg_pressure, AVG(humidity) as avg_humidity, AVG(temperature) as avg_temp FROM wp_winds WHERE status = 'active' AND wind_datetime BETWEEN DATE_SUB(:latest, INTERVAL 24 HOUR) AND :latest_end GROUP BY (UNIX_TIMESTAMP(wind_datetime) DIV 300) ORDER BY target_time ASC";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute(['latest' => $latestTime, 'latest_end' => $latestTime]);
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $chartData = [];
-        foreach ($rows as $row) {
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $chartData[] = [
-                'time' => date('H:i', strtotime($row['wind_datetime'])),
-                'speed' => (float)$row['wind_speed'],
-                'direction' => (float)$row['wind_direction'],
-                'density' => (float)$row['air_density'],
-                'pressure' => (float)$row['pressure'],
-                'humidity' => (float)$row['humidity'],
-                'temp' => (float)$row['temperature']
+                'time' => date('H:i', strtotime($row['target_time'])),
+                'speed' => round((float)$row['avg_speed'], 2),
+                'direction' => round((float)$row['avg_direction'], 2),
+                'density' => round((float)$row['avg_density'], 2),
+                'pressure' => round((float)$row['avg_pressure'], 2),
+                'humidity' => round((float)$row['avg_humidity'], 2),
+                'temp' => round((float)$row['avg_temp'], 2)
             ];
         }
         return $chartData;
     }
     public function loginHistory() {
-        $sql = "SELECT l.logs_id, CONCAT(m.first_name, ' ', m.last_name) AS member_name, l.login_at, l.logout_at, l.log_type, l.ip_address, l.login_device FROM wp_login_logs l LEFT JOIN wp_members m ON l.member_id = m.member_id ORDER BY l.login_at DESC LIMIT 10";
+        $sql = "SELECT l.logs_id, CONCAT(m.first_name, ' ', m.last_name) AS member_name, l.login_at, l.logout_at, l.log_type, l.ip_address, l.login_device FROM wp_login_logs l LEFT JOIN wp_members m ON l.member_id = m.member_id ORDER BY l.login_at DESC LIMIT 20";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $history = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $userAgent = new AgentHelper($this->db);
         foreach ($history as &$entry) {
             $entry['login_at'] = convertTimeZone($entry['login_at'], 'd/m/Y H:i:s');
             $entry['logout_at'] = $entry['logout_at'] ? convertTimeZone($entry['logout_at'], 'd/m/Y H:i:s') : null;
-            $entry['login_device'] = $this->parseUserAgent($entry['login_device']);
+            $ua_info = $userAgent->parse_user_agent($entry['login_device']);
+            $entry['device_os'] = $ua_info['os'];
+            $entry['device_browser'] = $ua_info['browser'];
         }
         return $history;
-    }
-    private function parseUserAgent($ua) {
-        $browser = "Unknown Browser";
-        $platform = "Unknown OS";
-        if (preg_match('/MSIE/i', $ua) && !preg_match('/Opera/i', $ua)) $browser = 'Internet Explorer';
-        elseif (preg_match('/Firefox/i', $ua)) $browser = 'Firefox';
-        elseif (preg_match('/Chrome/i', $ua)) $browser = 'Chrome';
-        elseif (preg_match('/Safari/i', $ua)) $browser = 'Safari';
-        elseif (preg_match('/Opera/i', $ua)) $browser = 'Opera';
-        if (preg_match('/windows|win32/i', $ua)) $platform = 'Windows';
-        elseif (preg_match('/macintosh|mac os x/i', $ua)) $platform = 'Mac OS';
-        elseif (preg_match('/android/i', $ua)) $platform = 'Android';
-        elseif (preg_match('/iphone/i', $ua)) $platform = 'iPhone';
-        elseif (preg_match('/linux/i', $ua)) $platform = 'Linux';
-        return "$browser ($platform)";
     }
 }

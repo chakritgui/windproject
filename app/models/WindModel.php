@@ -25,7 +25,7 @@ class WindModel{
             1 => "pj.project_name",
             2 => "t.type_name",
             3 => "i.installations_name",
-            4 => "w.year",
+            4 => "YEAR(w.wind_datetime)",
             5 => "w.wind_datetime",
             6 => "h.height_name",
             7 => "l.height_levels",
@@ -41,24 +41,9 @@ class WindModel{
             $order = $orderMap[$colIndex];
         }
         $sql = "SELECT
-                w.id,
-                w.poles_id,
-                p.poles_code,
-                pj.project_name,
-                t.type_name,
-                i.installations_name,
-                h.height_name,
-                l.height_levels,
-                w.year,
-                w.wind_datetime,
-                w.levels_id,
-                w.wind_speed,
-                w.wind_direction,
-                w.air_density,
-                w.pressure,
-                w.humidity,
-                w.temperature,
-                w.turbulence_intensity
+                w.id, w.poles_id, p.poles_code, pj.project_name, t.type_name, i.installations_name,
+                h.height_name, l.height_levels, YEAR(w.wind_datetime) as year, w.wind_datetime, w.levels_id,
+                w.wind_speed, w.wind_direction, w.air_density, w.pressure, w.humidity, w.temperature, w.turbulence_intensity
             FROM wp_winds w
             LEFT JOIN wp_poles p ON p.poles_id = w.poles_id
             LEFT JOIN wp_project pj ON pj.project_id = p.project_id
@@ -94,14 +79,7 @@ class WindModel{
     public function history($start = 0, $length = 10): array{
         $sqlTotal = "SELECT COUNT(*) FROM wp_imports";
         $total = (int)$this->db->query($sqlTotal)->fetchColumn();
-        $sql = "SELECT
-                import_start,
-                import_end,
-                status,
-                import_record,
-                remark
-            FROM wp_imports
-        ";
+        $sql = "SELECT import_start, import_end, status, import_record, remark FROM wp_imports";
         if ($length != -1) {
             $sql .= " LIMIT :offset, :length";
         }
@@ -168,7 +146,7 @@ class WindModel{
                 i.installations_name LIKE :search OR
                 h.height_name LIKE :search OR
                 l.height_levels LIKE :search OR
-                w.year LIKE :search
+                YEAR(w.wind_datetime) LIKE :search
             ) ";
             $params[':search'] = "%{$search}%";
         }
@@ -258,17 +236,27 @@ class WindModel{
         $this->cleanup($tmpDir);
         return $counter;
     }
-    private function normalizeCell($cell): string{
+    private function normalizeCell($cell): string {
         if ($cell instanceof DateTime) {
             return $cell->format('Y-m-d H:i:s');
         }
-        if ($cell === null) {
-            return '';
+        if ($cell === null) return '';
+        $value = trim(str_replace(["\r", "\n"], ' ', (string)$cell));
+        if ($value === '') return '';
+        $formats = [
+            'j/n/Y H:i', 
+            'd/m/Y H:i', 
+            'd/m/Y H:i:s',
+            'd/m/Y h:i:s A',
+            'Y-m-d H:i:s'
+        ];
+        foreach ($formats as $format) {
+            $d = DateTime::createFromFormat($format, $value);
+            if ($d) {
+                return $d->format('Y-m-d H:i:s');
+            }
         }
-        $value = (string)$cell;
-        $value = str_replace(["\r", "\n"], ' ', $value);
-        $value = trim($value);
-        return mb_convert_encoding($value, 'UTF-8', 'auto');
+        return $value;
     }
     private function convertXlsxToCsv(string $xlsx, string $tmpDir): array {
         $reader = ReaderEntityFactory::createXLSXReader();
@@ -422,12 +410,10 @@ class LoadDataStagingImporter implements ImporterInterface {
             IGNORE 1 LINES
             (
                 @no,
-                contract_name,
                 project_name,
                 poles_code,
                 type_name,
                 installations_name,
-                year,
                 @dt,
                 height_name,
                 height_level,
@@ -449,11 +435,8 @@ class LoadDataStagingImporter implements ImporterInterface {
         return $rows;
     }
     private function syncMasters(): void {
-        $this->db->exec("INSERT IGNORE INTO wp_contract (contract_name, created_at, updated_at)
-            SELECT DISTINCT contract_name, NOW(), NOW() FROM wind_staging
-        ");
-        $this->db->exec("INSERT IGNORE INTO wp_project (contract_id, project_name, created_at, updated_at)
-            SELECT c.contract_id, s.project_name, NOW(), NOW() FROM wind_staging s JOIN wp_contract c ON c.contract_name = s.contract_name
+        $this->db->exec("INSERT IGNORE INTO wp_project (project_name, created_at, updated_at)
+            SELECT s.project_name, NOW(), NOW() FROM wind_staging s
         ");
         $this->db->exec("INSERT IGNORE INTO wp_type (type_name, created_at, updated_at)
             SELECT DISTINCT type_name, NOW(), NOW() FROM wind_staging
@@ -483,37 +466,18 @@ class LoadDataStagingImporter implements ImporterInterface {
         ");
         $this->db->exec("INSERT IGNORE INTO wp_poles
             (poles_code, project_id, type_id, installations_id, poles_lat, poles_lng, status, created_at, updated_at)
-            SELECT
-                s.poles_code,
-                p.project_id,
-                t.type_id,
-                i.installations_id,
-                s.lat,
-                s.lng,
-                'online',
-                NOW(), NOW()
+            SELECT s.poles_code, p.project_id, t.type_id, i.installations_id, s.lat, s.lng, 'online', NOW(), NOW()
             FROM wind_staging s
             JOIN wp_project p ON p.project_name = s.project_name
-            JOIN wp_contract c ON c.contract_name = s.contract_name AND p.contract_id = c.contract_id
             JOIN wp_type t ON t.type_name = s.type_name
             JOIN wp_installations i ON i.installations_name = s.installations_name and i.project_id = p.project_id and i.type_id = t.type_id
         ");
     }
     private function mergeWinds(): void {
         $this->db->exec("INSERT INTO wp_winds
-            (poles_id, year, wind_datetime, levels_id, wind_speed, wind_direction, air_density, pressure, humidity, temperature, turbulence_intensity)
+            (poles_id, wind_datetime, levels_id, wind_speed, wind_direction, air_density, pressure, humidity, temperature, turbulence_intensity)
             SELECT
-                p.poles_id,
-                s.year,
-                s.measure_datetime,
-                hl.levels_id,
-                s.wind_speed,
-                s.wind_direction,
-                s.air_density,
-                s.pressure,
-                s.humidity,
-                s.temperature,
-                s.turbulence_intensity
+                p.poles_id, s.measure_datetime, hl.levels_id, s.wind_speed, s.wind_direction, s.air_density, s.pressure, s.humidity, s.temperature, s.turbulence_intensity
             FROM wind_staging s
             JOIN wp_poles p ON p.poles_code = s.poles_code
             JOIN wp_height h ON h.height_name = s.height_name

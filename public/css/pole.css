@@ -1,89 +1,11 @@
-#windy { 
-    width: 100%;
-    height: 100%; 
-    background: #eee; 
-}
-#ui {
-    position: absolute;
-    top: 65px;
-    right: 15px;
-    z-index: 9999;
-    background: transparent;
-    padding: 0;
-}
-.wind-toggle-card {
-    width: auto;
-    padding: 0px 5px;
-    display: flex;
-    align-items: center;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    text-align: center;
-    color: #fff;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    transition: transform 0.2s ease;
-    gap: 5px;
-    border-radius: 40px;
-}
-#windSwitch:checked ~ .wind-icon i {
-    animation: rotate-fan 2s linear infinite;
-    color: #00d4ff;
-}
-@keyframes rotate-fan {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-.wind-icon {
-    width: 30px;
-    height: 30px;
-    margin: 0;
-    line-height: 30px;
-}
-.wind-icon i {
-    font-size: 18px;
-}
-.wind-label {
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
 .form-check-input {
     height: 1.5em !important;
     cursor: pointer;
-}
-:root {
-    --primary-color: #2c3e50;
-    --secondary-color: #3498db;
-    --accent-color: #e74c3c;
-    --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-.header-card {
-    background: var(--bg-gradient);
-    color: white;
-    border-radius: 20px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    animation: slideDown 0.5s ease-out;
-}
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 .filter-card {
     background: white;
     border-radius: 15px;
     padding: 1.5rem;
-    margin-bottom: 2rem;
     box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
 }
@@ -292,7 +214,6 @@
         padding-bottom: 96px;
     }
 }
-/* แถบเลื่อนแบบซ่อน Scrollbar แต่ยังเลื่อนได้ */
 #weatherContainer {
     display: flex;
     flex-wrap: nowrap;
@@ -302,8 +223,6 @@
     scrollbar-width: none;
 }
 #weatherContainer::-webkit-scrollbar { display: none; }
-
-/* การ์ดทรงผืนผ้าแบบพรีเมียม */
 .weather-card-rect {
     flex: 0 0 auto;
     width: 170px;
@@ -314,21 +233,17 @@
     align-items: center;
     padding: 0 15px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    border: 1px solid rgba(255,255,255,0.1); /* เส้นขอบบางๆ แบบกระจก */
+    border: 1px solid rgba(255,255,255,0.1); 
     transition: transform 0.3s ease;
 }
-
 .weather-card-rect:hover {
-    transform: translateY(-3px); /* ยกตัวขึ้นเมื่อเอาเมาส์วาง */
+    transform: translateY(-3px);
 }
-
-/* ปรับแต่งไอคอนให้ชัดและมีมิติ */
 .weather-card-rect i {
     font-size: 1.5rem;
     margin-right: 12px;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
-
 .weather-card-rect .info .title {
     font-size: 0.7rem;
     font-weight: 500;
@@ -336,7 +251,6 @@
     letter-spacing: 0.5px;
     opacity: 0.85;
 }
-
 .weather-card-rect .info .value {
     font-size: 1.1rem;
     font-weight: 700;

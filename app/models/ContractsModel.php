@@ -154,8 +154,8 @@ class ContractsModel {
         $status = $data['status'] ?? '';
         $startObj = DateTime::createFromFormat('d/m/Y', trim($data['contract_start']));
         $endObj   = DateTime::createFromFormat('d/m/Y', trim($data['contract_end']));
-        $contract_start = ($startObj) ? $startObj->format('Y-m-d') : null;
-        $contract_end   = ($endObj) ? $endObj->format('Y-m-d') : null;
+        $contract_start = ($startObj) ? convertTimeZoneUTC($startObj->format('Y-m-d'), 'Y-m-d') : null;
+        $contract_end   = ($endObj) ? convertTimeZoneUTC($endObj->format('Y-m-d'), 'Y-m-d') : null;
         $pdo = $this->db;
         if ($contract_id) {
             $sql = "UPDATE wp_contract SET contract_no = :contract_no, contract_name = :contract_name, contract_name_display = :contract_name_display, contract_start = :contract_start, contract_end = :contract_end, status = :status, updated_at = NOW() WHERE contract_id = :contract_id";
