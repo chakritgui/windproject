@@ -110,7 +110,7 @@ function renderAllCharts(realData) {
     if (selectedKeys.includes('WS')) {
         const wsSensor = sensors.find(s => s.key === 'WS');
         const wsDatasets = distinctLevels.map((lvl, idx) => ({
-            label: `${wsSensor.name} (${lvl})`,
+            label: `${langData[wsSensor.name] || wsSensor.name} (${lvl})`,
             data: labels.map(t => {
                 const row = realData.find(d => d.time_label === t && d.level_name === lvl);
                 return row ? row.WS : null;
@@ -125,13 +125,13 @@ function renderAllCharts(realData) {
     if (selectedKeys.includes('WD')) {
         renderWindRose16('radarChart', realData, distinctLevels);
     }
-    const weatherKeys = selectedKeys.filter(k => ['AD', 'SP', 'RH'].includes(k));
+    const weatherKeys = selectedKeys.filter(k => ['AD', 'RH'].includes(k));
     if (weatherKeys.length) {
         let weatherDatasets = [];
         weatherKeys.forEach(k => {
             const s = sensors.find(x => x.key === k);
             const ds = distinctLevels.map((lvl, idx) => ({
-                label: `${s.name} (${lvl})`,
+                label: `${langData[s.lang] || s.name} (${lvl})`,
                 data: labels.map(t => {
                     const row = realData.find(d => d.time_label === t && d.level_name === lvl);
                     return row ? row[k] : null;
@@ -150,7 +150,7 @@ function renderAllCharts(realData) {
         airKeys.forEach(k => {
             const s = sensors.find(x => x.key === k);
             const ds = distinctLevels.map((lvl, idx) => ({
-                label: `${s.name} (${lvl})`,
+                label: `${langData[s.name] || s.name} (${lvl})`,
                 data: labels.map(t => {
                     const row = realData.find(d => d.time_label === t && d.level_name === lvl);
                     return row ? row[k] : null;
@@ -165,7 +165,7 @@ function renderAllCharts(realData) {
     if (selectedKeys.includes('SP')) {
         const spSensor = sensors.find(s => s.key === 'SP') || { name: 'Surface Pressure', color: '#ff9f40' }; 
         const spDatasets = distinctLevels.map((lvl, idx) => ({
-            label: `${spSensor.name} (${lvl})`,
+            label: `${langData[spSensor.name] || spSensor.name} (${lvl})`,
             data: labels.map(t => {
                 const row = realData.find(d => d.time_label === t && d.level_name === lvl);
                 return row ? row.SP : null;
