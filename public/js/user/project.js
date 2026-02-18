@@ -123,8 +123,8 @@ function renderView(data, isNewSearch) {
                 <div class="card-body p-3">
                     <div class="d-flex align-items-center">
                         <div class="folder-icon-box me-3 flex-shrink-0">${iconHtml}</div>
-                        <div class="flex-grow-1 text-truncate">
-                            <div class="doc-title fw-bold text-dark">${item.folder_name || '-'}</div>
+                        <div class="flex-grow-1" style="overflow: hidden; text-overflow: ellipsis;">
+                            <div class="doc-title text-dark">${item.folder_name || '-'}</div>
                         </div>
                         <div class="ms-2 flex-shrink-0">
                             ${isContent ? '' : '<i class="fa-solid fa-chevron-right text-muted"></i>'}

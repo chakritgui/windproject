@@ -171,7 +171,7 @@
             $router->get('/home', 'UserController@user');
             $router->get('/news', 'UserController@news');
             $router->get('/pstg', 'UserController@project');
-            $router->get('/project/(.*)', 'UserController@project');
+            $router->get('/pstg/(.*)', 'UserController@project');
             $router->get('/document', 'UserController@document');
             $router->get('/download', 'UserController@download');
             $router->get('/pole/{slug}', 'UserController@pole');
