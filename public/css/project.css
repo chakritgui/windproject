@@ -34,8 +34,8 @@
     background: var(--content-color);
 }
 .folder-icon-box {
-    width: 75px;
-    height: 75px;
+    width: 65px;
+    height: 65px;
     background: var(--bg-light);
     border-radius: 12px;
     display: flex;
