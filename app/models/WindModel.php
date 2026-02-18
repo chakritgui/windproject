@@ -436,7 +436,7 @@ class LoadDataStagingImporter implements ImporterInterface {
     }
     private function syncMasters(): void {
         $this->db->exec("INSERT IGNORE INTO wp_project (project_name, created_at, updated_at)
-            SELECT s.project_name, NOW(), NOW() FROM wind_staging s
+            SELECT project_name, NOW(), NOW() FROM wind_staging
         ");
         $this->db->exec("INSERT IGNORE INTO wp_type (type_name, created_at, updated_at)
             SELECT DISTINCT type_name, NOW(), NOW() FROM wind_staging

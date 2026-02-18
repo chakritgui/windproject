@@ -147,6 +147,12 @@
                         <canvas id="airChart"></canvas>
                     </div>
                 </div>
+                <div class="col-lg-4 mb-4 chart-box" data-chart="surface-pressure">
+                    <h6 class="text-center" data-i18n="surface_pressure_trend">Surface Pressure Trend</h6>
+                    <div class="chart-container">
+                        <canvas id="pressureChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

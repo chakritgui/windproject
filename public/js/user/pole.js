@@ -162,6 +162,32 @@ function renderAllCharts(realData) {
         });
         renderChart('airChart', 'line', labels, airDatasets);
     }
+    if (selectedKeys.includes('SP')) {
+        const spSensor = sensors.find(s => s.key === 'SP') || { name: 'Surface Pressure', color: '#ff9f40' }; 
+        const spDatasets = distinctLevels.map((lvl, idx) => ({
+            label: `${spSensor.name} (${lvl})`,
+            data: labels.map(t => {
+                const row = realData.find(d => d.time_label === t && d.level_name === lvl);
+                return row ? row.SP : null;
+            }),
+            borderColor: getLevelColor(idx, spSensor.color),
+            backgroundColor: 'transparent',
+            borderDash: idx > 0 ? [5, 5] : [],
+            tension: 0.3,
+            fill: false
+        }));
+        renderChart('pressureChart', 'line', labels, spDatasets, {
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Pressure (hPa)'
+                    }
+                }
+            }
+        });
+    }
 }
 function renderWindRose16(canvasId, realData, distinctLevels) {
     const directions = [
@@ -294,13 +320,24 @@ function createStatCard(container, sensor, value) {
 }
 function updateChartVisibility(keys) {
     document.querySelectorAll('.chart-box').forEach(el => el.style.display = 'none');
+    const show = (selector) => {
+        const el = document.querySelector(`[data-chart="${selector}"]`);
+        if (el) el.style.display = 'block';
+    };
     if (keys.includes('WS')) {
-        show('wind-speed'); 
+        show('wind-speed');
         show('wind-speed-hist');
     }
     if (keys.includes('WD')) show('wind-direction');
-    if (keys.some(k => ['AD', 'SP', 'RH'].includes(k))) show('weather');
-    if (keys.includes('AD') || keys.includes('TI')) show('air');
+    if (keys.includes('RH') || keys.includes('T')) {
+        show('weather');
+    }
+    if (keys.includes('AD') || keys.includes('TI')) {
+        show('air');
+    }
+    if (keys.includes('SP')) {
+        show('surface-pressure');
+    }
 }
 function show(name) {
     const el = document.querySelector(`[data-chart="${name}"]`);
