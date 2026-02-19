@@ -404,3 +404,271 @@ $(document).on('click', '.save-passwordreset', function () {
         }
     }).fail(() => showError(langData['cannot_save']));
 });
+$(document).on('click', '.get-menus', function () {
+    loadMenus();
+});
+function loadMenus() {
+    apiPost(`/api/settings.menu`, null).done(res => {
+        if (res.status) {
+            renderMenuTable(res.data);
+        }
+    });
+}
+function createMenuRow(item, isNew = false) {
+    const trans = item.translations || { th: '', en: '', lo: '' };
+    const isDefault = item.is_default == 1;
+    const isActive = item.is_active == 1;
+    const rowId = isNew ? `new_${Date.now()}` : item.id;
+    return `
+        <tr data-id="${rowId}" class="menu-row ${isNew ? 'is-editing new-record table-info' : ''} ${!isActive ? 'table-light opacity-75' : ''}">
+            <td class="sort-handle"><i class="fa-solid fa-grip-vertical text-muted cursor-move"></i></td>
+            <td class="text-center">
+                <div class="view-mode ${isNew ? 'd-none' : ''}">
+                    <i class="${item.icon || 'bi-question-circle'} fs-4"></i>
+                </div>
+                <div class="edit-mode ${isNew ? '' : 'd-none'}">
+                    <div class="dropdown icon-picker-container">
+                        <button class="btn btn-sm btn-light border dropdown-toggle w-100" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
+                            <i class="${item.icon || 'bi-question-circle'} fs-4 icon-preview"></i>
+                            <input type="hidden" class="edit-icon-val" value="${item.icon || 'bi-question-circle'}">
+                        </button>
+                        <div class="dropdown-menu p-2 shadow" style="width: 250px;">
+                            <input type="text" class="form-control form-control-sm mb-2 search-icon" placeholder="">
+                            <div class="icon-list-grid d-flex flex-wrap gap-1" style="max-height: 200px; overflow-y: auto;"></div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="view-mode ${isNew ? 'd-none' : ''}">
+                    <div class="mb-2"><img src="${BASE_URL}/public/flags/gb.png" height="10"> ${trans.en || '-'}</div>
+                    <div class="mb-2"><img src="${BASE_URL}/public/flags/th.png" height="10"> ${trans.th || '-'}</div>
+                    <div><img src="${BASE_URL}/public/flags/la.png" height="10"> ${trans.lo || '-'}</div>
+                </div>
+                <div class="edit-mode ${isNew ? '' : 'd-none'}">
+                    <label class="form-label mb-2 mt-2 required">
+                        <img src="${BASE_URL}/public/flags/gb.png" alt="EN" height="10"> English
+                    </label>
+                    <input type="text" class="form-control form-control-sm mb-1 edit-en" value="${trans.en || ''}" placeholder="English">
+                    <label class="form-label mb-2 mt-2">
+                        <img src="${BASE_URL}/public/flags/th.png" alt="EN" height="10"> ภาษาไทย
+                    </label>
+                    <input type="text" class="form-control form-control-sm mb-1 edit-th" value="${trans.th || ''}" placeholder="ไทย">
+                    <label class="form-label mb-2 mt-2">
+                        <img src="${BASE_URL}/public/flags/la.png" alt="EN" height="10"> ພາສາລາວ
+                    </label>
+                    <input type="text" class="form-control form-control-sm edit-lo" value="${trans.lo || ''}" placeholder="ລາວ">
+                </div>
+            </td>
+            <td>
+                <div class="view-mode ${isNew ? 'd-none' : ''}">${item.path || ''}</div>
+                <div class="edit-mode ${isNew ? '' : 'd-none'}">
+                    <label class="form-label required mb-2 mt-2" data-i18n="path"></label>
+                    <input type="text" class="form-control form-control-sm edit-path" value="${item.path || ''}" ${isDefault ? 'disabled' : ''} placeholder="/path">
+                </div>
+            </td>
+            <td>
+                <div class="view-mode ${isNew ? 'd-none' : ''}">
+                    ${isActive 
+                        ? '<span class="badge rounded-pill bg-success-subtle text-success border border-success-subtle px-3" data-i18n="active"></span>' 
+                        : '<span class="badge rounded-pill bg-secondary-subtle text-secondary border border-secondary-subtle px-3" data-i18n="inactive"></span>'
+                    }
+                </div>
+                <div class="edit-mode ${isNew ? '' : 'd-none'}">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input toggle-active" type="checkbox" role="switch" ${isActive || isNew ? 'checked' : ''}>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="btn-group">
+                    <button class="btn btn-sm btn-outline-primary btn-edit ${isNew ? 'd-none' : ''}"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="btn btn-sm btn-success btn-save-row ${isNew ? '' : 'd-none'}"><i class="fa-solid fa-check"></i></button>
+                    <button class="btn btn-sm btn-light border btn-cancel-row ${isNew ? '' : 'd-none'}"><i class="fa-solid fa-xmark"></i></button>
+                    ${!isDefault && !isNew ? `<button class="btn btn-sm btn-outline-danger btn-delete-row"><i class="fa-solid fa-trash-can"></i></button>` : ''}
+                </div>
+            </td>
+        </tr>`;
+}
+const bootstrapIcons = [
+    'bi-house', 'bi-house-gear', 'bi-gear', 'bi-wrench-adjustable', 'bi-shield-lock', 'bi-key', 
+    'bi-person', 'bi-people', 'bi-person-badge', 'bi-person-gear', 'bi-person-lock',
+    'bi-graph-up', 'bi-graph-down', 'bi-pie-chart', 'bi-bar-chart', 'bi-table', 'bi-database',
+    'bi-file-earmark-text', 'bi-folder', 'bi-layers', 'bi-collection',
+    'bi-envelope', 'bi-chat-dots', 'bi-megaphone', 'bi-bell', 'bi-telephone', 'bi-share',
+    'bi-map', 'bi-geo-alt', 'bi-compass', 'bi-flag', 'bi-pin-map',
+    'bi-plus-circle', 'bi-dash-circle', 'bi-check-circle', 'bi-exclamation-triangle', 
+    'bi-info-circle', 'bi-question-circle', 'bi-search', 'bi-sliders', 'bi-trash', 'bi-pencil',
+    'bi-image', 'bi-camera', 'bi-play-circle', 'bi-grid', 'bi-window', 'bi-layout-sidebar',
+    'bi-cart', 'bi-credit-card', 'bi-wallet2', 'bi-calendar-event', 'bi-tag', 'bi-hand-index-thumb'
+];
+function loadIconPicker(container) {
+    const listGrid = container.find('.icon-list-grid');
+    const currentIcon = container.find('.edit-icon-val').val();
+    const html = bootstrapIcons.map(icon => `
+        <div class="btn btn-sm btn-outline-secondary select-icon ${currentIcon === icon ? 'active' : ''}" 
+             data-icon="${icon}" title="${icon}" 
+             style="width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+            <i class="bi ${icon}"></i>
+        </div>
+    `).join('');
+    listGrid.html(html);
+}
+$(document).on('input', '.search-icon', function(e) {
+    e.stopPropagation();
+    const val = $(this).val().toLowerCase();
+    const container = $(this).closest('.dropdown');
+    container.find('.select-icon').each(function() {
+        const iconName = $(this).data('icon').toLowerCase();
+        $(this).toggle(iconName.includes(val));
+    });
+});
+$(document).on('click', '.select-icon', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const iconClass = $(this).data('icon');
+    const container = $(this).closest('.dropdown');
+    container.find('.icon-preview').attr('class', `bi ${iconClass} fs-4 icon-preview`);
+    container.find('.edit-icon-val').val(iconClass);
+    const dropdownBtn = container.find('.dropdown-toggle')[0];
+    const instance = bootstrap.Dropdown.getOrCreateInstance(dropdownBtn);
+    instance.hide();
+});
+function renderMenuTable(data) {
+    $('#table-user-menu tbody').html(data.filter(m => m.target_group === 'user').map(m => createMenuRow(m)).join(''));
+    $('#table-admin-menu tbody').html(data.filter(m => m.target_group === 'admin').map(m => createMenuRow(m)).join(''));
+    initSortable();
+}
+$(document).on('click', '.btn-cancel-row', function() {
+    const row = $(this).closest('tr');
+    if (row.hasClass('new-record')) {
+        row.remove();
+    } else {
+        row.removeClass('is-editing');
+        row.find('.edit-mode, .btn-save-row, .btn-cancel-row').addClass('d-none');
+        row.find('.view-mode, .btn-edit, .btn-delete-row').removeClass('d-none');
+    }
+});
+function initSortable() {
+    $(".menu-sortable").each(function() {
+        if (Sortable.get(this)) Sortable.get(this).destroy();
+        new Sortable(this, {
+            handle: '.sort-handle', 
+            animation: 150,
+            filter: 'input, button, .is-editing', 
+            preventOnFilter: false,
+            onUpdate: () => $('.save-ordering').removeClass('d-none')
+        });
+    });
+}
+$(document).on('click', '.btn-edit', function() {
+    const row = $(this).closest('tr');
+    row.addClass('is-editing');
+    row.find('.view-mode, .btn-edit, .btn-delete-row').addClass('d-none');
+    row.find('.edit-mode, .btn-save-row, .btn-cancel-row').removeClass('d-none');
+    loadIconPicker(row.find('.icon-picker-container'));
+    setTimeout(() => {
+        row.find('.edit-en').focus(); 
+    }, 150);
+});
+$(document).on('click', '.add-menu-row', function() {
+    const activeTabGroup = $('#menu-type-tab button.active').data('group') || 'user';
+    const tbody = $(`.menu-sortable[data-group="${activeTabGroup}"]`);
+    const newRowHtml = createMenuRow({}, true);
+    const $newRow = $(newRowHtml);
+    tbody.append($newRow);
+    loadIconPicker($newRow.find('.icon-picker-container'));
+    setTimeout(() => {
+        $newRow.find('.edit-en').focus();
+        $newRow[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 100);
+    $('.save-ordering').addClass('d-none');
+});
+$(document).on('click', '.save-ordering', function() {
+    const btn = $(this);
+    const activeTabGroup = $('#menu-type-tab button.active').data('group') || 'user';
+    const tbody = $(`.menu-sortable[data-group="${activeTabGroup}"]`);
+    let items = [];
+    tbody.find('tr').each(function(index) {
+        const id = $(this).attr('data-id');
+        if (id && !id.startsWith('new_')) {
+            items.push({
+                id: id,
+                sort_order: index + 1
+            });
+        }
+    });
+    if (items.length === 0) return;
+    btn.prop('disabled', true);
+    apiPost('/api/settings.save_menu_order', { 
+       orders: items,
+        target_group: activeTabGroup
+    }, { processData: true, contentType: 'application/x-www-form-urlencoded; charset=UTF-8' }).done(res => {
+        if (res.status) {
+            showSuccess(langData['saved_successfully']);
+            btn.addClass('d-none');
+        } else {
+            showError(langData['cannot_save']);
+        }
+    }).always(() => {
+        btn.prop('disabled', false);
+    });
+});
+$(document).on('click', '.btn-save-row', function() {
+    const row = $(this).closest('tr');
+    const group = row.closest('tbody').data('group');
+    let rowId = row.attr('data-id') || row.data('id');
+    const data = {
+        id: rowId,
+        target_group: group,
+        icon: row.find('.edit-icon-val').val(),
+        path: row.find('.edit-path').val().trim(),
+        name_en: row.find('.edit-en').val().trim(),
+        name_th: row.find('.edit-th').val().trim(),
+        name_lo: row.find('.edit-lo').val().trim(),
+        is_active: row.find('.toggle-active').is(':checked') ? 1 : 0
+    };
+    if (!data.name_en || !data.path) {
+        return showWarning(langData['required_star_message'] || 'Please fill all required fields');
+    }
+    const btn = $(this);
+    btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+    apiPost(
+        '/api/settings.save_single_menu', 
+        data,
+        {
+            processData: true, 
+            contentType: 'application/x-www-form-urlencoded; charset=UTF-8'
+        }
+    ).done(res => {
+        if(res.status) {
+            showSuccess(langData['saved_successfully']);
+            loadMenus(); 
+        } else {
+            showError(langData['cannot_save']);
+            btn.prop('disabled', false).html('<i class="fa-solid fa-check"></i>');
+        }
+    }).fail(() => {
+        showError(langData['cannot_save']);
+        btn.prop('disabled', false).html('<i class="fa-solid fa-check"></i>');
+    });
+});
+$(document).on('click', '.btn-delete-row', function() {
+    const row = $(this).closest('tr');
+    const menuId = row.data('id');
+    showConfirm(langData['confirm'], langData['confirm_delete'], function(){
+        apiPost(
+            '/api/settings.delete_menu', 
+            { id: menuId },
+            {
+                processData: true, 
+                contentType: 'application/x-www-form-urlencoded; charset=UTF-8'
+            }
+        ).done(res => {
+            if (res.status) {
+                showSuccess(langData['delete_successfully']);
+                loadMenus(); 
+            }
+        });
+    });
+});

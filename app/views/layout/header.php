@@ -32,6 +32,7 @@
 <link rel="stylesheet" href="<?=BASE_URL?>/vendor/pannellum/pannellum.css">
 <link rel="stylesheet" href="<?=BASE_URL?>/vendor/animate.css/animate.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link href="<?=BASE_URL?>/public/css/style.css?v=<?= time(); ?>" rel="stylesheet">
 <?php if (file_exists($manifestFile)) { ?>
     <link rel="manifest" href="<?= BASE_URL ?>/public/manifest.json">

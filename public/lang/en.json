@@ -604,5 +604,9 @@
     "users_can_specify_an_email": "Users can specify an email to receive a password reset link via email.",
     "surface_pressure_trend": "Surface Pressure Trend",
     "permission_edit_data": "Permission to edit data",
-    "edit_permission": "Edit Permissions"
+    "edit_permission": "Edit Permissions",
+    "menu": "Menu",
+    "path": "Path",
+    "add_menu": "Add Menu",
+    "save_ordering": "Save Ordering"
 }

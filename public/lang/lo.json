@@ -604,5 +604,9 @@
     "users_can_specify_an_email": "ຜູ້ໃຊ້ສາມາດລະບຸອີເມວ, ເພື່ອຮັບລິ້ງຣີເຊັດລະຫັດຜ່ານ, ຜ່ານທາງອີເມວ",
     "surface_pressure_trend": "ແນວໂນ້ມຄວາມກົດດັນດ້ານ",
     "permission_edit_data": "ອະນຸຍາດໃຫ້ແກ້ໄຂຂໍ້ມູນ",
-    "edit_permission": "ແກ້ໄຂການອະນຸຍາດ"
+    "edit_permission": "ແກ້ໄຂການອະນຸຍາດ",
+    "menu": "ເມນູ",
+    "path": "ເສັ້ນທາງ",
+    "add_menu": "ເພີ່ມເມນູ",
+    "save_ordering": "ບັນທຶກການຈັດລຽງ"
 }

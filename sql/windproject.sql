@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 19, 2026 at 07:33 AM
+-- Generation Time: Feb 19, 2026 at 02:49 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -472,6 +472,7 @@ CREATE TABLE `wp_menus` (
   `target_group` enum('admin','user') COLLATE utf8mb4_unicode_ci DEFAULT 'user',
   `is_active` tinyint(1) DEFAULT '1' COMMENT '0=ปิด, 1=เปิด',
   `is_default` tinyint(1) DEFAULT '0' COMMENT '1=ห้ามแก้ไข Path',
+  `status` enum('active','deleted') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -883,7 +884,7 @@ ALTER TABLE `wp_menus`
 --
 ALTER TABLE `wp_menu_translations`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_menu_translation` (`menu_id`);
+  ADD UNIQUE KEY `unique_menu_lang` (`menu_id`,`language_code`);
 
 --
 -- Indexes for table `wp_notification_targets`

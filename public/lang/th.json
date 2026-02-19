@@ -604,5 +604,9 @@
     "users_can_specify_an_email": "ผู้ใช้สามารถระบุอีเมล, เพื่อรับลิงก์รีเซ็ตรหัสผ่าน, ผ่านทางอีเมล",
     "surface_pressure_trend": "แนวโน้มความดันพื้นผิว",
     "permission_edit_data": "อนุญาตให้แก้ไขข้อมูล",
-    "edit_permission": "การอนุญาตแก้ไขข้อมูล"
+    "edit_permission": "การอนุญาตแก้ไขข้อมูล",
+    "menu": "เมนู",
+    "path": "เส้นทาง",
+    "add_menu": "เพิ่มเมนู",
+    "save_ordering": "ບັນທຶກການສັ່ງຊື້"
 }

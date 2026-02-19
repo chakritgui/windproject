@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/admin/setting.css?v=<?php echo time(); ?>">
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <div class="container-fluid mt-90 mb-5">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm" style="background: #ffffff; border-left: 4px solid #0d6efd;">
         <div class="mb-2 mb-md-0">
@@ -38,6 +39,9 @@
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" data-bs-toggle="pill" data-bs-target="#password_reset" type="button"><i class="fa-solid fa-user-lock me-2"></i><span data-i18n="password_reset"></span></button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link get-menus" data-bs-toggle="pill" data-bs-target="#menus" type="button"><i class="fa-solid fa-bars me-2"></i><span data-i18n="menu"></span></button>
         </li>
     </ul>
     <div class="tab-content">
@@ -479,6 +483,52 @@
                     <i class="fa-solid fa-floppy-disk me-2"></i>
                     <span data-i18n="save"></span>
                 </button>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="menus">
+            <ul class="nav nav-pills mb-3" id="menu-type-tab">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#menu-user" data-group="user"><i class="fa-solid fa-user me-2"></i><span data-i18n="user"></span></button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#menu-admin" data-group="admin"><i class="fa-solid fa-user-tie me-2"></i><span data-i18n="admin"></span></button></li>
+            </ul>
+            <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+                <button class="btn btn-success add-menu-row">
+                    <i class="fa-solid fa-plus me-2"></i><span data-i18n="add_menu"></span>
+                </button>
+                <button class="btn btn-primary save-ordering d-none">
+                    <i class="fa-solid fa-sort me-2"></i><span data-i18n="save_ordering"></span>
+                </button>
+            </div>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="menu-user">
+                    <table class="table table-hover align-middle" id="table-user-menu">
+                        <thead>
+                            <tr>
+                                <th width="50"></th>
+                                <th width="80" data-i18n="icon"></th>
+                                <th data-i18n="menu"></th>
+                                <th data-i18n="path"></th>
+                                <th width="100" data-i18n="status"></th>
+                                <th width="150"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="menu-sortable" data-group="user"></tbody>
+                    </table>
+                </div>
+                <div class="tab-pane fade" id="menu-admin">
+                    <table class="table table-hover align-middle" id="table-admin-menu">
+                        <thead>
+                            <tr>
+                                <th width="50"></th>
+                                <th width="80" data-i18n="icon"></th>
+                                <th data-i18n="menu"></th>
+                                <th data-i18n="path"></th>
+                                <th width="100" data-i18n="status"></th>
+                                <th width="150"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="menu-sortable" data-group="admin"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

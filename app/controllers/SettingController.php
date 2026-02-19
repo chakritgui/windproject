@@ -58,6 +58,45 @@ class SettingController extends BaseController {
         header('Content-Type: application/octet-stream');
         $this->json(['status'=> true, 'data' => $this->model->getAll()]);
     }
+    public function menu() {
+        $this->json(['status' => true, 'data' => $this->model->getMenu()]);
+    }
+    public function saveSingleMenu() {
+        $data = $_POST;
+        if (empty($data['id'])) {
+            return $this->json(['status' => false, 'message' => 'Missing ID']);
+        }
+        if (strpos($data['id'], 'new_') === 0) {
+            $result = $this->model->insertMenu($data);
+        } else {
+            $result = $this->model->updateSingleMenu($data);
+        }
+        $this->json(['status' => $result]);
+    }
+    public function updateOrder() {
+        $orders = $_POST['orders'] ?? []; 
+        if (empty($orders) || !is_array($orders)) {
+            return $this->json(['status' => false, 'message' => 'ไม่มีข้อมูลสำหรับการจัดเรียง']);
+        }
+        $result = $this->model->reorderMenus($orders);
+        $this->json([
+            'status' => $result,
+            'message' => $result ? 'จัดเรียงสำเร็จ' : 'เกิดข้อผิดพลาดในระบบฐานข้อมูล'
+        ]);
+    }
+    public function updateMenuStatus() {
+        $id = $_POST['id'] ?? null;
+        $status = $_POST['is_active'] ?? 0;
+        if (!$id) return $this->json(['status' => false]);
+        $result = $this->model->updateStatus($id, $status);
+        $this->json(['status' => $result]);
+    }
+    public function deleteMenu() {
+        $id = $_POST['id'] ?? null;
+        if (!$id) return $this->json(['status' => false]);
+        $result = $this->model->deleteMenu($id);
+        $this->json(['status' => $result]);
+    }
     public function shortcut() {
         $this->json(['status'=> true, 'data' => $this->model->shortcut()]);
     }

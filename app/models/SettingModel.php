@@ -115,6 +115,148 @@ class SettingModel {
             ];
         }
     }
+    public function getMenu() {
+        try {
+            $sql = "SELECT m.*, t.language_code, t.menu_name 
+                    FROM wp_menus m
+                    LEFT JOIN wp_menu_translations t ON m.id = t.menu_id
+                    WHERE m.status = 'active' ORDER BY m.target_group, m.sort_order ASC";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $menus = [];
+            foreach ($rows as $row) {
+                $id = $row['id'];
+                if (!isset($menus[$id])) {
+                    $menus[$id] = [
+                        'id' => $row['id'],
+                        'parent_id' => $row['parent_id'],
+                        'icon' => $row['icon'],
+                        'path' => $row['path'],
+                        'sort_order' => $row['sort_order'],
+                        'target_group' => $row['target_group'],
+                        'is_active' => $row['is_active'],
+                        'is_default' => $row['is_default'],
+                        'translations' => []
+                    ];
+                }
+                if ($row['language_code']) {
+                    $menus[$id]['translations'][$row['language_code']] = $row['menu_name'];
+                }
+            }
+            return array_values($menus);
+        } catch (Exception $e) {
+            return [];
+        }
+    }
+    public function insertMenu($data) {
+        try {
+            $this->db->beginTransaction();
+            $group = in_array($data['target_group'], ['user', 'admin']) ? $data['target_group'] : 'user';
+            $stmtOrder = $this->db->prepare("SELECT COALESCE(MAX(sort_order), 0) + 1 FROM wp_menus WHERE target_group = ?");
+            $stmtOrder->execute([$group]);
+            $nextOrder = $stmtOrder->fetchColumn();
+            $sql = "INSERT INTO wp_menus (icon, path, sort_order, target_group, is_active, is_default) 
+                    VALUES (:icon, :path, :ord, :group, :active, 0)";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([
+                ':icon'   => $data['icon'] ?: 'bi-question-circle',
+                ':path'   => $data['path'],
+                ':ord'    => $nextOrder,
+                ':group'  => $group,
+                ':active' => $data['is_active']
+            ]);
+            $newId = $this->db->lastInsertId();
+            $this->updateTranslations($newId, $data);
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log($e->getMessage());
+            return false;
+        }
+    }
+    private function updateTranslations($menuId, $data) {
+        $languages = ['th', 'en', 'lo'];
+        $sql = "INSERT INTO wp_menu_translations (menu_id, language_code, menu_name) 
+                VALUES (:id, :lang, :name)
+                ON DUPLICATE KEY UPDATE menu_name = :name_update";
+        $stmt = $this->db->prepare($sql);
+        foreach ($languages as $lang) {
+            $val = $data['name_' . $lang] ?? '';
+            $stmt->execute([
+                ':id' => $menuId,
+                ':lang' => $lang,
+                ':name' => $val,
+                ':name_update' => $val
+            ]);
+        }
+    }
+    public function updateSingleMenu($data) {
+        try {
+            $this->db->beginTransaction();
+            $icon = !empty($data['icon']) ? $data['icon'] : 'bi-question-circle';
+            $sqlMenu = "UPDATE wp_menus SET 
+                        icon = :icon, 
+                        path = CASE WHEN is_default = 1 THEN path ELSE :path END,
+                        is_active = :is_active 
+                        WHERE id = :id";
+            $stmt = $this->db->prepare($sqlMenu);
+            $stmt->execute([
+                ':icon'      => $icon,
+                ':path'      => $data['path'],
+                ':is_active' => $data['is_active'],
+                ':id'        => $data['id']
+            ]);
+            $this->updateTranslations($data['id'], $data);
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log($e->getMessage()); 
+            return false;
+        }
+    }
+    public function reorderMenus($orders) {
+        try {
+            $this->db->beginTransaction(); 
+            $stmt = $this->db->prepare("UPDATE wp_menus SET sort_order = :sort WHERE id = :id");
+            foreach ($orders as $index => $item) {
+                $menuId = filter_var($item['id'], FILTER_VALIDATE_INT);
+                if ($menuId) {
+                    $stmt->execute([
+                        ':sort' => $index + 1,
+                        ':id'   => $menuId
+                    ]);
+                }
+            }
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log("Reorder Error: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function updateStatus($id, $status) {
+        try {
+            $stmt = $this->db->prepare("UPDATE wp_menus SET is_active = ? WHERE id = ?");
+            return $stmt->execute([$status, $id]);
+        } catch (Exception $e) {
+            return false;
+        }
+    }
+    public function deleteMenu($id) {
+        try {
+            $sql = "UPDATE wp_menus SET status = 'deleted', updated_at = NOW() WHERE id = :id";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([':id' => $id]);
+            return $stmt->rowCount() > 0;
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+            return false;
+        }
+    }
     private function updateSettings(array $settings) {
         foreach ($settings as $type => $value) {
             if ($value !== null && $value !== '') {

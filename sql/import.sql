@@ -45,11 +45,11 @@ VALUES
 (1,'admin@windproject',MD5('Wp2026'),'Admin','System','admin@windproject.wp',NULL,'admin','active',NULL,NOW(),NOW(),NULL,NULL,NULL);
 
 INSERT INTO `wp_menus` (`id`, `icon`, `path`, `sort_order`, `target_group`, `is_default`) VALUES
-(1, 'fas fa-home', '/home', 1, 'user', 1),
-(2, 'fas fa-newspaper', '/news', 2, 'user', 1),
-(3, 'fas fa-project-diagram', '/pstg', 3, 'user', 0),
-(4, 'fas fa-file-alt', '/document', 4, 'user', 0),
-(5, 'fas fa-download', '/download', 5, 'user', 0); 
+(1, 'fas fa-home', 'home', 1, 'user', 1),
+(2, 'fas fa-newspaper', 'news', 2, 'user', 1),
+(3, 'fas fa-project-diagram', 'pstg', 3, 'user', 0),
+(4, 'fas fa-file-alt', 'document', 4, 'user', 0),
+(5, 'fas fa-download', 'download', 5, 'user', 0); 
 
 
 INSERT INTO `wp_menu_translations` (`menu_id`, `language_code`, `menu_name`) VALUES
@@ -71,16 +71,16 @@ INSERT INTO `wp_menu_translations` (`menu_id`, `language_code`, `menu_name`) VAL
 
 
 INSERT INTO `wp_menus` (`id`, `icon`, `path`, `sort_order`, `target_group`, `is_default`) VALUES
-(6, 'fas fa-chart-line', '/dashboard', 1, 'admin', 1),
-(7, 'fas fa-users', '/member', 2, 'admin', 0), 
-(8, 'fas fa-file-medical', '/document', 3, 'admin', 0),
-(9, 'fas fa-edit', '/news', 4, 'admin', 0),
-(10, 'fas fa-wind', '/wind', 5, 'admin', 0),
-(11, 'fas fa-tasks', '/project', 6, 'admin', 0),
-(12, 'fas fa-map-marked-alt', '/map', 7, 'admin', 0),
-(13, 'fas fa-database', '/master', 8, 'admin', 0),
-(14, 'fas fa-cog', '/setting', 9, 'admin', 1),
-(15, 'fas fa-external-link-alt', '/shortcut', 10, 'admin', 0); 
+(6, 'fas fa-chart-line', 'dashboard', 1, 'admin', 1),
+(7, 'fas fa-users', 'member', 2, 'admin', 0), 
+(8, 'fas fa-file-medical', 'document', 3, 'admin', 0),
+(9, 'fas fa-edit', 'news', 4, 'admin', 0),
+(10, 'fas fa-wind', 'wind', 5, 'admin', 0),
+(11, 'fas fa-tasks', 'project', 6, 'admin', 0),
+(12, 'fas fa-map-marked-alt', 'map', 7, 'admin', 0),
+(13, 'fas fa-database', 'master', 8, 'admin', 0),
+(14, 'fas fa-cog', 'setting', 9, 'admin', 1),
+(15, 'fas fa-external-link-alt', 'shortcut', 10, 'admin', 0); 
 
 INSERT INTO `wp_menu_translations` (`menu_id`, `language_code`, `menu_name`) VALUES
 (6, 'en', 'Dashboard'), (6, 'th', 'แผงควบคุม'), (6, 'lo', 'ແຜງຄວບຄຸມ'),
@@ -93,3 +93,24 @@ INSERT INTO `wp_menu_translations` (`menu_id`, `language_code`, `menu_name`) VAL
 (13, 'en', 'Master Data'), (13, 'th', 'ข้อมูลหลัก'), (13, 'lo', 'ຂໍ້ມູນຫຼັກ'),
 (14, 'en', 'System Settings'), (14, 'th', 'ตั้งค่าระบบ'), (14, 'lo', 'ຕັ້ງຄ່າລະບົບ'),
 (15, 'en', 'Shortcuts'), (15, 'th', 'ทางลัด'), (15, 'lo', 'ທາງລັດ');
+
+UPDATE `wp_menus` 
+SET `icon` = CASE 
+    WHEN `icon` = 'fas fa-home' THEN 'bi-house-door'
+    WHEN `icon` = 'fas fa-newspaper' THEN 'bi-newspaper'
+    WHEN `icon` = 'fas fa-project-diagram' THEN 'bi-diagram-3'
+    WHEN `icon` = 'fas fa-file-alt' THEN 'bi-file-earmark-text'
+    WHEN `icon` = 'fas fa-download' THEN 'bi-download'
+    WHEN `icon` = 'fas fa-chart-line' THEN 'bi-graph-up-arrow'
+    WHEN `icon` = 'fas fa-users' THEN 'bi-people'
+    WHEN `icon` = 'fas fa-file-medical' THEN 'bi-file-earmark-medical'
+    WHEN `icon` = 'fas fa-edit' THEN 'bi-pencil-square'
+    WHEN `icon` = 'fas fa-wind' THEN 'bi-wind'
+    WHEN `icon` = 'fas fa-tasks' THEN 'bi-list-check'
+    WHEN `icon` = 'fas fa-map-marked-alt' THEN 'bi-map'
+    WHEN `icon` = 'fas fa-database' THEN 'bi-database'
+    WHEN `icon` = 'fas fa-cog' THEN 'bi-gear'
+    WHEN `icon` = 'fas fa-external-link-alt' THEN 'bi-box-arrow-up-right'
+    ELSE 'bi-question-circle' -- กรณีที่ไม่ตรงกับเงื่อนไขใดเลย
+END
+WHERE `icon` LIKE 'fas fa-%';

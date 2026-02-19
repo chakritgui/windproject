@@ -118,6 +118,11 @@
             $router->post('/api/settings.password', 'SettingController@savePassword');
             $router->post('/api/map.save', 'MapSettingController@save');
             $router->get('/api/map.load', 'MapSettingController@load');
+            $router->post('/api/settings.menu', 'SettingController@menu');
+            $router->post('/api/settings.save_single_menu', 'SettingController@saveSingleMenu');
+            $router->post('/api/settings.update_order', 'SettingController@updateOrder');
+            $router->post('/api/settings.delete_menu', 'SettingController@deleteMenu');
+            $router->post('/api/settings.save_menu_order', 'SettingController@updateOrder');
             $router->post('/api/contracts.list', 'ContractsController@list');
             $router->post('/api/contracts.filter', 'ContractsController@filter');
             $router->post('/api/contracts.delete', 'ContractsController@delete');
