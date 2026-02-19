@@ -216,7 +216,7 @@
                             <input type="hidden" id="oldLoginBg">
                             <div style="display: flex; gap: 10px;">
                                 <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('loginInput').click()"><i class="fa-solid fa-upload me-2"></i><span data-i18n="choose"></span></button>
-                                <button class="btn btn-outline-danger w-100 mt-3 btn-remove-pc d-none" onclick="removeImage('loginPreview', 'loginInput')"><i class="fa-solid fa-trash-can me-2"></i><span data-i18n="remove"></span></button> 
+                                <button class="btn btn-outline-danger w-100 mt-3 btn-remove-pc d-none" onclick="removeImage('loginPreview', 'loginInput', 'pc')"><i class="fa-solid fa-trash-can me-2"></i><span data-i18n="remove"></span></button> 
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -232,7 +232,7 @@
                             <input type="hidden" id="oldLoginMobileBg">
                             <div style="display: flex; gap: 10px;">
                                 <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('loginMobileInput').click()"><i class="fa-solid fa-upload me-2"></i><span data-i18n="choose"></span></button> 
-                                <button class="btn btn-outline-danger w-100 mt-3 btn-remove-mobile d-none" onclick="removeImage('loginMobilePreview', 'loginMobileInput')"><i class="fa-solid fa-trash-can me-2"></i><span data-i18n="remove"></span></button> 
+                                <button class="btn btn-outline-danger w-100 mt-3 btn-remove-mobile d-none" onclick="removeImage('loginMobilePreview', 'loginMobileInput', 'mobile')"><i class="fa-solid fa-trash-can me-2"></i><span data-i18n="remove"></span></button> 
                             </div>
                         </div>
                         <div class="col-md-4">

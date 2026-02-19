@@ -190,15 +190,21 @@ function previewImage(input, previewId, type) {
     };
     reader.readAsDataURL(file);
 }
-function removeImage(previewId, inputId) {
+function removeImage(previewId, inputId, type) {
+    const hiddenMap = {
+        pc: '#oldLoginBg',
+        mobile: '#oldLoginMobileBg',
+        infography: '#oldinfographyBg'
+    };
     $(`#${previewId}`).empty();
     $(`#${inputId}`).val('');
-    const isMobile = inputId.toLowerCase().includes('mobile');
-    const type = isMobile ? 'mobile' : 'pc';
     $(`.btn-remove-${type}`).addClass('d-none');
-    $(`#oldLogin${isMobile ? 'Mobile' : ''}Bg`).val('');
+    if (hiddenMap[type]) {
+        $(hiddenMap[type]).val('');
+    }
     $(`#${previewId}`).html(getUploadPlaceholder(type));
 }
+
 function getUploadPlaceholder(type) {
     const size = type === 'mobile' ? '1080 × 1920px' : '2560 × 1440px';
     return `
