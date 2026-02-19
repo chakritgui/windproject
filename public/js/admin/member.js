@@ -163,6 +163,9 @@ function initTable() {
             initDateRangePicker('#filter_request_date', initRequestTable);
             initRequestTable();
             break;
+        case 'setting':
+            initPermissionSetting();
+            break;
     }
 }
 $(document).on('click', '.delete-member', function() {
@@ -951,5 +954,52 @@ $(document).on('click', '.approved-request', function() {
     }, 'json').fail(function() {
         $btn.prop('disabled', false).html(originalHtml);
         showError(langData['connection_error']);
+    });
+});
+function initPermissionSetting() {
+    $.ajax({
+        url: `${BASE_URL}/api/member.permission`,
+        method: 'POST',
+        dataType: 'json',
+        success: function(res) {
+            if (res.status === true && res.data) {
+                res.data.forEach(item => {
+                    let target = $(`#${item.field_key}`);
+                    if (target.length) {
+                        target.prop('checked', item.is_allowed == 1);
+                    }
+                });
+            }
+        }
+    });
+}
+$(document).on('click', '.save-permission', function() {
+    let permissions = [];
+    $('#permissionForm input[type="checkbox"]').each(function() {
+        permissions.push({
+            field_key: $(this).attr('id'),
+            is_allowed: $(this).is(':checked') ? 1 : 0
+        });
+    });
+    const btn = $(this);
+    btn.prop('disabled', true).html(`<span class="spinner-border spinner-border-sm"></span> ${langData['saving']}`);
+    $.ajax({
+        url: `${BASE_URL}/api/member.update_permissions`,
+        method: 'POST',
+        data: { permissions: permissions },
+        dataType: 'json',
+        success: function(res) {
+            if (res.status === true) {
+                showSuccess(langData['saved_successfully']);
+            } else {
+                showError(langData[res.message] || res.message || "Error");
+            }
+        },
+        error: function() {
+            showError(langData['cannot_save']);
+        },
+        complete: function() {
+            btn.prop('disabled', false).html(langData['save']);
+        }
     });
 });

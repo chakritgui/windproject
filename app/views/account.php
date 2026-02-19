@@ -27,28 +27,28 @@
                             <div class="info-label"><i class="fa-solid fa-user"></i><span data-i18n="firstname"></span></div>
                             <div class="info-value">
                                 <span class="info-text" id="display-firstName"></span>
-                                <button class="btn-edit" onclick="editField('firstName')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
+                                <button class="btn-edit allowName d-none" onclick="editField('firstName')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
                             </div>
                         </div>
                         <div class="info-row" id="row-lastName">
                             <div class="info-label"><i class="fa-solid fa-user"></i><span data-i18n="lastname"></span></div>
                             <div class="info-value">
                                 <span class="info-text" id="display-lastName"></span>
-                                <button class="btn-edit" onclick="editField('lastName')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
+                                <button class="btn-edit allowLastName d-none" onclick="editField('lastName')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
                             </div>
                         </div>
                         <div class="info-row" id="row-phone">
                             <div class="info-label"><i class="fa-solid fa-phone"></i><span data-i18n="mobile"></span></div>
                             <div class="info-value">
                                 <span class="info-text" id="display-phone"></span>
-                                <button class="btn-edit" onclick="editField('phone')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
+                                <button class="btn-edit allowPhone d-none" onclick="editField('phone')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
                             </div>
                         </div>
                         <div class="info-row" id="row-email">
                             <div class="info-label"><i class="fa-solid fa-envelope"></i><span data-i18n="email"></span></div>
                             <div class="info-value">
                                 <span class="info-text" id="display-email"></span>
-                                <button class="btn-edit" onclick="editField('email')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
+                                <button class="btn-edit allowEmail d-none" onclick="editField('email')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
                             </div>
                         </div>
                     </div>
@@ -58,14 +58,14 @@
                             <div class="info-label"><i class="fa-regular fa-circle-user"></i><span data-i18n="username"></span></div>
                             <div class="info-value">
                                 <span class="info-text" id="display-username"></span>
-                                <button class="btn-edit" onclick="editField('username')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
+                                <button class="btn-edit allowUsername d-none" onclick="editField('username')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
                             </div>
                         </div>
                         <div class="info-row" id="row-password">
                             <div class="info-label"><i class="fa-solid fa-lock"></i><span data-i18n="password"></span></div>
                             <div class="info-value">
                                 <span class="info-text password-value" id="display-password">••••••••••••</span>
-                                <button class="btn-edit" onclick="editField('password')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
+                                <button class="btn-edit allowPassword d-none" onclick="editField('password')"><i class="fa-solid fa-pen-to-square me-1"></i><span data-i18n="edit"></span></button>
                             </div>
                         </div>
                     </div>
@@ -102,14 +102,10 @@
                             <div id="permission-warning" class="mt-3 d-none">
                                 <div class="alert alert-warning d-flex align-items-start mb-0" role="alert">
                                     <i class="bi bi-exclamation-triangle-fill me-2 mt-1"></i>
-                                    <div>
-                                        <span class="small" data-i18n="you_have_blocked_notifications"></span>
-                                    </div>
+                                    <div><span class="small" data-i18n="you_have_blocked_notifications"></span></div>
                                 </div>
                             </div>
-                            <p class="text-muted mt-3 x-small italic" style="font-size: 0.75rem;">
-                                * <span data-i18n="this_setting_will_only_take_effect_in_the_browser"></span>
-                            </p>
+                            <p class="text-muted mt-3 x-small italic" style="font-size: 0.75rem;">* <span data-i18n="this_setting_will_only_take_effect_in_the_browser"></span></p>
                         </div>
                     </div>
                 </div>

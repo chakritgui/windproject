@@ -538,4 +538,38 @@ class MemberModel {
         $totalCount = count($staticData);
         $items = array_slice($staticData, $offset, $limit);
     }
+    public function permission() {
+        try {
+            $sql = "SELECT field_key, is_allowed FROM wp_edit_permissions";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return [];
+        }
+    }
+    public function saveAllPermissions($permissions) {
+        try {
+            $this->db->beginTransaction();
+            $sql = "INSERT INTO wp_edit_permissions (field_key, is_allowed) 
+                    VALUES (:field_key, :is_allowed)
+                    ON DUPLICATE KEY UPDATE 
+                    is_allowed = VALUES(is_allowed), 
+                    updated_at = NOW()";
+            $stmt = $this->db->prepare($sql);
+            foreach ($permissions as $item) {
+                $stmt->execute([
+                    ':field_key'  => $item['field_key'],
+                    ':is_allowed' => $item['is_allowed']
+                ]);
+            }
+            $this->db->commit();
+            return true;
+        } catch (PDOException $e) {
+            $this->db->rollBack();
+            error_log("Database Error: " . $e->getMessage());
+            return false;
+        }
+    }
 }

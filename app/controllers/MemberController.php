@@ -148,4 +148,20 @@ class MemberController extends BaseController {
         $type = $_POST['type'] ?? '';
         $this->json(['status'=>true , 'data' => $this->model->filter($page, $limit, $type, $searchTerm)]);
     }
+    public function permission() {
+        $this->json(['status'=>true , 'data' => $this->model->permission()]);
+    }
+    public function update_permissions() {
+        $permissions = $_POST['permissions'] ?? [];
+        if (empty($permissions)) {
+            $this->json(['status' => false, 'message' => 'ไม่มีข้อมูลส่งมา']);
+            return;
+        }
+        $result = $this->model->saveAllPermissions($permissions);
+        if ($result) {
+            $this->json(['status' => true, 'message' => 'saved_successfully']);
+        } else {
+            $this->json(['status' => false, 'message' => 'cannot_save']);
+        }
+    }
 }

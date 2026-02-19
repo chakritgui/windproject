@@ -44,11 +44,25 @@ const fieldConfig = {
         }
     }
 };
+let editPermissions = {};
 function initProfilePage() {
     initProfileData();
-    if(isPWA()) {
-        $(".is-pwa").removeClass("d-none");
-    }
+    if(isPWA()) { $(".is-pwa").removeClass("d-none"); }
+    $.ajax({
+        url: `${BASE_URL}/api/member.permission`,
+        method: 'POST',
+        dataType: 'json',
+        success: function(res) {
+            if (res.status === true && res.data) {
+                res.data.forEach(item => {
+                    editPermissions[item.field_key] = item.is_allowed;
+                });
+                Object.keys(fieldConfig).forEach(fieldName => {
+                    updateDisplay(fieldName);
+                });
+            }
+        }
+    });
 }
 function initProfileData() {
     $.ajax({
@@ -191,10 +205,16 @@ function updateDisplay(fieldName) {
     if (!row) return;
     const valueDiv = row.querySelector('.info-value');
     const displayValue = userData[fieldName];
+    const permissionKey = 'allow' + fieldName.charAt(0).toUpperCase() + fieldName.slice(1);
+    const isAllowed = editPermissions[permissionKey] == "1";
+    const hideClass = isAllowed ? "" : "d-none";
     valueDiv.innerHTML = `
-        <span class="info-text ${fieldName === 'password' ? 'password-value' : ''}" id="display-${fieldName}">${(fieldName === 'password') ? "••••••••••••" : displayValue}</span>
-        <button class="btn-edit" onclick="editField('${fieldName}')">
-            <i class="fa-solid fa-pen-to-square me-1"></i> <span data-i18n="edit"></span>
+        <span class="info-text ${fieldName === 'password' ? 'password-value' : ''}" id="display-${fieldName}">
+            ${(fieldName === 'password') ? "••••••••••••" : displayValue}
+        </span>
+        <button class="btn-edit ${permissionKey} ${hideClass}" onclick="editField('${fieldName}')">
+            <i class="fa-solid fa-pen-to-square me-1"></i> 
+            <span data-i18n="edit"></span>
         </button>
     `;
     if (typeof updateText === 'function') updateText(valueDiv);

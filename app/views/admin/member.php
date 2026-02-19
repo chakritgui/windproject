@@ -35,6 +35,11 @@
                 <i class="fa-solid fa-user-lock"></i> <span data-i18n="password_change_request"></span>
             </button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="setting-tab" data-bs-toggle="pill" data-bs-target="#setting" data-page="setting" type="button">
+                <i class="fa-solid fa-list-check"></i> <span data-i18n="permission_edit_data"></span>
+            </button>
+        </li>
     </ul>
     <div class="tab-content" id="mainTabContent">
         <div class="tab-pane fade show active" id="member_management" role="tabpanel">
@@ -174,6 +179,70 @@
                         </tr>
                     </thead>
                 </table>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="setting" role="tabpanel">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" data-i18n="edit_permission"></h5>
+                </div>
+                <div class="card-body">
+                    <form id="permissionForm">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <div class="fw-bold" data-i18n="firstname"></div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="allowName">
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <div class="fw-bold" data-i18n="lastname"></div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="allowLastName">
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <div class="fw-bold" data-i18n="mobile"></div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="allowPhone">
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <div class="fw-bold" data-i18n="email"></div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="allowEmail">
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <div class="fw-bold" data-i18n="username"></div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="allowUsername">
+                                </div>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                                <div>
+                                    <div class="fw-bold" data-i18n="password"></div>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="allowPassword">
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="mt-4 pt-3 border-top text-end">
+                            <button type="submit" class="btn btn-primary save-permission px-4" data-i18n="save"></button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

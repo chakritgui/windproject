@@ -602,5 +602,7 @@
     "insert_a_comma": "If there is more than one, please insert a comma.",
     "accepting_requests": "Accepting requests via the website, where users specify an email or username, along with a reason.",
     "users_can_specify_an_email": "Users can specify an email to receive a password reset link via email.",
-    "surface_pressure_trend": "Surface Pressure Trend"
+    "surface_pressure_trend": "Surface Pressure Trend",
+    "permission_edit_data": "Permission to edit data",
+    "edit_permission": "Edit Permissions"
 }
