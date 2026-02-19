@@ -100,11 +100,11 @@ class MailHelper {
     }
     private function getEmailReset($lang, $password, $username) {
         $domain = rtrim($this->configs['DOMAIN_NAME'] ?? '', '/');
-        $logoUrl    = $domain . "/" . ($this->siteSettings['logo'] ?? '');
+        $logoUrl   = $domain . "/public/images/logo.png";
         $loginLink  = $domain . "/login"; 
         $footerText = $this->siteSettings['footer'] ?? 'Copyright © 2026 iWind Corporation Limited';
         $siteName   = $this->siteSettings["website_$lang"] ?? ($this->siteSettings["website_en"] ?? 'PHONGSUPTHAVY GROUP');
-        $logoHtml = "<div style='text-align: center; padding: 25px 0; background-color: #ffffff; border-bottom: 2px solid #f0f0f0;'><img src='$logoUrl' alt='Logo' style='max-width: 150px; height: auto;'></div>";
+        $logoHtml = "<div style='text-align: center; padding: 25px 0; background-color: #ffffff; border-bottom: 2px solid #f0f0f0;'><img src='$logoUrl' alt='Logo' style='max-width: 375px; height: auto;'></div>";
         $styles = "style='font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 550px; margin: 20px auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'";
         $infoBox = "style='background-color: #f8f9fa; border-radius: 6px; padding: 20px; margin: 25px 0; border: 1px dashed #0056b3;'";
         $btnStyle = "display: inline-block; padding: 14px 30px; background-color: #28a745; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;";
@@ -168,30 +168,86 @@ class MailHelper {
     }
     private function getEmailContent($lang, $token) {
         $domain = rtrim($this->configs['DOMAIN_NAME'] ?? '', '/');
-        $logoUrl    = $domain . "/" . ($this->siteSettings['logo'] ?? '');
-        $resetLink  = $domain . "/reset-password?t=" . $token;
-        $footerText = $this->siteSettings['footer'] ?? 'Copyright © 2026 iWind Corporation Limited';
-        $siteName   = $this->siteSettings["website_$lang"] ?? ($this->siteSettings["website_en"] ?? 'PHONGSUPTHAVY GROUP');
+        $logoUrl   = $domain . "/public/images/logo.png";
+        $resetLink = $domain . "/reset-password?t=" . $token;
+        $footerText = $this->siteSettings['footer'] 
+            ?? 'Copyright © 2026 iWind Corporation Limited';
+        $siteName = $this->siteSettings["website_$lang"] 
+            ?? ($this->siteSettings["website_en"] ?? 'PHONGSUPTHAVY GROUP');
         $date = new DateTime("now", new DateTimeZone('UTC'));
-        $date->modify('+1 hour'); 
-        $displayTime = $date->setTimezone(new DateTimeZone('Asia/Bangkok'))->format('H:i');
-        $logoHtml = "<div style='text-align: center; padding: 25px 0; background-color: #ffffff; border-bottom: 2px solid #f0f0f0;'><img src='$logoUrl' alt='Logo' style='max-width: 150px; height: auto;'></div>";
-        $styles = "style='font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 550px; margin: 20px auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'";
-        $btnStyle = "display: inline-block; padding: 14px 30px; background-color: #0056b3; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;";
-        $templates = [
+        $date->modify('+1 hour');
+        $displayTime = $date
+            ->setTimezone(new DateTimeZone('Asia/Bangkok'))
+            ->format('H:i');
+        $texts = [
             'en' => [
                 'subject' => "Password Reset - $siteName",
-                'body'    => "<div $styles>$logoHtml<div style='padding: 40px; background-color: #fff;'><h2 style='color: #0056b3;'>Reset Your Password?</h2><p>We received a request to reset your password. Valid until <b>$displayTime (ICT)</b>.</p><div style='text-align: center; margin: 35px 0;'><a href='$resetLink' $btnStyle>Reset Password</a></div></div><div style='background: #f9f9f9; padding: 20px; text-align: center; font-size: 12px; color: #999;'>$footerText</div></div>"
+                'title'   => "Reset Your Password",
+                'desc'    => "We received a request to reset your password for your account at <strong>$siteName</strong>. This link will expire at <strong>$displayTime (ICT)</strong>.",
+                'button'  => "Reset Password",
+                'note'    => "If you did not request a password reset, please ignore this email."
             ],
             'th' => [
                 'subject' => "รีเซ็ตรหัสผ่าน - $siteName",
-                'body'    => "<div $styles>$logoHtml<div style='padding: 40px; background-color: #fff;'><h2 style='color: #0056b3;'>รีเซ็ตรหัสผ่านของคุณ</h2><p>เราได้รับคำขอเพื่อเปลี่ยนรหัสผ่าน ลิงก์นี้ใช้งานได้ถึง <b>$displayTime</b>.</p><div style='text-align: center; margin: 35px 0;'><a href='$resetLink' $btnStyle>ตั้งรหัสผ่านใหม่</a></div></div><div style='background: #f9f9f9; padding: 20px; text-align: center; font-size: 12px; color: #999;'>$footerText</div></div>"
+                'title'   => "ตั้งรหัสผ่านใหม่",
+                'desc'    => "เราได้รับคำขอรีเซ็ตรหัสผ่านสำหรับบัญชี <strong>$siteName</strong> ลิงก์นี้จะหมดอายุเวลา <strong>$displayTime</strong> น.",
+                'button'  => "ตั้งรหัสผ่านใหม่",
+                'note'    => "หากคุณไม่ได้เป็นผู้ร้องขอ กรุณาเพิกเฉยต่ออีเมลฉบับนี้"
             ],
             'lo' => [
                 'subject' => "ຕັ້ງຄ່າລະຫັດຜ່ານໃໝ່ - $siteName",
-                'body'    => "<div $styles>$logoHtml<div style='padding: 40px; background-color: #fff;'><h2 style='color: #0056b3;'>ຕັ້ງຄ່າລະຫັດຜ່ານໃໝ່</h2><p>ພວກເຮົາໄດ້ຮັບຄຳຂໍປ່ຽນລະຫັດຜ່ານ. ລິ້ງນີ້ຈະໝົດອາຍຸໃນເວລາ <b>$displayTime</b>.</p><div style='text-align: center; margin: 35px 0;'><a href='$resetLink' $btnStyle>ຕັ້ງຄ່າລະຫັດຜ່ານໃໝ່</a></div></div><div style='background: #f9f9f9; padding: 20px; text-align: center; font-size: 12px; color: #999;'>$footerText</div></div>"
+                'title'   => "ຕັ້ງຄ່າລະຫັດຜ່ານໃໝ່",
+                'desc'    => "ພວກເຮົາໄດ້ຮັບຄຳຂໍຕັ້ງລະຫັດຜ່ານໃໝ່ສຳລັບບັນຊີ <strong>$siteName</strong> ລິ້ງນີ້ຈະໝົດອາຍຸໃນເວລາ <strong>$displayTime</strong>.",
+                'button'  => "ຕັ້ງຄ່າລະຫັດຜ່ານ",
+                'note'    => "ຖ້າທ່ານບໍ່ໄດ້ຮ້ອງຂໍ ກະລຸນາບໍ່ສົນໃຈອີເມວນີ້"
             ]
         ];
-        return $templates[$lang] ?? $templates['en'];
+        $t = $texts[$lang] ?? $texts['en'];
+        $body = "
+        <div style='font-family: Helvetica, Arial, sans-serif; 
+                    line-height:1.6; 
+                    color:#333; 
+                    max-width:560px; 
+                    margin:20px auto; 
+                    border:1px solid #e5e5e5; 
+                    border-radius:10px; 
+                    overflow:hidden;
+                    background:#ffffff;'>
+            <div style='text-align:center; padding:30px 0; background:#ffffff; border-bottom:1px solid #f0f0f0;'>
+                <img src='$logoUrl' alt='Logo' style='max-width:375px; height:auto;'>
+            </div>
+            <div style='padding:40px 35px;'>
+                <h2 style='margin-top:0; color:#0056b3; font-weight:600;'>
+                    {$t['title']}
+                </h2>
+                <p style='font-size:15px; color:#555;'>
+                    {$t['desc']}
+                </p>
+                <div style='text-align:center; margin:35px 0;'>
+                    <a href='$resetLink'
+                    style='display:inline-block;
+                            padding:14px 32px;
+                            background:#0056b3;
+                            color:#ffffff;
+                            text-decoration:none;
+                            border-radius:6px;
+                            font-weight:600;
+                            font-size:15px;'>
+                        {$t['button']}
+                    </a>
+                </div>
+                <p style='font-size:13px; color:#888;'>
+                    {$t['note']}
+                </p>
+            </div>
+            <div style='background:#f9f9f9; padding:18px; text-align:center; font-size:12px; color:#999;'>
+                $footerText
+            </div>
+        </div>
+        ";
+        return [
+            'subject' => $t['subject'],
+            'body'    => $body
+        ];
     }
 }
