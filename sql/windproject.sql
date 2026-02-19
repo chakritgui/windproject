@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 17, 2026 at 08:00 PM
+-- Generation Time: Feb 19, 2026 at 07:33 AM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -134,12 +134,10 @@ CREATE TABLE `translate_usage_summary` (
 
 CREATE TABLE `wind_staging` (
   `id` bigint(20) NOT NULL,
-  `contract_name` varchar(255) DEFAULT NULL,
   `project_name` varchar(255) DEFAULT NULL,
   `poles_code` varchar(100) DEFAULT NULL,
   `type_name` varchar(100) DEFAULT NULL,
   `installations_name` varchar(255) DEFAULT NULL,
-  `year` int(11) DEFAULT NULL,
   `measure_datetime` datetime DEFAULT NULL,
   `height_name` varchar(100) DEFAULT NULL,
   `height_level` varchar(255) DEFAULT NULL,
@@ -272,13 +270,26 @@ CREATE TABLE `wp_documents_download_logs` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `wp_edit_permissions`
+--
+
+CREATE TABLE `wp_edit_permissions` (
+  `id` int(11) NOT NULL,
+  `field_key` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_allowed` tinyint(1) DEFAULT '1',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `wp_folder`
 --
 
 CREATE TABLE `wp_folder` (
   `id` bigint(20) NOT NULL,
   `name` varchar(255) DEFAULT NULL,
-  `code` varchar(255) DEFAULT NULL,
+  `slug` varchar(255) NOT NULL,
   `type` enum('root','folder','content') NOT NULL DEFAULT 'root',
   `level` bigint(20) DEFAULT NULL,
   `parent_id` bigint(20) DEFAULT NULL,
@@ -445,6 +456,38 @@ CREATE TABLE `wp_members_language` (
   `language` enum('en','lo','th') NOT NULL DEFAULT 'en',
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wp_menus`
+--
+
+CREATE TABLE `wp_menus` (
+  `id` int(11) NOT NULL,
+  `parent_id` int(11) DEFAULT NULL COMMENT 'สำหรับทำ Sub-menu',
+  `icon` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'fas fa-circle' COMMENT 'FontAwesome class',
+  `path` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sort_order` int(11) DEFAULT '0',
+  `target_group` enum('admin','user') COLLATE utf8mb4_unicode_ci DEFAULT 'user',
+  `is_active` tinyint(1) DEFAULT '1' COMMENT '0=ปิด, 1=เปิด',
+  `is_default` tinyint(1) DEFAULT '0' COMMENT '1=ห้ามแก้ไข Path',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wp_menu_translations`
+--
+
+CREATE TABLE `wp_menu_translations` (
+  `id` int(11) NOT NULL,
+  `menu_id` int(11) NOT NULL,
+  `language_code` varchar(5) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'en, th, lo',
+  `menu_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -638,7 +681,6 @@ CREATE TABLE `wp_type` (
 CREATE TABLE `wp_winds` (
   `id` bigint(20) NOT NULL,
   `poles_id` bigint(20) DEFAULT NULL,
-  `year` int(4) DEFAULT NULL,
   `wind_datetime` datetime DEFAULT NULL,
   `levels_id` bigint(20) NOT NULL,
   `wind_speed` double(20,2) DEFAULT '0.00',
@@ -753,10 +795,18 @@ ALTER TABLE `wp_documents_download_logs`
   ADD KEY `download_date` (`download_date`);
 
 --
+-- Indexes for table `wp_edit_permissions`
+--
+ALTER TABLE `wp_edit_permissions`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `field_key` (`field_key`);
+
+--
 -- Indexes for table `wp_folder`
 --
 ALTER TABLE `wp_folder`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_slug_parent` (`slug`,`parent_id`);
 
 --
 -- Indexes for table `wp_height`
@@ -823,6 +873,19 @@ ALTER TABLE `wp_members_language`
   ADD UNIQUE KEY `member_id` (`member_id`);
 
 --
+-- Indexes for table `wp_menus`
+--
+ALTER TABLE `wp_menus`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `wp_menu_translations`
+--
+ALTER TABLE `wp_menu_translations`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_menu_translation` (`menu_id`);
+
+--
 -- Indexes for table `wp_notification_targets`
 --
 ALTER TABLE `wp_notification_targets`
@@ -863,7 +926,7 @@ ALTER TABLE `wp_poles`
 --
 ALTER TABLE `wp_project`
   ADD PRIMARY KEY (`project_id`),
-  ADD UNIQUE KEY `uq_project_contract` (`project_name`,`contract_id`);
+  ADD UNIQUE KEY `project_name` (`project_name`);
 
 --
 -- Indexes for table `wp_project_group`
@@ -990,6 +1053,12 @@ ALTER TABLE `wp_documents_download_logs`
   MODIFY `logs_id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `wp_edit_permissions`
+--
+ALTER TABLE `wp_edit_permissions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `wp_folder`
 --
 ALTER TABLE `wp_folder`
@@ -1048,6 +1117,18 @@ ALTER TABLE `wp_members`
 --
 ALTER TABLE `wp_members_language`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `wp_menus`
+--
+ALTER TABLE `wp_menus`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `wp_menu_translations`
+--
+ALTER TABLE `wp_menu_translations`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `wp_notification_targets`
@@ -1120,6 +1201,16 @@ ALTER TABLE `wp_type`
 --
 ALTER TABLE `wp_winds`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `wp_menu_translations`
+--
+ALTER TABLE `wp_menu_translations`
+  ADD CONSTRAINT `fk_menu_translation` FOREIGN KEY (`menu_id`) REFERENCES `wp_menus` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
