@@ -295,9 +295,9 @@ function hideWindLoading() {
     $("header").show();
 }
 const MENU_LEVELS = {
-    1: { title: 'PROJECT', endpoint: `${BASE_URL}/api/project.get`, key: 'project_id', label: 'project_name' },
-    2: { title: 'POLE TYPE', endpoint: `${BASE_URL}/api/type.get`, key: 'type_id', label: 'type_name' },
-    3: { title: 'INSTALLATION', endpoint: `${BASE_URL}/api/installations.get`, key: 'installations_id', label: 'installations_name', isLast: true }
+    1: { title: 'PROJECT', lang: 'project', endpoint: `${BASE_URL}/api/project.get`, key: 'project_id', label: 'project_name' },
+    2: { title: 'POLE TYPE', lang: 'pole_types', endpoint: `${BASE_URL}/api/type.get`, key: 'type_id', label: 'type_name' },
+    3: { title: 'INSTALLATION', lang: 'installation', endpoint: `${BASE_URL}/api/installations.get`, key: 'installations_id', label: 'installations_name', isLast: true }
 };
 async function loadMenuLevel(level) {
     const cfg = MENU_LEVELS[level];
@@ -305,7 +305,7 @@ async function loadMenuLevel(level) {
     for (let i = level; i <= 3; i++) $(`#menu-level-${i}`).removeClass('active').hide().empty();
     const data = await fetchData(cfg.endpoint, menuState);
     if (!data.length) return;
-    let html = `<div class="menu-header">${cfg.title}</div>`;
+    let html = `<div class="menu-header" data-i18n="${cfg.lang}">${langData[cfg.lang] || cfg.title}</div>`;
     data.forEach(item => {
         if (cfg.isLast) {
             html += `<div class="menu-item station-item" onclick="handleStationClick(${item.poles_lat}, ${item.poles_lng}, ${item.poles_id}, this)"><span>${item[cfg.label].replace(/\r\n|\n/g, '<br />')}</span><i class="fa-solid fa-location-dot text-info"></i></div>`;

@@ -83,6 +83,7 @@
 <script src="<?=BASE_URL?>/public/js/alert.js?v=<?=time();?>" defer></script>
 <script src="<?=BASE_URL?>/public/js/object.js?v=<?=time();?>" defer></script>
 <script src="<?=BASE_URL?>/public/js/notification.js?v=<?=time();?>" defer></script>
+<script src="<?=BASE_URL?>/public/js/menu.js?v=<?=time();?>" defer></script>
 <button type="button" id="btn-back-to-top" class="btn btn-sm btn-primary rounded-circle shadow-lg transition-all" title="Back to Top">
     <i class="fa-solid fa-angle-up"></i>
 </button>
@@ -116,33 +117,7 @@
         </div>
         <div class="d-flex align-items-center gap-2">
             <?php if(isset($_SESSION['user']) && !in_array($_SESSION['user']['role'], ['admin','administrator'])) { ?>
-                <ul class="nav d-none d-lg-flex align-items-center me-3">
-                    <li class="nav-item">
-                        <a class="nav-link <?=($GLOBALS['currentRoute']=='/home'?'active':'')?>" href="<?=BASE_URL?>/home">
-                            <i class="fa-solid fa-house"></i> <span data-i18n="home"></span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?=($GLOBALS['currentRoute']=='/news'?'active':'')?>" href="<?=BASE_URL?>/news">
-                            <i class="fa-solid fa-newspaper"></i> <span data-i18n="news"></span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?=($GLOBALS['currentRoute']=='/pstg'?'active':'')?>" href="<?=BASE_URL?>/pstg">
-                            <i class="fa-solid fa-diagram-project"></i> <span data-i18n="project"></span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?=($GLOBALS['currentRoute']=='/document'?'active':'')?>" href="<?=BASE_URL?>/document">
-                            <i class="fa-regular fa-folder-open"></i> <span data-i18n="document"></span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?=($GLOBALS['currentRoute']=='/download'?'active':'')?>" href="<?=BASE_URL?>/download">
-                            <i class="fa-solid fa-download"></i> <span data-i18n="download"></span>
-                        </a>
-                    </li>
-                </ul>
+                <ul class="nav d-none d-lg-flex align-items-center me-3" id="main-sidebar-header"></ul>
             <?php } ?>
             <?php if(!empty($_SESSION)) { ?>
                 <div class="dropdown">
@@ -154,7 +129,7 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow custom-notification-menu" data-bs-auto-close="outside">
                         <li class="dropdown-header d-flex justify-content-between align-items-center border-bottom pb-2">
-                            <span class="fw-bold"><i class="fa-solid fa-bell me-2"></i><span data-i18n="notification">Notifications</span></span>
+                            <span class="fw-bold"><i class="fa-solid fa-bell me-2"></i><span data-i18n="notification"></span></span>
                             <button class="btn btn-sm btn-light border-0 btn-close-dropdown">
                                 <i class="fa-solid fa-xmark"></i>
                             </button>

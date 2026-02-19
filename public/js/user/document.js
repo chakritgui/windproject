@@ -178,7 +178,7 @@ function renderGridView(items) {
             <div class="doc-card card h-100">
                 <div class="card-body text-center p-3">
                     <div class="doc-icon mx-auto mb-2">
-                        <i class="bi ${icon}"></i>
+                        <i class="${icon}"></i>
                     </div>
                     <h6 class="card-title doc-title">
                         ${item.document_name}
@@ -218,7 +218,7 @@ function renderListView(items) {
             <div class="row align-items-center g-2">
                 <div class="col-auto">
                     <div class="doc-icon">
-                        <i class="bi ${icon}"></i>
+                        <i class="${icon}"></i>
                     </div>
                 </div>
                 <div class="col">
@@ -380,7 +380,7 @@ function renderHistoryRows(items) {
         <div class="card shadow-sm mb-3">
             <div class="card-body py-3">
                 <h6 class="card-title mb-2 text-truncate">
-                    <i class="bi ${icon} me-1"></i>
+                    <i class="${icon} me-1"></i>
                     ${row.document_name}
                 </h6>
                 <div class="small text-muted mb-1 d-flex flex-wrap gap-2 align-items-center">

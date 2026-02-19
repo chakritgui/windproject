@@ -18,7 +18,8 @@ async function initApp() {
             loadSetting(),
             loadLang(currentLang),
             loadNotification(),
-            syncTimezone()
+            syncTimezone(),
+            loadMenu()
         ]);
         bindSidebar();
         bindNotification();
@@ -274,6 +275,7 @@ async function changeLanguage(lang) {
         console.warn("Could not save language to DB (User might not be logged in)", err);
     }
     await loadLang(lang);
+    await loadMenu(); 
     refreshAllTables();
     $('.dropdown-menu').removeClass('show');
 }

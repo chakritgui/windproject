@@ -92,7 +92,6 @@
             $router->post('/api/request.list', 'MemberController@request');
             $router->post('/api/member.reject', 'MemberController@reject');
             $router->post('/api/member.approved', 'MemberController@approved');
-            $router->post('/api/member.permission', 'MemberController@permission');
             $router->post('/api/member.update_permissions', 'MemberController@update_permissions');
             $router->post('/api/document.list', 'DocumentController@list');
             $router->post('/api/document.info', 'DocumentController@get');
@@ -201,12 +200,14 @@
             $router->post('/api/poles.infos', 'PoleController@info');
         }
     }
+    $router->post('/api/menu.load', 'MenuController@load');
     $router->get('/logout', 'AuthController@logout');
     $router->get('/content/{mode}/{slug}', 'ContentController@content');
     $router->post('/api/content.slug', 'ContentController@getBySlug');
     $router->post('/api/document.filter', 'DocumentController@filter');
     $router->post('/api/shortcut.get', 'SettingController@shortcut');
     $router->post('/api/member.lang', 'SettingController@updateLanguage');
+    $router->post('/api/member.permission', 'MemberController@permission');
     $router->post('/api/news.get', 'NewsController@get');
     $router->post('/api/notification.read', 'NotificationController@read');
     $router->post('/api/notification.load', 'NotificationController@load');
