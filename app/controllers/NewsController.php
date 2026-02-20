@@ -63,7 +63,6 @@ class NewsController extends BaseController {
             'send_notification'    => $_POST['send_notification'] ?? 'no',
             'cover_display'    => $_POST['cover_display'] ?? 'no',
             'folder_id'    => $_POST['folder_id'] ?? null,
-            'folder_show_admin'    => $_POST['folder_show_admin'] ?? 'no',
             'folder_show_user'    => $_POST['folder_show_user'] ?? 'no',
         ];
         try {

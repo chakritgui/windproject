@@ -86,12 +86,6 @@ function initNewsTable() {
                     `;
                 }
                 let visibilityBadges = '';
-                if (row.folder_show_admin === 'yes') {
-                    visibilityBadges += `
-                        <span class="badge bg-dark-subtle text-dark me-1">
-                            <i class="fa-solid fa-user-shield me-1"></i>Admin
-                        </span>`;
-                }
                 if (row.folder_show_user === 'yes') {
                     visibilityBadges += `
                         <span class="badge bg-info-subtle text-info me-1">
@@ -251,21 +245,7 @@ function getContentForm(d, publishTime) {
                         ${renderFolderTree(d.folders, d.folder_id)}
                     </div>
                     <div class="row mt-3">
-                        <div class="col-md-6">
-                            <div class="form-check form-switch">
-                                <input 
-                                    class="form-check-input" 
-                                    type="checkbox" 
-                                    id="folder_show_admin"
-                                    ${d.folder_show_admin == 'yes' ? 'checked' : ''}
-                                >
-                                <label class="form-check-label fw-bold" for="folder_show_admin">
-                                    <i class="fa-solid fa-user-shield me-2 text-primary"></i>
-                                    ${langData['show_project_admin'] || 'Show in Project (Admin)'}
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <div class="form-check form-switch">
                                 <input 
                                     class="form-check-input" 
@@ -414,11 +394,9 @@ function executeSave() {
     if (cover) {
         formData.append("cover", cover);
     }
-    let folder_show_admin = $('#folder_show_admin').is(':checked') ? 'yes' : 'no';
     let folder_show_user  = $('#folder_show_user').is(':checked') ? 'yes' : 'no';
     let folder_id = $('input[name="folder_id"]:checked').val() || null;
     formData.append("folder_id", folder_id);
-    formData.append("folder_show_admin", folder_show_admin);
     formData.append("folder_show_user", folder_show_user);
     Swal.fire({
         title: langData['saving'] || 'Saving...',
