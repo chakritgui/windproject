@@ -346,10 +346,15 @@ class ProjectModel {
             } else {
                 $parentId = (!empty($data['parent_id']) && $data['parent_id'] > 0) ? $data['parent_id'] : null;
                 $ref_id = (!empty($data['ref_id']) && $data['ref_id'] > 0) ? $data['ref_id'] : null;
-                $sql = "INSERT INTO wp_folder (name, parent_id, level, status, type, created_at, updated_at, ref_id, content_id, notification_status) VALUES (:name, :parent_id, :level, 'active', 'content', NOW(), NOW(), :ref_id, :content_id, :notification)";
+                $slug = $this->generateUniqueSlug(
+                    $data['title_en'],
+                    $parentId
+                );
+                $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, created_at, updated_at, ref_id, content_id, notification_status) VALUES (:name, :slug, :parent_id, :level, 'active', 'content', NOW(), NOW(), :ref_id, :content_id, :notification)";
                 $stmtFolder = $pdo->prepare($sql);
                 $stmtFolder->execute([
                     ':name'      => $data["title_en"],
+                    ':slug'      => $slug,
                     ':parent_id' => $parentId,
                     ':level'     => $data['level'],
                     ':ref_id'    => $ref_id,
@@ -377,7 +382,7 @@ class ProjectModel {
         } catch (Exception $e) {
             if ($pdo->inTransaction()) $pdo->rollBack();
             error_log($e->getMessage());
-            return $e->getMessage();
+            return false;
         }
     }
     public function deleteContent($data) {
