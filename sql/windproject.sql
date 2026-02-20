@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 20, 2026 at 03:38 PM
+-- Generation Time: Feb 20, 2026 at 04:31 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -165,7 +165,8 @@ CREATE TABLE `wp_content` (
   `cover_display` enum('yes','no') NOT NULL DEFAULT 'yes',
   `content_slug` varchar(255) DEFAULT NULL,
   `folder_id` bigint(20) DEFAULT NULL,
-  `folder_show` enum('yes','no') NOT NULL DEFAULT 'no',
+  `folder_show_admin` enum('yes','no') NOT NULL DEFAULT 'no',
+  `folder_show_user` enum('yes','no') NOT NULL DEFAULT 'no',
   `status` enum('scheduled','draft','published','deleted','active','inactive') NOT NULL DEFAULT 'draft',
   `publish_at` datetime DEFAULT NULL,
   `content_view` bigint(20) NOT NULL DEFAULT '0',
