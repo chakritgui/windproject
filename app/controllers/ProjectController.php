@@ -33,6 +33,7 @@ class ProjectController extends BaseController {
             'parent_id'   => intval($_POST['parent_id'] ?? 0),
             'level'       => intval($_POST['level'] ?? 1),
             'ref_id'       => intval($_POST['ref_id'] ?? ''),
+            'status'       => $_POST['status'] ?? 'active',
         ];
         $this->json(['status' => $this->model->save($data)]);
     }
@@ -94,7 +95,9 @@ class ProjectController extends BaseController {
             'existing_images360'   => $_POST['existing_images360'] ?? [],
             'new_images360'        => $_FILES['new_images360'] ?? null,
             'auto_translate' => $_POST['auto_translate'] ?? 'no',
-            'cover_display' => $_POST['cover_display'] ?? 'no'
+            'cover_display' => $_POST['cover_display'] ?? 'no',
+            'folder_show_admin'    => $_POST['folder_show_admin'] ?? 'no',
+            'folder_show_user'    => $_POST['folder_show_user'] ?? 'no',
         ];
         $this->json(['status' => $this->model->saveContent($data)]);
     }

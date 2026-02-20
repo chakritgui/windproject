@@ -93,7 +93,6 @@ function renderTable(data, isNewSearch) {
             </div>`;
         const globalIndex = cachedData.length - data.length + index;
         let icon = 'fa-folder-open text-warning';
-        if (item.type === 'root') icon = 'fa-folder-open text-secondary';
         if (item.type === 'content') icon = 'fa-regular fa-newspaper text-primary';
         const badge = item.child_count > 0 ? `<span class="badge rounded-pill bg-light text-dark border ms-2" style="font-size: 0.7rem;">${item.child_count}</span>` : '';
         let folder_name = '-';
@@ -109,6 +108,8 @@ function renderTable(data, isNewSearch) {
         } else {
             folder_name = item.folder_name || '-';
         }
+        const bg = item.status === "active" ? "success" : "secondary";
+        const statusBody = `<span class="badge rounded-pill bg-${bg}-subtle text-${bg}">${langData[item.status] || item.status}</span>`;
         html += `
             <tr data-index="${globalIndex}" style="${item.type === 'content' ? 'cursor:default;' : 'cursor:pointer;'}">
                 <td class="text-center" style="width: 80px;">
@@ -136,12 +137,7 @@ function renderTable(data, isNewSearch) {
                     ` : ``}
                 </td>
                 <td>
-                    ${(item.type === 'content') ? `
-                        <div class="d-flex align-items-center gap-2 mt-1">
-                            <i class="fa-solid fa-bell${item.notification_status === 'yes' ? '' : '-slash'} ${item.notification_status === 'yes' ? 'text-warning' : 'text-muted'}" style="font-size: 0.8rem;"></i> 
-                            <span class="badge bg-${item.notification_status === 'yes' ? 'warning' : 'secondary'}">${langData[item.notification_status] || item.notification_status}</span>
-                        </div>
-                    ` : ``}
+                    ${statusBody}
                 </td>
                 <td style="white-space: nowrap;">
                     <div class="btn-group border rounded-3 bg-white">
@@ -152,11 +148,9 @@ function renderTable(data, isNewSearch) {
                             <a href="${BASE_URL}/content/preview/${item.content_slug}" class="btn btn-link text-info view-content" target="_blank"><i class="fa-solid fa-eye"></i></a> 
                         `}
                     ` : ``}
-                    ${(item.type !== 'root') ? `
-                        <button class="btn btn-link text-warning border-start manage-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                        ${(item.child_count === 0) ? `
-                           <button class="btn btn-link text-danger border-start delete-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-regular fa-trash-can"></i></button> 
-                        ` : ``}
+                    <button class="btn btn-link text-warning border-start manage-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                    ${(item.child_count === 0) ? `
+                        <button class="btn btn-link text-danger border-start delete-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-regular fa-trash-can"></i></button> 
                     ` : ``}
                     </div>
                 </td>
@@ -278,7 +272,14 @@ function manageFolder(folder_id = '') {
             <label class="mb-2 required">${langData['name'] || 'Name'}</label>
             <input type="text" class="form-control obj-required" id="folder_name" maxlength="255">
         </div>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="mb-2 mt-3 required">${langData['status'] || 'Status'}</label>
+                <select id="status" class="form-select obj-required"></select>
+            </div>
+        </div>
     `);
+    initSelect2Remote('#status', `${BASE_URL}/api/project.filter`, { type: 'status' });
     if(folder_id) {
         $.ajax({
             url: `${BASE_URL}/api/project.info`,
@@ -290,6 +291,12 @@ function manageFolder(folder_id = '') {
                     $('#folder_name').val(res.data.folder_name);
                     $('#folder_id').val(res.data.id);
                     $('#windModal').find(".modal-title").text(langData['edit_folder'] || 'Edit Folder');
+                    let status = (res.data.status) ? res.data.status : 'active';
+                    if (status) {
+                        let statusName = status.charAt(0).toUpperCase() + status.slice(1);
+                        var newOptionStatus = new Option(statusName, status, true, true);
+                        $('#status').append(newOptionStatus).trigger('change');
+                    }
                 } else {
                     showError(langData['cannot_load']);
                 }
@@ -324,6 +331,7 @@ function saveFolder() {
     const formData = new FormData();
     formData.append("folder_id", $("#folder_id").val() || "");
     formData.append("folder_name", $("#folder_name").val() || "");
+    formData.append("status", $("#status").val() || "active");
     formData.append("parent_id", currentFolderId || 0);
     formData.append("level", currentLevel || 1);
     formData.append("ref_id", currentRefId || "");
@@ -466,6 +474,37 @@ function getContentForm(d) {
                         </div>
                     </div>
                     <hr class="my-4">
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input 
+                                    class="form-check-input" 
+                                    type="checkbox" 
+                                    id="folder_show_admin"
+                                    ${d.folder_show_admin == 'yes' ? 'checked' : ''}
+                                >
+                                <label class="form-check-label fw-bold" for="folder_show_admin">
+                                    <i class="fa-solid fa-user-shield me-2 text-primary"></i>
+                                    ${langData['show_news_admin'] || 'Show in News (Admin)'}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input 
+                                    class="form-check-input" 
+                                    type="checkbox" 
+                                    id="folder_show_user"
+                                    ${d.folder_show_user == 'yes' ? 'checked' : ''}
+                                >
+                                <label class="form-check-label fw-bold" for="folder_show_user">
+                                    <i class="fa-solid fa-users me-2 text-success"></i>
+                                    ${langData['show_news_user'] || 'Show in News (User)'}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="my-4">
                     <div class="card bg-light border-0">
                         <div class="card-body">
                             <h6 class="card-title fw-bold text-dark"><i class="fa-solid fa-bell me-2"></i>${langData['notification_settings']}</h6>
@@ -541,6 +580,10 @@ function executeSave() {
     formData.append("ex_cover", $("#ex_cover").val() || "");
     formData.append("title_th", $("#title_th").val() || "");
     formData.append("send_notification", $("#send_notification").is(":checked") ? 'yes' : 'no');
+    let folder_show_admin = $('#folder_show_admin').is(':checked') ? 'yes' : 'no';
+    let folder_show_user  = $('#folder_show_user').is(':checked') ? 'yes' : 'no';
+    formData.append("folder_show_admin", folder_show_admin);
+    formData.append("folder_show_user", folder_show_user);
     const getCleanContent = (lang) => {
         const $el = $(`#content_${lang}`);
         if (!$el.length) return '';

@@ -610,5 +610,7 @@
     "add_menu": "Add Menu",
     "save_ordering": "Save Ordering",
     "show_project_admin": "Show in Project (Admin)",
-    "show_project_user": "Show in Project (User)"
+    "show_project_user": "Show in Project (User)",
+    "show_news_admin": "Show in News (Admin)",
+    "show_news_user": "Show in News (User)"
 }

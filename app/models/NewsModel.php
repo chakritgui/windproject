@@ -98,11 +98,7 @@ class NewsModel {
     }
     private function getParentFolders($folderId){
         $pdo = $this->db;
-        $stmt = $pdo->prepare("
-            SELECT id, name, parent_id
-            FROM wp_folder
-            WHERE status = 'active'
-        ");
+        $stmt = $pdo->prepare("SELECT id, name, parent_id FROM wp_folder WHERE status = 'active'");
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $map = [];
@@ -126,12 +122,7 @@ class NewsModel {
     }
     public function get($id) {
         $pdo = $this->db;
-        $stmtFolder = $pdo->prepare("SELECT id, name, slug, type, level, parent_id 
-            FROM wp_folder 
-            WHERE status = 'active'
-            AND type IN ('root','folder')
-            ORDER BY level ASC, parent_id ASC, id ASC
-        ");
+        $stmtFolder = $pdo->prepare("SELECT id, name, slug, type, level, parent_id FROM wp_folder WHERE status = 'active' AND type IN ('root','folder') ORDER BY level ASC, parent_id ASC, id ASC");
         $stmtFolder->execute();
         $foldersRaw = $stmtFolder->fetchAll(PDO::FETCH_ASSOC);
         $folderMap = [];
@@ -215,11 +206,7 @@ class NewsModel {
                 $translate_with[$lang] = $row['translate_with'];
             }
         }
-        $stmt = $pdo->prepare("SELECT id, file_path, file_name, file_type, file_size 
-            FROM wp_content_media 
-            WHERE content_id = ? 
-            AND status = 'active'
-        ");
+        $stmt = $pdo->prepare("SELECT id, file_path, file_name, file_type, file_size FROM wp_content_media WHERE content_id = ? AND status = 'active'");
         $stmt->execute([$id]);
         $media = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $attachments = [];

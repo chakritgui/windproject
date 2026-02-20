@@ -73,7 +73,7 @@
                     <th data-i18n="name"></th>
                     <th data-i18n="last_update"></th>
                     <th data-i18n="language"></th>
-                    <th data-i18n="notification"></th>
+                    <th data-i18n="status"></th>
                     <th style="width: 100px;"></th>
                 </tr>
             </thead>

@@ -8,14 +8,15 @@ class ProjectModel {
         $currentRefId = $filters['ref_id'] ?? null;
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
         $sql = "SELECT 
-            f.id, f.name as folder_name, f.level, f.parent_id, f.created_at, f.type, f.ref_id as folder_ref_id, f.content_id, f.notification_status, c.cover, c.content_slug, 
+            f.id, f.name as folder_name, f.level, f.parent_id, f.created_at, f.type, f.ref_id as folder_ref_id, f.content_id, c.cover, c.content_slug, 
             iEn.status as en_status,
             iLo.status as lo_status,
             iTh.status as th_status,
             iEn.content_subject as en_subject,
             iLo.content_subject as lo_subject,
             iTh.content_subject as th_subject,
-            f.created_at
+            f.created_at,
+            f.status
         FROM wp_folder f 
         LEFT JOIN wp_content c on c.content_id = f.content_id
         LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang='en'
@@ -51,7 +52,7 @@ class ProjectModel {
     }
     private function countChildren($folderId, $currentLevel, $refId) {
         $nextLevel = (int)$currentLevel + 1;
-        $sqlFolder = "SELECT id FROM wp_folder WHERE parent_id = :pid AND level = :lvl AND status = 'active' AND (ref_id = :rid OR ref_id IS NULL OR ref_id = '')";
+        $sqlFolder = "SELECT id FROM wp_folder WHERE parent_id = :pid AND level = :lvl AND status <> 'deleted' AND (ref_id = :rid OR ref_id IS NULL OR ref_id = '')";
         $stmt = $this->db->prepare($sqlFolder);
         $stmt->execute([
             ':pid' => $folderId, 
@@ -68,44 +69,28 @@ class ProjectModel {
         return $totalChild;
     }
     public function save($data){
-        $parentId = (!empty($data['parent_id']) && $data['parent_id'] > 0)
-            ? $data['parent_id']
-            : null;
-        $ref_id = (!empty($data['ref_id']) && $data['ref_id'] > 0)
-            ? $data['ref_id']
-            : null;
+        $parentId = (!empty($data['parent_id']) && $data['parent_id'] > 0) ? $data['parent_id'] : null;
+        $ref_id = (!empty($data['ref_id']) && $data['ref_id'] > 0) ? $data['ref_id'] : null;
         if ($data['folder_id'] > 0) {
-            $slug = $this->generateUniqueSlug(
-                $data['folder_name'],
-                $parentId,
-                $data['folder_id']
-            );
-            $sql = "UPDATE wp_folder 
-                    SET name = :name,
-                        slug = :slug,
-                        updated_at = NOW()
-                    WHERE id = :id";
+            $slug = $this->generateUniqueSlug($data['folder_name'], $parentId, $data['folder_id']);
+            $sql = "UPDATE wp_folder SET name = :name, slug = :slug, status = :status, updated_at = NOW() WHERE id = :id";
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
                 ':name' => $data['folder_name'],
                 ':slug' => $slug,
+                ':status' => $data['status'],
                 ':id'   => $data['folder_id']
             ]);
         } else {
-            $slug = $this->generateUniqueSlug(
-                $data['folder_name'],
-                $parentId
-            );
-            $sql = "INSERT INTO wp_folder 
-                    (name, slug, parent_id, level, status, type, created_at, updated_at, ref_id)
-                    VALUES 
-                    (:name, :slug, :parent_id, :level, 'active', 'folder', NOW(), NOW(), :ref_id)";
+            $slug = $this->generateUniqueSlug($data['folder_name'],$parentId);
+            $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, created_at, updated_at, ref_id) VALUES (:name, :slug, :parent_id, :level, :status, 'folder', NOW(), NOW(), :ref_id)";
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
                 ':name'      => $data['folder_name'],
                 ':slug'      => $slug,
                 ':parent_id' => $parentId,
                 ':level'     => $data['level'],
+                ':status'     => $data['status'],
                 ':ref_id'    => $ref_id
             ]);
         }
@@ -143,7 +128,7 @@ class ProjectModel {
     }
     public function data($data) {
         $folder_id = intval($data['folder_id']);
-        $sql = "SELECT id, name as folder_name, parent_id, level FROM wp_folder WHERE id = :id AND status = 'active' LIMIT 1";
+        $sql = "SELECT id, name as folder_name, parent_id, level, status FROM wp_folder WHERE id = :id AND status <> 'deleted' LIMIT 1";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':id' => $folder_id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -162,7 +147,7 @@ class ProjectModel {
         return $row;
     }
     private function buildListWhere($filters) {
-        $where  = " WHERE f.status = 'active' ";
+        $where  = " WHERE f.status <> 'deleted' ";
         $params = [];
         if (!empty($filters['level'])) {
             $where .= " AND f.level = :level";
@@ -192,7 +177,7 @@ class ProjectModel {
         $translates = $stmtTranslate->fetchAll(PDO::FETCH_KEY_PAIR);
         if (!$id) {
             return [
-                "id" => "", "status" => "active", "cover" => "", "notification_status" => "no",
+                "id" => "", "status" => "active", "cover" => "",
                 "attachments" => [],
                 "images" => [],
                 "images360" => [],
@@ -203,10 +188,12 @@ class ProjectModel {
                 "translate_with" => ["th" => "", "lo" => "", "en" => ""],
                 "settings" => $settings,
                 "translates" => $translates,
-                "cover_display" => 'no'
+                "cover_display" => 'no',
+                "folder_show_admin" => 'no',
+                "folder_show_user" => 'no'
             ];
         }
-        $stmt = $pdo->prepare("SELECT content_id, status, cover, cover_display FROM wp_content WHERE content_id = ?");
+        $stmt = $pdo->prepare("SELECT content_id, status, cover, cover_display, folder_show_admin, folder_show_user FROM wp_content WHERE content_id = ?");
         $stmt->execute([$id]);
         $n = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$n) return null;
@@ -226,10 +213,7 @@ class ProjectModel {
             $response[$lang] = $row['response'];
             $translate_with[$lang] = $row['translate_with'];
         }
-        $stmt2 = $pdo->prepare("SELECT notification_status FROM wp_folder WHERE content_id = ? LIMIT 1");
-        $stmt2->execute([$id]);
-        $row_folder = $stmt2->fetch(PDO::FETCH_ASSOC);
-        $stmt = $pdo->prepare("SELECT id, file_path, file_name, file_type, file_size FROM wp_content_media WHERE content_id = ? and status = 'active'");
+        $stmt = $pdo->prepare("SELECT id, file_path, file_name, file_type, file_size FROM wp_content_media WHERE content_id = ? and status <> 'deleted'");
         $stmt->execute([$id]);
         $media = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $attachments = [];
@@ -255,12 +239,13 @@ class ProjectModel {
             "status" => $n['status'],
             "cover" => $n['cover'],
             "cover_display" => $n['cover_display'],
+            "folder_show_admin" => $n['folder_show_admin'],
+            "folder_show_user" => $n['folder_show_user'],
             "title" => $title,
             "content" => $content,
             "status_translate" => $status_translate,
             "response" => $response,
             "translate_with" => $translate_with,
-            "notification_status" => $row_folder ? $row_folder['notification_status'] : "no",
             "attachments" => $attachments,
             "images" => $images,
             "images360" => $images360,
@@ -313,19 +298,25 @@ class ProjectModel {
         $send_notification = $data['send_notification'] ?? 'no';
         $auto_translate = $data['auto_translate'] ?? 'no';
         $cover_display = $data['cover_display'] ?? 'no';
+        $folder_show_admin = $data['folder_show_admin'];
+        $folder_show_user  = $data['folder_show_user'];
         $mediaHelper = new MediaHelper($pdo);
         $content_slug = $mediaHelper->generateSlug('project', $data["title_en"], $content_id);
         try {
             $pdo->beginTransaction();
             if ($content_id) {
-                $stmt = $pdo->prepare("UPDATE wp_content SET status = :status, content_slug = :content_slug, cover_display = :cover_display, updated_at = NOW() WHERE content_id = :content_id");
+                $stmt = $pdo->prepare("UPDATE wp_content SET status = :status, content_slug = :content_slug, cover_display = :cover_display, updated_at = NOW(), folder_show_admin = :folder_show_admin, folder_show_user = :folder_show_user WHERE content_id = :content_id");
                 $stmt->bindValue(':content_slug', $content_slug);
                 $stmt->bindValue(':cover_display', $cover_display);
+                $stmt->bindValue(':folder_show_admin', $folder_show_admin);
+                $stmt->bindValue(':folder_show_user', $folder_show_user);
                 $stmt->bindValue(':content_id', (int)$content_id, PDO::PARAM_INT);
             } else {
-                $stmt = $pdo->prepare("INSERT INTO wp_content (status, content_slug, cover_display, created_at, updated_at, type) VALUES (:status, :content_slug, :cover_display, NOW(), NOW(), 'project')");
+                $stmt = $pdo->prepare("INSERT INTO wp_content (status, content_slug, cover_display, created_at, updated_at, type, folder_show_admin, folder_show_user) VALUES (:status, :content_slug, :cover_display, NOW(), NOW(), 'project', :folder_show_admin, :folder_show_user)");
                 $stmt->bindValue(':content_slug', $content_slug);
                 $stmt->bindValue(':cover_display', $cover_display);
+                $stmt->bindValue(':folder_show_admin', $folder_show_admin);
+                $stmt->bindValue(':folder_show_user', $folder_show_user);
             }
             $stmt->bindValue(':status', $status);
             $stmt->execute();
@@ -340,12 +331,12 @@ class ProjectModel {
                 $mediaHelper->handleSingleUpload($content_id, $_FILES['cover']);
             }
             if ($data['content_id'] > 0) {
-                $sql = "UPDATE wp_folder SET name = :name, updated_at = NOW(), notification_status = :notification WHERE content_id = :id";
+                $sql = "UPDATE wp_folder SET name = :name, status = :status, updated_at = NOW() WHERE content_id = :id";
                 $stmtFolder = $pdo->prepare($sql);
                 $stmtFolder->execute([
                     ':name' => $data["title_en"],
                     ':id'   => $data['content_id'],
-                    ':notification' => $send_notification
+                    ':status'   => $status
                 ]);
             } else {
                 $parentId = (!empty($data['parent_id']) && $data['parent_id'] > 0) ? $data['parent_id'] : null;
@@ -354,16 +345,16 @@ class ProjectModel {
                     $data['title_en'],
                     $parentId
                 );
-                $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, created_at, updated_at, ref_id, content_id, notification_status) VALUES (:name, :slug, :parent_id, :level, 'active', 'content', NOW(), NOW(), :ref_id, :content_id, :notification)";
+                $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, created_at, updated_at, ref_id, content_id) VALUES (:name, :slug, :parent_id, :level, :status, 'content', NOW(), NOW(), :ref_id, :content_id)";
                 $stmtFolder = $pdo->prepare($sql);
                 $stmtFolder->execute([
                     ':name'      => $data["title_en"],
                     ':slug'      => $slug,
                     ':parent_id' => $parentId,
                     ':level'     => $data['level'],
+                    ':status'   => $status,
                     ':ref_id'    => $ref_id,
-                    ':content_id' => $content_id,
-                    ':notification' => $send_notification
+                    ':content_id' => $content_id
                 ]);
             }
             $mediaHelper->syncMedia($content_id, 'attachment', $data['existing_attachments'] ?? []);
