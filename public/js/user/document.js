@@ -147,13 +147,23 @@ function loadDocuments() {
 }
 function renderDocuments(items) {
     if (!items.length) {
-        $('#listView').html(`
-            <div class="empty-state-container animated fadeIn">
-                <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
-                <h3 class="empty-title" data-i18n="no_items"></h3>
-                <p class="empty-subtitle" data-i18n="no_items_subtitle"></p>
-            </div>
-        `);
+        if (currentView === 'grid') {
+            $('#gridView').html(`
+                <div class="empty-state-container animated fadeIn">
+                    <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
+                    <h3 class="empty-title" data-i18n="no_items"></h3>
+                    <p class="empty-subtitle" data-i18n="no_items_subtitle"></p>
+                </div>
+            `);
+        } else {
+            $('#listView').html(`
+                <div class="empty-state-container animated fadeIn">
+                    <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
+                    <h3 class="empty-title" data-i18n="no_items"></h3>
+                    <p class="empty-subtitle" data-i18n="no_items_subtitle"></p>
+                </div>
+            `);
+        }
         return;
     }
     if (currentView === 'grid') {
@@ -169,16 +179,6 @@ const createBadge = (text, icon, colorClass) => {
             </span>`;
 };
 function renderGridView(items) {
-    if (!items.length) {
-        $('#gridView').html(`
-            <div class="empty-state-container animated fadeIn">
-                <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
-                <h3 class="empty-title" data-i18n="no_items"></h3>
-                <p class="empty-subtitle" data-i18n="no_items_subtitle"></p>
-            </div>
-        `);
-        return;
-    }
     let html = '';
     items.forEach(item => {
         const icon = getFileIconClass(item.document_type);

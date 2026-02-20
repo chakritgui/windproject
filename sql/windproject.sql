@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 19, 2026 at 02:49 PM
+-- Generation Time: Feb 20, 2026 at 03:38 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -164,6 +164,8 @@ CREATE TABLE `wp_content` (
   `cover` longtext,
   `cover_display` enum('yes','no') NOT NULL DEFAULT 'yes',
   `content_slug` varchar(255) DEFAULT NULL,
+  `folder_id` bigint(20) DEFAULT NULL,
+  `folder_show` enum('yes','no') NOT NULL DEFAULT 'no',
   `status` enum('scheduled','draft','published','deleted','active','inactive') NOT NULL DEFAULT 'draft',
   `publish_at` datetime DEFAULT NULL,
   `content_view` bigint(20) NOT NULL DEFAULT '0',
@@ -498,7 +500,7 @@ CREATE TABLE `wp_menu_translations` (
 
 CREATE TABLE `wp_notification_targets` (
   `targets_id` bigint(20) NOT NULL,
-  `notifications_target` enum('news','project','pole') DEFAULT NULL,
+  `notifications_target` enum('news','project','pole','document') DEFAULT NULL,
   `notifications_item` bigint(20) DEFAULT NULL,
   `member_id` bigint(20) NOT NULL,
   `publish_at` datetime DEFAULT NULL,
@@ -757,7 +759,8 @@ ALTER TABLE `wind_staging`
 -- Indexes for table `wp_content`
 --
 ALTER TABLE `wp_content`
-  ADD PRIMARY KEY (`content_id`);
+  ADD PRIMARY KEY (`content_id`),
+  ADD KEY `idx_content_status` (`content_id`,`status`);
 
 --
 -- Indexes for table `wp_content_item`
@@ -784,7 +787,8 @@ ALTER TABLE `wp_contract`
 -- Indexes for table `wp_documents`
 --
 ALTER TABLE `wp_documents`
-  ADD PRIMARY KEY (`document_id`);
+  ADD PRIMARY KEY (`document_id`),
+  ADD KEY `idx_doc_status` (`document_id`,`status`);
 
 --
 -- Indexes for table `wp_documents_download_logs`
@@ -891,7 +895,8 @@ ALTER TABLE `wp_menu_translations`
 --
 ALTER TABLE `wp_notification_targets`
   ADD PRIMARY KEY (`targets_id`),
-  ADD UNIQUE KEY `notifications_item` (`notifications_item`,`member_id`);
+  ADD UNIQUE KEY `notifications_item` (`notifications_item`,`member_id`,`notifications_target`) USING BTREE,
+  ADD KEY `idx_member_publish` (`member_id`,`status`,`publish_at`);
 
 --
 -- Indexes for table `wp_password_resets`
