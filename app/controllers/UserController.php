@@ -167,17 +167,13 @@ class UserController extends Controller {
     public function info() {
         $start  = intval($_POST['start'] ?? 0);
         $length = intval($_POST['length'] ?? 20);
-        $ref_id = $_POST['ref_id'] ?? null;
-        if (in_array($ref_id, ['', 'null', 'undefined'])) {
-            $ref_id = null;
-        }
         $order  = $_POST['currentSort'] ?? 'asc';
         $breadcrumbs = [];
         $parentId = null;
         if (!empty($_POST['path']) && is_array($_POST['path'])) {
             foreach ($_POST['path'] as $slug) {
                 $stmt = $this->db->prepare("
-                    SELECT id, name, slug, level, parent_id, ref_id
+                    SELECT id, name, slug, level, parent_id
                     FROM wp_folder
                     WHERE slug = :slug
                     AND parent_id <=> :parent
@@ -197,7 +193,6 @@ class UserController extends Controller {
         $filters = [
             'level'  => intval($_POST['level'] ?? 1),
             'item'   => $parentId,
-            'ref_id' => $ref_id,
         ];
         $result = $this->model->info($start, $length, $filters, $order);
         $this->json([

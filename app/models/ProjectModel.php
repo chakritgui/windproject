@@ -5,10 +5,9 @@ class ProjectModel {
         $this->db = Database::getInstance()->pdo;
     }
     public function get($start = 0, $length = 20, $filters = [], $search = '', $order = 'asc') {
-        $currentRefId = $filters['ref_id'] ?? null;
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
         $sql = "SELECT 
-            f.id, f.name as folder_name, f.level, f.parent_id, f.created_at, f.type, f.ref_id as folder_ref_id, f.content_id, c.cover, c.content_slug, 
+            f.id, f.name as folder_name, f.level, f.parent_id, f.created_at, f.type, f.content_id, c.cover, c.content_slug, 
             iEn.status as en_status,
             iLo.status as lo_status,
             iTh.status as th_status,
@@ -34,9 +33,7 @@ class ProjectModel {
         foreach ($folderRows as $row) {
             if (!empty($search) && stripos($row['folder_name'], $search) === false) continue;
             $item = $this->formatRow($row);
-            $activeRef = !empty($row['folder_ref_id']) ? $row['folder_ref_id'] : $currentRefId;
-            $item['ref_id'] = $activeRef;
-            $item['child_count'] = $this->countChildren($row['id'], $row['level'], $activeRef);
+            $item['child_count'] = $this->countChildren($row['id'], $row['level']);
             $item['settings'] = $settings;
             $finalItems[] = $item;
         }
@@ -50,14 +47,13 @@ class ProjectModel {
             'hasMore' => ($length > 0) ? ($start + $length < $totalCount) : false
         ];
     }
-    private function countChildren($folderId, $currentLevel, $refId) {
+    private function countChildren($folderId, $currentLevel) {
         $nextLevel = (int)$currentLevel + 1;
-        $sqlFolder = "SELECT id FROM wp_folder WHERE parent_id = :pid AND level = :lvl AND status <> 'deleted' AND (ref_id = :rid OR ref_id IS NULL OR ref_id = '')";
+        $sqlFolder = "SELECT id FROM wp_folder WHERE parent_id = :pid AND level = :lvl AND status <> 'deleted'";
         $stmt = $this->db->prepare($sqlFolder);
         $stmt->execute([
             ':pid' => $folderId, 
-            ':lvl' => $nextLevel,
-            ':rid' => $refId
+            ':lvl' => $nextLevel
         ]);
         $nextFolders = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if (empty($nextFolders)) return 0;
@@ -70,7 +66,6 @@ class ProjectModel {
     }
     public function save($data){
         $parentId = (!empty($data['parent_id']) && $data['parent_id'] > 0) ? $data['parent_id'] : null;
-        $ref_id = (!empty($data['ref_id']) && $data['ref_id'] > 0) ? $data['ref_id'] : null;
         if ($data['folder_id'] > 0) {
             $slug = $this->generateUniqueSlug($data['folder_name'], $parentId, $data['folder_id']);
             $sql = "UPDATE wp_folder SET name = :name, slug = :slug, status = :status, updated_at = NOW() WHERE id = :id";
@@ -83,15 +78,14 @@ class ProjectModel {
             ]);
         } else {
             $slug = $this->generateUniqueSlug($data['folder_name'],$parentId);
-            $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, created_at, updated_at, ref_id) VALUES (:name, :slug, :parent_id, :level, :status, 'folder', NOW(), NOW(), :ref_id)";
+            $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, created_at, updated_at) VALUES (:name, :slug, :parent_id, :level, :status, 'folder', NOW(), NOW())";
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([
                 ':name'      => $data['folder_name'],
                 ':slug'      => $slug,
                 ':parent_id' => $parentId,
                 ':level'     => $data['level'],
-                ':status'     => $data['status'],
-                ':ref_id'    => $ref_id
+                ':status'     => $data['status']
             ]);
         }
     }
@@ -158,12 +152,6 @@ class ProjectModel {
             $params[':item'] = $filters['item'];
         } else {
             $where .= " AND f.parent_id IS NULL";
-        }
-        if (isset($filters['ref_id']) && $filters['ref_id'] !== '') {
-            $where .= " AND (f.ref_id = :ref_id OR f.ref_id IS NULL OR f.ref_id = '')";
-            $params[':ref_id'] = $filters['ref_id'];
-        } else {
-            $where .= " AND (f.ref_id IS NULL OR f.ref_id = '')";
         }
         return [$where, $params];
     }
@@ -340,12 +328,11 @@ class ProjectModel {
                 ]);
             } else {
                 $parentId = (!empty($data['parent_id']) && $data['parent_id'] > 0) ? $data['parent_id'] : null;
-                $ref_id = (!empty($data['ref_id']) && $data['ref_id'] > 0) ? $data['ref_id'] : null;
                 $slug = $this->generateUniqueSlug(
                     $data['title_en'],
                     $parentId
                 );
-                $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, created_at, updated_at, ref_id, content_id) VALUES (:name, :slug, :parent_id, :level, :status, 'content', NOW(), NOW(), :ref_id, :content_id)";
+                $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, created_at, updated_at, content_id) VALUES (:name, :slug, :parent_id, :level, :status, 'content', NOW(), NOW(), :content_id)";
                 $stmtFolder = $pdo->prepare($sql);
                 $stmtFolder->execute([
                     ':name'      => $data["title_en"],
@@ -353,7 +340,6 @@ class ProjectModel {
                     ':parent_id' => $parentId,
                     ':level'     => $data['level'],
                     ':status'   => $status,
-                    ':ref_id'    => $ref_id,
                     ':content_id' => $content_id
                 ]);
             }

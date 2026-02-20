@@ -264,10 +264,9 @@ class UserModel {
         }
     }
     public function info($start = 0, $length = 20, $filters = [], $order = 'asc') {
-        $currentRefId = $filters['ref_id'] ?? null;
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
         $sql = "SELECT 
-            f.id, f.name as folder_name, f.slug, f.level, f.parent_id, f.created_at, f.type, f.ref_id as folder_ref_id, f.content_id, c.cover, c.content_slug, f.sub_type,
+            f.id, f.name as folder_name, f.slug, f.level, f.parent_id, f.created_at, f.type, f.content_id, c.cover, c.content_slug, f.sub_type,
             iEn.status as en_status,
             iLo.status as lo_status,
             iTh.status as th_status,
@@ -291,9 +290,7 @@ class UserModel {
         $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
         foreach ($folderRows as $row) {
             $item = $this->formatRows($row);
-            $activeRef = !empty($row['folder_ref_id']) ? $row['folder_ref_id'] : $currentRefId;
-            $item['ref_id'] = $activeRef;
-            $item['child_count'] = $this->countChildren($row['id'], $row['level'], $activeRef);
+            $item['child_count'] = $this->countChildren($row['id'], $row['level']);
             $item['settings'] = $settings;
             $finalItems[] = $item;
         }
@@ -313,14 +310,13 @@ class UserModel {
         }
         return $row;
     }
-    private function countChildren($folderId, $currentLevel, $refId) {
+    private function countChildren($folderId, $currentLevel) {
         $nextLevel = (int)$currentLevel + 1;
-        $sqlFolder = "SELECT id FROM wp_folder WHERE parent_id = :pid AND level = :lvl AND status = 'active' AND (ref_id = :rid OR ref_id IS NULL OR ref_id = '')";
+        $sqlFolder = "SELECT id FROM wp_folder WHERE parent_id = :pid AND level = :lvl AND status = 'active'";
         $stmt = $this->db->prepare($sqlFolder);
         $stmt->execute([
             ':pid' => $folderId, 
-            ':lvl' => $nextLevel,
-            ':rid' => $refId
+            ':lvl' => $nextLevel
         ]);
         $nextFolders = $stmt->fetchAll(PDO::FETCH_ASSOC);
         if (empty($nextFolders)) return 0;
@@ -343,12 +339,6 @@ class UserModel {
             $params[':item'] = $filters['item'];
         } else {
             $where .= " AND f.parent_id IS NULL ";
-        }
-        if (isset($filters['ref_id']) && $filters['ref_id'] !== '') {
-            $where .= " AND (f.ref_id = :ref_id OR f.ref_id IS NULL OR f.ref_id = '') ";
-            $params[':ref_id'] = $filters['ref_id'];
-        } else {
-            $where .= " AND (f.ref_id IS NULL OR f.ref_id = '') ";
         }
         return [$where, $params];
     }

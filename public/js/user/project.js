@@ -4,7 +4,7 @@ let state = {
     folderId: null,
     level: 1,
     refId: null,
-    path: [{ id: null, slug: null, name: 'PSTG PROJECT', level: 1, ref_id: null }],
+    path: [{ id: null, slug: null, name: 'PSTG PROJECT', level: 1}],
     sort: 'asc',
     offset: 0,
     isLoading: false,
@@ -29,13 +29,11 @@ function initEventListeners() {
         if (!rowData || rowData.type === 'content') return;
         state.folderId = rowData.id;
         state.level = parseInt(rowData.level) + 1;
-        state.refId = rowData.ref_id || null;
         state.path.push({
             id: rowData.id,
             slug: rowData.slug,
             name: rowData.folder_name,
             level: state.level,
-            ref_id: state.refId
         });
         updateUrlPath();
         fetchFolders(true);
@@ -46,7 +44,6 @@ function initEventListeners() {
         state.path = state.path.slice(0, idx + 1);
         const target = state.path[idx];
         state.folderId = target.id;
-        state.refId = target.ref_id;
         state.level = (idx === 0) ? 1 : (Number(target.level) + 1);
         updateUrlPath();
         fetchFolders(true);
@@ -70,7 +67,6 @@ function fetchFolders(isNewSearch = false) {
         method: 'POST',
         data: {
             level: state.level,
-            ref_id: state.refId,
             start: state.offset,
             length: LIMIT,
             path: state.path.map(p => p.slug).filter(Boolean),
@@ -82,12 +78,11 @@ function fetchFolders(isNewSearch = false) {
             const { data: result, breadcrumbs } = res;
             const newData = result.data;
             if (breadcrumbs && breadcrumbs.length > 0) {
-                const root = { id: null, slug: null, name: 'PSTG PROJECT', level: 1, ref_id: null };
+                const root = { id: null, slug: null, name: 'PSTG PROJECT', level: 1 };
                 state.path = [root, ...breadcrumbs];
                 const last = state.path[state.path.length - 1];
                 state.folderId = last.id;
                 state.level = state.path.length;
-                state.refId = last.ref_id;
             }
             state.cachedData = isNewSearch ? newData : state.cachedData.concat(newData);
             renderView(newData, isNewSearch);
@@ -217,7 +212,7 @@ function restoreFromUrl() {
     const baseUrlPath = BASE_URL.replace(window.location.origin, '');
     const cleanPath = window.location.pathname.replace(baseUrlPath, '');
     const parts = cleanPath.split('/').filter(Boolean);
-    state.path = [{ id: null, slug: null, name: 'PSTG PROJECT', level: 1, ref_id: null }];
+    state.path = [{ id: null, slug: null, name: 'PSTG PROJECT', level: 1 }];
     if (parts.length > 1) {
         parts.slice(1).forEach((slug, index) => {
             state.path.push({
@@ -225,7 +220,6 @@ function restoreFromUrl() {
                 slug: decodeURIComponent(slug),
                 name: 'Loading...',
                 level: index + 2,
-                ref_id: null
             });
         });
     }

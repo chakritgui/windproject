@@ -10,13 +10,10 @@ class ProjectController extends BaseController {
         $start = intval($_POST['start'] ?? 0);
         $length = intval($_POST['length'] ?? 20);
         $itemId = $_POST['item'] ?? null;
-        $ref_id = $_POST['ref_id'] ?? null;
         if (in_array($itemId, ['', 'null', 'undefined'])) $itemId = null;
-        if (in_array($ref_id, ['', 'null', 'undefined'])) $ref_id = null;
         $filters = [
             'level' => intval($_POST['level'] ?? 1),
             'item'  => $itemId,
-            'ref_id'  => $ref_id,
         ];
         $search = $_POST['search']['value'] ?? '';
         $order = $_POST['order'] ?? 'asc';
@@ -32,7 +29,6 @@ class ProjectController extends BaseController {
             'folder_name' => $_POST['folder_name'] ?? '',
             'parent_id'   => intval($_POST['parent_id'] ?? 0),
             'level'       => intval($_POST['level'] ?? 1),
-            'ref_id'       => intval($_POST['ref_id'] ?? ''),
             'status'       => $_POST['status'] ?? 'active',
         ];
         $this->json(['status' => $this->model->save($data)]);
@@ -79,7 +75,6 @@ class ProjectController extends BaseController {
             'send_notification'    => $_POST['send_notification'] ?? 'no',
             'parent_id'   => intval($_POST['parent_id'] ?? 0),
             'level'       => intval($_POST['level'] ?? 1),
-            'ref_id'       => intval($_POST['ref_id'] ?? ''),
             'title_en' => $_POST['title_en'] ?? '',
             'title_lo' => $_POST['title_lo'] ?? '',
             'title_th' => $_POST['title_th'] ?? '',

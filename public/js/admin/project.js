@@ -1,7 +1,6 @@
 let currentFolderId = null;
 let currentLevel = 1; 
-let currentRefId = null;
-let currentPath = [{id: null, name: 'PSTG PROJECT', level: 1, ref_id: null, project_id: null}];
+let currentPath = [{id: null, name: 'PSTG PROJECT', level: 1, project_id: null}];
 let cachedData = []; 
 let offset = 0;
 const limit = 20;
@@ -30,7 +29,6 @@ function fetchFolders(isNewSearch = false) {
         data: {
             level: currentLevel,
             item: currentFolderId,
-            ref_id: currentRefId,
             start: offset,
             length: limit,
             search: { value: currentSearch },
@@ -171,12 +169,10 @@ function renderTable(data, isNewSearch) {
             }
             currentFolderId = rowData.id;
             currentLevel = parseInt(rowData.level) + 1;
-            currentRefId = rowData.ref_id || null;
             currentPath.push({
                 id: currentFolderId,
                 name: rowData.folder_name, 
                 level: currentLevel,
-                ref_id: currentRefId,
             });
             fetchFolders(true); 
         }
@@ -224,8 +220,7 @@ function renderBreadcrumb() {
         const target = currentPath[idx];
         currentFolderId = target.id;
         currentLevel = target.level;
-        currentRefId = target.ref_id;
-        fetchFolders(currentLevel, currentFolderId, currentRefId);
+        fetchFolders(currentLevel, currentFolderId);
     });
 }
 $(document).on('click', '.manage-project', function () {
@@ -243,7 +238,7 @@ $(document).on('click', '.delete-project', function () {
             success: function(res) {
                 if (res.status === 'success') {
                     showSuccess(langData['deleted_successfully']);
-                    fetchFolders(currentLevel, currentFolderId, currentRefId);
+                    fetchFolders(currentLevel, currentFolderId);
                 } else {
                     showError(langData['cannot_delete']);
                 }   
@@ -305,6 +300,13 @@ function manageFolder(folder_id = '') {
                 showError(langData['cannot_load']);
             }
         });
+    } else {
+        let status = 'active';
+        if (status) {
+            let statusName = status.charAt(0).toUpperCase() + status.slice(1);
+            var newOptionStatus = new Option(statusName, status, true, true);
+            $('#status').append(newOptionStatus).trigger('change');
+        }
     }
 }
 $(document).on('click', '.save-folder', function () {
@@ -334,7 +336,6 @@ function saveFolder() {
     formData.append("status", $("#status").val() || "active");
     formData.append("parent_id", currentFolderId || 0);
     formData.append("level", currentLevel || 1);
-    formData.append("ref_id", currentRefId || "");
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
@@ -370,7 +371,7 @@ function saveFolder() {
             Swal.close();
             if (res.status === true) {
                 showSuccess(langData['saved_successfully']);
-                fetchFolders(currentLevel, currentFolderId, currentRefId);
+                fetchFolders(currentLevel, currentFolderId);
                 $('#windModal').modal('hide');
             } else {
                 showError((langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
@@ -569,7 +570,6 @@ function executeSave() {
     appendFiles(window.get360ImagesData, 'images360');
     formData.append("parent_id", currentFolderId || 0);
     formData.append("level", currentLevel || 1);
-    formData.append("ref_id", currentRefId || "");
     formData.append("content_id", $("#content_id").val() || "");
     formData.append("status", $("#status").val());
     formData.append("publish_at", typeof buildPublishAt === "function" ? buildPublishAt() : "");
@@ -629,7 +629,7 @@ function executeSave() {
             Swal.close();
             if (res.status === true) {
                 showSuccess(langData['saved_successfully']);
-                fetchFolders(currentLevel, currentFolderId, currentRefId);
+                fetchFolders(currentLevel, currentFolderId);
                 $('#windModal').modal('hide');
             } else {
                 showError((langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
@@ -660,7 +660,7 @@ $(document).on('click', '.delete-content', function () {
             success: function(res) {
                 if (res.status === 'success') {
                     showSuccess(langData['deleted_successfully']);
-                    fetchFolders(currentLevel, currentFolderId, currentRefId);
+                    fetchFolders(currentLevel, currentFolderId);
                 } else {
                     showError(langData['cannot_delete']);
                 }   
