@@ -377,7 +377,7 @@ class ProjectModel {
         } catch (Exception $e) {
             if ($pdo->inTransaction()) $pdo->rollBack();
             error_log($e->getMessage());
-            return false;
+            return $e->getMessage();
         }
     }
     public function deleteContent($data) {
