@@ -56,6 +56,7 @@ class NewsModel {
                     iLo.status as lo_status,
                     iTh.status as th_status,
                     n.folder_id,
+                    n.folder_show_admin,
                     n.folder_show_user
                 FROM wp_content n
                 LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.content_lang='en'
@@ -167,6 +168,7 @@ class NewsModel {
                 "cover" => "",
                 "cover_display" => "no",
                 "folder_id" => null,
+                "folder_show_admin" => "no",
                 "folder_show_user" => "no",
                 "attachments" => [],
                 "images" => [],
@@ -182,7 +184,7 @@ class NewsModel {
             ];
         }
         $stmt = $pdo->prepare("SELECT content_id, status, publish_at, cover, cover_display,
-                folder_id, folder_show_user
+                folder_id, folder_show_admin, folder_show_user
             FROM wp_content 
             WHERE content_id = ?
         ");
@@ -244,6 +246,7 @@ class NewsModel {
             "cover" => $n['cover'],
             "cover_display" => $n['cover_display'],
             "folder_id" => $n['folder_id'],
+            "folder_show_admin" => $n['folder_show_admin'] ?? 'no',
             "folder_show_user" => $n['folder_show_user'] ?? 'no',
             "publish_at" => !empty($n['publish_at']) 
                 ? convertTimeZone($n['publish_at'], 'Y-m-d H:i') 
@@ -267,6 +270,7 @@ class NewsModel {
         $status = $data['status'] ?? 'draft';
         $cover_display = $data['cover_display'] ?? 'no';
         $folder_id = !empty($data['folder_id']) ? (int)$data['folder_id'] : null;
+        $folder_show_admin = $data['folder_show_admin'];
         $folder_show_user  = $data['folder_show_user'];
         $mediaHelper = new MediaHelper($pdo);
         $publish_at = null;
@@ -295,6 +299,7 @@ class NewsModel {
                         content_slug = :content_slug, 
                         publish_at = :publish_at, 
                         folder_id = :folder_id,
+                        folder_show_admin = :folder_show_admin,
                         folder_show_user = :folder_show_user,
                         updated_at = NOW() 
                     WHERE content_id = :content_id
@@ -302,9 +307,9 @@ class NewsModel {
                 $stmt->bindValue(':content_id', (int)$content_id, PDO::PARAM_INT);
             } else {
                 $stmt = $pdo->prepare("INSERT INTO wp_content 
-                    (status, cover_display, content_slug, publish_at, folder_id, folder_show_user, created_at, updated_at) 
+                    (status, cover_display, content_slug, publish_at, folder_id, folder_show_admin, folder_show_user, created_at, updated_at) 
                     VALUES 
-                    (:status, :cover_display, :content_slug, :publish_at, :folder_id, :folder_show_user, NOW(), NOW())
+                    (:status, :cover_display, :content_slug, :publish_at, :folder_id, :folder_show_admin, :folder_show_user, NOW(), NOW())
                 ");
             }
             $stmt->bindValue(':status', $status);
@@ -312,6 +317,7 @@ class NewsModel {
             $stmt->bindValue(':content_slug', $content_slug);
             $stmt->bindValue(':publish_at', $publish_at, $publish_at === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
             $stmt->bindValue(':folder_id', $folder_id, $folder_id === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+            $stmt->bindValue(':folder_show_admin', $folder_show_admin);
             $stmt->bindValue(':folder_show_user', $folder_show_user);
             $stmt->execute();
             if (!$content_id) {
