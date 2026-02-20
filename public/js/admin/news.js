@@ -9,7 +9,7 @@ function initNewsTable() {
         processing: true,
         serverSide: true,
         responsive: true,
-        order: [[4, 'desc']],
+        order: [[5, 'desc']],
         ajax: {
             url: `${BASE_URL}/api/news.list`,
             type: "POST",
@@ -25,17 +25,33 @@ function initNewsTable() {
                             <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';">
                         </div>`;
             }
-        },{ 
+        },{
             data: null,
             orderable: true,
             render: (data, type, row) => {
                 const defaultLang = row.settings?.language_content || 'en';
-                const title = row[`subject_${currentLang}`] || row[`subject_${defaultLang}`] || row.subject_en || 'No Title';
+                const title =
+                    row[`subject_${currentLang}`] ||
+                    row[`subject_${defaultLang}`] ||
+                    row.subject_en ||
+                    'No Title';
                 let badges = '';
-                if (parseInt(row.count_attachment) > 0) badges += `<span class="badge rounded-pill bg-danger-subtle text-danger me-1"><i class="fa-solid fa-file-pdf"></i> ${langData['document'] || 'Doc'}</span>`;
-                if (parseInt(row.count_image) > 0) badges += `<span class="badge rounded-pill bg-primary-subtle text-primary me-1"><i class="fa-solid fa-images"></i> ${langData['image'] || 'Img'}</span>`;
-                if (parseInt(row.count_image360) > 0) badges += `<span class="badge rounded-pill bg-success-subtle text-success me-1"><i class="fa-solid fa-vr-cardboard"></i> VR</span>`;
-                return `<div class="fw-bold text-dark mb-1">${title}</div><div>${badges}</div>`;
+                if (parseInt(row.count_attachment) > 0)
+                    badges += `<span class="badge rounded-pill bg-danger-subtle text-danger me-1">
+                        <i class="fa-solid fa-file-pdf me-1"></i>${langData['document'] || 'Doc'}
+                    </span>`;
+                if (parseInt(row.count_image) > 0)
+                    badges += `<span class="badge rounded-pill bg-primary-subtle text-primary me-1">
+                        <i class="fa-solid fa-images me-1"></i>${langData['image'] || 'Img'}
+                    </span>`;
+                if (parseInt(row.count_image360) > 0)
+                    badges += `<span class="badge rounded-pill bg-success-subtle text-success me-1">
+                        <i class="fa-solid fa-vr-cardboard me-1"></i>VR
+                    </span>`;
+                return `
+                    <div class="fw-bold text-dark mb-1">${title}</div>
+                    <div>${badges}</div>
+                `;
             }
         },{ 
             data: null,
@@ -47,9 +63,50 @@ function initNewsTable() {
                         </div>`;
             }
         },{
+            data: null,
+            orderable: false,
+            render: (data, type, row) => {
+                let folderHtml = '';
+                if (Array.isArray(row.folder_chain) && row.folder_chain.length > 0) {
+                    const breadcrumb = row.folder_chain
+                    .slice()
+                    .reverse()
+                    .map((f, index, arr) => {
+                        if (index === arr.length - 1) {
+                            return `<span class="fw-semibold text-dark">${f.name}</span>`;
+                        }
+                        return `<span class="text-muted">${f.name}</span>`;
+                    })
+                    .join(' <span class="text-secondary">/</span> ');
+                    folderHtml = `
+                        <div class="small mb-1">
+                            <i class="fa-solid fa-folder-open text-warning me-1"></i>
+                            ${breadcrumb}
+                        </div>
+                    `;
+                }
+                let visibilityBadges = '';
+                if (row.folder_show_admin === 'yes') {
+                    visibilityBadges += `
+                        <span class="badge bg-dark-subtle text-dark me-1">
+                            <i class="fa-solid fa-user-shield me-1"></i>Admin
+                        </span>`;
+                }
+                if (row.folder_show_user === 'yes') {
+                    visibilityBadges += `
+                        <span class="badge bg-info-subtle text-info me-1">
+                            <i class="fa-solid fa-user me-1"></i>User
+                        </span>`;
+                }
+                return `
+                    ${folderHtml}
+                    <div class="mb-1">${visibilityBadges}</div>
+                `;
+            }
+        },{
             data: "publish_at",
             orderable: true,
-            render: (data, type, row) => (row.status !== 'published' || !data) ? `<span class="text-muted small">-</span>` : `<div class="small"><i class="fa-regular fa-calendar-check me-1"></i> ${data}</div>`
+            render: (data, type, row) => (row.status !== 'published' || !data) ? `<span class="text-muted small">-</span>` : `<div class="small"><i class="fa-regular fa-calendar-check me-2"></i>${data}</div>`
         },{ 
             data: "created_at",
             orderable: true,
@@ -89,7 +146,7 @@ function initNewsTable() {
             const api = this.api();
             const $filter = $('#tb_news_filter');
             if (!$filter.find('.btn-add-news').length) {
-                $filter.append(`<button class="btn btn-primary btn-sm manage-news ms-2 btn-add-news" data-id=""><i class="fa-solid fa-plus"></i> ${langData['news'] || 'News'}</button>`);
+                $filter.append(`<button class="btn btn-primary btn-sm manage-news ms-2 btn-add-news" data-id=""><i class="fa-solid fa-plus me-2"></i>${langData['news'] || 'News'}</button>`);
             }
             $filter.find('input').unbind().bind('keypress', function(e) {
                 if (e.keyCode == 13) api.search(this.value).draw();
@@ -181,7 +238,45 @@ function getContentForm(d, publishTime) {
                             </div> 
                             <div class="form-check mt-2">
                                 <input class="form-check-input" type="checkbox" id="publish_now">
-                                <label class="form-check-label text-primary fw-bold" for="publish_now"><i class="fas fa-bolt"></i> ${langData['publish_now'] || 'Publish Now'}</label>
+                                <label class="form-check-label text-primary fw-bold" for="publish_now"><i class="fas fa-bolt me-2"></i>${langData['publish_now'] || 'Publish Now'}</label>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <label class="mb-2 mt-3">
+                        <i class="fa-solid fa-folder-tree me-2"></i>
+                        ${langData['folder'] || 'Folder'}
+                    </label>
+                    <div class="border rounded p-3 bg-white" style="max-height:300px; overflow:auto;">
+                        ${renderFolderTree(d.folders, d.folder_id)}
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input 
+                                    class="form-check-input" 
+                                    type="checkbox" 
+                                    id="folder_show_admin"
+                                    ${d.folder_show_admin == 'yes' ? 'checked' : ''}
+                                >
+                                <label class="form-check-label fw-bold" for="folder_show_admin">
+                                    <i class="fa-solid fa-user-shield me-2 text-primary"></i>
+                                    ${langData['show_project_admin'] || 'Show in Project (Admin)'}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input 
+                                    class="form-check-input" 
+                                    type="checkbox" 
+                                    id="folder_show_user"
+                                    ${d.folder_show_user == 'yes' ? 'checked' : ''}
+                                >
+                                <label class="form-check-label fw-bold" for="folder_show_user">
+                                    <i class="fa-solid fa-users me-2 text-success"></i>
+                                    ${langData['show_project_user'] || 'Show in Project (User)'}
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -203,6 +298,35 @@ function getContentForm(d, publishTime) {
             </div>
             <input type="hidden" id="content_id" value="${d.id ?? ''}">
         </form>`;
+}
+function renderFolderTree(folders, selectedId = null, level = 0) {
+    if (!folders || !folders.length) return '';
+    let html = '';
+    folders.forEach(f => {
+        const indent = level * 20;
+        html += `
+            <div class="form-check" style="margin-left:${indent}px">
+                <input 
+                    class="form-check-input" 
+                    type="radio" 
+                    name="folder_id" 
+                    value="${f.id}" 
+                    id="folder_${f.id}"
+                    ${selectedId == f.id ? 'checked' : ''}
+                >
+                <label class="form-check-label" for="folder_${f.id}">
+                    ${level === 0 
+                        ? `<i class="fa-solid fa-folder-tree text-primary me-2"></i>` 
+                        : `<i class="fa-solid fa-folder text-warning me-2"></i>`}
+                    ${f.name}
+                </label>
+            </div>
+        `;
+        if (f.children && f.children.length) {
+            html += renderFolderTree(f.children, selectedId, level + 1);
+        }
+    });
+    return html;
 }
 function togglePublishControls() {
     const status = $("#status").val();
@@ -290,6 +414,12 @@ function executeSave() {
     if (cover) {
         formData.append("cover", cover);
     }
+    let folder_show_admin = $('#folder_show_admin').is(':checked') ? 'yes' : 'no';
+    let folder_show_user  = $('#folder_show_user').is(':checked') ? 'yes' : 'no';
+    let folder_id = $('input[name="folder_id"]:checked').val() || null;
+    formData.append("folder_id", folder_id);
+    formData.append("folder_show_admin", folder_show_admin);
+    formData.append("folder_show_user", folder_show_user);
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
@@ -322,7 +452,7 @@ function executeSave() {
             if (res.status === true) {
                 showSuccess(langData['saved_successfully']);
                 initNewsTable();
-                $('#windModal').modal('hide');
+                $("#content_id").val(res.content_id)
             } else {
                 showError(res.message || 'Error');
             }

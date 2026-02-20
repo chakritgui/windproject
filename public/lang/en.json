@@ -608,5 +608,7 @@
     "menu": "Menu",
     "path": "Path",
     "add_menu": "Add Menu",
-    "save_ordering": "Save Ordering"
+    "save_ordering": "Save Ordering",
+    "show_project_admin": "Show in Project (Admin)",
+    "show_project_user": "Show in Project (User)"
 }

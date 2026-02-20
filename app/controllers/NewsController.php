@@ -61,13 +61,19 @@ class NewsController extends BaseController {
             'new_images360'        => $_FILES['new_images360'] ?? null,
             'auto_translate'       => $_POST['auto_translate'] ?? 'no',
             'send_notification'    => $_POST['send_notification'] ?? 'no',
-            'cover_display'    => $_POST['cover_display'] ?? 'no'
+            'cover_display'    => $_POST['cover_display'] ?? 'no',
+            'folder_id'    => $_POST['folder_id'] ?? null,
+            'folder_show_admin'    => $_POST['folder_show_admin'] ?? 'no',
+            'folder_show_user'    => $_POST['folder_show_user'] ?? 'no',
         ];
         try {
             $result = $this->model->save($data);
-            $this->json(['status' => $result]);
+            $this->json($result);
         } catch (Exception $e) {
-            $this->json(['status' => false, 'message' => $e->getMessage()]);
+            $this->json([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
         }
     }
     public function filter() {

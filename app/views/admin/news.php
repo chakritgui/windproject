@@ -52,6 +52,7 @@
                     <th></th>
                     <th data-i18n="news"></th>
                     <th data-i18n="language"></th>
+                    <th data-i18n="folder"></th>
                     <th data-i18n="publish_at"></th>
                     <th data-i18n="create_at"></th>
                     <th data-i18n="view"></th>

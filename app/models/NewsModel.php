@@ -4,7 +4,7 @@ class NewsModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 4, $orderDir = 'desc') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 5, $orderDir = 'desc') {
         $pdo = $this->db;
         $where = " WHERE n.status != 'deleted' AND n.type = 'news' ";
         $params = [];
@@ -36,9 +36,9 @@ class NewsModel {
         $orderMap = [
             1 => "COALESCE(iTh.content_subject, iEn.content_subject, iLo.content_subject)",
             3 => "n.publish_at",
-            4 => "n.created_at",
-            5 => "n.content_view",
-            6 => "n.status"
+            5 => "n.created_at",
+            6 => "n.content_view",
+            7 => "n.status"
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -54,7 +54,10 @@ class NewsModel {
                     n.content_slug,
                     iEn.status as en_status,
                     iLo.status as lo_status,
-                    iTh.status as th_status
+                    iTh.status as th_status,
+                    n.folder_id,
+                    n.folder_show_admin,
+                    n.folder_show_user
                 FROM wp_content n
                 LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.content_lang='en'
                 LEFT JOIN wp_content_item iLo ON iLo.content_id = n.content_id AND iLo.content_lang='lo'
@@ -82,57 +85,141 @@ class NewsModel {
             $r['subject_lo'] = $r['subject_lo'] ?? '';
             $r['subject_th'] = $r['subject_th'] ?? '';
             $r['settings'] = $settings;
+            if (!empty($r['folder_id'])) {
+                $r['folder_chain'] = $this->getParentFolders($r['folder_id']);
+            } else {
+                $r['folder_chain'] = [];
+            }
         }
         return [
             "total" => (int)$totalFiltered,
             "data" => $rows
         ];
     }
+    private function getParentFolders($folderId){
+        $pdo = $this->db;
+        $stmt = $pdo->prepare("
+            SELECT id, name, parent_id
+            FROM wp_folder
+            WHERE status = 'active'
+        ");
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $map = [];
+        foreach ($rows as $r) {
+            $map[$r['id']] = [
+                'id' => $r['id'],
+                'name' => $r['name'],
+                'parent_id' => $r['parent_id']
+            ];
+        }
+        $result = [];
+        $current = $folderId;
+        while (!empty($current) && isset($map[$current])) {
+            $result[] = [
+                'id' => $map[$current]['id'],
+                'name' => $map[$current]['name']
+            ];
+            $current = $map[$current]['parent_id'];
+        }
+        return $result;
+    }
     public function get($id) {
         $pdo = $this->db;
-        $stmt = $pdo->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_content')");
+        $stmtFolder = $pdo->prepare("SELECT id, name, slug, type, level, parent_id 
+            FROM wp_folder 
+            WHERE status = 'active'
+            AND type IN ('root','folder')
+            ORDER BY level ASC, parent_id ASC, id ASC
+        ");
+        $stmtFolder->execute();
+        $foldersRaw = $stmtFolder->fetchAll(PDO::FETCH_ASSOC);
+        $folderMap = [];
+        foreach ($foldersRaw as $f) {
+            $f['children'] = [];
+            $folderMap[$f['id']] = $f;
+        }
+        $folders = [];
+        foreach ($folderMap as $fid => &$folder) {
+            if (!empty($folder['parent_id']) && isset($folderMap[$folder['parent_id']])) {
+                $folderMap[$folder['parent_id']]['children'][] = &$folder;
+            } else {
+                $folders[] = &$folder;
+            }
+        }
+        unset($folder);
+        $stmt = $pdo->prepare("SELECT setting_type, setting_value 
+            FROM wp_setting 
+            WHERE setting_type IN ('language', 'language_content')
+        ");
         $stmt->execute();
         $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
-        $stmtTranslate = $pdo->prepare("SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN ('ENABLE_TRANSLATE', 'GOOGLE_API_KEY')");
+        $stmtTranslate = $pdo->prepare("SELECT setting_key, setting_value 
+            FROM system_settings 
+            WHERE setting_key IN ('ENABLE_TRANSLATE', 'GOOGLE_API_KEY')
+        ");
         $stmtTranslate->execute();
         $translates = $stmtTranslate->fetchAll(PDO::FETCH_KEY_PAIR);
         if (!$id) {
             return [
-                "id" => "", "status" => "published", "publish_at" => convertTimeZoneUTC(date('Y-m-d H:i'), 'Y-m-d H:i'), "cover" => "",
+                "id" => "",
+                "status" => "published",
+                "publish_at" => convertTimeZoneUTC(date('Y-m-d H:i'), 'Y-m-d H:i'),
+                "cover" => "",
+                "cover_display" => "no",
+                "folder_id" => null,
+                "folder_show_admin" => "no",
+                "folder_show_user" => "no",
                 "attachments" => [],
                 "images" => [],
                 "images360" => [],
-                "title" => ["th" => "", "lo" => "", "en" => ""],
-                "content" => ["th" => "", "lo" => "", "en" => ""],
-                "status_translate" => ["th" => "", "lo" => "", "en" => ""],
-                "translate_with" => ["th" => "", "lo" => "", "en" => ""],
-                "response" => ["th" => "", "lo" => "", "en" => ""],
+                "title" => ["th"=>"","lo"=>"","en"=>""],
+                "content" => ["th"=>"","lo"=>"","en"=>""],
+                "status_translate" => ["th"=>"","lo"=>"","en"=>""],
+                "translate_with" => ["th"=>"","lo"=>"","en"=>""],
+                "response" => ["th"=>"","lo"=>"","en"=>""],
                 "settings" => $settings,
                 "translates" => $translates,
-                "cover_display" => 'no',
+                "folders" => $folders
             ];
         }
-        $stmt = $pdo->prepare("SELECT content_id, status, publish_at, cover, cover_display FROM wp_content WHERE content_id = ?");
-        $stmt->execute([$id]);
+        $stmt = $pdo->prepare("SELECT content_id, status, publish_at, cover, cover_display,
+                folder_id, folder_show_admin, folder_show_user
+            FROM wp_content 
+            WHERE content_id = ?
+        ");
+        $stmt->execute([(int)$id]);
         $n = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$n) return null;
-        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body, status, response, translate_with FROM wp_content_item WHERE content_id = ?");
+        if (!isset($folderMap[$n['folder_id']])) {
+            $n['folder_id'] = null;
+        }
+        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body, status, response, translate_with 
+            FROM wp_content_item 
+            WHERE content_id = ?
+        ");
         $stmt->execute([$id]);
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $title = ["th" => "", "lo" => "", "en" => ""];
-        $content = ["th" => "", "lo" => "", "en" => ""];
-        $status_translate = ["th" => "", "lo" => "", "en" => ""];
-        $translate_with = ["th" => "", "lo" => "", "en" => ""];
-        $response = ["th" => "", "lo" => "", "en" => ""];
+        $title = ["th"=>"","lo"=>"","en"=>""];
+        $content = ["th"=>"","lo"=>"","en"=>""];
+        $status_translate = ["th"=>"","lo"=>"","en"=>""];
+        $translate_with = ["th"=>"","lo"=>"","en"=>""];
+        $response = ["th"=>"","lo"=>"","en"=>""];
         foreach ($items as $row) {
             $lang = $row['content_lang'];
-            $title[$lang] = $row['content_subject'];
-            $content[$lang] = $row['content_body'];
-            $status_translate[$lang] = $row['status'];
-            $response[$lang] = $row['response'];
-            $translate_with[$lang] = $row['translate_with'];
+            if (isset($title[$lang])) {
+                $title[$lang] = $row['content_subject'];
+                $content[$lang] = $row['content_body'];
+                $status_translate[$lang] = $row['status'];
+                $response[$lang] = $row['response'];
+                $translate_with[$lang] = $row['translate_with'];
+            }
         }
-        $stmt = $pdo->prepare("SELECT id, file_path, file_name, file_type, file_size FROM wp_content_media WHERE content_id = ? and status = 'active'");
+        $stmt = $pdo->prepare("SELECT id, file_path, file_name, file_type, file_size 
+            FROM wp_content_media 
+            WHERE content_id = ? 
+            AND status = 'active'
+        ");
         $stmt->execute([$id]);
         $media = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $attachments = [];
@@ -141,7 +228,7 @@ class NewsModel {
         foreach ($media as $m) {
             $item = [
                 "id" => $m['id'],
-                "url" => $m['file_path'], 
+                "url" => $m['file_path'],
                 "name" => $m['file_name'],
                 "size" => $m['file_size']
             ];
@@ -154,11 +241,16 @@ class NewsModel {
             }
         }
         return [
-            "id" => $n['content_id'],
+            "id" => (int)$n['content_id'],
             "status" => $n['status'],
             "cover" => $n['cover'],
             "cover_display" => $n['cover_display'],
-            "publish_at" => !empty($n['publish_at']) ? convertTimeZone($n['publish_at'], 'Y-m-d H:i') : "",
+            "folder_id" => $n['folder_id'],
+            "folder_show_admin" => $n['folder_show_admin'] ?? 'no',
+            "folder_show_user" => $n['folder_show_user'] ?? 'no',
+            "publish_at" => !empty($n['publish_at']) 
+                ? convertTimeZone($n['publish_at'], 'Y-m-d H:i') 
+                : "",
             "title" => $title,
             "content" => $content,
             "status_translate" => $status_translate,
@@ -168,7 +260,8 @@ class NewsModel {
             "images" => $images,
             "images360" => $images360,
             "settings" => $settings,
-            "translates" => $translates
+            "translates" => $translates,
+            "folders" => $folders
         ];
     }
     public function save($data) {
@@ -176,6 +269,9 @@ class NewsModel {
         $content_id = $data['content_id'] ?: null;
         $status = $data['status'] ?? 'draft';
         $cover_display = $data['cover_display'] ?? 'no';
+        $folder_id = !empty($data['folder_id']) ? (int)$data['folder_id'] : null;
+        $folder_show_admin = $data['folder_show_admin'];
+        $folder_show_user  = $data['folder_show_user'];
         $mediaHelper = new MediaHelper($pdo);
         $publish_at = null;
         if ($status !== 'draft') {
@@ -198,22 +294,31 @@ class NewsModel {
             $content_slug = $mediaHelper->generateSlug('news', $data["title_en"], $content_id);
             if ($content_id) {
                 $stmt = $pdo->prepare("UPDATE wp_content SET 
-                    status = :status, 
-                    cover_display = :cover_display, 
-                    content_slug = :content_slug, 
-                    publish_at = :publish_at, 
-                    updated_at = NOW() 
-                    WHERE content_id = :content_id");
+                        status = :status, 
+                        cover_display = :cover_display, 
+                        content_slug = :content_slug, 
+                        publish_at = :publish_at, 
+                        folder_id = :folder_id,
+                        folder_show_admin = :folder_show_admin,
+                        folder_show_user = :folder_show_user,
+                        updated_at = NOW() 
+                    WHERE content_id = :content_id
+                ");
                 $stmt->bindValue(':content_id', (int)$content_id, PDO::PARAM_INT);
             } else {
                 $stmt = $pdo->prepare("INSERT INTO wp_content 
-                    (status, cover_display, content_slug, publish_at, created_at, updated_at) 
-                    VALUES (:status, :cover_display, :content_slug, :publish_at, NOW(), NOW())");
+                    (status, cover_display, content_slug, publish_at, folder_id, folder_show_admin, folder_show_user, created_at, updated_at) 
+                    VALUES 
+                    (:status, :cover_display, :content_slug, :publish_at, :folder_id, :folder_show_admin, :folder_show_user, NOW(), NOW())
+                ");
             }
             $stmt->bindValue(':status', $status);
             $stmt->bindValue(':cover_display', $cover_display);
             $stmt->bindValue(':content_slug', $content_slug);
             $stmt->bindValue(':publish_at', $publish_at, $publish_at === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
+            $stmt->bindValue(':folder_id', $folder_id, $folder_id === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
+            $stmt->bindValue(':folder_show_admin', $folder_show_admin);
+            $stmt->bindValue(':folder_show_user', $folder_show_user);
             $stmt->execute();
             if (!$content_id) {
                 $content_id = $pdo->lastInsertId();
@@ -238,10 +343,18 @@ class NewsModel {
                 $mediaHelper->notification($content_id, $status, $publish_at, 'news');
             }
             $pdo->commit();
-            return true;
+            return [
+                'status' => true,
+                'content_id' => $content_id ?? $pdo->lastInsertId()
+            ];
         } catch (Exception $e) {
-            if ($pdo->inTransaction()) $pdo->rollBack();
-            throw $e;
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+            return [
+                'status' => false,
+                'message' => $e->getMessage()
+            ];
         }
     }
     public function delete($id) {
