@@ -179,32 +179,60 @@ class UserModel {
     public function newsList($page = 1, $limit = 20, $order = 'desc') {
         $offset = ($page - 1) * $limit;
         $member_id = $_SESSION['user']['id'] ?? 0; 
-        $where  = "WHERE c.status = 'published' AND c.type = 'news'";
+        $where = "WHERE (
+            (c.type = 'news' AND c.status = 'published')
+            OR
+            (c.type = 'project' AND c.status = 'active' AND c.folder_show_user = 'yes')
+        )";
         $stmt = $this->db->prepare("SELECT COUNT(*) FROM wp_content c $where");
         $stmt->execute();
         $total = (int)$stmt->fetchColumn();
         $sql = "SELECT
-                    c.content_id,
-                    c.created_at,
-                    iEn.content_subject as subject_en,
-                    iTh.content_subject as subject_th,
-                    iLo.content_subject as subject_lo,
-                    c.cover as cover_image,
-                    SUM(CASE WHEN m.file_type = 'attachment' THEN 1 ELSE 0 END) as count_attachment,
-                    SUM(CASE WHEN m.file_type = 'image' THEN 1 ELSE 0 END) as count_image,
-                    SUM(CASE WHEN m.file_type = 'image360' THEN 1 ELSE 0 END) as count_image360,
-                    MAX(CASE WHEN t.read_at IS NOT NULL THEN 1 ELSE 0 END) as is_read,
-                    c.content_slug
-                FROM wp_content c
-                LEFT JOIN wp_content_item iEn on iEn.content_id = c.content_id and iEn.content_lang = 'en' and iEn.status in ('ready', 'success')
-                LEFT JOIN wp_content_item iTh on iTh.content_id = c.content_id and iTh.content_lang = 'th' and iTh.status in ('ready', 'success')
-                LEFT JOIN wp_content_item iLo on iLo.content_id = c.content_id and iLo.content_lang = 'lo' and iLo.status in ('ready', 'success')
-                LEFT JOIN wp_content_media m on m.content_id = c.content_id and m.status = 'active'
-                LEFT JOIN wp_notification_targets t on t.notifications_item = c.content_id AND t.notifications_target = 'news' AND t.member_id = :member_id
-                $where
-                GROUP BY c.content_id
-                ORDER BY c.created_at {$order}
-                LIMIT :limit OFFSET :offset";
+            c.content_id,
+            c.created_at,
+            iEn.content_subject AS subject_en,
+            iTh.content_subject AS subject_th,
+            iLo.content_subject AS subject_lo,
+            c.cover AS cover_image,
+            COALESCE(m.count_attachment, 0) AS count_attachment,
+            COALESCE(m.count_image, 0) AS count_image,
+            COALESCE(m.count_image360, 0) AS count_image360,
+            EXISTS (
+                SELECT 1
+                FROM wp_notification_targets t2
+                WHERE t2.notifications_item = c.content_id
+                AND t2.notifications_target = 'news'
+                AND t2.member_id = :member_id
+                AND t2.read_at IS NOT NULL
+            ) AS is_read,
+            c.content_slug,
+            c.type
+        FROM wp_content c
+        LEFT JOIN wp_content_item iEn 
+            ON iEn.content_id = c.content_id 
+            AND iEn.content_lang = 'en' 
+            AND iEn.status IN ('ready','success')
+        LEFT JOIN wp_content_item iTh 
+            ON iTh.content_id = c.content_id 
+            AND iTh.content_lang = 'th' 
+            AND iTh.status IN ('ready','success')
+        LEFT JOIN wp_content_item iLo 
+            ON iLo.content_id = c.content_id 
+            AND iLo.content_lang = 'lo' 
+            AND iLo.status IN ('ready','success')
+        LEFT JOIN (
+            SELECT
+                content_id,
+                SUM(CASE WHEN file_type = 'attachment' THEN 1 ELSE 0 END) AS count_attachment,
+                SUM(CASE WHEN file_type = 'image' THEN 1 ELSE 0 END) AS count_image,
+                SUM(CASE WHEN file_type = 'image360' THEN 1 ELSE 0 END) AS count_image360
+            FROM wp_content_media
+            WHERE status = 'active'
+            GROUP BY content_id
+        ) m ON m.content_id = c.content_id
+        $where
+        ORDER BY c.created_at {$order}
+        LIMIT :limit OFFSET :offset";
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
@@ -239,7 +267,7 @@ class UserModel {
         $currentRefId = $filters['ref_id'] ?? null;
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
         $sql = "SELECT 
-            f.id, f.name as folder_name, f.slug, f.level, f.parent_id, f.created_at, f.type, f.ref_id as folder_ref_id, f.content_id, f.notification_status, c.cover, c.content_slug, 
+            f.id, f.name as folder_name, f.slug, f.level, f.parent_id, f.created_at, f.type, f.ref_id as folder_ref_id, f.content_id, c.cover, c.content_slug, f.sub_type,
             iEn.status as en_status,
             iLo.status as lo_status,
             iTh.status as th_status,

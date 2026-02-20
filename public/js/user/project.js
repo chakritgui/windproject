@@ -116,13 +116,16 @@ function renderView(data, isNewSearch) {
         const badge = item.child_count > 0 ? `<span class="badge rounded-pill bg-light text-dark border ms-2" style="font-size: 0.7rem;">${item.child_count}</span>` : '';
         let folder_name = '-';
         if (item.type === 'content') {
+            const subjects = {
+                en: item.en_subject,
+                th: item.th_subject,
+                lo: item.lo_subject
+            };
             folder_name =
-                (currentLang === 'th' && item.th_subject) ||
-                (currentLang === 'en' && item.en_subject) ||
-                (currentLang === 'lo' && item.lo_subject) ||
-                item.th_subject ||
-                item.en_subject ||
-                item.lo_subject ||
+                subjects[currentLang] ||
+                subjects.en ||
+                subjects.th ||
+                subjects.lo ||
                 '-';
         } else {
             folder_name = item.folder_name || '-';

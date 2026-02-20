@@ -81,6 +81,12 @@ function renderNews(items) {
         if (parseInt(item.count_image360) > 0) 
             badgeHtml += `<span class="badge-tag tag-vr"><i class="fa-solid fa-vr-cardboard"></i> <span>${langData['vr'] || 'VR'}</span></span>`;
         const isRead = parseInt(item.is_read) === 1;
+        let typeHtml = '';
+        if(item.type === 'news') {
+            typeHtml = `<span class="badge rounded-pill text-bg-primary"><i class="fa-regular fa-newspaper"></i> <span>${langData['news'] || 'News'}</span></span>`;
+        } else {
+            typeHtml = `<span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project"></i> <span>${langData['project'] || 'Project'}</span></span>`;
+        }
         const html = `
             ${(isPWA()) ? `
                 <a class="news-item ${isRead ? '' : 'unread'}" onclick="openContent('${item.content_slug}', 'view')">
@@ -94,7 +100,7 @@ function renderNews(items) {
                         ${isRead ? '' : '<div class="unread-dot"></div>'}
                     </div>
                     <div class="news-meta">
-                        <div class="meta-item"><i class="fa-regular fa-calendar"></i> ${item.created_at}</div>
+                        <div class="meta-item">${typeHtml} <i class="fa-regular fa-calendar"></i> ${item.created_at}</div>
                     </div>
                     <div class="attachment-badges">
                         ${badgeHtml}
