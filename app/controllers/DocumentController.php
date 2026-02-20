@@ -84,6 +84,7 @@ class DocumentController extends BaseController {
             'type_id' => $_POST['type_id'] ?? '',
             'installations_id' => $_POST['installations_id'] ?? '',
             'poles_id' => $_POST['poles_id'] ?? '',
+            'send_notification' => $_POST['send_notification'] ?? 'no',
             'document_file' => $_FILES['document_file'] ?? null,
         ];
         $this->json($this->model->save($data));

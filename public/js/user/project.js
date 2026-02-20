@@ -23,7 +23,7 @@ function initEventListeners() {
         $('#selectedSortLabel').text(langData[$(this).data('label')]);
         fetchFolders(true);
     });
-    $('#listView').on('click', '.doc-item', function () {
+    $('#listView').on('click', '.fetchFolder', function () {
         const index = $(this).data('index');
         const rowData = state.cachedData[index];
         if (!rowData || rowData.type === 'content') return;
@@ -113,25 +113,51 @@ function renderView(data, isNewSearch) {
     let html = data.map((item, index) => {
         const globalIndex = isNewSearch ? index : (state.cachedData.length - data.length + index);
         const isContent = item.type === 'content';
+        const badge = item.child_count > 0 ? `<span class="badge rounded-pill bg-light text-dark border ms-2" style="font-size: 0.7rem;">${item.child_count}</span>` : '';
+        let folder_name = '-';
+        if (item.type === 'content') {
+            folder_name =
+                (currentLang === 'th' && item.th_subject) ||
+                (currentLang === 'en' && item.en_subject) ||
+                (currentLang === 'lo' && item.lo_subject) ||
+                item.th_subject ||
+                item.en_subject ||
+                item.lo_subject ||
+                '-';
+        } else {
+            folder_name = item.folder_name || '-';
+        }
         const iconHtml = isContent
             ? (item.cover 
                 ? `<img src="${BASE_URL}/${item.cover}" class="rounded-2" style="width:100%;height:100%;object-fit:cover;">`
-                : `<i class="fa-solid fa-file-lines text-primary fa-2x"></i>`)
-            : `<i class="fa-solid fa-folder-open fa-2x"></i>`;
+                : `<i class="fa-regular fa-newspaper text-primary fa-3x"></i>`)
+            : `<i class="fa-solid fa-folder-open fa-3x"></i>`;
         return `
-            <div class="card doc-item border-0 shadow-none mb-2" data-index="${globalIndex}" style="cursor:pointer;">
-                <div class="card-body p-3">
-                    <div class="d-flex align-items-center">
-                        <div class="folder-icon-box me-3 flex-shrink-0">${iconHtml}</div>
-                        <div class="flex-grow-1" style="overflow: hidden; text-overflow: ellipsis;">
-                            <div class="doc-title text-dark">${item.folder_name || '-'}</div>
-                        </div>
-                        <div class="ms-2 flex-shrink-0">
-                            ${isContent ? '' : '<i class="fa-solid fa-chevron-right text-muted"></i>'}
+            ${isContent ? `
+                ${(isPWA()) ? `
+                    <a onclick="openContent('${item.content_slug}', 'view')" style="text-decoration: none;">
+                ` : `
+                    <a href="${BASE_URL}/content/preview/${item.content_slug}" target="_blank" style="text-decoration: none;">
+                `}
+            ` :``}
+                <div class="card doc-item ${(item.type === 'folder' || item.type === 'root') ? `fetchFolder` : ``} border-0 shadow-none mb-2" data-index="${globalIndex}" style="cursor:pointer;">
+                    <div class="card-body p-3">
+                        <div class="d-flex align-items-center">
+                            <div class="folder-icon-box me-3 flex-shrink-0">${iconHtml}</div>
+                            <div class="flex-grow-1" style="overflow: hidden; text-overflow: ellipsis;">
+                                <div class="doc-title text-dark">${folder_name} ${badge}</div>
+                                <div class="text-muted mt-2 small"><i class="fa-regular fa-calendar"></i> ${item.created_at}</div>
+                            </div>
+                            <div class="ms-2 flex-shrink-0">
+                                ${isContent ? '' : '<i class="fa-solid fa-chevron-right text-muted"></i>'}
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>`;
+            ${isContent ? `
+                </a>    
+            ` : ``}
+            `;
     }).join('');
     $container.append(html);
 }

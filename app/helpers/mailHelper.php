@@ -104,7 +104,7 @@ class MailHelper {
         $loginLink  = $domain . "/login"; 
         $footerText = $this->siteSettings['footer'] ?? 'Copyright © 2026 iWind Corporation Limited';
         $siteName   = $this->siteSettings["website_$lang"] ?? ($this->siteSettings["website_en"] ?? 'PHONGSUPTHAVY GROUP');
-        $logoHtml = "<div style='text-align: center; padding: 25px 0; background-color: #ffffff; border-bottom: 2px solid #f0f0f0;'><img src='$logoUrl' alt='Logo' style='max-width: 375px; height: auto;'></div>";
+        $logoHtml = "<div style='text-align: center; padding: 25px 0; background-color: #ffffff; border-bottom: 2px solid #f0f0f0;'><img src='$logoUrl' alt='Logo' style='max-width: 180px; height: auto;'></div>";
         $styles = "style='font-family: \"Helvetica Neue\", Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; max-width: 550px; margin: 20px auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);'";
         $infoBox = "style='background-color: #f8f9fa; border-radius: 6px; padding: 20px; margin: 25px 0; border: 1px dashed #0056b3;'";
         $btnStyle = "display: inline-block; padding: 14px 30px; background-color: #28a745; color: #ffffff; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;";
@@ -214,7 +214,7 @@ class MailHelper {
                     overflow:hidden;
                     background:#ffffff;'>
             <div style='text-align:center; padding:30px 0; background:#ffffff; border-bottom:1px solid #f0f0f0;'>
-                <img src='$logoUrl' alt='Logo' style='max-width:375px; height:auto;'>
+                <img src='$logoUrl' alt='Logo' style='max-width:180px; height:auto;'>
             </div>
             <div style='padding:40px 35px;'>
                 <h2 style='margin-top:0; color:#0056b3; font-weight:600;'>

@@ -77,3 +77,9 @@ function renderLangStatus(lang, status) {
         </span>
     `;
 }
+function formatFileSize(bytes) {
+    if (!bytes) return '-';
+    const kb = bytes / 1024;
+    if (kb < 1024) return kb.toFixed(0) + ' KB';
+    return (kb / 1024).toFixed(2) + ' MB';
+}

@@ -182,6 +182,7 @@ function initTable() {
 }
 $(document).on('click', '.manage-document', function () {
     let document_id = $(this).data("id");
+    const isEdit = !!document_id; 
     $.ajax({
         url: `${BASE_URL}/api/document.info`,
         method: 'POST',
@@ -300,6 +301,17 @@ $(document).on('click', '.manage-document', function () {
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required">${langData['status'] || 'Status'}</label>
                             <select id="status" class="form-select obj-required"></select>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <div class="card bg-light border-0">
+                        <div class="card-body">
+                            <h6 class="card-title fw-bold text-dark"><i class="fa-solid fa-bell me-2"></i>${langData['notification_settings']}</h6>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="send_notification">
+                                <label class="form-check-label" for="send_notification">${isEdit ? langData['send_update'] : langData['send_publishing']}</label>
+                            </div>
+                            <small class="text-muted d-block mt-1">${langData['if_enabled']}</small>
                         </div>
                     </div>
                 `);
@@ -506,9 +518,20 @@ $(document).on('click', '.save-document', function () {
         $('.is-invalid').first().focus();
         return;
     }
-    saveDocument();
+    const isNotify = $("#send_notification").is(":checked");
+    if (isNotify) {
+        Swal.fire({
+            title: langData['send_notification'],
+            text: langData['success_record'],
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: langData['save_and_notify']
+        }).then((result) => { if (result.isConfirmed) executeSave(); });
+    } else {
+        executeSave();
+    }
 });
-function saveDocument() {
+function executeSave() {
     const btn = $(".save-document");
     btn.prop("disabled", true);
     const formData = new FormData();
@@ -527,6 +550,7 @@ function saveDocument() {
     if (file) {
         formData.append("document_file", file);
     }
+    formData.append("send_notification", $("#send_notification").is(":checked") ? 'yes' : 'no');
     Swal.fire({
         title: langData['uploading'] || 'Uploading...',
         html: `

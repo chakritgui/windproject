@@ -103,25 +103,59 @@ function handleNotificationItem(items) {
                 title = item.title_th || item.title_en;
                 break;
         }
+        let icon = '';
+        let bg = '';
+        let color = '';
+        if(item.notifications_target === 'document') {
+            icon = getFileIconClass(item.icon);
+            bg = 'bg-dark';
+        } else {
+            if(item.notifications_target == 'project') {
+                icon = 'fa-solid fa-diagram-project';
+                bg = 'bg-primary';
+                color = 'text-primary';
+            } else {
+                icon = 'fa-solid fa-bell';
+                bg = 'bg-warning';
+                color = 'text-warning';
+            }
+        }
         const html = `
             <li>
-                <a href="${BASE_URL}/content/view/${item.content_slug}" class="dropdown-item py-3 border-bottom ${isUnread}" target="_blank">
+                ${(item.notifications_target !== 'document') ? `
+                    ${(isPWA()) ? `
+                        <a onclick="openContent('${item.content_slug}', 'preview')" class="dropdown-item py-3 border-bottom view-content ${isUnread}">
+                    ` : `
+                        <a href="${BASE_URL}/content/view/${item.content_slug}" class="dropdown-item py-3 border-bottom ${isUnread}" target="_blank">
+                    `}
+                ` : `
+                        <div class="dropdown-item py-3 border-bottom" style="font-size: 12px !important;">
+                `}
                     <div class="d-flex align-items-start">
                         <div class="flex-shrink-0 me-3">
-                            <div class="bg-${item.notifications_target == 'project' ? `primary` : `warning`} bg-opacity-10 rounded-circle p-2">
-                                <i class="${item.notifications_target == 'project' ? `fa-solid fa-diagram-project` : `fa-solid fa-bell`} fa-2x text-${item.notifications_target == 'project' ? `primary` : `warning`}"></i>
+                            <div class="${bg} bg-opacity-10 rounded-circle p-2">
+                                <i class="${icon} ${color}" style="font-size: 1rem;"></i>
                             </div>
                         </div>
                         <div class="flex-grow-1" style="min-width: 0;">
                             <div class="mb-1 fw-semibold line-clamp-2">${title}</div>
-                            <p class="mb-1 small text-muted">${langData[item.notifications_target] || item.notifications_target}</p>
+                            <p class="mb-1 small text-muted">${langData[item.notifications_target] || item.notifications_target} ${(item.notifications_target === 'document') ? `<i class="fa-solid fa-hard-drive me-1"></i>${formatFileSize(item.item_size)}` : ``}</p> 
                             <small class="text-muted">
                                 <i class="fa-solid fa-clock me-1"></i>${item.notification_at}
                             </small>
                         </div>
+                        ${(item.notifications_target === 'document') ? `
+                            <div class="ms-2">
+                                <button class="btn btn-sm btn-outline-primary download-btn w-100 w-md-auto" data-id="${item.notifications_item}" data-path="${item.path}" data-file-name="${item.item_name}"><i class="fa-solid fa-download"></i></button>
+                            </div>
+                        ` : ``}
                         ${!item.read_at ? `<span class="badge bg-danger rounded-pill ms-2">${langData['new'] || 'New'}</span>` : ''}
                     </div>
-                </a>
+                ${(item.notifications_target !== 'document') ? `
+                    </a>
+                ` : `
+                    </div>
+                `}
             </li>`;
         $list.append(html);
     });
@@ -144,4 +178,32 @@ function updateUnreadBadge(unread) {
     } else {
         $(".notification-badge").addClass("d-none");
     }
+}
+$(document).on('click', '.download-btn', function (e) {
+    e.preventDefault();
+    const btn  = $(this);
+    const id   = btn.data('id');
+    const path = btn.data('path');
+    const fileName = btn.data('file-name') || '';
+    if (!id || !path) return;
+    $.ajax({
+        url: `${BASE_URL}/api/document.download`,
+        method: 'POST',
+        dataType: 'json',
+        data: { id: id },
+        success: function (res) {
+            triggerDownload(path, fileName);
+        },
+        error: function () {
+            triggerDownload(path, fileName);
+        }
+    });
+});
+function triggerDownload(url, fileName='') {
+    const a = document.createElement('a');
+    a.href = url;
+    a.setAttribute('download', fileName || '');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }

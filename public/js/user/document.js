@@ -169,9 +169,19 @@ const createBadge = (text, icon, colorClass) => {
             </span>`;
 };
 function renderGridView(items) {
+    if (!items.length) {
+        $('#gridView').html(`
+            <div class="empty-state-container animated fadeIn">
+                <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
+                <h3 class="empty-title" data-i18n="no_items"></h3>
+                <p class="empty-subtitle" data-i18n="no_items_subtitle"></p>
+            </div>
+        `);
+        return;
+    }
     let html = '';
     items.forEach(item => {
-        const icon = getDocIcon(item.document_type);
+        const icon = getFileIconClass(item.document_type);
         const size = formatFileSize(item.document_size);
         html += `
         <div class="col-12 col-md-4">
@@ -211,7 +221,7 @@ function renderGridView(items) {
 function renderListView(items) {
     let html = '';
     items.forEach(item => {
-        const icon = getDocIcon(item.document_type);
+        const icon = getFileIconClass(item.document_type);
         const size = formatFileSize(item.document_size);
         html += `
         <div class="list-view-item">
@@ -240,7 +250,7 @@ function renderListView(items) {
                     </div>
                 </div>
                 <div class="col-12 col-md-auto text-end">
-                    <button class="btn btn-outline-primary download-btn w-100 w-md-auto" data-id="${item.document_id}" data-path="${item.document_path}" data-file-name="${item.document_file_name}">
+                    <button class="btn btn-outline-primary download-btn w-100 w-md-auto" data-id="${item.notifications_item}" data-path="${item.path}" data-file-name="${item.item_name}">
                         <i class="fa-solid fa-download"></i>
                         <span class="btn-text" data-i18n="download"></span>
                     </button>
@@ -270,20 +280,6 @@ function setView(view) {
         $list.fadeIn(300);
     }
     loadDocuments();
-}
-function getDocIcon(type) {
-    type = (type || '').toLowerCase();
-    if (type === 'pdf') return 'fa-solid fa-file-pdf text-danger';
-    if (['doc','docx'].includes(type)) return 'fa-solid fa-file-word text-primary';
-    if (['xls','xlsx'].includes(type)) return 'fa-solid fa-file-excel text-success';
-    if (['png','jpg','jpeg'].includes(type)) return 'fa-solid fa-images text-warning';
-    return 'fa-regular fa-file text-muted';
-}
-function formatFileSize(bytes) {
-    if (!bytes) return '-';
-    const kb = bytes / 1024;
-    if (kb < 1024) return kb.toFixed(0) + ' KB';
-    return (kb / 1024).toFixed(2) + ' MB';
 }
 const observer = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting) {
@@ -374,7 +370,7 @@ function renderHistoryRows(items) {
     }
     items.forEach((row) => {
         const device = parseUA(row.download_device);
-        const icon = getDocIcon(row.document_type);
+        const icon = getFileIconClass(row.document_type);
         const size = formatFileSize(row.document_size);
         html += `
         <div class="card shadow-sm mb-3">

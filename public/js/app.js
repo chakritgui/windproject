@@ -274,9 +274,18 @@ async function changeLanguage(lang) {
     } catch (err) {
         console.warn("Could not save language to DB (User might not be logged in)", err);
     }
-    await loadLang(lang);
-    await loadMenu(); 
-    refreshAllTables();
+    if (typeof loadLang === 'function') {
+        await loadLang(lang);
+    }
+    if (typeof loadMenu === 'function') {
+        await loadMenu();
+    }
+    if (typeof refreshAllTables === 'function') {
+        refreshAllTables();
+    }
+    if (typeof fetchFolders === 'function') {
+        fetchFolders(true);
+    }
     $('.dropdown-menu').removeClass('show');
 }
 function initAutoLanguageObserver() {

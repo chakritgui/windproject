@@ -94,8 +94,21 @@ function renderTable(data, isNewSearch) {
         const globalIndex = cachedData.length - data.length + index;
         let icon = 'fa-folder-open text-warning';
         if (item.type === 'root') icon = 'fa-folder-open text-secondary';
-        if (item.type === 'content') icon = 'fa-file-lines text-primary';
+        if (item.type === 'content') icon = 'fa-regular fa-newspaper text-primary';
         const badge = item.child_count > 0 ? `<span class="badge rounded-pill bg-light text-dark border ms-2" style="font-size: 0.7rem;">${item.child_count}</span>` : '';
+        let folder_name = '-';
+        if (item.type === 'content') {
+            folder_name =
+                (currentLang === 'th' && item.th_subject) ||
+                (currentLang === 'en' && item.en_subject) ||
+                (currentLang === 'lo' && item.lo_subject) ||
+                item.th_subject ||
+                item.en_subject ||
+                item.lo_subject ||
+                '-';
+        } else {
+            folder_name = item.folder_name || '-';
+        }
         html += `
             <tr data-index="${globalIndex}" style="${item.type === 'content' ? 'cursor:default;' : 'cursor:pointer;'}">
                 <td class="text-center" style="width: 80px;">
@@ -103,18 +116,18 @@ function renderTable(data, isNewSearch) {
                     ${(item.type === 'content') ? `
                         ${item.cover ? 
                             `<img src="${BASE_URL}/${item.cover}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';">` : 
-                            `<i class="fa-solid ${icon} fa-2x"></i>`
+                            `<i class="fa-solid ${icon} fa-3x"></i>`
                         }
                     ` : `
-                        <i class="fa-solid ${icon} fa-2x"></i>    
+                        <i class="fa-solid ${icon} fa-3x"></i>    
                     `}
                     </div>
                 </td>
                 <td>
                     <div class="fw-bold">
-                        ${item.folder_name || '-'} ${badge}
+                        ${folder_name || '-'} ${badge}
                     </div>
-                    <small class="text-muted">${item.type ? item.type.toUpperCase() : 'FOLDER'}</small>
+                    <div class="text-muted mt-2 small"><i class="fa-regular fa-calendar"></i> ${item.created_at}</div>
                 </td>
                 <td>${item.created_at || '-'}</td>
                 <td>
@@ -143,9 +156,7 @@ function renderTable(data, isNewSearch) {
                         <button class="btn btn-link text-warning border-start manage-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-solid fa-pen-to-square"></i></button>
                         ${(item.child_count === 0) ? `
                            <button class="btn btn-link text-danger border-start delete-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-regular fa-trash-can"></i></button> 
-                        ` : `
-                            <button class="btn btn-link text-muted border-start" disabled><i class="fa-regular fa-trash-can"></i></button>
-                        `}
+                        ` : ``}
                     ` : ``}
                     </div>
                 </td>

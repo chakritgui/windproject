@@ -230,6 +230,7 @@ class DocumentModel {
             $endObj = DateTime::createFromFormat('d/m/Y', trim($data['document_end']));
             $document_start = ($startObj) ? convertTimeZoneUTC($startObj->format('Y-m-d'), 'Y-m-d') : null;
             $document_end   = ($endObj) ? convertTimeZoneUTC($endObj->format('Y-m-d'), 'Y-m-d') : null;
+            $send_notification = $data['send_notification'] ?? 'no';
             if ($document_id) {
                 $this->updateDocument($document_id, $document_name, $document_start, $document_end, $status, $type_id, $contract_id, $project_id, $installations_id, $poles_id);
             } else {
@@ -237,6 +238,12 @@ class DocumentModel {
             }
             if (isset($_FILES['document_file']) && $_FILES['document_file']['error'] === UPLOAD_ERR_OK) {
                 $this->handleFileUpload($document_id, $_FILES['document_file']);
+            }
+            if($send_notification == 'yes') {
+                $mediaHelper = new MediaHelper($this->db);
+                $status = 'published';
+                $publish_at = convertTimeZoneUTC(date('Y-m-d H:i:s'), 'Y-m-d H:i:s');
+                $mediaHelper->notification($document_id, $status, $publish_at, 'document');
             }
             $this->db->commit();
             return [
@@ -416,8 +423,8 @@ class DocumentModel {
         $size = $file['size'];
         $name = $file['name'];
         $dId = md5($document_id);
-        $path   = "{$dir}{$dId}";
-        $target = dirname(__DIR__, 2) . '/' . $path;
+        $path   = "{$dir}{$dId}.{$ext}";
+        $target = dirname(__DIR__, 2) . '/' . $path . '.' .$ext;
         move_uploaded_file($file['tmp_name'], $target);
         $sql = "UPDATE wp_documents SET document_path=?, document_type=?, document_size=?, document_file_name=? WHERE document_id=?";
         $stmt = $this->db->prepare($sql);
