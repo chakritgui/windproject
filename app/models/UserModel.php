@@ -180,7 +180,7 @@ class UserModel {
         $offset = ($page - 1) * $limit;
         $member_id = $_SESSION['user']['id'] ?? 0; 
         $where = "WHERE (
-            (c.type = 'news' AND c.status = 'published')
+            (c.type = 'news' AND c.status = 'published' and c.publish_at is not null and c.publish_at <> '' and c.publish_at <= NOW())
             OR
             (c.type = 'project' AND c.status = 'active' AND c.folder_show_user = 'yes')
         )";
@@ -317,7 +317,7 @@ class UserModel {
     private function countChildren($folderId, $currentLevel) {
         $nextLevel = (int)$currentLevel + 1; 
         $where = " AND (
-            (f.sub_type = 'news' AND c.status = 'published' AND c.folder_show_user = 'yes')
+            (f.sub_type = 'news' AND c.status = 'published' AND c.folder_show_user = 'yes' and c.publish_at is not null and c.publish_at <> '' and c.publish_at <= NOW())
             OR
             (f.sub_type = 'project' AND f.status = 'active')
         )";
