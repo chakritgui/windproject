@@ -11,6 +11,7 @@ function initDashboard() {
             if (res.status === true && res.data) {
                 const d = res.data;
                 $('#memberCount').text(numberWithCommas(d.total_members));
+                $('#adminCount').text(numberWithCommas(d.total_admin));
                 $('#contractCount').text(numberWithCommas(d.total_contracts));
                 $('#projectCount').text(numberWithCommas(d.total_projects));
                 $('#installCount').text(numberWithCommas(d.total_installations));

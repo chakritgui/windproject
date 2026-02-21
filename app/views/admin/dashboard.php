@@ -22,53 +22,87 @@
 <div class="container-fluid mt-3 mb-5">
     <div class="row g-4 mb-4">
         <div class="col-xl-3 col-sm-6">
-            <div class="card stat-card h-100 text-white" style="background: var(--primary-gradient)">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <div class="stat-label" data-i18n="member"></div>
-                            <div class="stat-number" id="memberCount">0</div>
+            <div class="card border-0 shadow-sm h-100 overflow-hidden stat-card">
+                <div class="card-body p-0">
+                    <div class="p-4" style="background: var(--primary-gradient)">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-white text-opacity-75 small fw-semibold text-uppercase tracking-wide mb-1" data-i18n="member">Members</p>
+                                <h2 class="text-white fw-bold mb-0 lh-1" id="memberCount">0</h2>
+                            </div>
+                            <div class="rounded-3 p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(4px);">
+                                <i class="fa-solid fa-users fa-lg text-white"></i>
+                            </div>
                         </div>
-                        <div class="icon-box"><i class="fa-solid fa-users"></i></div>
+                    </div>
+                    <div class="px-4 py-3 d-flex align-items-center gap-3" style="background: rgba(0,0,0,0.04)">
+                        <div class="rounded-3 p-2 d-flex align-items-center justify-content-center" style="background: var(--primary-gradient)">
+                            <i class="fa-solid fa-user-shield fa-sm text-white"></i>
+                        </div>
+                        <div>
+                            <p class="text-muted small mb-0" data-i18n="admin">Admins</p>
+                            <h6 class="fw-bold mb-0" id="adminCount">0</h6>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-xl-3 col-sm-6">
-            <div class="card stat-card h-100 text-white" style="background: var(--success-gradient)">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center">
+            <div class="card border-0 shadow-sm h-100 overflow-hidden stat-card">
+                <div class="card-body p-4" style="background: var(--success-gradient)">
+                    <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <div class="stat-label" data-i18n="contract"></div>
-                            <div class="stat-number" id="contractCount">0</div>
+                            <p class="text-white text-opacity-75 small fw-semibold text-uppercase mb-1" data-i18n="contract">Contracts</p>
+                            <h2 class="text-white fw-bold mb-0 lh-1" id="contractCount">0</h2>
                         </div>
-                        <div class="icon-box"><i class="fa-solid fa-file-signature"></i></div>
+                        <div class="rounded-3 p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(4px);">
+                            <i class="fa-solid fa-file-signature fa-lg text-white"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3" style="border-top: 1px solid rgba(255,255,255,0.2)">
+                        <span class="text-white text-opacity-75 small">
+                            <i class="fa-solid fa-circle-check me-1"></i> <span data-i18n="active"></span>
+                        </span>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-xl-3 col-sm-6">
-            <div class="card stat-card h-100 text-white" style="background: var(--info-gradient)">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center">
+            <div class="card border-0 shadow-sm h-100 overflow-hidden stat-card">
+                <div class="card-body p-4" style="background: var(--info-gradient)">
+                    <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <div class="stat-label" data-i18n="project"></div>
-                            <div class="stat-number" id="projectCount">0</div>
+                            <p class="text-white text-opacity-75 small fw-semibold text-uppercase mb-1" data-i18n="project">Projects</p>
+                            <h2 class="text-white fw-bold mb-0 lh-1" id="projectCount">0</h2>
                         </div>
-                        <div class="icon-box"><i class="fa-solid fa-diagram-project"></i></div>
+                        <div class="rounded-3 p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(4px);">
+                            <i class="fa-solid fa-diagram-project fa-lg text-white"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3" style="border-top: 1px solid rgba(255,255,255,0.2)">
+                        <span class="text-white text-opacity-75 small">
+                            <i class="fa-solid fa-circle-dot me-1"></i> <span data-i18n="active"></span>
+                        </span>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-xl-3 col-sm-6">
-            <div class="card stat-card h-100 text-white" style="background: var(--warning-gradient)">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-center">
+            <div class="card border-0 shadow-sm h-100 overflow-hidden stat-card">
+                <div class="card-body p-4" style="background: var(--warning-gradient)">
+                    <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <div class="stat-label" data-i18n="installation"></div>
-                            <div class="stat-number" id="installCount">0</div>
+                            <p class="text-white text-opacity-75 small fw-semibold text-uppercase mb-1" data-i18n="installation">Installations</p>
+                            <h2 class="text-white fw-bold mb-0 lh-1" id="installCount">0</h2>
                         </div>
-                        <div class="icon-box"><i class="fa-solid fa-map-location-dot"></i></div>
+                        <div class="rounded-3 p-3 d-flex align-items-center justify-content-center" style="background: rgba(255,255,255,0.2); backdrop-filter: blur(4px);">
+                            <i class="fa-solid fa-map-location-dot fa-lg text-white"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3" style="border-top: 1px solid rgba(255,255,255,0.2)">
+                        <span class="text-white text-opacity-75 small">
+                            <i class="fa-solid fa-location-dot me-1"></i> <span data-i18n="active"></span>
+                        </span>
                     </div>
                 </div>
             </div>

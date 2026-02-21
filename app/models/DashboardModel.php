@@ -7,7 +7,8 @@ class DashboardModel {
     public function getStats() {
         $stats = [];
         $queries = [
-            'total_members' => "SELECT COUNT(*) FROM wp_members WHERE status = 'active'",
+            'total_members' => "SELECT COUNT(*) FROM wp_members WHERE status = 'active' and role = 'user'",
+            'total_admin' => "SELECT COUNT(*) FROM wp_members WHERE status = 'active' and role <> 'user'",
             'total_contracts' => "SELECT COUNT(*) FROM wp_contract WHERE status = 'active'",
             'total_projects' => "SELECT COUNT(*) FROM wp_project WHERE status = 'active'",
             'total_types' => "SELECT COUNT(*) FROM wp_type WHERE status = 'active'",
