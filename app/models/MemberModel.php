@@ -179,7 +179,7 @@ class MemberModel {
         }
         return ["total" => (int)$total, "data" => $rows];
     }
-    public function request($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 5, $orderDir = 'desc') {
+    public function request($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 6, $orderDir = 'desc') {
         $pdo = $this->db;
         $where = " WHERE 1=1 ";
         $params = [];

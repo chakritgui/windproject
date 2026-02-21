@@ -710,7 +710,7 @@ function initRequestTable() {
         processing: true,
         serverSide: true,
         responsive: true, 
-        order: [[5, 'desc']],
+        order: [[6, 'desc']],
         ajax: { 
             url: `${BASE_URL}/api/request.list`,
             type: "POST",
