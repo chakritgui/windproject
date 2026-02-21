@@ -207,6 +207,7 @@ a {
 }
 .position-relative .badge {
     transform: translate(-50%, -50%);
+    z-index: 2;
 }
 .panel-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
