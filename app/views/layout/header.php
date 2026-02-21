@@ -137,7 +137,7 @@
                         <li><div class="notification-list"></div></li>
                         <li class="dropdown-footer text-center border-top pt-2 pb-0">
                             <div class="d-flex flex-column">
-                                <a href="<?=BASE_URL?>/news" class="btn btn-light btn-sm border-0 w-100 py-2 fw-bold text-primary" data-i18n="view_all_notifications" style="border-radius: 0 0 5px 5px;"></a>
+                                <a href="<?=BASE_URL?>/news" class="btn btn-light btn-sm border-0 w-100 py-2 fw-bold text-primary" data-i18n="view_all" style="border-radius: 0 0 5px 5px;"></a>
                             </div>
                         </li>
                     </ul>

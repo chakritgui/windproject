@@ -108,6 +108,12 @@ function renderTable(data, isNewSearch) {
         }
         const bg = item.status === "active" ? "success" : "secondary";
         const statusBody = `<span class="badge rounded-pill bg-${bg}-subtle text-${bg}">${langData[item.status] || item.status}</span>`;
+        let typeHtml = '';
+        if(item.sub_type === 'news') {
+            typeHtml = `<span class="badge rounded-pill text-bg-primary"><i class="fa-regular fa-newspaper"></i> <span>${langData['news'] || 'News'}</span></span>`;
+        } else {
+            typeHtml = `<span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project"></i> <span>${langData['project'] || 'Project'}</span></span>`;
+        }
         html += `
             <tr data-index="${globalIndex}" style="${item.type === 'content' ? 'cursor:default;' : 'cursor:pointer;'}">
                 <td class="text-center" style="width: 80px;">
@@ -128,6 +134,9 @@ function renderTable(data, isNewSearch) {
                     </div>
                     <div class="text-muted mt-2 small"><i class="fa-regular fa-calendar"></i> ${item.created_at}</div>
                 </td>
+                <td>
+                    ${(item.type === 'content') ? typeHtml : ``}
+                </td>
                 <td>${item.created_at || '-'}</td>
                 <td>
                     ${(item.type === 'content') ? `
@@ -139,13 +148,15 @@ function renderTable(data, isNewSearch) {
                 </td>
                 <td style="white-space: nowrap;">
                     <div class="btn-group border rounded-3 bg-white">
-                    ${(item.type === 'content') ? `
-                        <a onclick="openContent('${item.content_slug}', 'preview')" class="btn btn-link text-info view-content"><i class="fa-solid fa-eye"></i></a> 
-                    ` : ``}
-                    <button class="btn btn-link text-warning border-start manage-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                    ${(item.child_count === 0) ? `
-                        <button class="btn btn-link text-danger border-start delete-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-regular fa-trash-can"></i></button> 
-                    ` : ``}
+                        ${(item.type === 'content') ? `
+                            <a onclick="openContent('${item.content_slug}', 'preview')" class="btn btn-link text-info view-content"><i class="fa-solid fa-eye"></i></a> 
+                        ` : ``}
+                        ${item.sub_type === 'project' ? `
+                            <button class="btn btn-link text-warning border-start manage-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                            ${(item.child_count === 0) ? `
+                                <button class="btn btn-link text-danger border-start delete-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-regular fa-trash-can"></i></button> 
+                            ` : ``}
+                        ` : ``}
                     </div>
                 </td>
             </tr>`;

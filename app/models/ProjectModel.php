@@ -15,7 +15,8 @@ class ProjectModel {
             iLo.content_subject as lo_subject,
             iTh.content_subject as th_subject,
             f.created_at,
-            f.status
+            f.status,
+            f.sub_type
         FROM wp_folder f 
         LEFT JOIN wp_content c on c.content_id = f.content_id
         LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang='en'
@@ -48,21 +49,19 @@ class ProjectModel {
         ];
     }
     private function countChildren($folderId, $currentLevel) {
-        $nextLevel = (int)$currentLevel + 1;
-        $sqlFolder = "SELECT id FROM wp_folder WHERE parent_id = :pid AND level = :lvl AND status <> 'deleted'";
-        $stmt = $this->db->prepare($sqlFolder);
+        $nextLevel = (int)$currentLevel + 1; 
+        $where = " AND (
+            (f.sub_type = 'news' AND c.status = 'published' AND c.folder_show_admin = 'yes')
+            OR
+            (f.sub_type = 'project' AND f.status = 'active')
+        )";
+        $sql = "SELECT COUNT(DISTINCT f.id) FROM wp_folder f LEFT JOIN wp_content c ON c.content_id = f.content_id WHERE f.parent_id = :pid AND f.level = :lvl {$where}";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([
             ':pid' => $folderId, 
             ':lvl' => $nextLevel
         ]);
-        $nextFolders = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        if (empty($nextFolders)) return 0;
-        $totalChild = 0;
-        foreach ($nextFolders as $nf) {
-            $totalChild++; 
-            continue;
-        }
-        return $totalChild;
+        return (int) $stmt->fetchColumn();
     }
     public function save($data){
         $parentId = (!empty($data['parent_id']) && $data['parent_id'] > 0) ? $data['parent_id'] : null;
@@ -141,7 +140,11 @@ class ProjectModel {
         return $row;
     }
     private function buildListWhere($filters) {
-        $where  = " WHERE f.status <> 'deleted' ";
+        $where  = " WHERE  
+            ((f.sub_type = 'news' AND c.status = 'published' AND c.folder_show_admin = 'yes')
+            OR
+            (f.sub_type = 'project' AND f.status = 'active') )
+        ";
         $params = [];
         if (!empty($filters['level'])) {
             $where .= " AND f.level = :level";

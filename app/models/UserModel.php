@@ -315,24 +315,26 @@ class UserModel {
         return $row;
     }
     private function countChildren($folderId, $currentLevel) {
-        $nextLevel = (int)$currentLevel + 1;
-        $sqlFolder = "SELECT id FROM wp_folder WHERE parent_id = :pid AND level = :lvl AND status = 'active'";
-        $stmt = $this->db->prepare($sqlFolder);
+        $nextLevel = (int)$currentLevel + 1; 
+        $where = " AND (
+            (f.sub_type = 'news' AND c.status = 'published' AND c.folder_show_user = 'yes')
+            OR
+            (f.sub_type = 'project' AND f.status = 'active')
+        )";
+        $sql = "SELECT COUNT(DISTINCT f.id) FROM wp_folder f LEFT JOIN wp_content c ON c.content_id = f.content_id WHERE f.parent_id = :pid AND f.level = :lvl {$where}";
+        $stmt = $this->db->prepare($sql);
         $stmt->execute([
             ':pid' => $folderId, 
             ':lvl' => $nextLevel
         ]);
-        $nextFolders = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        if (empty($nextFolders)) return 0;
-        $totalChild = 0;
-        foreach ($nextFolders as $nf) {
-            $totalChild++; 
-            continue;
-        }
-        return $totalChild;
+        return (int) $stmt->fetchColumn();
     }
     private function buildListWhere($filters) {
-        $where  = " WHERE f.status = 'active' ";
+        $where  = " WHERE  
+            ((f.sub_type = 'news' AND c.status = 'published' AND c.folder_show_user = 'yes')
+            OR
+            (f.sub_type = 'project' AND f.status = 'active') )
+        ";
         $params = [];
         if (!empty($filters['level'])) {
             $where .= " AND f.level = :level ";

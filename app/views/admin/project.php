@@ -71,6 +71,7 @@
                 <tr>
                     <th style="width: 60px;"></th>
                     <th data-i18n="name"></th>
+                    <th data-i18n="type"></th>
                     <th data-i18n="last_update"></th>
                     <th data-i18n="language"></th>
                     <th data-i18n="status"></th>
