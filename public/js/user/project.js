@@ -110,6 +110,7 @@ function renderView(data, isNewSearch) {
         const isContent = item.type === 'content';
         const badge = item.child_count > 0 ? `<span class="badge rounded-pill bg-light text-dark border ms-2" style="font-size: 0.7rem;">${item.child_count}</span>` : '';
         let folder_name = '-';
+        let badgeHtml = '';
         if (item.type === 'content') {
             const subjects = {
                 en: item.en_subject,
@@ -122,6 +123,12 @@ function renderView(data, isNewSearch) {
                 subjects.th ||
                 subjects.lo ||
                 '-';
+            if (parseInt(item.count_attachment) > 0) 
+                badgeHtml += `<span class="badge-tag tag-pdf"><i class="fa-solid fa-file-pdf"></i> <span>${langData['document'] || 'Document'}</span></span>`;
+            if (parseInt(item.count_image) > 0) 
+                badgeHtml += `<span class="badge-tag tag-img"><i class="fa-solid fa-images"></i> <span>${langData['image'] || 'Image'}</span></span>`;
+            if (parseInt(item.count_image360) > 0) 
+                badgeHtml += `<span class="badge-tag tag-vr"><i class="fa-solid fa-vr-cardboard"></i> <span>${langData['vr'] || 'VR'}</span></span>`;
         } else {
             folder_name = item.folder_name || '-';
         }
@@ -130,21 +137,34 @@ function renderView(data, isNewSearch) {
                 ? `<img src="${BASE_URL}/${item.cover}" class="rounded-2" style="width:100%;height:100%;object-fit:cover;">`
                 : `<i class="fa-regular fa-newspaper text-primary fa-3x"></i>`)
             : `<i class="fa-solid fa-folder-open fa-3x"></i>`;
+        let typeHtml = '';
+        if(item.sub_type === 'news') {
+            typeHtml = `<span class="badge rounded-pill text-bg-primary"><i class="fa-regular fa-newspaper"></i> <span>${langData['news'] || 'News'}</span></span>`;
+        } else {
+            typeHtml = `<span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project"></i> <span>${langData['project'] || 'Project'}</span></span>`;
+        }
         return `
             ${isContent ? `
-                ${(isPWA()) ? `
-                    <a onclick="openContent('${item.content_slug}', 'view')" style="text-decoration: none;">
-                ` : `
-                    <a href="${BASE_URL}/content/preview/${item.content_slug}" target="_blank" style="text-decoration: none;">
-                `}
+                <a onclick="openContent('${item.content_slug}', 'view')" style="text-decoration: none;">
             ` :``}
                 <div class="card doc-item ${(item.type === 'folder' || item.type === 'root') ? `fetchFolder` : ``} border-0 shadow-none mb-2" data-index="${globalIndex}" style="cursor:pointer;">
                     <div class="card-body p-3">
                         <div class="d-flex align-items-center">
                             <div class="folder-icon-box me-3 flex-shrink-0">${iconHtml}</div>
                             <div class="flex-grow-1" style="overflow: hidden; text-overflow: ellipsis;">
-                                <div class="doc-title text-dark">${folder_name} ${badge}</div>
-                                <div class="text-muted mt-2 small"><i class="fa-regular fa-calendar"></i> ${item.created_at}</div>
+                                <div class="doc-title news-title mb-3">${folder_name} ${badge}</div>
+                                ${isContent ? 
+                                    `
+                                        <div class="news-meta">
+                                            <div class="meta-item">${typeHtml} <span class="small"><i class="fa-regular fa-calendar"></i> ${item.created_at}</span></div>
+                                        </div>
+                                        <div class="attachment-badges small">
+                                            ${badgeHtml}
+                                        </div>
+                                    ` : `
+                                        <div class="text-muted mt-2 small"><i class="fa-regular fa-calendar"></i> ${item.created_at}</div>
+                                    `
+                                }
                             </div>
                             <div class="ms-2 flex-shrink-0">
                                 ${isContent ? '' : '<i class="fa-solid fa-chevron-right text-muted"></i>'}

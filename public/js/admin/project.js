@@ -140,11 +140,7 @@ function renderTable(data, isNewSearch) {
                 <td style="white-space: nowrap;">
                     <div class="btn-group border rounded-3 bg-white">
                     ${(item.type === 'content') ? `
-                        ${(isPWA()) ? `
-                            <a onclick="openContent('${item.content_slug}', 'preview')" class="btn btn-link text-info view-content"><i class="fa-solid fa-eye"></i></a> 
-                        ` : `
-                            <a href="${BASE_URL}/content/preview/${item.content_slug}" class="btn btn-link text-info view-content" target="_blank"><i class="fa-solid fa-eye"></i></a> 
-                        `}
+                        <a onclick="openContent('${item.content_slug}', 'preview')" class="btn btn-link text-info view-content"><i class="fa-solid fa-eye"></i></a> 
                     ` : ``}
                     <button class="btn btn-link text-warning border-start manage-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-solid fa-pen-to-square"></i></button>
                     ${(item.child_count === 0) ? `

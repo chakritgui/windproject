@@ -3,7 +3,7 @@ function openContent(slugFromParam, modeFromParam) {
     const $dialog = $modal.find(".modal-dialog");
     $dialog.addClass("modal-fullscreen");
     $modal.find(".modal-footer").html(`
-        <div class="d-flex justify-content-center align-items-center w-100">${footer}</div>
+        <div class="d-flex justify-content-center align-items-center w-100"><img src="${BASE_URL}/public/images/iwind.png" alt="wind" class="footer-logo me-2">${footer}</div>
     `);
     const modalBody = $modal.find(".modal-body");
     modalBody.html(`
@@ -29,7 +29,7 @@ function openContent(slugFromParam, modeFromParam) {
         <div class="d-flex align-items-center w-100">
             <button type="button" class="btn btn-sm btn-light me-2" data-bs-dismiss="modal">
                 <i class="fa-solid fa-arrow-left"></i>
-            </button>
+            </button> 
         </div>
     `);
     $modal.modal('show');
@@ -49,7 +49,6 @@ function openContent(slugFromParam, modeFromParam) {
                 renderContent(res.data);
                 const lang = (typeof currentLang !== 'undefined') ? currentLang : 'th';
                 const title = res.data.title[lang] || res.data.title['th'] || res.data.title['en'] || 'Untitled';
-                modalTitle.text(`${title}`);
             } else {
                 $('#contentArea').html(`<div class="alert alert-danger">Content not found</div>`).css('opacity', 1);
                 $('#viewLoader').hide();
@@ -130,13 +129,13 @@ function renderContent(data) {
     if (data.attachments && data.attachments.length > 0) {
         extraHtml += `<section class="mt-5 mb-4"><h5 class="fw-bold mb-3">Documents</h5><div class="row g-3">`;
         data.attachments.forEach(file => {
-            const isPdf = file.url.toLowerCase().endsWith('.pdf');
+            const extension = getFileIconClass(file.url.split('.').pop().toLowerCase());
             extraHtml += `
                 <div class="col-md-4">
                     <a href="${fullBaseUrl}${file.url}" download class="text-decoration-none">
                         <div class="d-flex align-items-center p-3 rounded-3 border bg-white shadow-sm">
-                            <i class="fa-regular ${isPdf ? 'fa-file-pdf text-danger' : 'fa-file-lines text-primary'} fs-3 me-3"></i>
-                            <div class="text-dark fw-bold text-truncate small">${file.name || 'Download File'}</div>
+                            <i class="${extension} fs-3 me-3"></i>
+                            <div class="text-dark fw-bold text-truncate small">${file.name || 'Download File'} ${extension}</div>
                             <i class="fa-solid fa-download ms-auto fa-2x text-muted"></i>
                         </div>
                     </a>

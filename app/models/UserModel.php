@@ -208,18 +208,9 @@ class UserModel {
             c.content_slug,
             c.type
         FROM wp_content c
-        LEFT JOIN wp_content_item iEn 
-            ON iEn.content_id = c.content_id 
-            AND iEn.content_lang = 'en' 
-            AND iEn.status IN ('ready','success')
-        LEFT JOIN wp_content_item iTh 
-            ON iTh.content_id = c.content_id 
-            AND iTh.content_lang = 'th' 
-            AND iTh.status IN ('ready','success')
-        LEFT JOIN wp_content_item iLo 
-            ON iLo.content_id = c.content_id 
-            AND iLo.content_lang = 'lo' 
-            AND iLo.status IN ('ready','success')
+        LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang = 'en' AND iEn.status IN ('ready','success')
+        LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang = 'th' AND iTh.status IN ('ready','success')
+        LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang = 'lo' AND iLo.status IN ('ready','success')
         LEFT JOIN (
             SELECT
                 content_id,
@@ -273,12 +264,25 @@ class UserModel {
             iEn.content_subject as en_subject,
             iLo.content_subject as lo_subject,
             iTh.content_subject as th_subject,
-            f.created_at
+            f.created_at,
+            COALESCE(m.count_attachment, 0) AS count_attachment,
+            COALESCE(m.count_image, 0) AS count_image,
+            COALESCE(m.count_image360, 0) AS count_image360
         FROM wp_folder f 
         LEFT JOIN wp_content c on c.content_id = f.content_id
-        LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang='en'
-        LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang='lo'
-        LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang='th'
+        LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang = 'en' AND iEn.status IN ('ready','success')
+        LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang = 'th' AND iTh.status IN ('ready','success')
+        LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang = 'lo' AND iLo.status IN ('ready','success')
+        LEFT JOIN (
+            SELECT
+                content_id,
+                SUM(CASE WHEN file_type = 'attachment' THEN 1 ELSE 0 END) AS count_attachment,
+                SUM(CASE WHEN file_type = 'image' THEN 1 ELSE 0 END) AS count_image,
+                SUM(CASE WHEN file_type = 'image360' THEN 1 ELSE 0 END) AS count_image360
+            FROM wp_content_media
+            WHERE status = 'active'
+            GROUP BY content_id
+        ) m ON m.content_id = c.content_id
         {$mainWhere} ORDER BY f.id {$order}";
         $stmt = $this->db->prepare($sql);
         foreach ($mainParams as $k => $v) { $stmt->bindValue($k, $v); }

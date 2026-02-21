@@ -88,11 +88,7 @@ function renderNews(items) {
             typeHtml = `<span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project"></i> <span>${langData['project'] || 'Project'}</span></span>`;
         }
         const html = `
-            ${(isPWA()) ? `
-                <a class="news-item ${isRead ? '' : 'unread'}" onclick="openContent('${item.content_slug}', 'view')">
-            ` : `
-                <a class="news-item ${isRead ? '' : 'unread'}" href="${BASE_URL}/content/view/${item.content_slug}" target="_blank">
-            `}
+            <a class="news-item ${isRead ? '' : 'unread'}" onclick="openContent('${item.content_slug}', 'view')">
                 ${thumbHtml}
                 <div class="news-content">
                     <div class="news-header">
@@ -100,9 +96,9 @@ function renderNews(items) {
                         ${isRead ? '' : '<div class="unread-dot"></div>'}
                     </div>
                     <div class="news-meta">
-                        <div class="meta-item">${typeHtml} <i class="fa-regular fa-calendar"></i> ${item.created_at}</div>
+                        <div class="meta-item">${typeHtml} <span class="small"><i class="fa-regular fa-calendar"></i> ${item.created_at}</span></div>
                     </div>
-                    <div class="attachment-badges">
+                    <div class="attachment-badges small">
                         ${badgeHtml}
                     </div>
                 </div>

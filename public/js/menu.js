@@ -21,11 +21,15 @@ function renderSidebar(menus, role) {
     if (!Array.isArray(menus)) return;
     const $menuContainer = $('#main-sidebar-menu');
     let html = '';
-    let currentRoute = window.location.pathname.replace(BASE_URL, '') || '/';
+    let currentRoute = window.location.pathname;
     currentRoute = currentRoute.replace('/windproject', '').replace(/\/$/, '');
+    let path = currentRoute;
+    let cleanPath = path.replace(/^\//, '');
+    let firstSegment = cleanPath.split('/')[0];
+    firstSegment = "/" + firstSegment;
     menus.forEach(item => {
         const itemPath = ('/' + item.path).replace(/\/$/, '');
-        const isActive = (currentRoute === itemPath) ? 'active' : '';
+        const isActive = (firstSegment === itemPath) ? 'active' : '';
         const title = (item.translations && item.translations[currentLang]) ? item.translations[currentLang] : (item.translations?.en || '');
         const target = (item.is_default == 1) ? "_self" : "_blank";
         html += `
@@ -45,7 +49,7 @@ function renderSidebar(menus, role) {
         const totalMenus = menus.length;
         menus.forEach((item, index) => {
             const itemPath2 = ('/' + item.path).replace(/\/$/, '');
-            const isActive2 = (currentRoute === itemPath2) ? 'active' : '';
+            const isActive2 = (firstSegment === itemPath2) ? 'active' : '';
             const title2 = (item.translations && item.translations[currentLang])
                 ? item.translations[currentLang]
                 : (item.translations?.en || '');
