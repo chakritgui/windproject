@@ -6,10 +6,9 @@ class NewsModel {
     }
     public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 6, $orderDir = 'desc') {
         $pdo = $this->db;
-        $where = "WHERE (
-            (n.type = 'news' AND n.status != 'deleted')
-            OR
-            (n.type = 'project' AND n.status != 'deleted' AND n.folder_show_admin = 'yes')
+        $where = "WHERE n.status != 'deleted' AND (
+            n.type = 'news' OR 
+            (n.type = 'project' AND n.folder_show_admin = 'yes')
         )";
         $params = [];
         if (!empty($filters['status'])) {
@@ -18,7 +17,7 @@ class NewsModel {
         }
         if (!empty($filters['type'])) {
             $where .= " AND n.type = :type ";
-            $params['type'] = $filters['type'];
+            $params[':type'] = $filters['type'];
         }
         if (!empty($search)) {
             $where .= " AND (
@@ -39,67 +38,51 @@ class NewsModel {
         $stmtFiltered = $pdo->prepare($sqlFiltered);
         $stmtFiltered->execute($params);
         $totalFiltered = $stmtFiltered->fetchColumn();
-        $order = 'n.created_at';
-        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
             1 => "COALESCE(iTh.content_subject, iEn.content_subject, iLo.content_subject)",
             2 => "n.type",
             5 => "n.publish_at",
             6 => "n.created_at",
-            6 => "n.content_view",
+            8 => "n.content_view",
             7 => "n.status"
         ];
-        if (isset($orderMap[$colIndex])) {
-            $order = $orderMap[$colIndex];
-        }
+        $order = $orderMap[$colIndex] ?? 'n.created_at';
+        $orderDir = strtolower($orderDir) === 'asc' ? 'asc' : 'desc';
         $sql = "SELECT 
                     n.content_id, n.publish_at, n.created_at, n.status, MAX(n.content_view) AS content_view, n.cover as cover_image,
-                    iEn.content_subject AS subject_en,
-                    iLo.content_subject AS subject_lo,
-                    iTh.content_subject AS subject_th,
+                    iEn.content_subject AS subject_en, iLo.content_subject AS subject_lo, iTh.content_subject AS subject_th,
                     SUM(CASE WHEN m.file_type = 'attachment' THEN 1 ELSE 0 END) as count_attachment,
                     SUM(CASE WHEN m.file_type = 'image' THEN 1 ELSE 0 END) as count_image,
                     SUM(CASE WHEN m.file_type = 'image360' THEN 1 ELSE 0 END) as count_image360,
-                    n.content_slug,
-                    iEn.status as en_status,
-                    iLo.status as lo_status,
-                    iTh.status as th_status,
-                    n.folder_id,
-                    n.folder_show_admin,
-                    n.folder_show_user,
-                    n.type
+                    n.content_slug, n.folder_id, n.folder_show_admin, n.folder_show_user, n.type,
+                    f.parent_id as dynamic_parent_id 
                 FROM wp_content n
                 LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.content_lang='en'
                 LEFT JOIN wp_content_item iLo ON iLo.content_id = n.content_id AND iLo.content_lang='lo'
                 LEFT JOIN wp_content_item iTh ON iTh.content_id = n.content_id AND iTh.content_lang='th'
-                LEFT JOIN wp_content_media m on m.content_id = n.content_id and m.status = 'active'
+                LEFT JOIN wp_content_media m ON m.content_id = n.content_id AND m.status = 'active'
+                LEFT JOIN wp_folder f ON f.content_id = n.content_id 
                 $where
                 GROUP BY n.content_id
                 ORDER BY {$order} {$orderDir}
                 LIMIT :start, :length";
         $stmt = $pdo->prepare($sql);
-        foreach ($params as $k => $v) {
-            $stmt->bindValue($k, $v);
-        }
+        foreach ($params as $k => $v) { $stmt->bindValue($k, $v); }
         $stmt->bindValue(':start', (int)$start, PDO::PARAM_INT);
         $stmt->bindValue(':length', (int)$length, PDO::PARAM_INT);
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($rows as &$r) {
-            if (!empty($r['created_at'])) $r['created_at'] = convertTimeZone($r['created_at'], 'd/m/Y H:i');
-            if (!empty($r['publish_at'])) $r['publish_at'] = convertTimeZone($r['publish_at'], 'd/m/Y H:i');
+            $r['created_at'] = !empty($r['created_at']) ? convertTimeZone($r['created_at'], 'd/m/Y H:i') : '';
+            $r['publish_at'] = !empty($r['publish_at']) ? convertTimeZone($r['publish_at'], 'd/m/Y H:i') : '';
             $r['count_attachment'] = (int)$r['count_attachment'];
             $r['count_image'] = (int)$r['count_image'];
             $r['count_image360'] = (int)$r['count_image360'];
-            $r['subject_en'] = $r['subject_en'] ?? '';
-            $r['subject_lo'] = $r['subject_lo'] ?? '';
-            $r['subject_th'] = $r['subject_th'] ?? '';
-            $r['settings'] = $settings;
-            if (!empty($r['folder_id'])) {
-                $r['folder_chain'] = $this->getParentFolders($r['folder_id']);
-            } else {
-                $r['folder_chain'] = [];
+            if($r['type'] === 'project' && !empty($r['dynamic_parent_id'])) {
+                $r['folder_id'] = $r['dynamic_parent_id'];
             }
+            $r['folder_chain'] = !empty($r['folder_id']) ? $this->getParentFolders($r['folder_id']) : [];
+            $r['settings'] = $settings;
         }
         return [
             "total" => (int)$totalFiltered,
@@ -184,21 +167,14 @@ class NewsModel {
                 "folders" => $folders
             ];
         }
-        $stmt = $pdo->prepare("SELECT content_id, status, publish_at, cover, cover_display,
-                folder_id, folder_show_admin, folder_show_user
-            FROM wp_content 
-            WHERE content_id = ?
-        ");
+        $stmt = $pdo->prepare("SELECT content_id, status, publish_at, cover, cover_display,folder_id, folder_show_admin, folder_show_user FROM wp_content WHERE content_id = ?");
         $stmt->execute([(int)$id]);
         $n = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$n) return null;
         if (!isset($folderMap[$n['folder_id']])) {
             $n['folder_id'] = null;
         }
-        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body, status, response, translate_with 
-            FROM wp_content_item 
-            WHERE content_id = ?
-        ");
+        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body, status, response, translate_with FROM wp_content_item WHERE content_id = ?");
         $stmt->execute([$id]);
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $title = ["th"=>"","lo"=>"","en"=>""];

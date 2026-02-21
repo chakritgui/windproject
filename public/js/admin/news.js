@@ -96,13 +96,13 @@ function initNewsTable() {
                             ${breadcrumb}
                         </div>
                     `;
-                    if (row.folder_show_admin === 'yes') {
+                    if (row.folder_show_admin === 'yes' && row.type === 'news') {
                         visibilityBadges += `
-                            <span class="badge bg-dark-subtle text-dark me-1">
+                            <span class="badge bg-danger-subtle text-danger me-1">
                                 <i class="fa-solid fa-user-shield me-1"></i>Admin
                             </span>`;
                     }
-                    if (row.folder_show_user === 'yes') {
+                    if (row.folder_show_user === 'yes' && row.type === 'news') {
                         visibilityBadges += `
                             <span class="badge bg-info-subtle text-info me-1">
                                 <i class="fa-solid fa-user me-1"></i>User
