@@ -3,10 +3,21 @@ class MediaHelper {
     private $db;
     private $basePath;
     private string $TRANSLATE_LIMIT;
+    private $configs = [];
+    private $siteSettings = [];
     public function __construct($db) {
         $this->db = $db;
         $this->basePath = realpath(dirname(__DIR__, 2));
         $this->TRANSLATE_LIMIT = TRANSLATE_LIMIT;
+        $this->loadAllConfigs();
+    }
+    private function loadAllConfigs() {
+        $stmt = $this->db->prepare("SELECT setting_key, setting_value FROM system_settings");
+        $stmt->execute();
+        $this->configs = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        $stmt2 = $this->db->prepare("SELECT setting_type, setting_value FROM wp_setting");
+        $stmt2->execute();
+        $this->siteSettings = $stmt2->fetchAll(PDO::FETCH_KEY_PAIR);
     }
     public function syncMedia($content_id, $type, $existingIds = []) {
         if ($this->basePath === false) return;
@@ -204,110 +215,156 @@ class MediaHelper {
         $isExternalTrans = $pdo->inTransaction();
         try {
             if (!$isExternalTrans) $pdo->beginTransaction();
-            if ($status == 'published') {
-                $sql = "INSERT INTO wp_notification_targets (notifications_target, notifications_item, member_id, publish_at, status)
-                        SELECT :target, :nid, member_id, :pub, 'published' 
+            if ($status === 'published') {
+                $sql = "INSERT INTO wp_notification_targets 
+                        (notifications_target, notifications_item, member_id, publish_at, status)
+                        SELECT :target, :nid, member_id, :pub, 'published'
                         FROM wp_members WHERE status = 'active'
-                        ON DUPLICATE KEY UPDATE status = 'published', publish_at = :pub";
+                        ON DUPLICATE KEY UPDATE status='published', publish_at=:pub";
                 $pdo->prepare($sql)->execute([
-                    ':target' => $target, 
-                    ':nid' => $content_id, 
-                    ':pub' => $publish_at
+                    ':target' => $target,
+                    ':nid'    => $content_id,
+                    ':pub'    => $publish_at
                 ]);
-                $stmtNoti = $pdo->prepare("SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN ('NOTIFY_EMAIL', 'NOTIFY_PWA')");
-                $stmtNoti->execute();
-                $settings = $stmtNoti->fetchAll(PDO::FETCH_KEY_PAIR);
-                $canEmail = ($settings['NOTIFY_EMAIL'] ?? 0) == 1;
-                $canPWA   = ($settings['NOTIFY_PWA'] ?? 0) == 1;
-                if ($canEmail) {
-                    $this->handleEmail($content_id, $publish_at);
+                $settings = $pdo->query("SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN ('NOTIFY_EMAIL','NOTIFY_PWA')")->fetchAll(PDO::FETCH_KEY_PAIR);
+                if (($settings['NOTIFY_EMAIL'] ?? 0) == 1) {
+                    $this->handleEmail($content_id, $publish_at, $target);
                 }
-                if ($canPWA) {
-                    $this->handlePWA($content_id, $publish_at);
+                if (($settings['NOTIFY_PWA'] ?? 0) == 1) {
+                    $this->handlePWA($content_id, $publish_at, $target);
                 }
             } else {
-                $sql = "UPDATE wp_notification_targets SET status = :status, publish_at = NULL WHERE notifications_item = :id AND notifications_target = :target"; 
-                $pdo->prepare($sql)->execute([
-                    ':status' => $status, 
-                    ':id' => $content_id, 
+                $pdo->prepare("UPDATE wp_notification_targets SET status = :status, publish_at = NULL WHERE notifications_item = :id AND notifications_target = :target")->execute([
+                    ':status' => $status,
+                    ':id'     => $content_id,
                     ':target' => $target
                 ]);
-                $pdo->prepare("DELETE FROM email_queue WHERE status = 'pending' AND subject IN (SELECT content_subject FROM wp_content_item WHERE content_id = ?)")->execute([$content_id]);
-                $pdo->prepare("DELETE FROM pwa_notification_queue WHERE status = 'pending' AND title IN (SELECT content_subject FROM wp_content_item WHERE content_id = ?)")->execute([$content_id]);
+                $pdo->prepare("DELETE FROM email_queue WHERE status='pending' AND reference_id=? AND reference_type=?")->execute([$content_id, $target]);
+                $pdo->prepare("DELETE FROM pwa_notification_queue WHERE status='pending' AND reference_id=? AND reference_type=?")->execute([$content_id, $target]);
             }
             if (!$isExternalTrans) $pdo->commit();
         } catch (Exception $e) {
-            if (!$isExternalTrans && $pdo->inTransaction()) $pdo->rollBack();
+            if (!$isExternalTrans && $pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
             error_log("Notification Error: " . $e->getMessage());
             throw $e;
         }
     }
-    private function handleEmail($id, $publish_at = null) {
+    private function handleEmail($id, $publish_at = null, $target) {
         $pdo = $this->db;
-        $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body FROM wp_content_item WHERE content_id = ?");
-        $stmt->execute([$id]);
-        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $availableContent = [];
-        foreach ($items as $row) {
-            $availableContent[$row['content_lang']] = [
-                'subject' => $row['content_subject'],
-                'body'    => $row['content_body']
-            ];
-        }
-        if (empty($availableContent)) return;
-        $sqlMembers = "SELECT m.member_id, m.email, IFNULL(ml.language, 'en') as user_lang FROM wp_members m LEFT JOIN wp_members_language ml ON m.member_id = ml.member_id WHERE m.status = 'active'";
-        $members = $pdo->query($sqlMembers)->fetchAll(PDO::FETCH_ASSOC);
-        $sqlQueue = "INSERT INTO email_queue (recipient_email, subject, body, priority, status, scheduled_at, created_at) VALUES (:email, :subject, :body, :priority, 'pending', :scheduled, NOW())";
-        $stmtQueue = $pdo->prepare($sqlQueue);
+        $members = $pdo->query("SELECT m.member_id, m.email, IFNULL(ml.language,'en') as user_lang FROM wp_members m LEFT JOIN wp_members_language ml ON m.member_id = ml.member_id WHERE m.status='active'
+        ")->fetchAll(PDO::FETCH_ASSOC);
+        if (!$members) return;
+        $stmtInsert = $pdo->prepare("INSERT INTO email_queue (recipient_email, subject, body, priority, status, scheduled_at, created_at, reference_id, reference_type) VALUES (:email, :subject, :body, 3, 'pending', :scheduled, NOW(), :refid, :reftype)");
         $scheduledTime = $publish_at ?: date('Y-m-d H:i:s');
         foreach ($members as $member) {
-            $targetLang = $member['user_lang'];
-            $final = $availableContent[$targetLang] ?? null;
-            if (!$final) {
-                foreach (['en', 'lo', 'th'] as $fallback) {
-                    if (isset($availableContent[$fallback])) {
-                        $final = $availableContent[$fallback];
-                        break;
-                    }
-                }
-            }
-            if ($final) {
-                $stmtQueue->execute([
-                    ':email'     => $member['email'],
-                    ':subject'   => $final['subject'],
-                    ':body'      => $final['body'],
-                    ':priority'  => 3,
-                    ':scheduled' => $scheduledTime
-                ]);
-            }
+            $content = $this->buildNotificationContent($id, $target, $member['user_lang']);
+            if (!$content) continue;
+            $stmtInsert->execute([
+                ':email'    => $member['email'],
+                ':subject'  => $content['email_subject'],
+                ':body'     => $content['email_body'],
+                ':scheduled'=> $scheduledTime,
+                ':refid'    => $id,
+                ':reftype'  => $target
+            ]);
         }
     }
-    private function handlePWA($id, $publish_at = null) {
+    private function handlePWA($id, $publish_at = null, $target){
         $pdo = $this->db;
-        $stmt = $pdo->prepare("SELECT content_lang, content_subject FROM wp_content_item WHERE content_id = ?");
-        $stmt->execute([$id]);
-        $availableSubjects = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
-        if (empty($availableSubjects)) return;
-        $sqlSub = "SELECT ps.id, ps.user_id, IFNULL(ml.language, 'en') as user_lang FROM push_subscriptions ps LEFT JOIN wp_members_language ml ON ps.user_id = ml.member_id WHERE ps.is_active = 1"; 
-        $subscriptions = $pdo->query($sqlSub)->fetchAll(PDO::FETCH_ASSOC);
-        $sqlInsert = "INSERT INTO pwa_notification_queue (subscription_id, title, status, scheduled_at, created_at) VALUES (?, ?, 'pending', ?, NOW())";
-        $stmtInsert = $pdo->prepare($sqlInsert);
+        $subscriptions = $pdo->query("SELECT ps.id, ps.user_id, IFNULL(ml.language,'en') as user_lang
+            FROM push_subscriptions ps
+            LEFT JOIN wp_members_language ml ON ps.user_id = ml.member_id
+            WHERE ps.is_active=1
+        ")->fetchAll(PDO::FETCH_ASSOC);
+        if (!$subscriptions) return;
+        $stmtInsert = $pdo->prepare("INSERT INTO pwa_notification_queue
+            (subscription_id, title, message, url, status, scheduled_at, created_at, reference_id, reference_type)
+            VALUES (:subid, :title, :body, :url, 'pending', :scheduled, NOW(), :refid, :reftype)
+        ");
         $scheduledTime = $publish_at ?: date('Y-m-d H:i:s');
         foreach ($subscriptions as $sub) {
-            $targetLang = ($sub['user_id'] !== null) ? $sub['user_lang'] : 'en';
-            $finalSubject = $availableSubjects[$targetLang] ?? '';
-            if ($finalSubject === '') {
-                foreach (['en', 'lo', 'th'] as $fallback) {
-                    if (isset($availableSubjects[$fallback])) {
-                        $finalSubject = $availableSubjects[$fallback];
-                        break;
-                    }
-                }
-            }
-            if ($finalSubject !== '') {
-                $stmtInsert->execute([$sub['id'], $finalSubject, $scheduledTime]);
-            }
+            $content = $this->buildNotificationContent($id, $target, $sub['user_lang']);
+            if (!$content) continue;
+            $stmtInsert->execute([
+                ':subid'   => $sub['id'],
+                ':title'   => $content['pwa_title'],
+                ':body'    => $content['pwa_body'],
+                ':url'     => $content['url'],
+                ':scheduled'=> $scheduledTime,
+                ':refid'   => $id,
+                ':reftype' => $target
+            ]);
         }
+    }
+    private function buildNotificationContent($id, $target, $lang){
+        $domain = rtrim($this->configs['DOMAIN_NAME'], '/');
+        if ($target === 'document') {
+            $stmt = $this->db->prepare("SELECT d.document_name, d.document_size,
+                    p.project_name, c.contract_name, t.type_name,  i.installations_name, pl.poles_code
+                FROM wp_documents d
+                LEFT JOIN wp_project p ON p.project_id = d.project_id
+                LEFT JOIN wp_contract c ON c.contract_id = d.contract_id
+                LEFT JOIN wp_type t ON t.type_id = d.type_id
+                LEFT JOIN wp_installations i on i.installations_id = d.installations_id
+                LEFT JOIN wp_poles pl on pl.poles_id = d.poles_id
+                WHERE d.document_id = ?
+            ");
+            $stmt->execute([$id]);
+            $doc = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$doc) return null;
+            $url = $domain . "/document";
+            $subject = "New Document: " . $doc['document_name'];
+            $bodyHtml = "
+                <h3>New Document Available</h3>
+                <p><strong>Document:</strong> {$doc['document_name']}</p>
+                <p><strong>Project:</strong> {$doc['project_name']}</p>
+                <p><strong>Contract:</strong> {$doc['contract_name']}</p>
+                <p><strong>Installation:</strong> {$doc['installations_name']}</p>
+                <p><strong>Poles:</strong> {$doc['poles_code']}</p>
+                <p><strong>Type:</strong> {$doc['type_name']}</p>
+                <p><strong>Size:</strong> {$doc['document_size']}</p>
+                <p><a href='{$url}' style='background:#28a745;color:#fff;padding:8px 15px;text-decoration:none;'>Download</a></p>
+            ";
+            return [
+                'email_subject' => $subject,
+                'email_body'    => $this->wrapEmailTemplate($subject, $bodyHtml),
+                'pwa_title'     => $subject,
+                'pwa_body'      => $doc['project_name'] . " - " . $doc['type_name'],
+                'url'           => $url
+            ];
+        }
+        $stmt = $this->db->prepare("SELECT content_subject, content_body FROM wp_content_item WHERE content_id=? AND content_lang=?");
+        $stmt->execute([$id, $lang]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) return null;
+        $url = $domain . "/news";
+        return [
+            'email_subject' => $row['content_subject'],
+            'email_body'    => $this->wrapEmailTemplate($row['content_subject'], $row['content_body']),
+            'pwa_title'     => $row['content_subject'],
+            'pwa_body'      => "New update available",
+            'url'           => $url
+        ];
+    }
+    private function wrapEmailTemplate($title, $body){
+        $domain = rtrim($this->configs['DOMAIN_NAME'], '/');
+        $logo   = $domain . "/public/images/logo.png";
+        $footer = $this->siteSettings['footer'] ?? 'Copyright © 2026 iWind Corporation Limited';
+        return "
+        <div style='font-family:Arial;max-width:600px;margin:auto'>
+            <div style='text-align:center;padding:20px'>
+                <img src='{$logo}' style='max-height:60px'>
+            </div>
+            <h2>{$title}</h2>
+            <div>{$body}</div>
+            <hr>
+            <div style='font-size:12px;color:#777;text-align:center'>
+                {$footer}
+            </div>
+        </div>
+        ";
     }
     public function handleContent($data, $content_id) {
         $pdo = $this->db;
@@ -408,8 +465,7 @@ class MediaHelper {
                     $lang
                 ]);
             } catch (\Throwable $e) {
-                $pdo->prepare("UPDATE wp_content_item SET status = 'failed', response = ? WHERE content_id = ? AND content_lang = ?")
-                    ->execute([$e->getMessage(), $content_id, $lang]);
+                $pdo->prepare("UPDATE wp_content_item SET status = 'failed', response = ? WHERE content_id = ? AND content_lang = ?")->execute([$e->getMessage(), $content_id, $lang]);
             }
         }
         return true;

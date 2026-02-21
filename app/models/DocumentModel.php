@@ -254,7 +254,7 @@ class DocumentModel {
             $this->db->rollBack();
             return [
                 'status' => false,
-                'document_id' => null
+                'document_id' => $e
             ];
         }
     }
