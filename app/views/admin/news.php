@@ -50,8 +50,12 @@
         <div class="card-body">
             <div class="row g-2 mb-3">
                 <div class="col-sm-2">
-                    <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                    <p><i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="status"></span></p>
                     <select id="filter_status" class="form-select filter"></select>
+                </div>
+                <div class="col-sm-2">
+                    <p><i class="fa-solid fa-cubes me-2"></i><span data-i18n="type"></span></p>
+                    <select id="filter_type" class="form-select filter"></select>
                 </div>
             </div>
         </div>
@@ -64,6 +68,7 @@
                 <tr>
                     <th></th>
                     <th data-i18n="news"></th>
+                    <th data-i18n="type"></th>
                     <th data-i18n="language"></th>
                     <th data-i18n="folder"></th>
                     <th data-i18n="publish_at"></th>

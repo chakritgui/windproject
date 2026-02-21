@@ -9,6 +9,7 @@ class NewsController extends BaseController {
         $length = intval($_POST['length'] ?? 10);
         $filters = [
             'status' => $_POST['status'] ?? '',
+            'type' => $_POST['type'] ?? '',
         ];
         $search = $_POST['search']['value'] ?? '';
         $orderDir    = 'asc';

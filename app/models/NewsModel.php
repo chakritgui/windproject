@@ -4,13 +4,21 @@ class NewsModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 5, $orderDir = 'desc') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 6, $orderDir = 'desc') {
         $pdo = $this->db;
-        $where = " WHERE n.status != 'deleted' AND n.type = 'news' ";
+        $where = "WHERE (
+            (n.type = 'news' AND n.status != 'deleted')
+            OR
+            (n.type = 'project' AND n.status != 'deleted' AND n.folder_show_admin = 'yes')
+        )";
         $params = [];
         if (!empty($filters['status'])) {
             $where .= " AND n.status = :status ";
             $params[':status'] = $filters['status'];
+        }
+        if (!empty($filters['type'])) {
+            $where .= " AND n.type = :type ";
+            $params['type'] = $filters['type'];
         }
         if (!empty($search)) {
             $where .= " AND (
@@ -35,8 +43,9 @@ class NewsModel {
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
             1 => "COALESCE(iTh.content_subject, iEn.content_subject, iLo.content_subject)",
-            3 => "n.publish_at",
-            5 => "n.created_at",
+            2 => "n.type",
+            5 => "n.publish_at",
+            6 => "n.created_at",
             6 => "n.content_view",
             7 => "n.status"
         ];
@@ -57,7 +66,8 @@ class NewsModel {
                     iTh.status as th_status,
                     n.folder_id,
                     n.folder_show_admin,
-                    n.folder_show_user
+                    n.folder_show_user,
+                    n.type
                 FROM wp_content n
                 LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.content_lang='en'
                 LEFT JOIN wp_content_item iLo ON iLo.content_id = n.content_id AND iLo.content_lang='lo'
@@ -430,7 +440,21 @@ class NewsModel {
             case 'status':
                 $staticData = [
                     ['id' => 'published', 'text' => 'Published'],
-                    ['id' => 'draft', 'text' => 'Draft']
+                    ['id' => 'draft', 'text' => 'Draft'],
+                    ['id' => 'active', 'text' => 'Active']
+                ];
+                if (!empty($searchTerm)) {
+                    $staticData = array_values(array_filter($staticData, function($item) use ($searchTerm) {
+                        return strpos(strtolower($item['text']), strtolower($searchTerm)) !== false;
+                    }));
+                }
+                $totalCount = count($staticData);
+                $items = array_slice($staticData, $offset, $limit);
+                break;
+            case 'type':
+                $staticData = [
+                    ['id' => 'news', 'text' => 'News'],
+                    ['id' => 'project', 'text' => 'Project']
                 ];
                 if (!empty($searchTerm)) {
                     $staticData = array_values(array_filter($staticData, function($item) use ($searchTerm) {

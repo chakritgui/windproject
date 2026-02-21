@@ -9,11 +9,14 @@ function initNewsTable() {
         processing: true,
         serverSide: true,
         responsive: true,
-        order: [[5, 'desc']],
+        order: [[6, 'desc']],
         ajax: {
             url: `${BASE_URL}/api/news.list`,
             type: "POST",
-            data: d => { d.status = $("#filter_status").val(); }
+            data: d => { 
+                d.status = $("#filter_status").val(); 
+                d.type = $("#filter_type").val(); 
+            }
         },
         columns: [{ 
             data: "cover_image",
@@ -53,6 +56,18 @@ function initNewsTable() {
                     <div>${badges}</div>
                 `;
             }
+        },{
+            data: "type",
+            orderable: true,
+            render: (data, type, row) => `
+                ${
+                    (data === 'news') ? `
+                        <span class="badge rounded-pill text-bg-primary"><i class="fa-regular fa-newspaper"></i> <span>${langData['news'] || 'News'}</span></span>
+                    ` : `
+                        <span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project"></i> <span>${langData['project'] || 'Project'}</span></span>
+                    `
+                }
+            `
         },{ 
             data: null,
             orderable: false,
@@ -116,18 +131,19 @@ function initNewsTable() {
             data: "status",
             orderable: true,
             render: status => {
-                const bg = status === "published" ? "success" : "secondary";
+                const bg = status === "published" || status === "active" ? "success" : "secondary";
                 return `<span class="badge rounded-pill bg-${bg}-subtle text-${bg}">${langData[status] || status}</span>`;
             }
         },{
             data: null,
             orderable: false,
-            className: "text-center",
             render: (data, type, row) => `
                 <div class="btn-group border rounded-3 bg-white">
                     <a class="btn btn-link text-info" onclick="openContent('${row.content_slug}', 'preview')"><i class="fa-solid fa-eye"></i></a>
-                    <button class="btn btn-link text-warning py-1 border-start manage-news" data-id="${row.content_id}"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button class="btn btn-link text-danger py-1 border-start delete-news" data-id="${row.content_id}"><i class="fa-regular fa-trash-can"></i></button>
+                    ${(row.type === 'news') ? `
+                        <button class="btn btn-link text-warning py-1 border-start manage-news" data-id="${row.content_id}"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-link text-danger py-1 border-start delete-news" data-id="${row.content_id}"><i class="fa-regular fa-trash-can"></i></button>
+                    ` : ``}
                 </div>`
         }],
         pageLength: typeof pageLength !== 'undefined' ? pageLength : 10,
@@ -511,5 +527,6 @@ $(document).on("click", "#btn-fullscreen", function() {
 $(document).ready(function () {
     initNewsTable();
     initSelect2Remote('#filter_status', `${BASE_URL}/api/news.filter`, { type: 'status' });
+    initSelect2Remote('#filter_type', `${BASE_URL}/api/news.filter`, { type: 'type' });
     $(".filter").on("change", () => initNewsTable());
 });
