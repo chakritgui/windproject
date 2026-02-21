@@ -318,24 +318,32 @@ class ProjectModel {
             if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
                 $mediaHelper->handleSingleUpload($content_id, $_FILES['cover']);
             }
+            $folder_name = 'Untitled';
+            if (!empty($data["title_en"])) {
+                $folder_name = $data["title_en"];
+            } elseif (!empty($data["title_th"])) {
+                $folder_name = $data["title_th"];
+            } elseif (!empty($data["title_lo"])) {
+                $folder_name = $data["title_lo"];
+            }
             if ($data['content_id'] > 0) {
                 $sql = "UPDATE wp_folder SET name = :name, status = :status, updated_at = NOW() WHERE content_id = :id";
                 $stmtFolder = $pdo->prepare($sql);
                 $stmtFolder->execute([
-                    ':name' => $data["title_en"],
+                    ':name' => $folder_name,
                     ':id'   => $data['content_id'],
                     ':status'   => $status
                 ]);
             } else {
                 $parentId = (!empty($data['parent_id']) && $data['parent_id'] > 0) ? $data['parent_id'] : null;
                 $slug = $this->generateUniqueSlug(
-                    $data['title_en'],
+                    $folder_name,
                     $parentId
                 );
                 $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, created_at, updated_at, content_id) VALUES (:name, :slug, :parent_id, :level, :status, 'content', NOW(), NOW(), :content_id)";
                 $stmtFolder = $pdo->prepare($sql);
                 $stmtFolder->execute([
-                    ':name'      => $data["title_en"],
+                    ':name'      => $folder_name,
                     ':slug'      => $slug,
                     ':parent_id' => $parentId,
                     ':level'     => $data['level'],

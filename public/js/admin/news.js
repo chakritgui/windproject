@@ -67,37 +67,32 @@ function initNewsTable() {
             orderable: false,
             render: (data, type, row) => {
                 let folderHtml = '';
+                let visibilityBadges = '';
                 if (Array.isArray(row.folder_chain) && row.folder_chain.length > 0) {
-                    const breadcrumb = row.folder_chain
-                    .slice()
-                    .reverse()
-                    .map((f, index, arr) => {
+                    const breadcrumb = row.folder_chain.slice().reverse().map((f, index, arr) => {
                         if (index === arr.length - 1) {
                             return `<span class="fw-semibold text-dark">${f.name}</span>`;
                         }
                         return `<span class="text-muted">${f.name}</span>`;
-                    })
-                    .join(' <span class="text-secondary">/</span> ');
-
+                    }).join(' <span class="text-secondary">/</span> ');
                     folderHtml = `
                         <div class="small mb-1">
                             <i class="fa-solid fa-folder-open text-warning me-1"></i>
                             ${breadcrumb}
                         </div>
                     `;
-                }
-                let visibilityBadges = '';
-                if (row.folder_show_admin === 'yes') {
-                    visibilityBadges += `
-                        <span class="badge bg-dark-subtle text-dark me-1">
-                            <i class="fa-solid fa-user-shield me-1"></i>Admin
-                        </span>`;
-                }
-                if (row.folder_show_user === 'yes') {
-                    visibilityBadges += `
-                        <span class="badge bg-info-subtle text-info me-1">
-                            <i class="fa-solid fa-user me-1"></i>User
-                        </span>`;
+                    if (row.folder_show_admin === 'yes') {
+                        visibilityBadges += `
+                            <span class="badge bg-dark-subtle text-dark me-1">
+                                <i class="fa-solid fa-user-shield me-1"></i>Admin
+                            </span>`;
+                    }
+                    if (row.folder_show_user === 'yes') {
+                        visibilityBadges += `
+                            <span class="badge bg-info-subtle text-info me-1">
+                                <i class="fa-solid fa-user me-1"></i>User
+                            </span>`;
+                    }
                 }
                 return `
                     ${folderHtml}
@@ -248,36 +243,41 @@ function getContentForm(d, publishTime) {
                         <i class="fa-solid fa-folder-tree me-2"></i>
                         ${langData['folder'] || 'Folder'}
                     </label>
-                    <div class="border rounded p-3 bg-white" style="max-height:300px; overflow:auto;">
-                        ${renderFolderTree(d.folders, d.folder_id)}
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <div class="form-check form-switch">
-                                <input 
-                                    class="form-check-input" 
-                                    type="checkbox" 
-                                    id="folder_show_admin"
-                                    ${d.folder_show_admin == 'yes' ? 'checked' : ''}
-                                >
-                                <label class="form-check-label fw-bold" for="folder_show_admin">
-                                    <i class="fa-solid fa-user-shield me-2 text-primary"></i>
-                                    ${langData['show_project_admin'] || 'Show in Project (Admin)'}
-                                </label>
+                    <div class="mb-3 p-2">
+                        <label class="fw-bold mb-2" data-i18n="save_to_a_folder"></label>
+                        <div class="d-flex gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="use_folder_toggle" id="use_folder_no" value="no" ${!d.folder_id ? 'checked' : ''}>
+                                <label class="form-check-label" for="use_folder_no" data-i18n="use_folder_no"></label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="use_folder_toggle" id="use_folder_yes" value="yes" ${d.folder_id ? 'checked' : ''}>
+                                <label class="form-check-label" for="use_folder_yes" data-i18n="use_folder_yes"></label>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-check form-switch">
-                                <input 
-                                    class="form-check-input" 
-                                    type="checkbox" 
-                                    id="folder_show_user"
-                                    ${d.folder_show_user == 'yes' ? 'checked' : ''}
-                                >
-                                <label class="form-check-label fw-bold" for="folder_show_user">
-                                    <i class="fa-solid fa-users me-2 text-success"></i>
-                                    ${langData['show_project_user'] || 'Show in Project (User)'}
-                                </label>
+                    </div>
+                    <div id="folder_tree_wrapper" style="${!d.folder_id ? 'display:none;' : ''}">
+                        <div class="border rounded p-3 bg-white" style="max-height:300px; overflow:auto;">
+                            ${renderFolderTree(d.folders, d.folder_id)}
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="folder_show_admin" ${d.folder_show_admin == 'yes' ? 'checked' : ''}>
+                                    <label class="form-check-label fw-bold" for="folder_show_admin">
+                                        <i class="fa-solid fa-user-shield me-2 text-primary"></i>
+                                        ${langData['show_project_admin'] || 'Show in Project (Admin)'}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="folder_show_user" ${d.folder_show_user == 'yes' ? 'checked' : ''}>
+                                    <label class="form-check-label fw-bold" for="folder_show_user">
+                                        <i class="fa-solid fa-users me-2 text-success"></i>
+                                        ${langData['show_project_user'] || 'Show in Project (User)'}
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -300,34 +300,60 @@ function getContentForm(d, publishTime) {
             <input type="hidden" id="content_id" value="${d.id ?? ''}">
         </form>`;
 }
+$(document).on('change', 'input[name="use_folder_toggle"]', function() {
+    const useFolder = $(this).val() === 'yes';
+    if (useFolder) {
+        $('#folder_tree_wrapper').slideDown(200);
+    } else {
+        $('#folder_tree_wrapper').slideUp(200);
+        $('input[name="folder_id"]').prop('checked', false);
+    }
+});
 function renderFolderTree(folders, selectedId = null, level = 0) {
     if (!folders || !folders.length) return '';
     let html = '';
     folders.forEach(f => {
         const indent = level * 20;
+        const hasChildren = f.children && f.children.length > 0;
+        const isChildSelected = (items) => {
+            return items?.some(child => child.id == selectedId || isChildSelected(child.children));
+        };
+        const shouldExpand = (f.id == selectedId || isChildSelected(f.children));
         html += `
-            <div class="form-check" style="margin-left:${indent}px">
-                <input 
-                    class="form-check-input" 
-                    type="radio" 
-                    name="folder_id" 
-                    value="${f.id}" 
-                    id="folder_${f.id}"
-                    ${selectedId == f.id ? 'checked' : ''}
-                >
-                <label class="form-check-label" for="folder_${f.id}">
-                    ${level === 0 
-                        ? `<i class="fa-solid fa-folder-tree text-primary me-2"></i>` 
-                        : `<i class="fa-solid fa-folder text-warning me-2"></i>`}
-                    ${f.name}
-                </label>
+            <div class="folder-item-container">
+                <div class="form-check d-flex align-items-center" style="margin-left:${indent}px">
+                    <span class="toggle-icon me-2" style="cursor:pointer; width: 20px; display: inline-block; text-align: center;" onclick="toggleFolder(this, 'child_container_${f.id}')">
+                        ${hasChildren ? `<i class="fa-solid ${shouldExpand ? 'fa-square-minus' : 'fa-square-plus'} text-secondary"></i>` : ''}
+                    </span>
+                    <input class="form-check-input me-2" type="radio" name="folder_id" value="${f.id}" id="folder_${f.id}" ${selectedId == f.id ? 'checked' : ''} style="margin-left: 0;">
+                    <label class="form-check-label" for="folder_${f.id}">
+                        ${level === 0 
+                            ? `<i class="fa-solid fa-folder-tree text-primary me-1"></i>` 
+                            : `<i class="fa-solid fa-folder text-warning me-1"></i>`}
+                        ${f.name}
+                    </label>
+                </div>
+                ${hasChildren ? `
+                    <div id="child_container_${f.id}" class="folder-children" style="display: ${shouldExpand ? 'block' : 'none'};">
+                        ${renderFolderTree(f.children, selectedId, level + 1)}
+                    </div>
+                ` : ''}
             </div>
         `;
-        if (f.children && f.children.length) {
-            html += renderFolderTree(f.children, selectedId, level + 1);
-        }
     });
     return html;
+}
+function toggleFolder(element, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const isHidden = container.style.display === 'none';
+    container.style.display = isHidden ? 'block' : 'none';
+    const icon = element.querySelector('i');
+    if (isHidden) {
+        icon.classList.replace('fa-square-plus', 'fa-square-minus');
+    } else {
+        icon.classList.replace('fa-square-minus', 'fa-square-plus');
+    }
 }
 function togglePublishControls() {
     const status = $("#status").val();
@@ -408,6 +434,7 @@ function executeSave() {
         formData.append(`title_${lang}`, $(`#title_${lang}`).val() || "");
     });
     formData.append("content_id", $("#content_id").val() || "");
+    formData.append("status", $("#status").val() || "draft");
     const coverDisplayStatus = $("input[name='cover_display']:checked").val() || "no";
     formData.append("cover_display", coverDisplayStatus);
     formData.append("ex_cover", $("#ex_cover").val() || "");
@@ -415,10 +442,14 @@ function executeSave() {
     if (cover) {
         formData.append("cover", cover);
     }
+    let useFolder = $('input[name="use_folder_toggle"]:checked').val();
+    let folder_id = null;
+    if (useFolder === 'yes') {
+        folder_id = $('input[name="folder_id"]:checked').val() || null;
+    }
     let folder_show_admin = $('#folder_show_admin').is(':checked') ? 'yes' : 'no';
     let folder_show_user  = $('#folder_show_user').is(':checked') ? 'yes' : 'no';
-    let folder_id = $('input[name="folder_id"]:checked').val() || null;
-    formData.append("folder_id", folder_id);
+    formData.append("folder_id", folder_id ?? ""); 
     formData.append("folder_show_admin", folder_show_admin);
     formData.append("folder_show_user", folder_show_user);
     Swal.fire({

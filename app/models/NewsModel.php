@@ -310,6 +310,47 @@ class NewsModel {
             if (!$content_id) {
                 $content_id = $pdo->lastInsertId();
             }
+            if ($folder_id) {
+                $folder_name = 'Untitled';
+                if (!empty($data["title_en"])) {
+                    $folder_name = $data["title_en"];
+                } elseif (!empty($data["title_th"])) {
+                    $folder_name = $data["title_th"];
+                } elseif (!empty($data["title_lo"])) {
+                    $folder_name = $data["title_lo"];
+                }
+                $folder_status = ($status === 'draft') ? 'inactive' : 'active';
+                $stmt = $pdo->prepare("SELECT id FROM wp_folder WHERE parent_id = ? AND content_id = ?");
+                $stmt->execute([$folder_id, $content_id]);
+                $existingFolder = $stmt->fetch(PDO::FETCH_ASSOC);
+                if ($existingFolder) {
+                    $sql = "UPDATE wp_folder SET name = :name, status = :status, updated_at = NOW() WHERE content_id = :id";
+                    $stmtFolder = $pdo->prepare($sql);
+                    $stmtFolder->execute([
+                        ':name'   => $folder_name,
+                        ':id'     => $content_id,
+                        ':status' => $folder_status
+                    ]);
+                } else {
+                    $stmt = $pdo->prepare("SELECT level FROM wp_folder WHERE id = ?");
+                    $stmt->execute([$folder_id]);
+                    $parentData = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $level = $parentData ? (int)$parentData['level'] + 1 : 1;
+                    $parentId = $folder_id;
+                    $slug = $this->generateUniqueSlug($folder_name, $parentId);
+                    $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, sub_type, created_at, updated_at, content_id) 
+                            VALUES (:name, :slug, :parent_id, :level, :status, 'content', 'news', NOW(), NOW(), :content_id)";
+                    $stmtFolder = $pdo->prepare($sql);
+                    $stmtFolder->execute([
+                        ':name'       => $folder_name,
+                        ':slug'       => $slug,
+                        ':parent_id'  => $parentId,
+                        ':level'      => $level,
+                        ':status'     => $folder_status,
+                        ':content_id' => $content_id
+                    ]);
+                }
+            }
             $mediaHelper->handleContent($data, $content_id);
             if (empty($data['ex_cover'])) {
                 $mediaHelper->deleteExistingCover($content_id, 'wp_content', 'cover');
@@ -344,9 +385,41 @@ class NewsModel {
             ];
         }
     }
+    private function generateSlug($text){
+        $text = trim($text);
+        $text = mb_strtolower($text, 'UTF-8');
+        $text = preg_replace('/[^a-z0-9ก-๙]+/u', '-', $text);
+        $text = trim($text, '-');
+        return $text ?: 'folder';
+    }
+    private function generateUniqueSlug($name, $parentId, $excludeId = null){
+        $slug = $this->generateSlug($name);
+        $baseSlug = $slug;
+        $i = 1;
+        while (true) {
+            $sql = "SELECT id FROM wp_folder WHERE slug = :slug AND parent_id <=> :parent";
+            if ($excludeId) {
+                $sql .= " AND id != :exclude";
+            }
+            $stmt = $this->db->prepare($sql);
+            $params = [
+                ':slug' => $slug,
+                ':parent' => $parentId
+            ];
+            if ($excludeId) {
+                $params[':exclude'] = $excludeId;
+            }
+            $stmt->execute($params);
+            if (!$stmt->fetch()) break;
+            $slug = $baseSlug . '-' . $i;
+            $i++;
+        }
+        return $slug;
+    }
     public function delete($id) {
         $pdo = $this->db;
         $pdo->prepare("UPDATE wp_content SET status = 'deleted', updated_at = NOW() WHERE content_id = ?")->execute([(int)$id]);
+        $pdo->prepare("UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = ?")->execute([(int)$id]);
         return $pdo->prepare("UPDATE wp_notification_targets SET status = 'deleted', publish_at = NULL WHERE notifications_item = ? AND notifications_target = 'news'")->execute([(int)$id]);
     }
     public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {

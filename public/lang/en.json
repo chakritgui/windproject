@@ -612,5 +612,8 @@
     "show_project_admin": "Show in Project (Admin)",
     "show_project_user": "Show in Project (User)",
     "show_news_admin": "Show in News (Admin)",
-    "show_news_user": "Show in News (User)"
+    "show_news_user": "Show in News (User)",
+    "save_to_a_folder": "Save to a folder?",
+    "use_folder_no": "No folder specified",
+    "use_folder_yes": "Select folder"
 }

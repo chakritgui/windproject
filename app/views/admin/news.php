@@ -1,15 +1,28 @@
 <style>
-#tb_news tbody td {
-    vertical-align: middle;
-}
-.news-cover-wrapper {
-    width: 60px;
-    height: 40px;
-    border-radius: 6px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border: 1px solid #eee;
-}
+    #tb_news tbody td {
+        vertical-align: middle;
+    }
+    .news-cover-wrapper {
+        width: 60px;
+        height: 40px;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        border: 1px solid #eee;
+    }
+    .folder-item-container {
+        margin-bottom: 5px;
+    }
+    .toggle-icon {
+        font-size: 14px;
+        transition: transform 0.2s;
+    }
+    .folder-children {
+        transition: all 0.3s ease;
+    }
+    .form-check-input {
+        margin-top: 0;
+    }
 </style>
 <div class="container-fluid mt-90 mb-5">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm"
