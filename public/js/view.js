@@ -1,3 +1,9 @@
+let contentState = {
+    pages: 'viewContent',
+    type: '',
+    lang: typeof currentLang !== 'undefined' ? currentLang : 'th',
+    isInternalReferrer: document.referrer && document.referrer.includes(window.location.hostname)
+};
 function openContent(slugFromParam, modeFromParam) {
     const $modal = $("#windModal");
     const $dialog = $modal.find(".modal-dialog");
@@ -46,6 +52,7 @@ function openContent(slugFromParam, modeFromParam) {
         },
         success: function (res) {
             if (res.status === 'success') {
+                contentState.type = res.data.type;
                 renderContent(res.data);
                 const lang = (typeof currentLang !== 'undefined') ? currentLang : 'th';
                 const title = res.data.title[lang] || res.data.title['th'] || res.data.title['en'] || 'Untitled';
@@ -61,91 +68,69 @@ function openContent(slugFromParam, modeFromParam) {
     });
 }
 function renderContent(data) {
-    const lang = (typeof currentLang !== 'undefined') ? currentLang : 'th';
-    const title = data.title[lang] || data.title['th'] || data.title['en'] || 'Untitled';
+    const { lang, type } = contentState;
+    const title = data.title[lang] || data.title['th'] || data.title['en'];
     let body = data.content[lang] || data.content['th'] || data.content['en'] || '';
     const fullBaseUrl = BASE_URL.endsWith('/') ? BASE_URL : `${BASE_URL}/`;
     body = body.replace(/src="(?!(http|https|\/\/))/g, `src="${fullBaseUrl}`);
-    const type = data.type || 'news';
-    $(".breadcrumb-item-first").html(`<a href="${BASE_URL}/${type}" class="text-decoration-none">${(typeof langData !== 'undefined' ? langData[type] : null) || 'News'}</a>`);
     $('#contentTitle, #breadcrumbTitle').text(title);
-    $('#contentBody').html(body);
     $('#contentDate').text(data.created_at);
-    if (data.cover) {
+    $('#contentBody').html(body);
+    const breadcrumbLabel = langData[type] || 'News';
+    $(".breadcrumb-item-first").html(
+        `<a href="javascript:void(0)" class="text-primary text-decoration-none" onclick="closeOrRedirect()">${breadcrumbLabel}</a>`
+    );
+    setupFancybox();
+    if (data.cover && data.cover_display === 'yes') {
         $('#contentCover').html(`
-            <div class="position-relative mb-4 overflow-hidden rounded-4 shadow-sm">
-                <img src="${fullBaseUrl}${data.cover}" class="img-fluid w-100 object-fit-cover" style="max-height: 350px; min-height: 250px;">
-                <div class="position-absolute bottom-0 start-0 w-100 p-4 bg-dark bg-opacity-50 text-white d-md-none">
-                    <h4 class="fw-bold mb-0">${title}</h4>
-                </div>
+            <div class="position-relative mb-4 overflow-hidden shadow-sm rounded-4">
+                <img src="${BASE_URL}/${data.cover}" class="img-fluid w-100 object-fit-cover" style="max-height: 400px; min-height: 275px;">
             </div>
         `);
-    } else {
-        $('#contentCover').html(``);
     }
-    let extraHtml = '';
-    if (data.images360 && data.images360.length > 0) {
-        extraHtml += `
-        <section class="mt-5">
-            <h5 class="fw-bold mb-3 d-flex align-items-center">
-                <span class="p-2 bg-info bg-opacity-10 rounded-3 me-2"><i class="fa-solid fa-street-view text-info"></i></span>
-                ${(typeof langData !== 'undefined' ? langData['vr_experience'] : '360° Experience')}
-            </h5>
-            <div class="row g-3">`;
-        data.images360.forEach(vr => {
-            const imageUrl = `${fullBaseUrl}${vr.url || data.cover}`;
-            extraHtml += `
-                <div class="col-6 col-md-3">
-                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 vr-card cursor-pointer" onclick="openVRModal('${imageUrl}')">
-                        <div class="position-relative" style="height: 150px;">
-                            <img src="${imageUrl}" class="w-100 h-100 object-fit-cover">
-                            <div class="position-absolute top-50 start-50 translate-middle">
-                                <div class="btn btn-light btn-sm rounded-pill shadow-sm fw-bold"><i class="fa-solid fa-expand"></i> View 360</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-        });
-        extraHtml += `</div></section>`;
-    }
-    if (data.images && data.images.length > 0) {
-        extraHtml += `
-        <section class="mt-5">
-            <h5 class="fw-bold mb-3 d-flex align-items-center">
-                <span class="p-2 bg-primary bg-opacity-10 rounded-3 me-2"><i class="fa-solid fa-images text-primary"></i></span>
-                Gallery
-            </h5>
-            <div class="row g-2">`;
-        data.images.forEach(img => {
-            extraHtml += `
-                <div class="col-4 col-md-2">
-                    <a href="${fullBaseUrl}${img.url}" data-fancybox="gallery" class="d-block ratio ratio-1x1 overflow-hidden rounded-3 border">
-                        <img src="${fullBaseUrl}${img.url}" class="img-fluid object-fit-cover hover-zoom" loading="lazy">
-                    </a>
-                </div>`;
-        });
-        extraHtml += `</div></section>`;
-    }
-    if (data.attachments && data.attachments.length > 0) {
-        extraHtml += `<section class="mt-5 mb-4"><h5 class="fw-bold mb-3">Documents</h5><div class="row g-3">`;
-        data.attachments.forEach(file => {
-            const extension = getFileIconClass(file.url.split('.').pop().toLowerCase());
-            extraHtml += `
-                <div class="col-md-4">
-                    <a href="${fullBaseUrl}${file.url}" download class="text-decoration-none">
-                        <div class="d-flex align-items-center p-3 rounded-3 border bg-white shadow-sm">
-                            <i class="${extension} fs-3 me-3"></i>
-                            <div class="text-dark fw-bold text-truncate small">${file.name || 'Download File'} ${extension}</div>
-                            <i class="fa-solid fa-download ms-auto fa-2x text-muted"></i>
-                        </div>
-                    </a>
-                </div>`;
-        });
-        extraHtml += `</div></section>`;
-    }
-    $('#multimediaArea').html(extraHtml);
+    renderMultimediaSections(data);
     $('#viewLoader').hide();
-    $('#contentArea').css('opacity', 1);
+    $('#contentArea').animate({ opacity: 1 }, 500);
+}
+function setupFancybox() {
+    $('#contentBody img').each(function() {
+        const $img = $(this);
+        if (!$img.parent('a').length) {
+            $img.wrap(`<a href="${$img.attr('src')}" data-fancybox="content-images" class="content-img-link"></a>`);
+            $img.css({ 'cursor': 'zoom-in', 'transition': 'opacity 0.2s' }).addClass('hover-opacity');
+        }
+    });
+    if (typeof Fancybox !== 'undefined') {
+        Fancybox.bind('[data-fancybox]', {
+            Hash: false,
+            Toolbar: { display: { left: ["infobar"], right: ["close"] } }
+        });
+    }
+}
+function renderMultimediaSections(data) {
+    const sections = [
+        { key: 'images360', id: 'vr-container', icon: 'fa-street-view text-info', label: 'vr_experience', type: 'vr' },
+        { key: 'images', id: 'gallery-container', icon: 'fa-images text-primary', label: 'gallery', type: 'gallery' },
+        { key: 'attachments', id: 'doc-container', icon: 'fa-paperclip text-danger', label: 'documents', type: 'docs' }
+    ];
+    let extraHtml = '';
+    const LIMIT = 12;
+    sections.forEach(sec => {
+        const items = data[sec.key];
+        if (items && items.length > 0) {
+            extraHtml += `
+                <section class="mt-5">
+                    <h5 class="fw-bold mb-3 d-flex align-items-center">
+                        <i class="fa-solid ${sec.icon} me-2"></i> ${langData[sec.label] || sec.label}
+                    </h5>
+                    <div class="row g-3" id="${sec.id}">
+                        ${renderGridItems(sec.type, items.slice(0, LIMIT))}
+                    </div>
+                    ${items.length > LIMIT ? renderLoadMoreButton(sec, items.slice(LIMIT), data.cover) : ''}
+                </section>`;
+        }
+    });
+    $('#multimediaArea').html(extraHtml);
 }
 let vrViewer = null;
 function openVRModal(imgUrl) {
@@ -171,3 +156,65 @@ $('#vrModal').on('hidden.bs.modal', function () {
         vrViewer = null;
     }
 });
+function renderGridItems(type, items) {
+    return items.map(item => {
+        const url = `${BASE_URL}/${item.url}`;
+        if (type === 'docs') {
+            const ext = item.name.split('.').pop().toLowerCase();
+            return `
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <a href="${url}" download class="text-decoration-none h-100 d-block">
+                        <div class="d-flex align-items-center p-3 rounded-4 border bg-white shadow-sm hover-shadow h-100 transition-all">
+                            <i class="fa-solid ${getFileIconClass(ext)} fs-2 me-3"></i>
+                            <div class="overflow-hidden">
+                                <div class="text-dark fw-bold text-truncate small">${item.name}</div>
+                                <div class="text-muted extra-small">${langData['download'] || 'Download'}</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>`;
+        }
+        const onClickAttr = type === 'vr' ? `onclick="openVRModal('${url}')"` : '';
+        const fancyboxAttr = type === 'gallery' ? 'data-fancybox="gallery"' : '';
+        const badge = type === 'vr' ? '<span class="badge bg-dark opacity-75 position-absolute top-0 start-0 m-2">360°</span>' : '';
+        return `
+            <div class="col-4 col-md-2">
+                <div class="gallery-card rounded-3 overflow-hidden border shadow-sm position-relative cursor-pointer h-100" ${onClickAttr}>
+                    <a href="${url}" ${fancyboxAttr} class="d-block ratio ratio-1x1">
+                        <img src="${url}" class="object-fit-cover hover-zoom" loading="lazy">
+                        ${badge}
+                    </a>
+                </div>
+            </div>`;
+    }).join('');
+}
+function renderEmptyState() {
+    $('#contentArea').html(`
+        <div class="empty-state-container animated fadeIn text-center py-5">
+            <div class="empty-icon fs-1 mb-3"><i class="fa-regular fa-folder-open text-muted"></i></div>
+            <h3 class="empty-title">${langData['no_items'] || 'No Content Found'}</h3>
+        </div>
+    `).css('opacity', 1);
+    $('#viewLoader').hide();
+}
+function renderLoadMoreButton(sec, remainingItems, coverUrl) {
+    const sectionData = encodeURIComponent(JSON.stringify({
+        type: sec.type,
+        items: remainingItems,
+        cover: coverUrl
+    }));
+    return `
+        <div class="text-center mt-4 load-more-wrapper">
+            <button class="btn btn-outline-primary btn-sm px-4 rounded-pill fw-bold" 
+                onclick="handleLoadMore(this, '${sectionData}', '${sec.id}')">
+                <i class="fa-solid fa-plus me-1"></i> ${langData['view_more'] || 'View More'} (${remainingItems.length})
+            </button>
+        </div>`;
+}
+function handleLoadMore(btn, encodedData, containerId) {
+    const data = JSON.parse(decodeURIComponent(encodedData));
+    const html = renderGridItems(data.type, data.items);
+    $(`#${containerId}`).append(html);
+    $(btn).closest('.load-more-wrapper').remove(); 
+    setupFancybox();
+}

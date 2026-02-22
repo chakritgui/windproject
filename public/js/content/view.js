@@ -1,21 +1,15 @@
-// --- Configuration & State ---
 let contentState = {
     pages: 'viewContent',
     type: '',
     lang: typeof currentLang !== 'undefined' ? currentLang : 'th',
-    // เช็คว่ามาจากภายในเว็บเดียวกันหรือไม่ตั้งแต่เริ่มโหลดหน้า
     isInternalReferrer: document.referrer && document.referrer.includes(window.location.hostname)
 };
-
 let vrViewer = null;
-
 $(document).ready(initViewContent);
-
 function initViewContent() {
     const urlParts = window.location.pathname.split('/');
     const slug = decodeURIComponent(urlParts[urlParts.length - 1]);
     const mode = urlParts[urlParts.length - 2];
-
     $.ajax({
         url: `${BASE_URL}/api/content.slug`,
         method: 'POST',
@@ -35,31 +29,20 @@ function initViewContent() {
         }
     });
 }
-
 function renderContent(data) {
     const { lang, type } = contentState;
     const title = data.title[lang] || data.title['th'] || data.title['en'];
     let body = data.content[lang] || data.content['th'] || data.content['en'] || '';
-
-    // Fix relative image paths
     const fullBaseUrl = BASE_URL.endsWith('/') ? BASE_URL : `${BASE_URL}/`;
     body = body.replace(/src="(?!(http|https|\/\/))/g, `src="${fullBaseUrl}`);
-
-    // Update UI Elements
     $('#contentTitle, #breadcrumbTitle').text(title);
     $('#contentDate').text(data.created_at);
     $('#contentBody').html(body);
-
-    // Setup Breadcrumb First Item
     const breadcrumbLabel = langData[type] || 'News';
     $(".breadcrumb-item-first").html(
         `<a href="javascript:void(0)" class="text-primary text-decoration-none" onclick="closeOrRedirect()">${breadcrumbLabel}</a>`
     );
-
-    // Image Zoom (Fancybox) - ปรับปรุงเพื่อไม่ให้รบกวน History
     setupFancybox();
-
-    // Cover Image
     if (data.cover && data.cover_display === 'yes') {
         $('#contentCover').html(`
             <div class="position-relative mb-4 overflow-hidden shadow-sm rounded-4">
@@ -67,17 +50,11 @@ function renderContent(data) {
             </div>
         `);
     }
-
-    // Extra Sections (VR, Gallery, Docs)
     renderMultimediaSections(data);
-
-    // Finalize UI
     $('#viewLoader').hide();
     $('#contentArea').animate({ opacity: 1 }, 500);
 }
-
 function setupFancybox() {
-    // จัดการรูปในเนื้อหา
     $('#contentBody img').each(function() {
         const $img = $(this);
         if (!$img.parent('a').length) {
@@ -85,25 +62,21 @@ function setupFancybox() {
             $img.css({ 'cursor': 'zoom-in', 'transition': 'opacity 0.2s' }).addClass('hover-opacity');
         }
     });
-
     if (typeof Fancybox !== 'undefined') {
         Fancybox.bind('[data-fancybox]', {
-            Hash: false, // สำคัญ: ปิดการเปลี่ยน URL/History เมื่อเปิดรูป
+            Hash: false,
             Toolbar: { display: { left: ["infobar"], right: ["close"] } }
         });
     }
 }
-
 function renderMultimediaSections(data) {
     const sections = [
         { key: 'images360', id: 'vr-container', icon: 'fa-street-view text-info', label: 'vr_experience', type: 'vr' },
         { key: 'images', id: 'gallery-container', icon: 'fa-images text-primary', label: 'gallery', type: 'gallery' },
         { key: 'attachments', id: 'doc-container', icon: 'fa-paperclip text-danger', label: 'documents', type: 'docs' }
     ];
-
     let extraHtml = '';
     const LIMIT = 12;
-
     sections.forEach(sec => {
         const items = data[sec.key];
         if (items && items.length > 0) {
@@ -208,4 +181,25 @@ function renderEmptyState() {
         </div>
     `).css('opacity', 1);
     $('#viewLoader').hide();
+}
+function renderLoadMoreButton(sec, remainingItems, coverUrl) {
+    const sectionData = encodeURIComponent(JSON.stringify({
+        type: sec.type,
+        items: remainingItems,
+        cover: coverUrl
+    }));
+    return `
+        <div class="text-center mt-4 load-more-wrapper">
+            <button class="btn btn-outline-primary btn-sm px-4 rounded-pill fw-bold" 
+                onclick="handleLoadMore(this, '${sectionData}', '${sec.id}')">
+                <i class="fa-solid fa-plus me-1"></i> ${langData['view_more'] || 'View More'} (${remainingItems.length})
+            </button>
+        </div>`;
+}
+function handleLoadMore(btn, encodedData, containerId) {
+    const data = JSON.parse(decodeURIComponent(encodedData));
+    const html = renderGridItems(data.type, data.items);
+    $(`#${containerId}`).append(html);
+    $(btn).closest('.load-more-wrapper').remove(); 
+    setupFancybox();
 }
