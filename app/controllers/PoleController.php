@@ -27,8 +27,8 @@ class PoleController extends BaseController {
         return [
             'poles_id'  => (int)$input['poles_id'],
             'height_id' => (int)($input['height_id'] ?? 0),
-            'start'     => $input['start'] ?? convertTimeZoneUTC($input['startDate'], 'Y-m-d') ?? null,
-            'end'       => $input['end'] ?? convertTimeZoneUTC($input['endDate'], 'Y-m-d') ?? null,
+            'start'     => $input['start'] ?? $input['startDate'], 'Y-m-d' ?? null,
+            'end'       => $input['end'] ?? $input['endDate'], 'Y-m-d' ?? null,
             'sensors'   => $sensors,
             'levels'    => $this->parseInputArray($input['lv'] ?? $input['levels_data'] ?? [])
         ];

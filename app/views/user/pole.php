@@ -111,7 +111,7 @@
 <div class="container-fluid mt-3 mb-3">
     <div id="reportSection">
         <div class="report-section">
-            <h6 class="report-title"><i class="fa-solid fa-cloud-meatball me-2"></i><span data-i18n="weather_overview"></span></h6>
+            <h6 class="report-title"><i class="fas fa-chart-bar me-2"></i><span data-i18n="average_summary"></span></h6>
             <div class="row g-3" id="statsContainer"></div>
         </div>
         <div class="report-section">

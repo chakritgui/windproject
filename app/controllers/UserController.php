@@ -70,9 +70,7 @@ class UserController extends Controller {
             foreach ($dateFormats as $fmt) {
                 $obj = DateTime::createFromFormat($fmt, $startDate);
                 if ($obj instanceof DateTime) {
-                    $startDateUTC = convertTimeZoneUTC(
-                        $obj->format('Y-m-d') . ' 00:00:00'
-                    );
+                    $startDateUTC = $obj->format('Y-m-d') . ' 00:00:00';
                     break;
                 }
             }
@@ -81,9 +79,7 @@ class UserController extends Controller {
             foreach ($dateFormats as $fmt) {
                 $obj = DateTime::createFromFormat($fmt, $endDate);
                 if ($obj instanceof DateTime) {
-                    $endDateUTC = convertTimeZoneUTC(
-                        $obj->format('Y-m-d') . ' 23:59:59'
-                    );
+                    $endDateUTC = $obj->format('Y-m-d') . ' 23:59:59';
                     break;
                 }
             }
