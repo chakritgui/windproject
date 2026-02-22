@@ -147,12 +147,16 @@
                             <select id="filter_contract" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="project_status"></span></p>
                             <select id="filter_project_status" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-12">
                             <p><i class="fa-solid fa-layer-group"></i></i> <span data-i18n="group"></span></p>
                             <select id="filter_group" class="form-select filter"></select>
+                        </div>
+                        <div class="col-sm-2 col-6">
+                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <select id="filter_p_status" class="form-select filter"></select>
                         </div>
                     </div>
                 </div>
@@ -171,6 +175,7 @@
                             <th data-i18n="create_at"></th>
                             <th data-i18n="project_status"></th>
                             <th data-i18n="background"></th>
+                            <th data-i18n="status"></th>
                             <th></th>
                         </tr>
                     </thead>

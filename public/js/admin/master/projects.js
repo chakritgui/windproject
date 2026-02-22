@@ -17,7 +17,8 @@ function initProjectsTable() {
             url: `${BASE_URL}/api/projects.list`, 
             type: "POST",
             data: function(d){
-                d.status = $('#filter_project_status').val();
+                d.project_status = $('#filter_project_status').val();
+                d.status = $('#filter_p_status').val();
                 d.contract = $('#filter_contract').val();
                 d.group = $('#filter_group').val();
             }
@@ -89,6 +90,25 @@ function initProjectsTable() {
                     ` : `
                         <button class="btn btn-sm btn-light manage-background" data-id="${row.project_id}"><i class="fa-solid fa-plus"></i></button>
                     `}
+                `;
+            }
+        },{ 
+            data: 'status',
+            orderable: true,
+            render: function (status, type, row) {
+                let badge = "";
+                switch(status) {
+                    case 'active':
+                        badge = "success";
+                        break;
+                    case 'inactive':
+                        badge = "secondary";
+                        break;
+                }
+                return `
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
+                    </div>
                 `;
             }
         },{ 
@@ -355,14 +375,20 @@ $(document).on('click', '.manage-project', function() {
                             <input type="text" class="form-control" id="project_end">
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="mb-2">${langData['contracts'] || 'Contracts'}</label>
-                        <select class="form-select" id="contract"></select>
-                    </div>
                     <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="mb-2">${langData['contracts'] || 'Contracts'}</label>
+                            <select class="form-select" id="contract"></select>
+                        </div>
                         <div class="col-md-6 mb-3">
                             <label class="mb-2">${langData['group'] || 'Group'}</label>
                             <select id="group" class="form-select"></select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="mb-2 required">${langData['project_status'] || 'Project Status'}</label>
+                            <select id="project_status" class="form-select obj-required"></select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required">${langData['status'] || 'Status'}</label>
@@ -370,6 +396,7 @@ $(document).on('click', '.manage-project', function() {
                         </div>
                     </div>
                 `);
+                initSelect2Remote('#project_status', `${BASE_URL}/api/projects.filter`, { type: 'project_status' });
                 initSelect2Remote('#status', `${BASE_URL}/api/projects.filter`, { type: 'status' });
                 initSelect2Remote('#contract', `${BASE_URL}/api/projects.filter`, { type: 'contract' });
                 initSelect2Remote('#group', `${BASE_URL}/api/projects.filter`, { type: 'group' });
@@ -390,7 +417,7 @@ $(document).on('click', '.manage-project', function() {
                     }
                     if (projectData.project_status_name) {
                         var newOptionStatus = new Option(projectData.project_status_name, projectData.project_status_id, true, true);
-                        $('#status').append(newOptionStatus).trigger('change');
+                        $('#project_status').append(newOptionStatus).trigger('change');
                     }
                     if (projectData && projectData.contract_name) {
                         var newOptionContract = new Option(projectData.contract_name, projectData.contract_id, true, true);
@@ -399,6 +426,11 @@ $(document).on('click', '.manage-project', function() {
                     if (projectData && projectData.project_group_name) {
                         var newOptionGroup = new Option(projectData.project_group_name, projectData.project_group_id, true, true);
                         $('#group').append(newOptionGroup).trigger('change');
+                    }
+                    if (projectData.status) {
+                        let statusName = projectData.status.charAt(0).toUpperCase() + projectData.status.slice(1);
+                        var newOptionStatus = new Option(statusName, projectData.status, true, true);
+                        $('#status').append(newOptionStatus).trigger('change');
                     }
                 }
             } else {
@@ -451,12 +483,13 @@ function saveProject() {
     const formData = new FormData();
     formData.append("project_id", $("#project_id").val() || "");
     formData.append("contract_id", $("#contract").val() || "");
+    formData.append("status", $("#status").val() || "active");
     formData.append("project_name", $("#project_name").val() || "");
     formData.append("project_name_display", $("#project_name_display").val() || "");
     formData.append("project_code", $("#project_code").val() || "");
     formData.append("project_start", $("#project_start").val());
     formData.append("project_end", $("#project_end").val());
-    formData.append("status", $("#status").val());
+    formData.append("project_status", $("#project_status").val());
     formData.append("group", $("#group").val());
     Swal.fire({
         title: langData['saving'] || 'Saving...',

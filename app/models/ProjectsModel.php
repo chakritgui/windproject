@@ -41,7 +41,8 @@ class ProjectsModel {
                 g.project_group_name,
                 p.created_at,
                 p.project_background,
-                p.project_opacity
+                p.project_opacity,
+                p.status
             FROM wp_project p
             LEFT JOIN wp_contract c on c.contract_id = p.contract_id 
             LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id
@@ -73,8 +74,12 @@ class ProjectsModel {
     private function buildListWhere($filters, $search) {
         $where  = " WHERE p.status != 'deleted' ";
         $params = [];
+        if (!empty($filters['project_status'])) {
+            $where .= " AND p.project_status_id = :project_status";
+            $params[':project_status'] = $filters['project_status'];
+        }
         if (!empty($filters['status'])) {
-            $where .= " AND p.project_status_id = :status";
+            $where .= " AND p.status = :status";
             $params[':status'] = $filters['status'];
         }
         if (!empty($filters['contract'])) {
@@ -104,20 +109,56 @@ class ProjectsModel {
             }
         }
     }
-    public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {
+    public function filter($page = 1, $limit = 10, $type = '', $searchTerm = ''){
         $offset = ($page - 1) * $limit;
         $items = [];
         $totalCount = 0;
         $params = [];
         $config = [
-            'status'   => ['table' => 'wp_project_status', 'id' => 'project_status_id', 'text' => 'project_status_name', 'search' => ['project_status_name']],
-            'contract' => ['table' => 'wp_contract',       'id' => 'contract_id',        'text' => 'contract_name',        'search' => ['contract_name', 'contract_no']],
-            'group'    => ['table' => 'wp_project_group',  'id' => 'project_group_id',   'text' => 'project_group_name',   'search' => ['project_group_name']]
+            'project_status' => [
+                'table' => 'wp_project_status',
+                'id'    => 'project_status_id',
+                'text'  => 'project_status_name',
+                'search'=> ['project_status_name']
+            ],
+            'contract' => [
+                'table' => 'wp_contract',
+                'id'    => 'contract_id',
+                'text'  => 'contract_name',
+                'search'=> ['contract_name', 'contract_no']
+            ],
+            'group' => [
+                'table' => 'wp_project_group',
+                'id'    => 'project_group_id',
+                'text'  => 'project_group_name',
+                'search'=> ['project_group_name']
+            ],
+            'status' => [
+                'static' => true,
+                'data' => [
+                    ['id' => 'active',   'text' => 'Active'],
+                    ['id' => 'inactive', 'text' => 'Inactive']
+                ]
+            ]
         ];
         if (!isset($config[$type])) {
             return ['items' => [], 'total_count' => 0];
         }
         $cfg = $config[$type];
+        if (!empty($cfg['static'])) {
+            $data = $cfg['data'];
+            if ($searchTerm !== '') {
+                $data = array_filter($data, function ($row) use ($searchTerm) {
+                    return stripos($row['text'], $searchTerm) !== false;
+                });
+            }
+            $totalCount = count($data);
+            $items = array_slice(array_values($data), $offset, $limit);
+            return [
+                'items' => $items,
+                'total_count' => $totalCount
+            ];
+        }
         $conditions = ["status <> 'deleted'"];
         if ($searchTerm !== '') {
             $searchParts = [];
@@ -137,10 +178,9 @@ class ProjectsModel {
                 {$whereClause} 
                 ORDER BY {$cfg['id']} DESC 
                 LIMIT :limit OFFSET :offset";
-              
         $stmt = $this->db->prepare($sql);
-        if (isset($params[':search'])) {
-            $stmt->bindValue(':search', $params[':search']);
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val);
         }
         $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
@@ -175,7 +215,8 @@ class ProjectsModel {
                 'project_status_id' => '',
                 'project_status_name' => '',
                 'project_group_id' => '',
-                'project_group_name' => ''
+                'project_group_name' => '',
+                'status' => 'active',
             ];
         } else {
             $sql = "SELECT 
@@ -219,13 +260,14 @@ class ProjectsModel {
         $project_code = $data['project_code'] ?? '';
         $project_name = $data['project_name'] ?? '';
         $project_name_display = $data['project_name_display'] ?? '';
+        $status = $data['status'] ?? 'active';
         if ($this->isDuplicateProjectName($project_name, $project_id)) {
             return [
                 'status'  => false,
                 'message' => 'already_project'
             ];
         }
-        $status = $data['status'] ?? '';
+        $project_status = $data['project_status'] ?? '';
         $startObj = DateTime::createFromFormat('d/m/Y', trim($data['project_start']));
         $endObj   = DateTime::createFromFormat('d/m/Y', trim($data['project_end']));
         $project_start = ($startObj) ? convertTimeZoneUTC($startObj->format('Y-m-d'), 'Y-m-d') : null;
@@ -239,8 +281,9 @@ class ProjectsModel {
                         project_name_display = :project_name_display, 
                         project_start = :project_start, 
                         project_end = :project_end, 
-                        project_status_id = :status, 
+                        project_status_id = :project_status, 
                         project_group_id = :group, 
+                        status = :status, 
                         updated_at = NOW() 
                     WHERE project_id = :project_id";
             $stmt = $pdo->prepare($sql);
@@ -252,7 +295,7 @@ class ProjectsModel {
                         created_at, updated_at
                     ) VALUES (
                         :contract_id, :project_code, :project_name, :project_name_display, 
-                        :project_start, :project_end, :status, :group, 
+                        :project_start, :project_end, :project_status, :group, :status,
                         NOW(), NOW()
                     )";
             $stmt = $pdo->prepare($sql);
@@ -264,6 +307,7 @@ class ProjectsModel {
         $stmt->bindValue(':project_name_display', $project_name_display);
         $stmt->bindValue(':project_start', $project_start);
         $stmt->bindValue(':project_end', $project_end);
+        $stmt->bindValue(':project_status', $project_status);
         $stmt->bindValue(':status', $status);
         return $stmt->execute();
     }

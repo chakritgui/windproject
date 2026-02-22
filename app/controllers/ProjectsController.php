@@ -8,9 +8,10 @@ class ProjectsController extends BaseController {
         $start = intval($_POST['start'] ?? 0);
         $length= intval($_POST['length'] ?? 10);
         $filters = [
-            'status'=> $_POST['status'] ?? '',
+            'project_status'=> $_POST['project_status'] ?? '',
             'contract'=> $_POST['contract'] ?? '',
             'group'=> $_POST['group'] ?? '',
+            'status'=> $_POST['status'] ?? '',
         ];
         $search = $_POST['search']['value'] ?? '';
         $orderDir    = 'asc';
@@ -65,7 +66,8 @@ class ProjectsController extends BaseController {
             'project_name_display' => $_POST['project_name_display'] ?? '',
             'project_start' => $_POST['project_start'] ?? '',
             'project_end' => $_POST['project_end'] ?? '',
-            'status' => $_POST['status'] ?? '',
+            'project_status' => $_POST['project_status'] ?? '',
+            'status' => $_POST['status'] ?? 'active',
             'group' => $_POST['group'] ?? null
         ];
         $result = $this->model->save($data);
