@@ -10,7 +10,10 @@ function initProjectStatusTable() {
         order: [[2, 'desc']],
         ajax: { 
             url: `${BASE_URL}/api/project.status.list`, 
-            type: "POST" 
+            type: "POST",
+            data: function(d){
+                d.status = $('#filter_projectstatus_status').val();
+            }
         },
         columns: [{ 
             data: "project_status_color",
@@ -27,6 +30,25 @@ function initProjectStatusTable() {
         },{ 
             data: "created_at",
             orderable: true,
+        },{ 
+            data: 'status',
+            orderable: true,
+            render: function (status, type, row) {
+                let badge = "";
+                switch(status) {
+                    case 'active':
+                        badge = "success";
+                        break;
+                    case 'inactive':
+                        badge = "secondary";
+                        break;
+                }
+                return `
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
+                    </div>
+                `;
+            }
         },{ 
             data: null,
             orderable: false,
@@ -67,11 +89,23 @@ $(document).on('click', '.manage-sta', function() {
                         <label class="mb-2 required" data-i18n="status"></label>
                         <input type="text" class="form-control obj-required" id="project_status_name" value="${d.project_status_name || ''}">
                     </div>
-                    <div class="mb-3">
-                        <label class="mb-2" data-i18n="color"></label>
-                        <input type="color" class="form-control form-control-color w-100" id="project_status_color" value="${d.project_status_color || '#3b82f6'}">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="mb-2" data-i18n="color"></label>
+                            <input type="color" class="form-control form-control-color w-100" id="project_status_color" value="${d.project_status_color || '#3b82f6'}">
+                        </div>
+                        <div class="col">
+                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
+                            <select id="status" class="form-select obj-required"></select>
+                        </div>
                     </div>
                 `);
+                initSelect2Remote('#status', `${BASE_URL}/api/installations.filter`, { type: 'status' });
+                if (d.status) {
+                    let statusName = d.status.charAt(0).toUpperCase() + d.status.slice(1);
+                    var newOptionStatus = new Option(statusName, d.status, true, true);
+                    $('#status').append(newOptionStatus).trigger('change');
+                }
                 modalEl.find(".modal-footer").html(`
                     <button type="button" class="btn btn-primary save-sta">Save</button>
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
@@ -106,6 +140,7 @@ function saveStatus() {
     formData.append("project_status_id", $("#project_status_id").val());
     formData.append("project_status_name", $("#project_status_name").val());
     formData.append("project_status_color", $("#project_status_color").val());
+    formData.append("status", $("#status").val() || "active");
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
@@ -118,7 +153,7 @@ function saveStatus() {
         didOpen: () => Swal.showLoading()
     });
     $.ajax({
-        url: `${BASE_URL}/api/api/project.status.save`,
+        url: `${BASE_URL}/api/project.status.save`,
         type: "POST",
         data: formData,
         contentType: false,

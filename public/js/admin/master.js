@@ -18,9 +18,13 @@ function initTable() {
             initContractsTable();
             break;
         case 'group':
+            initSelect2Remote('#filter_group_status', `${BASE_URL}/api/installations.filter`, { type: 'status' });
+            $(".filter").on("change", () => initGroupTable());
             initGroupTable();
             break;
         case 'project-status':
+            initSelect2Remote('#filter_projectstatus_status', `${BASE_URL}/api/installations.filter`, { type: 'status' });
+            $(".filter").on("change", () => initProjectStatusTable());
             initProjectStatusTable();
             break;
         case 'projects':

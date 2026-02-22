@@ -16,7 +16,9 @@ function initGroupTable() {
         ajax: { 
             url: `${BASE_URL}/api/group.list`, 
             type: "POST",
-            data: function(d){}
+            data: function(d){
+                d.status = $('#filter_group_status').val();
+            }
         },
         columns: [{ 
             data: "project_group_name",
@@ -30,6 +32,25 @@ function initGroupTable() {
         },{ 
             data: "created_at",
             orderable: true,
+        },{ 
+            data: 'status',
+            orderable: true,
+            render: function (status, type, row) {
+                let badge = "";
+                switch(status) {
+                    case 'active':
+                        badge = "success";
+                        break;
+                    case 'inactive':
+                        badge = "secondary";
+                        break;
+                }
+                return `
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
+                    </div>
+                `;
+            }
         },{ 
             data: null,
             orderable: false,
@@ -122,10 +143,20 @@ $(document).on('click', '.manage-group', function() {
                         <label class="mb-2 required">${langData['group_name'] || 'Group Name'}</label>
                         <input type="text" class="form-control obj-required" id="project_group_name" maxlength="255">
                     </div>
+                    <div class="mb-3">
+                        <label class="mb-2 required">${langData['status'] || 'Status'}</label>
+                        <select id="status" class="form-select obj-required"></select>
+                    </div>
                 `);
+                initSelect2Remote('#status', `${BASE_URL}/api/installations.filter`, { type: 'status' });
                 if (groupData) {
                     $("#project_group_id").val(groupData.project_group_id);
                     $("#project_group_name").val(groupData.project_group_name);
+                    if (groupData.status) {
+                        let statusName = groupData.status.charAt(0).toUpperCase() + groupData.status.slice(1);
+                        var newOptionStatus = new Option(statusName, groupData.status, true, true);
+                        $('#status').append(newOptionStatus).trigger('change');
+                    }
                 }
             } else {
                 showError(langData['cannot_load']);
@@ -159,6 +190,7 @@ function saveGroup() {
     btn.prop("disabled", true);
     const formData = new FormData();
     formData.append("project_group_id", $("#project_group_id").val() || "");
+    formData.append("status", $("#status").val() || "active");
     formData.append("project_group_name", $("#project_group_name").val());
     Swal.fire({
         title: langData['saving'] || 'Saving...',

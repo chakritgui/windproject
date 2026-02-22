@@ -10,8 +10,10 @@ class StatusController extends BaseController {
         $search = $_POST['search']['value'] ?? '';
         $colIndex = !empty($_POST['order'][0]) ? intval($_POST['order'][0]['column']) : 1;
         $orderDir = ($_POST['order'][0]['dir'] ?? 'desc') === 'desc' ? 'desc' : 'asc';
-
-        $res = $this->model->list($start, $length, $search, $colIndex, $orderDir);
+        $filters = [
+            'status'=> $_POST['status'] ?? '',
+        ];
+        $res = $this->model->list($start, $length, $filters, $search, $colIndex, $orderDir);
         $this->json([
             "draw" => intval($_POST['draw'] ?? 1),
             "recordsTotal" => $res['total'],
@@ -30,7 +32,8 @@ class StatusController extends BaseController {
         $data = [
             'project_status_id' => intval($_POST['project_status_id'] ?? 0),
             'project_status_name' => $name,
-            'project_status_color' => $_POST['project_status_color'] ?? '#3b82f6'
+            'project_status_color' => $_POST['project_status_color'] ?? '#3b82f6',
+            'status'     => $_POST['status'] ?? 'active',
         ];
         $result = $this->model->save($data);
         if ($result === true) {

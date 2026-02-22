@@ -4,36 +4,37 @@ class GroupModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $search = '', $colIndex = 1, $orderDir = 'desc') {
-        $sqlTotal = "SELECT COUNT(*) FROM wp_project_group WHERE status <> 'deleted'";
-        if (!empty($search)) {
-            $sqlTotal .= " AND project_group_name LIKE :search";
-        }
+    public function list($start = 0,$length = 10,$filters = [],$search = '',$colIndex = 1,$orderDir = 'desc') {
+        list($where, $params) = $this->buildListWhere($filters, $search);
+        $sqlTotal = "SELECT COUNT(*) FROM wp_project_group {$where}";
         $stmtTotal = $this->db->prepare($sqlTotal);
-        if (!empty($search)) {
-            $stmtTotal->bindValue(':search', '%' . $search . '%');
+        foreach ($params as $key => $val) {
+            $stmtTotal->bindValue($key, $val);
         }
         $stmtTotal->execute();
         $total = (int)$stmtTotal->fetchColumn();
         $orderMap = [
             0 => "project_group_name",
-            1 => "created_at"
+            1 => "created_at",
+            2 => "status"
         ];
         $order = $orderMap[$colIndex] ?? 'created_at';
-        $orderDir = strtolower($orderDir) === 'asc' ? 'asc' : 'desc';
-        $sql = "SELECT project_group_id, project_group_name, created_at
-                FROM wp_project_group
-                WHERE status <> 'deleted'";
-        if (!empty($search)) {
-            $sql .= " AND project_group_name LIKE :search";
-        }
-        $sql .= " ORDER BY {$order} {$orderDir}";
+        $orderDir = strtolower($orderDir) === 'asc' ? 'ASC' : 'DESC';
+        $sql = "SELECT 
+                project_group_id,
+                project_group_name,
+                created_at,
+                status
+            FROM wp_project_group
+            {$where}
+            ORDER BY {$order} {$orderDir}
+        ";
         if ($length != -1) {
             $sql .= " LIMIT :start, :length";
         }
         $stmt = $this->db->prepare($sql);
-        if (!empty($search)) {
-            $stmt->bindValue(':search', '%' . $search . '%');
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val);
         }
         if ($length != -1) {
             $stmt->bindValue(':start', (int)$start, PDO::PARAM_INT);
@@ -49,6 +50,19 @@ class GroupModel {
             'data'  => $rows
         ];
     }
+    private function buildListWhere($filters, $search){
+        $where  = " WHERE status != 'deleted'";
+        $params = [];
+        if (!empty($filters['status'])) {
+            $where .= " AND status = :status";
+            $params[':status'] = $filters['status'];
+        }
+        if (!empty($search)) {
+            $where .= " AND project_group_name LIKE :search";
+            $params[':search'] = '%' . $search . '%';
+        }
+        return [$where, $params];
+    }
     private function formatDocumentRow(&$row) {
         if (!empty($row['created_at'])) {
             $row['created_at'] = convertTimeZone($row['created_at'], 'd/m/Y H:i:s');
@@ -60,7 +74,7 @@ class GroupModel {
     }
     public function get($id) {
         if (!$id) {
-            return ['project_group_id' => '', 'project_group_name' => ''];
+            return ['project_group_id' => '', 'project_group_name' => '', 'status' => 'active'];
         }
         $sql = "SELECT * FROM wp_project_group WHERE project_group_id = ?";
         $stmt = $this->db->prepare($sql);
@@ -70,19 +84,21 @@ class GroupModel {
     public function save($data) {
         $id = $data['project_group_id'] ?? null;
         $name = trim($data['project_group_name'] ?? '');
+        $status = $data['status'] ?? 'active';
         if ($this->isDuplicateName($name, $id)) {
             return ['status' => false, 'message' => 'already_exists'];
         }
         if ($id) {
-            $sql = "UPDATE wp_project_group SET project_group_name = :name, updated_at = NOW() WHERE project_group_id = :id";
+            $sql = "UPDATE wp_project_group SET project_group_name = :name, status = :status, updated_at = NOW() WHERE project_group_id = :id";
             $stmt = $this->db->prepare($sql);
             $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
         } else {
             $sql = "INSERT INTO wp_project_group (project_group_name, status, created_at, updated_at) 
-                    VALUES (:name, 'active', NOW(), NOW())";
+                    VALUES (:name, :status, NOW(), NOW())";
             $stmt = $this->db->prepare($sql);
         }
         $stmt->bindValue(':name', $name);
+        $stmt->bindValue(':status', $status);
         return $stmt->execute();
     }
     private function isDuplicateName($name, $id = null) {
