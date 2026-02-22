@@ -16,7 +16,9 @@ function initLevelTable() {
         ajax: { 
             url: `${BASE_URL}/api/level.list`, 
             type: "POST",
-            data: function(d){}
+            data: function(d){
+                d.status = $('#filter_level_status').val();
+            }
         },
         columns: [{ 
             data: "height_name",

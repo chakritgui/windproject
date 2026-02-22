@@ -88,12 +88,23 @@
             </div>
         </div>
         <div class="tab-pane fade" id="groups" role="tabpanel">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <select id="filter_group_status" class="form-select filter"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="table-responsive">
                 <table class="table table-striped table-hover" id="tb_group">
                     <thead>
                         <tr>
                             <th data-i18n="group_name"></th>
                             <th data-i18n="create_at"></th>
+                            <th data-i18n="status"></th>
                             <th></th>
                         </tr>
                     </thead>

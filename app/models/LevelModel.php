@@ -4,14 +4,12 @@ class LevelModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $search = '', $colIndex = 3, $orderDir = 'desc') {
-        $sqlTotal = "SELECT COUNT(*) FROM wp_height WHERE status <> 'deleted'";
-        if (!empty($search)) {
-            $sqlTotal .= " AND height_name LIKE :search";
-        }
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 3, $orderDir = 'desc'){
+        list($where, $params) = $this->buildListWhere($filters, $search);
+        $sqlTotal = "SELECT COUNT(DISTINCT h.height_id) FROM wp_height h LEFT JOIN wp_height_levels l ON l.height_id = h.height_id  AND l.status <> 'deleted' {$where}";
         $stmtTotal = $this->db->prepare($sqlTotal);
-        if (!empty($search)) {
-            $stmtTotal->bindValue(':search', '%' . $search . '%');
+        foreach ($params as $key => $val) {
+            $stmtTotal->bindValue($key, $val);
         }
         $stmtTotal->execute();
         $total = (int)$stmtTotal->fetchColumn();
@@ -21,23 +19,27 @@ class LevelModel {
             3 => "h.created_at",
             4 => "h.status"
         ];
-        $order = $orderMap[$colIndex] ?? 'created_at';
-        $orderDir = strtolower($orderDir) === 'asc' ? 'asc' : 'desc';
-        $sql = "SELECT h.height_id, h.height_name, h.height_limit, h.created_at, group_concat(l.height_levels order by l.levels_id) as height_levels, h.status
-                FROM wp_height h
-                LEFT JOIN wp_height_levels l on l.height_id = h.height_id and l.status <> 'deleted'
-                WHERE h.status <> 'deleted' 
-                GROUP BY h.height_id";
-        if (!empty($search)) {
-            $sql .= " AND h.height_name LIKE :search";
-        }
-        $sql .= " ORDER BY {$order} {$orderDir}";
+        $order = $orderMap[$colIndex] ?? 'h.created_at';
+        $orderDir = strtolower($orderDir) === 'asc' ? 'ASC' : 'DESC';
+        $sql = "SELECT 
+                h.height_id,
+                h.height_name,
+                h.height_limit,
+                h.created_at,
+                GROUP_CONCAT(l.height_levels ORDER BY l.levels_id) AS height_levels,
+                h.status
+            FROM wp_height h
+            LEFT JOIN wp_height_levels l ON l.height_id = h.height_id AND l.status <> 'deleted'
+            {$where}
+            GROUP BY h.height_id
+            ORDER BY {$order} {$orderDir}
+        ";
         if ($length != -1) {
             $sql .= " LIMIT :start, :length";
         }
         $stmt = $this->db->prepare($sql);
-        if (!empty($search)) {
-            $stmt->bindValue(':search', '%' . $search . '%');
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val);
         }
         if ($length != -1) {
             $stmt->bindValue(':start', (int)$start, PDO::PARAM_INT);
@@ -52,6 +54,19 @@ class LevelModel {
             'total' => $total,
             'data'  => $rows
         ];
+    }
+    private function buildListWhere($filters, $search){
+        $where  = " WHERE h.status != 'deleted' ";
+        $params = [];
+        if (!empty($filters['status'])) {
+            $where .= " AND h.status = :status";
+            $params[':status'] = $filters['status'];
+        }
+        if (!empty($search)) {
+            $where .= " AND h.height_name LIKE :search";
+            $params[':search'] = '%' . $search . '%';
+        }
+        return [$where, $params];
     }
     private function formatDocumentRow(&$row) {
         if (!empty($row['created_at'])) {

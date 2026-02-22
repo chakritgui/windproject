@@ -10,13 +10,16 @@ class LevelController extends BaseController {
         $start    = intval($_POST['start'] ?? 0);
         $length   = intval($_POST['length'] ?? 10);
         $search   = $_POST['search']['value'] ?? '';
+        $filters = [
+            'status'=> $_POST['status'] ?? '',
+        ];
         $colIndex = 1; 
         $orderDir = 'desc';
         if (!empty($_POST['order'][0])) {
             $colIndex = intval($_POST['order'][0]['column']);
             $orderDir = ($_POST['order'][0]['dir'] === 'desc') ? 'desc' : 'asc';
         }
-        $res = $this->model->list($start, $length, $search, $colIndex, $orderDir);
+        $res = $this->model->list($start, $length, $filters,$search, $colIndex, $orderDir);
         $this->json([
             "draw"            => intval($_POST['draw'] ?? 1),
             "recordsTotal"    => $res['total'],
