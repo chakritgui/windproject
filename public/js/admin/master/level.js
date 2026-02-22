@@ -49,6 +49,25 @@ function initLevelTable() {
             data: "created_at",
             orderable: true,
         },{ 
+            data: 'status',
+            orderable: true,
+            render: function (status, type, row) {
+                let badge = "";
+                switch(status) {
+                    case 'active':
+                        badge = "success";
+                        break;
+                    case 'inactive':
+                        badge = "secondary";
+                        break;
+                }
+                return `
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
+                    </div>
+                `;
+            }
+        },{ 
             data: null,
             orderable: false,
             className: "text-end",
@@ -142,12 +161,18 @@ $(document).on('click', '.manage-level', function() {
                         <label class="mb-2 required">${langData['level'] || 'Level'}</label>
                         <input type="text" class="form-control obj-required" id="height_name" maxlength="255">
                     </div>
-                    <div class="mb-3">
-                        <label class="mb-2 required">${langData['level'] || 'Level'}</label>
-                        <input type="number" class="form-control obj-required" id="height_limit" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label class="mb-2 required">${langData['max_selection_reached'] || 'Select a maximum of'}</label>
+                            <input type="number" class="form-control obj-required" id="height_limit" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                        </div>
+                        <div class="col">
+                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
+                            <select id="status" class="form-select obj-required"></select>
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label class="mb-2 required">${langData['max_selection_reached'] || 'Select a maximum of'}</label>
+                        <label class="mb-2 required">${langData['height_level'] || 'Height Level'}</label>
                         <div id="tag-container" class="form-control d-flex flex-wrap align-items-center gap-2" style="min-height: 45px; cursor: text;">
                             <input type="text" id="tag-input" class="border-0 flex-grow-1" style="outline: none; min-width: 100px;" placeholder="Type and press Enter...">
                         </div>
@@ -155,12 +180,18 @@ $(document).on('click', '.manage-level', function() {
                         <input type="hidden" class="obj-required" name="height_levels" id="height_levels_hidden">
                     </div>
                 `);
+                initSelect2Remote('#status', `${BASE_URL}/api/installations.filter`, { type: 'status' });
                 if (levelData) {
                     $("#height_id").val(levelData.height_id);
                     $("#height_name").val(levelData.height_name);
                     $("#height_limit").val(levelData.height_limit);
                     if (levelData.height_levels) {
                         levelsArray = levelData.height_levels.split(',').map(s => s.trim()).filter(s => s !== "");
+                    }
+                    if (levelData.status) {
+                        let statusName = levelData.status.charAt(0).toUpperCase() + levelData.status.slice(1);
+                        var newOptionStatus = new Option(statusName, levelData.status, true, true);
+                        $('#status').append(newOptionStatus).trigger('change');
                     }
                     renderTags();
                 }
@@ -247,6 +278,7 @@ function saveLevel() {
     formData.append("height_limit", $("#height_limit").val() || 3);
     formData.append("height_name", $("#height_name").val());
     formData.append("height_levels", $("#height_levels_hidden").val());
+    formData.append("status", $("#status").val() || 'active');
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `

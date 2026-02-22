@@ -43,6 +43,7 @@ function initTable() {
             initInstallationsTable();
             break;
         case 'level':
+            initSelect2Remote('#filter_level_status', `${BASE_URL}/api/installations.filter`, { type: 'status' });
             initLevelTable();
             break;
         case 'poles':

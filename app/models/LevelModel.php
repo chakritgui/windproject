@@ -18,11 +18,12 @@ class LevelModel {
         $orderMap = [
             0 => "h.height_name",
             2 => "h.height_limit",
-            3 => "h.created_at"
+            3 => "h.created_at",
+            4 => "h.status"
         ];
         $order = $orderMap[$colIndex] ?? 'created_at';
         $orderDir = strtolower($orderDir) === 'asc' ? 'asc' : 'desc';
-        $sql = "SELECT h.height_id, h.height_name, h.height_limit, h.created_at, group_concat(l.height_levels order by l.levels_id) as height_levels
+        $sql = "SELECT h.height_id, h.height_name, h.height_limit, h.created_at, group_concat(l.height_levels order by l.levels_id) as height_levels, h.status
                 FROM wp_height h
                 LEFT JOIN wp_height_levels l on l.height_id = h.height_id and l.status <> 'deleted'
                 WHERE h.status <> 'deleted' 
@@ -63,9 +64,9 @@ class LevelModel {
     }
     public function get($id) {
         if (!$id) {
-            return ['height_id' => '', 'height_name' => '', 'height_levels' => '', 'height_limit' => 3];
+            return ['height_id' => '', 'height_name' => '', 'height_levels' => '', 'height_limit' => 3, 'status' => 'active'];
         }
-        $sql = "SELECT h.height_id, h.height_name, h.height_limit, h.created_at, group_concat(l.height_levels order by l.levels_id) as height_levels
+        $sql = "SELECT h.height_id, h.height_name, h.height_limit, h.created_at, group_concat(l.height_levels order by l.levels_id) as height_levels, h.status
                 FROM wp_height h
                 LEFT JOIN wp_height_levels l on l.height_id = h.height_id and l.status <> 'deleted' WHERE h.height_id = ?";
         $stmt = $this->db->prepare($sql);
@@ -77,22 +78,24 @@ class LevelModel {
         $name = trim($data['height_name'] ?? '');
         $levels_str = $data['height_levels'] ?? '';
         $height_limit = $data['height_limit'] ?? 3;
+        $status = $data['status'] ?? 'active';
         if ($this->isDuplicateName($name, $id)) {
             return ['status' => false, 'message' => 'already_exists'];
         }
         try {
             $this->db->beginTransaction();
             if ($id) {
-                $sql = "UPDATE wp_height SET height_name = :name, height_limit = :height_limit, updated_at = NOW() WHERE height_id = :id";
+                $sql = "UPDATE wp_height SET height_name = :name, height_limit = :height_limit, updated_at = NOW(), status = :status WHERE height_id = :id";
                 $stmt = $this->db->prepare($sql);
                 $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
                 $stmt->bindValue(':height_limit', (int)$height_limit, PDO::PARAM_INT);
             } else {
                 $sql = "INSERT INTO wp_height (height_name, height_limit, status, created_at, updated_at) 
-                        VALUES (:name, :height_limit 'active', NOW(), NOW())";
+                        VALUES (:name, :height_limit :status, NOW(), NOW())";
                 $stmt = $this->db->prepare($sql);
             }
             $stmt->bindValue(':name', $name);
+            $stmt->bindValue(':status', $status);
             $stmt->bindValue(':height_limit', (int)$height_limit, PDO::PARAM_INT);
             $stmt->execute();
             $current_height_id = $id ?: $this->db->lastInsertId();
