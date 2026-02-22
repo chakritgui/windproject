@@ -156,7 +156,6 @@
     "email_exists": "This email is already in use.",
     "invalid_email": "Invalid email format.",
     "username_exists": "This username is already in use.",
-    "invalid_password": "Invalid Password",
     "not_match_password": "Password does not meet the requirements",
     "useranme_password": "Invalid Username",
     "not_match_username": "Username does not meet the requirements",
@@ -614,5 +613,9 @@
     "show_news_user": "Show in News (User)",
     "save_to_a_folder": "Save to a folder?",
     "use_folder_no": "No folder specified",
-    "use_folder_yes": "Select folder"
+    "use_folder_yes": "Select folder",
+    "user_not_found": "User not found",
+    "invalid_password": "Invalid password",
+    "account_restricted": "Account restricted or suspended",
+    "missing_parameters": "Please fill in all required fields"
 }

@@ -9,9 +9,9 @@ class AuthController extends Controller {
     }
     public function doLogin() {
         header('Content-Type: application/json; charset=utf-8');
-        $username = $_POST['username'] ?? null;
-        $pass = $_POST['password'] ?? null;
-        $timezone = $_POST['timezone'] ?? null;
+        $username     = $_POST['username'] ?? null;
+        $pass         = $_POST['password'] ?? null;
+        $timezone     = $_POST['timezone'] ?? null;
         $keepLoggedIn = filter_var($_POST['keepLoggedIn'] ?? false, FILTER_VALIDATE_BOOLEAN);
         if (!$username || !$pass) {
             echo json_encode(['status' => 'error', 'message' => 'missing_parameters']);
@@ -19,43 +19,54 @@ class AuthController extends Controller {
         }
         $m = new Auth();
         $user = $m->findMember($username);
-        if ($user && $pass === decryptToken($user['password_hash']) && $user['status'] === 'active') {
-            session_regenerate_id(true); 
-            $session_id = session_id();  
-            $m->updateLogin($user['member_id'], $timezone, $session_id);
-            $_SESSION['session_id'] = $session_id;
-            $_SESSION['user'] = [
-                'id'   => $user['member_id'],
-                'role' => $user['role']
-            ];
-            if($timezone) {
-                $_SESSION['timezone'] = $timezone;
-            }
-            if ($keepLoggedIn) {
-                $selector = bin2hex(random_bytes(6));
-                $validator = bin2hex(random_bytes(16));
-                $expires_days = 30;
-                $expires_at = convertTimeZoneUTC(date('Y-m-d H:i:s', time() + (86400 * $expires_days)), 'Y-m-d H:i:s');
-                $m->setRememberToken($user['member_id'], $selector, hash('sha256', $validator), $expires_at);
-                setcookie(
-                    'remember_me',
-                    $selector . ':' . $validator,
-                    [
-                        'expires' => time() + (86400 * $expires_days),
-                        'path' => '/',
-                        'httponly' => true,
-                        'secure' => true,
-                        'samesite' => 'Lax'
-                    ]
-                );
-            }
-            session_write_close();
-            $location = ($user['role'] == 'user') ? "home" : "dashboard";
-            echo json_encode(['status' => 'success', 'location' => $location]);
-        } else {
-            $message = ($user && $user['status'] !== 'active') ? 'account_inactive' : 'invalid_credentials';
-            echo json_encode(['status' => 'error', 'message' => $message]);
+        if (!$user) {
+            echo json_encode(['status' => 'error', 'message' => 'user_not_found']);
+            exit;
         }
+        if ($pass !== decryptToken($user['password_hash'])) {
+            echo json_encode(['status' => 'error', 'message' => 'invalid_password']);
+            exit;
+        }
+        if ($user['status'] !== 'active') {
+            echo json_encode(['status' => 'error', 'message' => 'account_restricted']);
+            exit;
+        }
+        session_regenerate_id(true); 
+        $session_id = session_id();  
+        $m->updateLogin($user['member_id'], $timezone, $session_id);
+        $_SESSION['session_id'] = $session_id;
+        $_SESSION['user'] = [
+            'id'   => $user['member_id'],
+            'role' => $user['role']
+        ];
+        if ($timezone) {
+            $_SESSION['timezone'] = $timezone;
+        }
+        if ($keepLoggedIn) {
+            $selector = bin2hex(random_bytes(6));
+            $validator = bin2hex(random_bytes(16));
+            $expires_days = 30;
+            $expires_timestamp = time() + (86400 * $expires_days);
+            $expires_at_utc = convertTimeZoneUTC(date('Y-m-d H:i:s', $expires_timestamp), 'Y-m-d H:i:s');
+            $m->setRememberToken($user['member_id'], $selector, hash('sha256', $validator), $expires_at_utc);
+            setcookie(
+                'remember_me',
+                $selector . ':' . $validator,
+                [
+                    'expires' => $expires_timestamp,
+                    'path' => '/',
+                    'httponly' => true,
+                    'secure' => true,
+                    'samesite' => 'Lax'
+                ]
+            );
+        }
+        session_write_close();
+        $location = ($user['role'] == 'user') ? "home" : "dashboard";
+        echo json_encode([
+            'status' => 'success', 
+            'location' => $location
+        ]);
         exit;
     }
     public function logout() {
