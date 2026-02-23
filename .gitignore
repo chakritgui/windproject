@@ -1,7 +1,14 @@
 # Ignore user-uploaded content
 /uploads/
+/storage/
 
 # Ignore server-specific configuration
 .htaccess
 
 .env
+
+/public/manifest.json
+
+/public/ios_meta.json
+
+sw.js
