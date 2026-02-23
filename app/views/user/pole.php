@@ -112,13 +112,13 @@
     <div id="reportSection">
         <div class="report-section">
             <h6 class="report-title"><i class="fas fa-chart-bar me-2"></i><span data-i18n="average_summary"></span></h6>
-            <div class="row g-3" id="statsContainer"></div>
+            <div class="row g-2 mt-2" id="statsContainer"></div>
         </div>
         <div class="report-section">
             <h6 class="report-title"><i class="fas fa-chart-line me-2"></i><span data-i18n="visualization"></span></h6>
             <div class="row" id="chartRow">
                 <div class="col-lg-4 mb-4 chart-box" data-chart="wind-speed">
-                    <h6 class="text-center" data-i18n="wind_speed_trend"></h6>
+                    <h6 class="text-center" data-i18n="wind_speed"></h6>
                     <div class="chart-container">
                         <canvas id="lineChart"></canvas>
                     </div>
@@ -148,7 +148,7 @@
                     </div>
                 </div>
                 <div class="col-lg-4 mb-4 chart-box" data-chart="surface-pressure">
-                    <h6 class="text-center" data-i18n="surface_pressure_trend"></h6>
+                    <h6 class="text-center" data-i18n="surface_pressure"></h6>
                     <div class="chart-container">
                         <canvas id="pressureChart"></canvas>
                     </div>

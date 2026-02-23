@@ -180,50 +180,58 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                             </label>
                         </div>
                         <div class="col-md-6 col-lg-6">
-                            <div class="sensor-checkbox">
-                                <input type="checkbox" class="form-check-input me-2" id="sensor1" checked>
+                            <div class="sensor-checkbox d-flex align-items-start p-2">
+                                <input type="checkbox" class="form-check-input mt-1 me-2" id="sensor1" checked>
                                 <label class="form-check-label" for="sensor1" style="cursor: pointer;">
-                                    <i class="fas fa-wind text-primary me-2"></i><span data-i18n="wind_speed"></span> (m/s)
+                                    <i class="fa-solid fa-wind me-2" style="color: #00d2d3;"></i><span data-i18n="wind_speed"></span> (m/s)
                                 </label>
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-6">
-                            <div class="sensor-checkbox">
-                                <input type="checkbox" class="form-check-input me-2" id="sensor2" checked>
+                            <div class="sensor-checkbox d-flex align-items-start p-2">
+                                <input type="checkbox" class="form-check-input mt-1 me-2" id="sensor2" checked>
                                 <label class="form-check-label" for="sensor2" style="cursor: pointer;">
-                                    <i class="fas fa-compass text-success me-2"></i><span data-i18n="wind_direction"></span> (<span data-i18n="degree"></span>)
+                                    <i class="fa-solid fa-compass me-2" style="color: #54a0ff;"></i><span data-i18n="wind_direction"></span> (<span data-i18n="degree"></span>)
                                 </label>
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-6">
-                            <div class="sensor-checkbox">
-                                <input type="checkbox" class="form-check-input me-2" id="sensor3">
+                            <div class="sensor-checkbox d-flex align-items-start p-2">
+                                <input type="checkbox" class="form-check-input mt-1 me-2" id="sensor3">
                                 <label class="form-check-label" for="sensor3" style="cursor: pointer;">
-                                    <i class="fas fa-weight text-info me-2"></i><span data-i18n="air_density"></span> (kg/m³)
+                                    <i class="fa-solid fa-smog me-2" style="color: #8395a7;"></i><span data-i18n="air_density"></span> (kg/m³)
                                 </label>
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-6">
-                            <div class="sensor-checkbox">
-                                <input type="checkbox" class="form-check-input me-2" id="sensor4">
+                            <div class="sensor-checkbox d-flex align-items-start p-2">
+                                <input type="checkbox" class="form-check-input mt-1 me-2" id="sensor4">
                                 <label class="form-check-label" for="sensor4" style="cursor: pointer;">
-                                    <i class="fas fa-tachometer-alt text-warning me-2"></i><span data-i18n="surface_pressure"></span> (hPa)
+                                    <i class="fa-solid fa-gauge-high me-2" style="color: #a29bfe;"></i><span data-i18n="surface_pressure"></span> (hPa)
                                 </label>
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-6">
-                            <div class="sensor-checkbox">
-                                <input type="checkbox" class="form-check-input me-2" id="sensor5">
+                            <div class="sensor-checkbox d-flex align-items-start p-2">
+                                <input type="checkbox" class="form-check-input mt-1 me-2" id="sensor5">
                                 <label class="form-check-label" for="sensor5" style="cursor: pointer;">
-                                    <i class="fas fa-tint text-primary me-2"></i><span data-i18n="relative_humidity"></span> (%)
+                                    <i class="fa-solid fa-droplet me-2" style="color: #48dbfb;"></i><span data-i18n="relative_humidity"></span> (%)
                                 </label>
                             </div>
                         </div>
                         <div class="col-md-6 col-lg-6">
-                            <div class="sensor-checkbox">
-                                <input type="checkbox" class="form-check-input me-2" id="sensor6">
+                            <div class="sensor-checkbox d-flex align-items-start p-2">
+                                <input type="checkbox" class="form-check-input mt-1 me-2" id="sensor6">
                                 <label class="form-check-label" for="sensor6" style="cursor: pointer;">
-                                    <i class="fas fa-temperature-high text-danger me-2"></i><span data-i18n="turbulence_intensity"></span> (°C)
+                                    <i class="fa-solid fa-temperature-half text-danger me-2" style="color: #ff6b6b;"></i><span data-i18n="temperature"></span> (degC)
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-6">
+                            <div class="sensor-checkbox d-flex align-items-start p-2">
+                                <input type="checkbox" class="form-check-input mt-1 me-2" id="sensor7">
+                                <label class="form-check-label" for="sensor7" style="cursor: pointer;">
+                                    <i class="fa-solid fa-tornado me-2" style="color: #ee5253;"></i><span data-i18n="turbulence_intensity"></span> (°C)
                                 </label>
                             </div>
                         </div>
@@ -421,13 +429,13 @@ function showReportPWA(data) {
         <div class="container-fluid mt-3 mb-3">
             <div class="report-section mb-4">
                 <h6 class="report-title"><i class="fas fa-chart-bar me-2"></i><span data-i18n="average_summary"></span></h6>
-                <div class="row g-3" id="statsContainer"></div>
+                <div class="row g-2 mt-2" id="statsContainer"></div>
             </div>
             <div class="report-section">
                 <h6 class="report-title"><i class="fas fa-chart-line me-2"></i><span data-i18n="visualization"></span></h6>
                 <div class="row" id="chartRow">
                     <div class="col-lg-4 mb-4 chart-box" data-chart="wind-speed">
-                        <h6 class="text-center" data-i18n="wind_speed_trend"></h6>
+                        <h6 class="text-center" data-i18n="wind_speed"></h6>
                         <div class="chart-container">
                             <canvas id="lineChart"></canvas>
                         </div>
@@ -454,6 +462,12 @@ function showReportPWA(data) {
                         <h6 class="text-center" data-i18n="air_density_turbulence"></h6>
                         <div class="chart-container">
                             <canvas id="airChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mb-4 chart-box" data-chart="surface-pressure">
+                        <h6 class="text-center" data-i18n="surface_pressure"></h6>
+                        <div class="chart-container">
+                            <canvas id="pressureChart"></canvas>
                         </div>
                     </div>
                 </div>

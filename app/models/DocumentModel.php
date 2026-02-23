@@ -162,13 +162,13 @@ class DocumentModel {
             return [
                 'created_at' => '',
                 'document_download' => 0,
-                'document_end' => convertTimeZone(date('Y-m-d'), 'Y-m-d'),
+                'document_end' => '',
                 'document_file_name' => '',
                 'document_id' => '',
                 'document_name' => '',
                 'document_path' => '',
                 'document_size' => '',
-                'document_start' => convertTimeZone(date('Y-m-d'), 'Y-m-d'),
+                'document_start' => '',
                 'document_type' => '',
                 'type_id' => '',
                 'type_name' => '',
@@ -226,8 +226,8 @@ class DocumentModel {
             $type_id = !empty($data['type_id']) ? $data['type_id'] : null;
             $installations_id = !empty($data['installations_id']) ? $data['installations_id'] : null;
             $poles_id = !empty($data['poles_id']) ? $data['poles_id'] : null;
-            $startObj = DateTime::createFromFormat('d/m/Y', trim($data['document_start']));
-            $endObj = DateTime::createFromFormat('d/m/Y', trim($data['document_end']));
+            $startObj = !empty($data['document_start']) ? DateTime::createFromFormat('d/m/Y', trim($data['document_start'])) : null;
+            $endObj = !empty($data['document_end']) ? DateTime::createFromFormat('d/m/Y', trim($data['document_end'])) : null;
             $document_start = ($startObj) ? convertTimeZoneUTC($startObj->format('Y-m-d'), 'Y-m-d') : null;
             $document_end   = ($endObj) ? convertTimeZoneUTC($endObj->format('Y-m-d'), 'Y-m-d') : null;
             $send_notification = $data['send_notification'] ?? 'no';
@@ -239,7 +239,7 @@ class DocumentModel {
             if (isset($_FILES['document_file']) && $_FILES['document_file']['error'] === UPLOAD_ERR_OK) {
                 $this->handleFileUpload($document_id, $_FILES['document_file']);
             }
-            if($send_notification == 'yes') {
+            if($send_notification === 'yes' && $status === 'public') {
                 $mediaHelper = new MediaHelper($this->db);
                 $status = 'published';
                 $publish_at = convertTimeZoneUTC(date('Y-m-d H:i:s'), 'Y-m-d H:i:s');

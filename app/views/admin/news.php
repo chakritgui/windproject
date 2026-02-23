@@ -4,7 +4,7 @@
     }
     .news-cover-wrapper {
         width: 60px;
-        height: 40px;
+        height: 60px;
         border-radius: 6px;
         overflow: hidden;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
@@ -22,6 +22,16 @@
     }
     .form-check-input {
         margin-top: 0;
+    }
+    .folder-icon-box {
+        width: 60px;
+        height: 60px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 </style>
 <div class="container-fluid mt-90 mb-5">

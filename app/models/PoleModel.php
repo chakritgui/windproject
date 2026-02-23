@@ -15,7 +15,8 @@ class PoleModel {
             'AD' => ['col' => 'air_density', 'dec' => 3],
             'SP' => ['col' => 'pressure', 'dec' => 2],
             'RH' => ['col' => 'humidity', 'dec' => 2],
-            'TI' => ['col' => 'turbulence_intensity', 'dec' => 2]
+            'TE' => ['col' => 'temperature', 'dec' => 2],
+            'TU' => ['col' => 'turbulence_intensity', 'dec' => 2]
         ];
         $select = [];
         foreach ($params['sensors'] as $k) {
@@ -63,7 +64,8 @@ class PoleModel {
             'AD' => 'w.air_density',
             'SP' => 'w.pressure',
             'RH' => 'w.humidity',
-            'TI' => 'w.turbulence_intensity'
+            'TE' => 'w.temperature',
+            'TU' => 'w.turbulence_intensity'
         ];
         $start = $this->formatDbDate($params['start']) . " 00:00:00";
         $end   = $this->formatDbDate($params['end']) . " 23:59:59";

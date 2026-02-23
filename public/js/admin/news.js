@@ -22,11 +22,20 @@ function initNewsTable() {
             data: "cover_image",
             orderable: false,
             className: 'text-center',
-            render: data => {
-                const imgUrl = data ? `${BASE_URL}/${data}` : `${BASE_URL}/public/images/noimage.jpg`;
-                return `<div class="news-cover-wrapper mx-auto">
-                            <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';">
-                        </div>`;
+            render: (data, type, row) => {
+                return `${row.cover_image ? `
+                    <div class="news-cover-wrapper mx-auto">
+                        <img src="${BASE_URL}/${row.cover_image}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';">
+                    </div>
+                    ` : `
+                        <div class="folder-icon-box mx-auto">
+                        ${(row.type === 'news') ? `
+                            <i class="fa-regular fa-newspaper text-primary fa-3x"></i>
+                        ` : `
+                            <i class="fa-solid fa-diagram-project text-warning fa-3x"></i>
+                        `}
+                    `}
+                `;
             }
         },{
             data: null,

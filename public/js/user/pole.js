@@ -1,16 +1,13 @@
 const sensors = [
-    { key: '', name: '', lang: '', unit: '', color: '' },
-    { key: 'WS', name: 'Wind Speed', lang: 'wind_speed', unit: 'm/s', color: 'rgb(75,192,192)' },
-    { key: 'WD', name: 'Wind Direction', lang: 'wind_direction', unit: 'degree', color: 'rgb(54,162,235)' },
-    { key: 'AD', name: 'Air Density', lang: 'air_density', unit: 'kg/m³', color: 'rgb(255,159,64)' },
-    { key: 'SP', name: 'Surface Pressure', lang: 'surface_pressure', unit: 'hPa', color: 'rgb(153,102,255)' },
-    { key: 'RH', name: 'Relative Humidity', lang: 'relative_humidity', unit: '%', color: 'rgb(255,205,86)' },
-    { key: 'TI', name: 'Turbulence Intensity', lang: 'turbulence_intensity', unit: '', color: 'rgb(231,76,60)' }
+    { key: '', name: '', lang: '', unit: '', color: '', icon: ''},
+    { key: 'WS', name: 'Wind Speed', lang: 'wind_speed', unit: 'm/s', color: '#00d2d3', icon: 'fa-solid fa-wind' },
+    { key: 'WD', name: 'Wind Direction', lang: 'wind_direction', unit: 'degree', color: '#54a0ff', icon: 'fa-solid fa-compass' },
+    { key: 'AD', name: 'Air Density', lang: 'air_density', unit: 'kg/m³', color: '#8395a7', icon: 'fa-solid fa-smog'},
+    { key: 'SP', name: 'Surface Pressure', lang: 'surface_pressure', unit: 'hPa', color: '#a29bfe', icon: 'fa-solid fa-gauge-high' },
+    { key: 'RH', name: 'Relative Humidity at 2 meters', lang: 'relative_humidity', unit: '%', color: '#48dbfb', icon: 'fa-solid fa-droplet'},
+    { key: 'TE', name: 'Air Temperature at 2 meters', lang: 'temperature', unit: 'degC', color: '#ff6b6b', icon: 'fa-solid fa-temperature-half' },
+    { key: 'TU', name: 'Turbulence intensity at height', lang: 'turbulence_intensity', unit: '%', color: '#ee5253', icon: 'fa-solid fa-tornado'}
 ];
-const sensorIcons = {
-    WS: 'fa-wind', WD: 'fa-compass', AD: 'fa-cloud',
-    SP: 'fa-tachometer-alt', RH: 'fa-tint', TI: 'fa-bolt'
-};
 let charts = {};
 let reportState = {
     poles_id: '', startDate: '', endDate: '', height_id: '',
@@ -110,7 +107,7 @@ function renderAllCharts(realData) {
     if (selectedKeys.includes('WS')) {
         const wsSensor = sensors.find(s => s.key === 'WS');
         const wsDatasets = distinctLevels.map((lvl, idx) => ({
-            label: `${langData[wsSensor.lang] || wsSensor.name} (${lvl})`,
+            label: `${lvl}`,
             data: labels.map(t => {
                 const row = realData.find(d => d.time_label === t && d.level_name === lvl);
                 return row ? row.WS : null;
@@ -144,7 +141,7 @@ function renderAllCharts(realData) {
         });
         renderChart('weatherChart', 'line', labels, weatherDatasets);
     }
-    const airKeys = ['AD', 'TI'].filter(k => selectedKeys.includes(k));
+    const airKeys = ['AD', 'TU'].filter(k => selectedKeys.includes(k));
     if (airKeys.length) {
         let airDatasets = [];
         airKeys.forEach(k => {
@@ -165,7 +162,7 @@ function renderAllCharts(realData) {
     if (selectedKeys.includes('SP')) {
         const spSensor = sensors.find(s => s.key === 'SP') || { name: 'Surface Pressure', color: '#ff9f40' }; 
         const spDatasets = distinctLevels.map((lvl, idx) => ({
-            label: `${langData[spSensor.lang] || spSensor.name} (${lvl})`,
+            label: `${lvl}`,
             data: labels.map(t => {
                 const row = realData.find(d => d.time_label === t && d.level_name === lvl);
                 return row ? row.SP : null;
@@ -222,7 +219,7 @@ function renderWindRose16(canvasId, realData, distinctLevels) {
         });
         const color = getLevelColor(idx, 'rgb(54, 162, 235)');
         return {
-            label: `${langData['distribution'] || 'Distribution'} (${lvl})`,
+            label: `${lvl}`,
             data: counts,
             backgroundColor: color.replace('rgb', 'rgba').replace(')', ', 0.2)'),
             borderColor: color,
@@ -257,7 +254,7 @@ function renderHistogram(canvasId, sensor, realData, distinctLevels) {
         });
         const color = getLevelColor(idx, sensor.color);
         return {
-            label: `Level: ${lvl}`,
+            label: `${lvl}`,
             data: counts,
             backgroundColor: color.replace('rgb', 'rgba').replace(')', ', 0.7)'),
             borderColor: color,
@@ -306,13 +303,15 @@ function getLevelColor(index, baseColor) {
 }
 function createStatCard(container, sensor, value) {
     const col = document.createElement('div');
-    col.className = 'col-lg-2 col-md-4 col-6 mb-3';
+    col.className = 'stat-card-rect'; 
     col.innerHTML = `
-        <div class="stat-card" style="padding:12px; background:${sensor.color}; border-radius:10px; color:white; position:relative; min-height:85px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <i class="fas ${sensorIcons[sensor.key]}" style="position:absolute; right:10px; top:10px; opacity:0.3; font-size:1.5rem;"></i>
-            <h6 style="font-size:0.8rem; margin-bottom:5px; opacity:0.9; text-transform:uppercase;" data-i18n="${sensor.lang}">${sensor.name}</h6>
-            <div style="font-size:1.4rem; font-weight:bold;">
-                ${value} <small style="font-size:0.6em; font-weight:400;">${sensor.unit}</small>
+        <div class="stat-card" style="padding:12px; background:${sensor.color}; border-radius:10px; color:white; position:relative; min-height:90px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+            <i class="${sensor.icon}" style="position:absolute; right:10px; top:10px; opacity:0.3; font-size:1.4rem;"></i>
+            <h6 style="font-size:0.75rem; margin-bottom:5px; opacity:0.9; height: 24px;" data-i18n="${sensor.lang}" title="${sensor.name}">
+                ${sensor.name}
+            </h6>
+            <div style="font-size:1.3rem; font-weight:bold;">
+                ${value} <small style="font-size:0.6em; font-weight:400; opacity:0.8;">${sensor.unit}</small>
             </div>
         </div>
     `;
@@ -329,10 +328,10 @@ function updateChartVisibility(keys) {
         show('wind-speed-hist');
     }
     if (keys.includes('WD')) show('wind-direction');
-    if (keys.includes('RH') || keys.includes('T')) {
+    if (keys.includes('RH') || keys.includes('TE')) {
         show('weather');
     }
-    if (keys.includes('AD') || keys.includes('TI')) {
+    if (keys.includes('AD') || keys.includes('TU')) {
         show('air');
     }
     if (keys.includes('SP')) {

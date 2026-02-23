@@ -57,7 +57,7 @@ function initDocumentTable() {
             orderable: true,
             className: 'align-middle text-nowrap',
             render: function(data, type, row) {
-                return `<div class="lh-sm">${row.document_start} - ${row.document_end}</div>`;
+                return `<div class="lh-sm">${row.document_start || ""} - ${row.document_end || ""}</div>`;
             }
         },{ 
             data: "document_size",
@@ -181,206 +181,179 @@ function initTable() {
     }
 }
 $(document).on('click', '.manage-document', function () {
-    let document_id = $(this).data("id");
-    const isEdit = !!document_id; 
+    const document_id = $(this).data("id");
+    const isEdit = !!document_id;
+
     $.ajax({
         url: `${BASE_URL}/api/document.info`,
         method: 'POST',
         data: { id: document_id },
         dataType: 'json',
-        success: function(res){
-            if (res.status === 'success') {
-                let docData = res.data;
-                let modalEl = $('#windModal');
-                let modal = new bootstrap.Modal(modalEl[0]);
-                modal.show();
-                modalEl.find(".modal-header").html(`
-                    <h5 class="modal-title">${langData['manageDocument'] || 'Manage Document'}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                `);
-                modalEl.find(".modal-footer").html(`
-                    <button type="submit" class="btn btn-primary me-2 save-document">${langData['save'] || "Save"}</button>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
-                `);
-                modalEl.find(".modal-body").html(`
-                    <input type="hidden" id="mode" value="${document_id ? 'edit' : 'new'}">
-                    <input type="hidden" name="document_id" id="document_id" value="${document_id ?? ''}">
-                    <div class="mb-3">
-                        <label class="mb-2 required">${langData['uploadFile'] || 'Upload File'}</label>
-                        <div id="drop_zone" class="border rounded-3 p-4 text-center" style="cursor:pointer; border-style:dashed;">
-                            <div id="drop_text">
-                                <i class="fa-solid fa-folder-open fa-4x text-warning"></i>
-                                <p class="mb-0 mt-2 text-muted">${langData['drop_here'] || 'Drop here or click to browse'}</p>
-                            </div>
-                            <div id="file_preview" class="mt-3 d-none"></div>
-                            <div id="drop_button">
-                                <button class="btn btn-primary mt-2" type="button" id="btn_select_file">${langData['choose'] || 'Choose'}</button>
-                                <input type="file" class="d-none obj-required" id="document_file" accept=".ppt,.pptx,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar,.jpg,.jpeg,.png,.gif,.webp">
-                            </div>
-                        </div>
-                        <div class="mt-3 px-2">
-                            <div class="d-flex align-items-start justify-content-center text-center">
-                                <i class="fa-solid fa-circle-info text-warning me-2 mt-1"></i>
-                                <div class="small text-muted">
-                                    <div>${langData['only_allowed_file_types'] || 'Only allowed file types will be accepted; others will be automatically discarded.'}</div>
-                                </div>
-                            </div>
-                            <div class="text-center mt-2">
-                                <span class="badge rounded-pill bg-light text-dark border">.ppt</span>
-                                <span class="badge rounded-pill bg-light text-dark border">.pptx</span>
-                                <span class="badge rounded-pill bg-light text-dark border">.pdf</span>
-                                <span class="badge rounded-pill bg-light text-dark border">.doc</span>
-                                <span class="badge rounded-pill bg-light text-dark border">.docx</span>
-                                <span class="badge rounded-pill bg-light text-dark border">.xls</span>
-                                <span class="badge rounded-pill bg-light text-dark border">.xlsx</span>
-                                <span class="badge rounded-pill bg-light text-dark border">.txt</span>
-                                <span class="badge rounded-pill bg-light text-dark border">.zip</span>
-                                <span class="badge rounded-pill bg-light text-dark border">.rar</span>
-                                <span class="badge rounded-pill bg-light text-dark border">.jpg</span>
-                                <span class="badge rounded-pill bg-light text-dark border">.jpeg</span>
-                                <span class="badge rounded-pill bg-light text-dark border">.png</span>
-                                <span class="badge rounded-pill bg-light text-dark border">.gif</span>
-                                <span class="badge rounded-pill bg-light text-dark border">.webp</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="mb-2 required">${langData['documentName'] || 'Document Name'}</label>
-                        <input type="text" class="form-control obj-required" id="document_name" maxlength="255">
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['fileType'] || 'File Type'}</label>
-                            <input type="text" class="form-control obj-required" id="document_type" readonly>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['fileSize'] || 'File Size'}</label>
-                            <input type="text" class="form-control obj-required" id="document_size" readonly>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12 mb-3">
-                            <small class="text-muted">${langData['file_remark'] || 'File Remark'}</small>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['startDate'] || 'Start Date'}</label>
-                            <input type="text" class="form-control obj-required" id="document_start">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['endDate'] || 'End Date'}</label>
-                            <input type="text" class="form-control obj-required" id="document_end">
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="mb-2">${langData['contract'] || 'Contract'}</label>
-                            <select id="contract" class="form-select"></select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="mb-2">${langData['project'] || 'Project'}</label>
-                            <select id="project" class="form-select"></select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="mb-2">${langData['pole_types'] || 'Wind Measurement Equipment'}</label>
-                            <select id="type" class="form-select"></select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="mb-2">${langData['installation'] || 'Installation'}</label>
-                            <select id="installation" class="form-select"></select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="mb-2">${langData['pole'] || 'Pole'}</label>
-                            <select id="pole" class="form-select"></select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
-                            <select id="status" class="form-select obj-required"></select>
-                        </div>
-                    </div>
-                    <hr class="my-4">
-                    <div class="card bg-light border-0">
-                        <div class="card-body">
-                            <h6 class="card-title fw-bold text-dark"><i class="fa-solid fa-bell me-2"></i>${langData['notification_settings']}</h6>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="send_notification">
-                                <label class="form-check-label" for="send_notification">${isEdit ? langData['send_update'] : langData['send_publishing']}</label>
-                            </div>
-                            <small class="text-muted d-block mt-1">${langData['if_enabled']}</small>
-                        </div>
-                    </div>
-                `);
-                initSelect2Remote('#contract', `${BASE_URL}/api/document.filter`, { type: 'contract' });
-                initSelect2Remote('#project', `${BASE_URL}/api/document.filter`, { type: 'project' });
-                initSelect2Remote('#type', `${BASE_URL}/api/document.filter`, { type: 'type' });
-                initSelect2Remote('#installation', `${BASE_URL}/api/document.filter`, { type: 'installation' });
-                initSelect2Remote('#pole', `${BASE_URL}/api/document.filter`, { type: 'pole' });
-                initSelect2Remote('#status', `${BASE_URL}/api/document.filter`, { type: 'status' });
-                initDatePicker('#document_start');
-                initDatePicker('#document_end');
-                if (docData) {
-                    $("#document_id").val(docData.document_id);
-                    $("#document_name").val(docData.document_name);
-                    if (docData.document_start) {
-                        let startDate = new Date(docData.document_start);
-                        $('#document_start').datepicker('setDate', startDate);
-                    }
-                    if (docData.document_end) {
-                        let endDate = new Date(docData.document_end);
-                        $('#document_end').datepicker('setDate', endDate);
-                    }
-                    if (docData.document_path) {
-                        const fileType = docData.document_type;
-                        const fileName = docData.document_file_name;
-                        const fileSize = docData.document_size;
-                        const fakeFile = {
-                            name: fileName,
-                            size: fileSize,
-                            type: fileType,
-                        };
-                        handleFile(fakeFile, 'edit');
-                        $("#document_file").removeClass("obj-required");
-                    }
-                    if (docData.contract_id) {
-                        var newOptionContract = new Option(docData.contract_name, docData.contract_id, true, true);
-                        $('#contract').append(newOptionContract).trigger('change');
-                    }
-                    if (docData.project_id) {
-                        var newOptionProject = new Option(docData.project_name, docData.project_id, true, true);
-                        $('#project').append(newOptionProject).trigger('change');
-                    }
-                    if (docData.type_id) {
-                        var newOptionType = new Option(docData.type_name, docData.type_id, true, true);
-                        $('#type').append(newOptionType).trigger('change');
-                    }
-                    if (docData.installations_id) {
-                        var newOptionInstallation = new Option(docData.installations_name, docData.installations_id, true, true);
-                        $('#installation').append(newOptionInstallation).trigger('change');
-                    }
-                    if (docData.poles_id) {
-                        var newOptionPole = new Option(docData.poles_code, docData.poles_id, true, true);
-                        $('#pole').append(newOptionPole).trigger('change');
-                    }
-                    if (docData.status) {
-                        let statusName = docData.status.charAt(0).toUpperCase() + docData.status.slice(1);
-                        var newOptionStatus = new Option(statusName, docData.status, true, true);
-                        $('#status').append(newOptionStatus).trigger('change');
-                    }
-                }
-            } else {
+        success: function (res) {
+            if (res.status !== 'success') {
                 showError(langData['cannot_load']);
+                return;
             }
+
+            const docData = res.data;
+            const modalEl = $('#windModal');
+            const modal = new bootstrap.Modal(modalEl[0]);
+
+            // 1. Render UI Components
+            renderModalContent(modalEl, document_id, isEdit);
+            
+            // 2. Initialize Plugins
+            initPlugins();
+
+            // 3. Logic: ซ่อน/แสดง Notification ตาม Status
+            // สร้าง function จัดการการแสดงผล
+            const toggleNotification = () => {
+                const currentStatus = $('#status').val();
+                if (currentStatus === 'public') {
+                    $('#notification_section').slideDown();
+                } else {
+                    $('#notification_section').slideUp();
+                }
+            };
+
+            // ดักจับการเปลี่ยนแปลง (เลือก Status)
+            $(document).off('change', '#status').on('change', '#status', toggleNotification);
+
+            // 4. Fill Data (ถ้าเป็นการแก้ไข)
+            if (docData) {
+                fillDocumentData(docData);
+                // เช็กครั้งแรกหลัง Load ข้อมูล
+                toggleNotification();
+            }
+
+            modal.show();
         },
-        error: function(){
-            showError(langData['cannot_load']);
-        }
+        error: () => showError(langData['cannot_load'])
     });
 });
+
+/**
+ * ฟังก์ชันสำหรับ Render HTML ภายใน Modal
+ */
+function renderModalContent(modalEl, document_id, isEdit) {
+    modalEl.find(".modal-header").html(`
+        <h5 class="modal-title">${langData['manageDocument'] || 'Manage Document'}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    `);
+
+    modalEl.find(".modal-footer").html(`
+        <button type="submit" class="btn btn-primary me-2 save-document">${langData['save'] || "Save"}</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
+    `);
+
+    // ส่วนของ Body (ตัดมาเฉพาะส่วนสำคัญเพื่อความกระชับ)
+    modalEl.find(".modal-body").html(`
+        <input type="hidden" id="mode" value="${document_id ? 'edit' : 'new'}">
+        <input type="hidden" name="document_id" id="document_id" value="${document_id ?? ''}">
+        
+        <div class="mb-3">
+            <label class="mb-2 required">${langData['uploadFile'] || 'Upload File'}</label>
+            <div id="drop_zone" class="border rounded-3 p-4 text-center" style="cursor:pointer; border-style:dashed;">
+                <div id="drop_text">
+                    <i class="fa-solid fa-folder-open fa-4x text-warning"></i>
+                    <p class="mb-0 mt-2 text-muted">${langData['drop_here'] || 'Drop here or click to browse'}</p>
+                </div>
+                <div id="file_preview" class="mt-3 d-none"></div>
+                <div id="drop_button">
+                    <button class="btn btn-primary mt-2" type="button" id="btn_select_file">${langData['choose'] || 'Choose'}</button>
+                    <input type="file" class="d-none obj-required" id="document_file" accept=".ppt,.pptx,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.rar,.jpg,.jpeg,.png,.gif,.webp">
+                </div>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="mb-2 required">${langData['documentName'] || 'Document Name'}</label>
+            <input type="text" class="form-control obj-required" id="document_name" maxlength="255">
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="mb-2 required">${langData['fileType'] || 'File Type'}</label>
+                <input type="text" class="form-control obj-required" id="document_type" readonly>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="mb-2 required">${langData['fileSize'] || 'File Size'}</label>
+                <input type="text" class="form-control obj-required" id="document_size" readonly>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="mb-2">${langData['startDate'] || 'Start Date'}</label>
+                <input type="text" class="form-control" id="document_start">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="mb-2">${langData['endDate'] || 'End Date'}</label>
+                <input type="text" class="form-control" id="document_end">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3"><label class="mb-2">${langData['contract']}</label><select id="contract" class="form-select"></select></div>
+            <div class="col-md-6 mb-3"><label class="mb-2">${langData['project']}</label><select id="project" class="form-select"></select></div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3"><label class="mb-2">${langData['pole_types']}</label><select id="type" class="form-select"></select></div>
+            <div class="col-md-6 mb-3"><label class="mb-2">${langData['installation']}</label><select id="installation" class="form-select"></select></div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3"><label class="mb-2">${langData['pole']}</label><select id="pole" class="form-select"></select></div>
+            <div class="col-md-6 mb-3">
+                <label class="mb-2 required">${langData['status'] || 'Status'}</label>
+                <select id="status" class="form-select obj-required"></select>
+            </div>
+        </div>
+        <div id="notification_section" style="display:none;">
+            <hr class="my-4">
+            <div class="card bg-light border-0">
+                <div class="card-body">
+                    <h6 class="card-title fw-bold text-dark"><i class="fa-solid fa-bell me-2"></i>${langData['notification_settings']}</h6>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="send_notification">
+                        <label class="form-check-label" for="send_notification">
+                            ${isEdit ? langData['send_update'] : langData['send_publishing']}
+                        </label>
+                    </div>
+                    <small class="text-muted d-block mt-1">${langData['if_enabled']}</small>
+                </div>
+            </div>
+        </div>
+    `);
+}
+function initPlugins() {
+    const filters = ['contract', 'project', 'type', 'installation', 'pole', 'status'];
+    filters.forEach(f => initSelect2Remote(`#${f}`, `${BASE_URL}/api/document.filter`, { type: f }));
+    initDatePicker('#document_start');
+    initDatePicker('#document_end');
+}
+function fillDocumentData(docData) {
+    $("#document_id").val(docData.document_id);
+    $("#document_name").val(docData.document_name);
+    if (docData.document_start) $('#document_start').datepicker('setDate', new Date(docData.document_start));
+    if (docData.document_end) $('#document_end').datepicker('setDate', new Date(docData.document_end));
+    if (docData.document_path) {
+        handleFile({
+            name: docData.document_file_name,
+            size: docData.document_size,
+            type: docData.document_type,
+        }, 'edit');
+        $("#document_file").removeClass("obj-required");
+    }
+    const mapSelect2 = [
+        { id: '#contract', val: docData.contract_id, text: docData.contract_name },
+        { id: '#project', val: docData.project_id, text: docData.project_name },
+        { id: '#type', val: docData.type_id, text: docData.type_name },
+        { id: '#installation', val: docData.installations_id, text: docData.installations_name },
+        { id: '#pole', val: docData.poles_id, text: docData.poles_code },
+        { id: '#status', val: docData.status, text: docData.status ? (docData.status.charAt(0).toUpperCase() + docData.status.slice(1)) : '' }
+    ];
+    mapSelect2.forEach(item => {
+        if (item.val) {
+            $(item.id).append(new Option(item.text, item.val, true, true)).trigger('change');
+        }
+    });
+}
 $(document).on('change', '#contract, #filter_contract, #project, #filter_project, #type, #filter_type, #installation, #filter_installations', function() {
     const $this = $(this);
     const id = $this.attr('id');
