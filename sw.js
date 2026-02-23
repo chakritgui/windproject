@@ -38,14 +38,13 @@ self.addEventListener('push', function(event) {
             const data = event.data.json();
             const options = {
                 body: data.body || '',
-                icon: '/assets/img/icon-192x192.png',
-                badge: '/assets/img/badge-72x72.png',
+                icon: '/public/images/icon.png', 
+                badge: '/public/images/icon.png', 
                 vibrate: [100, 50, 100],
                 data: {
                     url: data.url || '/'
                 }
             };
-
             event.waitUntil(
                 self.registration.showNotification(data.title, options)
             );
@@ -56,7 +55,7 @@ self.addEventListener('push', function(event) {
 });
 self.addEventListener('notificationclick', function(event) {
     event.notification.close();
-    const urlToOpen = event.notification.data.url;
+    const urlToOpen = new URL(event.notification.data.url, self.location.origin).href;
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
             for (let i = 0; i < windowClients.length; i++) {
