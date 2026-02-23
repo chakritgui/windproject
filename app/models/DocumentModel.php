@@ -424,7 +424,7 @@ class DocumentModel {
         $name = $file['name'];
         $dId = md5($document_id);
         $path   = "{$dir}{$dId}.{$ext}";
-        $target = dirname(__DIR__, 2) . '/' . $path . '.' .$ext;
+        $target = dirname(__DIR__, 2) . '/' . $path;
         move_uploaded_file($file['tmp_name'], $target);
         $sql = "UPDATE wp_documents SET document_path=?, document_type=?, document_size=?, document_file_name=? WHERE document_id=?";
         $stmt = $this->db->prepare($sql);
