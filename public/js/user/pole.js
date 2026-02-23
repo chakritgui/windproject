@@ -122,7 +122,7 @@ function renderAllCharts(realData) {
     if (selectedKeys.includes('WD')) {
         renderWindRose16('radarChart', realData, distinctLevels);
     }
-    const weatherKeys = selectedKeys.filter(k => ['AD', 'RH'].includes(k));
+    const weatherKeys = selectedKeys.filter(k => ['TE', 'RH'].includes(k));
     if (weatherKeys.length) {
         let weatherDatasets = [];
         weatherKeys.forEach(k => {
