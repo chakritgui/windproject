@@ -315,56 +315,70 @@ class SettingModel {
             }
         }
     }
-    public function saveShortcut($data){
-        $iconDir = __DIR__ . "/../../public/icons/";
-        if (!file_exists($iconDir)) {
-            mkdir($iconDir, 0777, true);
-        }
-        if (!empty($data['androidIcon']['tmp_name'])) {
-            $androidFile = $iconDir . "icon-android.png";
-            move_uploaded_file($data['androidIcon']['tmp_name'], $androidFile);
-        }
-        if (!empty($data['iosIcon']['tmp_name'])) {
-            $iosFile = $iconDir . "icon-ios.png";
-            move_uploaded_file($data['iosIcon']['tmp_name'], $iosFile);
-        }
-        $manifest = [
-            "name" => $data['name'],
-            "short_name" => $data['short_name'],
-            "description" => $data['description'],
-            "start_url" => "/",
-            "display" => $data['display'],
-            "orientation" => $data['orientation'],
-            "theme_color" => $data['theme_color'],
-            "background_color" => $data['background_color'],
-            "icons" => [
-                [
-                    "src" => "icons/icon-android.png",
-                    "sizes" => "512x512",
-                    "type" => "image/png",
-                    "purpose" => "any"
-                ],
-                [
-                    "src" => "icons/icon-ios.png",
-                    "sizes" => "512x512",
-                    "type" => "image/png",
-                    "purpose" => "maskable"
+    public function saveShortcut($data) {
+        try {
+            $publicDir = realpath(__DIR__ . "/../../public/");
+            if (!$publicDir) {
+                throw new \Exception("ไม่พบโฟลเดอร์ public (ตรวจสอบ Path ของ __DIR__)");
+            }
+            $iconDir = $publicDir . "/icons/";
+            $manifestPath = $publicDir . "/manifest.json";
+            $iosMetaPath = $publicDir . "/ios_meta.json";
+            if (!file_exists($iconDir)) {
+                if (!mkdir($iconDir, 0777, true)) {
+                    throw new \Exception("ไม่สามารถสร้างโฟลเดอร์ icons ได้ (Permission denied)");
+                }
+            }
+            if (!empty($data['androidIcon']['tmp_name'])) {
+                $androidFile = $iconDir . "icon-android.png";
+                if (!move_uploaded_file($data['androidIcon']['tmp_name'], $androidFile)) {
+                    throw new \Exception("อัปโหลด Android Icon ไม่สำเร็จ");
+                }
+            }
+            if (!empty($data['iosIcon']['tmp_name'])) {
+                $iosFile = $iconDir . "icon-ios.png";
+                if (!move_uploaded_file($data['iosIcon']['tmp_name'], $iosFile)) {
+                    throw new \Exception("อัปโหลด iOS Icon ไม่สำเร็จ");
+                }
+            }
+            $manifest = [
+                "name" => $data['name'] ?? 'App Name',
+                "short_name" => $data['short_name'] ?? 'App',
+                "description" => $data['description'] ?? '',
+                "start_url" => "/",
+                "display" => $data['display'] ?? 'standalone',
+                "orientation" => $data['orientation'] ?? 'any',
+                "theme_color" => $data['theme_color'] ?? '#000000',
+                "background_color" => $data['background_color'] ?? '#ffffff',
+                "icons" => [
+                    [
+                        "src" => "icons/icon-android.png",
+                        "sizes" => "512x512",
+                        "type" => "image/png",
+                        "purpose" => "any"
+                    ],
+                    [
+                        "src" => "icons/icon-ios.png",
+                        "sizes" => "512x512",
+                        "type" => "image/png",
+                        "purpose" => "maskable"
+                    ]
                 ]
-            ]
-        ];
-        file_put_contents(
-            __DIR__ . "/../../public/manifest.json",
-            json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
-        );
-        $iosMeta = [
-            "apple-mobile-web-app-capable" => $data['webAppCapable'],
-            "apple-mobile-web-app-status-bar-style" => $data['statusBarStyle']
-        ];
-        file_put_contents(
-            __DIR__ . "/../../public/ios_meta.json",
-            json_encode($iosMeta, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)
-        );
-        return true;
+            ];
+            if (file_put_contents($manifestPath, json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) === false) {
+                throw new \Exception("ไม่สามารถเขียนไฟล์ manifest.json ได้");
+            }
+            $iosMeta = [
+                "apple-mobile-web-app-capable" => $data['webAppCapable'] ?? 'yes',
+                "apple-mobile-web-app-status-bar-style" => $data['statusBarStyle'] ?? 'default'
+            ];
+            if (file_put_contents($iosMetaPath, json_encode($iosMeta, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) === false) {
+                throw new \Exception("ไม่สามารถเขียนไฟล์ ios_meta.json ได้");
+            }
+            return ['status' => true, 'message' => 'บันทึกสำเร็จ'];
+        } catch (\Exception $e) {
+            return ['status' => false, 'message' => $e->getMessage()];
+        }
     }
     public function shortcut(){
         $publicPath   = __DIR__ . "/../../public/";

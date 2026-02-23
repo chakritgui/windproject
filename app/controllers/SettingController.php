@@ -41,9 +41,10 @@ class SettingController extends BaseController {
             'androidIcon'      => $_FILES['androidIcon'] ?? null,
             'iosIcon'          => $_FILES['iosIcon'] ?? null,
         ];
-        $status = $this->model->saveShortcut($data);
+        $result = $this->model->saveShortcut($data);
         $this->json([
-            'status' => $status
+            'status'  => $result['status'],
+            'message' => $result['message'] ?? ($result['status'] ? 'สำเร็จ' : 'เกิดข้อผิดพลาดไม่ทราบสาเหตุ')
         ]);
     }
     public function saveLang() {
