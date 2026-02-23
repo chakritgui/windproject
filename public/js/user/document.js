@@ -250,7 +250,7 @@ function renderListView(items) {
                     </div>
                 </div>
                 <div class="col-12 col-md-auto text-end">
-                    <button class="btn btn-outline-primary download-btn w-100 w-md-auto" data-id="${item.notifications_item}" data-path="${item.path}" data-file-name="${item.item_name}">
+                    <button class="btn btn-outline-primary download-btn w-100 w-md-auto" data-id="${item.document_id}" data-path="${item.document_path}" data-file-name="${item.document_file_name}">
                         <i class="fa-solid fa-download"></i>
                         <span class="btn-text" data-i18n="download"></span>
                     </button>

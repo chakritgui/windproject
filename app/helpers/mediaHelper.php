@@ -253,7 +253,7 @@ class MediaHelper {
     }
     private function handleEmail($id, $publish_at = null, $target) {
         $pdo = $this->db;
-        $members = $pdo->query("SELECT m.member_id, m.email, IFNULL(ml.language,'en') as user_lang FROM wp_members m LEFT JOIN wp_members_language ml ON m.member_id = ml.member_id WHERE m.status='active'
+        $members = $pdo->query("SELECT m.member_id, m.email, IFNULL(ml.language,'en') as user_lang FROM wp_members m LEFT JOIN wp_members_language ml ON m.member_id = ml.member_id WHERE m.status='active' and m.role = 'user' GROUP BY m.member_id
         ")->fetchAll(PDO::FETCH_ASSOC);
         if (!$members) return;
         $stmtInsert = $pdo->prepare("INSERT INTO email_queue (recipient_email, subject, body, priority, status, scheduled_at, created_at, reference_id, reference_type) VALUES (:email, :subject, :body, 3, 'pending', :scheduled, NOW(), :refid, :reftype)");
@@ -276,7 +276,9 @@ class MediaHelper {
         $subscriptions = $pdo->query("SELECT ps.id, ps.user_id, IFNULL(ml.language,'en') as user_lang
             FROM push_subscriptions ps
             LEFT JOIN wp_members_language ml ON ps.user_id = ml.member_id
-            WHERE ps.is_active=1
+            LEFT JOIN wp_members m on m.member_id = ml.member_id
+            WHERE ps.is_active=1 and m.role = 'user'
+            GROUP BY m.member_id
         ")->fetchAll(PDO::FETCH_ASSOC);
         if (!$subscriptions) return;
         $stmtInsert = $pdo->prepare("INSERT INTO pwa_notification_queue
