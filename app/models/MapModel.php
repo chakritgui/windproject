@@ -23,76 +23,65 @@ class MapModel{
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    public function contracts() {
-        $sql = "SELECT contract_id,
-                CASE 
-                    WHEN contract_name_display IS NOT NULL AND contract_name_display <> '' 
-                        THEN contract_name_display
-                    WHEN contract_name IS NOT NULL AND contract_name <> '' 
-                        THEN contract_name
-                    ELSE '' 
-                END AS contract_name
-                FROM wp_contract
-                WHERE status = 'active' 
-                ORDER BY contract_id ";
-        $stmt = $this->db->query($sql);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
     public function project(){
-        $sql = "SELECT DISTINCT
-                pj.project_id,
-                CASE 
-                    WHEN pj.project_name_display IS NOT NULL AND pj.project_name_display <> '' 
-                        THEN pj.project_name_display
-                    WHEN pj.project_name IS NOT NULL AND pj.project_name <> '' 
-                        THEN pj.project_name
-                    ELSE '' 
-                END AS project_name
-            FROM wp_poles p
-            LEFT JOIN wp_project pj 
-                ON pj.project_id = p.project_id
-            WHERE pj.status = 'active'
-            AND p.status = 'online'
-            ORDER BY pj.project_id
-        ";
+        $sql = "SELECT 
+            p.project_id,
+            CASE 
+                WHEN p.project_name_display IS NOT NULL AND p.project_name_display <> '' 
+                    THEN p.project_name_display
+                WHEN p.project_name IS NOT NULL AND p.project_name <> '' 
+                    THEN p.project_name
+                ELSE '' 
+            END AS project_name
+        FROM wp_winds w
+        LEFT JOIN wp_poles po on po.poles_id = w.poles_id
+        LEFT JOIN wp_project p on p.project_id = po.project_id 
+        WHERE p.status = 'active' 
+        GROUP BY p.project_id
+        ORDER BY p.project_id ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function type($project_id) {
-        $sql = "SELECT t.type_id,  
-                CASE 
-                    WHEN t.type_name_display IS NOT NULL AND t.type_name_display <> '' 
-                        THEN t.type_name_display
-                    WHEN t.type_name IS NOT NULL AND t.type_name <> '' 
-                        THEN t.type_name
-                    ELSE '' 
-                END AS type_name
-                FROM wp_poles p
-                LEFT JOIN wp_type t on t.type_id = p.type_id
-                WHERE t.status = 'active' and p.status = 'online' and p.project_id = :project_id
-                GROUP BY t.type_id 
-                ORDER BY t.type_id";
+        $sql = "SELECT 
+            t.type_id,  
+            CASE 
+                WHEN t.type_name_display IS NOT NULL AND t.type_name_display <> '' 
+                    THEN t.type_name_display
+                WHEN t.type_name IS NOT NULL AND t.type_name <> '' 
+                    THEN t.type_name
+                ELSE '' 
+            END AS type_name
+        FROM wp_winds w
+        LEFT JOIN wp_poles po on po.poles_id = w.poles_id
+        LEFT JOIN wp_type t on t.type_id = po.type_id 
+        WHERE t.status = 'active' and po.status = 'online' and po.project_id = :project_id
+        GROUP BY t.type_id 
+        ORDER BY t.type_id";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':project_id' => $project_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function station($project_id, $type_id) {
-        $sql = "SELECT l.installations_id, 
-                CASE 
-                    WHEN l.installations_name_display IS NOT NULL AND l.installations_name_display <> '' 
-                        THEN l.installations_name_display
-                    WHEN l.installations_name IS NOT NULL AND l.installations_name <> '' 
-                        THEN l.installations_name
-                    ELSE '' 
-                END AS installations_name,
-                p.poles_lat, p.poles_lng, p.poles_id
-                FROM wp_poles p
-                LEFT JOIN wp_installations l on l.installations_id = p.installations_id
-                WHERE l.status = 'active' and p.status = 'online' 
-                AND p.project_id = :project_id AND p.type_id = :type_id
-                GROUP BY l.installations_id 
-                ORDER BY l.installations_id";
+        $sql = "SELECT 
+            l.installations_id, 
+            CASE 
+                WHEN l.installations_name_display IS NOT NULL AND l.installations_name_display <> '' 
+                    THEN l.installations_name_display
+                WHEN l.installations_name IS NOT NULL AND l.installations_name <> '' 
+                    THEN l.installations_name
+                ELSE '' 
+            END AS installations_name,
+            p.poles_lat, p.poles_lng, p.poles_id
+            FROM wp_winds w
+            LEFT JOIN wp_poles p on p.poles_id = w.poles_id
+            LEFT JOIN wp_installations l on l.installations_id = p.installations_id
+            WHERE l.status = 'active' and p.status = 'online' 
+            AND p.project_id = :project_id AND p.type_id = :type_id
+            GROUP BY l.installations_id 
+            ORDER BY l.installations_id
+        ";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             ':project_id' => $project_id,
