@@ -108,8 +108,8 @@ body {
     border-color: rgba(37, 99, 235, 0.2);
 }
 .news-thumbnail {
-    width: 240px;
-    min-height: 160px;
+    width: 200px;
+    min-height: 140px;
     position: relative;
     overflow: hidden;
 }
@@ -154,7 +154,7 @@ body {
     background: #f1f5f9;
     color: #475569;
 }
-@media (max-width: 768px) {
+@media (max-width: 460px) {
     .news-item {
         flex-direction: column;
     }
