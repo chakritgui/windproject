@@ -46,20 +46,24 @@ async function syncTimezone() {
         console.warn("Timezone sync failed", e);
     }
 }
-async function handlePWANotifications() {
+async function handlePWANotifications(force = false) {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
     if (Notification.permission === 'denied') return;
-    if (localStorage.getItem('notification_asked_forever')) return; 
+    if (!force && localStorage.getItem('notification_asked_forever')) return;
     const registration = await navigator.serviceWorker.ready;
     const sub = await registration.pushManager.getSubscription();
     if (Notification.permission === 'default') {
         showNotificationModal(async () => {
             await requestAndSubscribe(registration);
+            if (typeof checkInitialStatus === 'function') checkInitialStatus();
         }, () => {
             localStorage.setItem('notification_asked_forever', 'true');
+            const toggle = document.querySelector('#pwaPushToggle');
+            if (toggle) toggle.checked = false;
         });
     } else if (Notification.permission === 'granted' && !sub) {
         await requestAndSubscribe(registration);
+        if (typeof checkInitialStatus === 'function') checkInitialStatus();
     }
 }
 async function requestAndSubscribe(registration) {

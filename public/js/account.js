@@ -399,34 +399,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const pushToggle = document.querySelector('#pwaPushToggle');
     const statusText = document.querySelector('#pwa-status-text');
     const warningBox = document.querySelector('#permission-warning');
-    checkInitialStatus();
+    if (!pushToggle) return;
     async function checkInitialStatus() {
-        if (!('Notification' in window)) {
+        if (!('Notification' in window) || !('serviceWorker' in navigator)) {
             statusText.innerText = langData['this_browser_does_not_support_notifications.'];
             pushToggle.disabled = true;
             return;
         }
-        if (Notification.permission === 'granted') {
-            const registration = await navigator.serviceWorker.ready;
-            const subscription = await registration.pushManager.getSubscription();
-            if (subscription) {
-                pushToggle.checked = true;
-                statusText.innerText = langData['enable'];
-            } else {
-                pushToggle.checked = false;
-                statusText.innerText = langData['deactivated'];
-            }
-        } else if (Notification.permission === 'denied') {
+        if (Notification.permission === 'denied') {
             statusText.innerText = langData['blocked_by_browser'];
-            warningBox.classList.remove('d-none');
+            if (warningBox) warningBox.classList.remove('d-none');
             pushToggle.disabled = true;
+            pushToggle.checked = false;
+            return;
+        }
+        if (Notification.permission === 'granted') {
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                const subscription = await registration.pushManager.getSubscription();
+                if (subscription) {
+                    pushToggle.checked = true;
+                    statusText.innerText = langData['enable'];
+                } else {
+                    pushToggle.checked = false;
+                    statusText.innerText = langData['deactivated'];
+                }
+            } catch (err) {
+                console.error("Error checking subscription:", err);
+            }
+        } else {
+            pushToggle.checked = false;
+            statusText.innerText = langData['deactivated'];
         }
     }
+    checkInitialStatus();
     pushToggle.addEventListener('change', async () => {
         if (pushToggle.checked) {
-            handlePWANotifications();
+            localStorage.setItem('notification_asked_forever', 'true');
+            await handlePWANotifications(true);
+            setTimeout(checkInitialStatus, 1000);
         } else {
-            unsubscribeUser();
+            await unsubscribeUser();
+            statusText.innerText = langData['deactivated'];
         }
     });
+    window.checkInitialStatus = checkInitialStatus;
 });
