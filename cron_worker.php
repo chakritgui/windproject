@@ -4,22 +4,22 @@
     use Minishlink\WebPush\Subscription;
     date_default_timezone_set('Asia/Bangkok');
     set_time_limit(0);
-    $logPath = '/var/log/windproject-cron.log';
-    if (!is_writable(dirname($logPath))) {
-        $logPath = __DIR__ . '/cron_debug.log';
-    }
+    $logPath = __DIR__ . '/cron_debug.log'; 
     require_once __DIR__ . '/vendor/autoload.php';
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-    $dotenv->load();
+    if (file_exists(__DIR__ . '/.env')) {
+        $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+        $dotenv->load();
+    }
     require_once __DIR__ . '/app/helpers/helpers.php';
     require_once __DIR__ . '/config.php';
     require_once __DIR__ . '/app/core/Database.php';
     require_once __DIR__ . '/app/helpers/mailHelper.php';
-    file_put_contents($logPath, "[" . date('Y-m-d H:i:s') . "] Cron started\n", FILE_APPEND);
+    echo "[" . date('Y-m-d H:i:s') . "] Cron Job Started...\n";
     try {
         $db = Database::getInstance()->pdo;
         $mailHelper = new MailHelper($db);
         $nowUTC = (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d H:i:s');
+        echo "Current Time (UTC): $nowUTC\n";
         if (class_exists('Minishlink\WebPush\WebPush')) {
             $vapid_keys = [
                 'VAPID' => [
@@ -35,11 +35,13 @@
                        WHERE q.status = 'pending' AND q.scheduled_at <= :now 
                        LIMIT 50";
             $stmtPwa = $db->prepare($sqlPwa);
-            $stmtPwa->execute(['now' => $nowUTC]);
+            $stmtPwa->execute([':now' => $nowUTC]);
             $pwaQueue = $stmtPwa->fetchAll();
+            echo "Found " . count($pwaQueue) . " PWA items.\n";
             $endpointToQueueId = [];
             foreach ($pwaQueue as $row) {
-                $db->prepare("UPDATE pwa_notification_queue SET status = 'processing' WHERE id = ?")->execute([$row['id']]);
+                $db->prepare("UPDATE pwa_notification_queue SET status = 'processing' WHERE id = ?")
+                   ->execute([$row['id']]);
                 $subscription = Subscription::create([
                     'endpoint'  => $row['endpoint'],
                     'publicKey' => $row['p256dh'],
@@ -61,32 +63,34 @@
                 if ($queueId) {
                     $status = $report->isSuccess() ? 'sent' : 'failed';
                     $error = $report->isSuccess() ? null : $report->getReason();
-                    $db->prepare("UPDATE pwa_notification_queue SET status = ?, error_message = ?, sent_at = :now WHERE id = ?")
-                       ->execute([$status, $error, $queueId, 'now' => $nowUTC]);
+                    $db->prepare("UPDATE pwa_notification_queue SET status = :status, error_message = :err, sent_at = :sentat WHERE id = :id")
+                       ->execute([
+                            ':status' => $status,
+                            ':err'    => $error,
+                            ':sentat' => $nowUTC,
+                            ':id'     => $queueId
+                        ]);
+                    echo "PWA ID $queueId: $status\n";
                 }
             }
         }
         $sqlEmail = "SELECT * FROM email_queue WHERE status = 'pending' AND scheduled_at <= :now LIMIT 20";
         $stmtEmail = $db->prepare($sqlEmail);
-        $stmtEmail->execute(['now' => $nowUTC]);
+        $stmtEmail->execute([':now' => $nowUTC]);
         $emailQueue = $stmtEmail->fetchAll();
+        echo "Found " . count($emailQueue) . " emails.\n";
         foreach ($emailQueue as $mail) {
             $db->prepare("UPDATE email_queue SET status = 'processing' WHERE id = ?")->execute([$mail['id']]);
-            $sent = $mailHelper->sendQueueMail(
-                $mail['recipient_email'], 
-                $mail['subject'], 
-                $mail['body']
-            ); 
+            $sent = $mailHelper->sendQueueMail($mail['recipient_email'], $mail['subject'], $mail['body']); 
             if ($sent) {
-                $db->prepare("UPDATE email_queue SET status = 'sent', sent_at = :now WHERE id = ?")
-                   ->execute(['now' => $nowUTC, $mail['id']]);
+                $db->prepare("UPDATE email_queue SET status = 'sent', sent_at = :sentat WHERE id = :id")
+                   ->execute([':sentat' => $nowUTC, ':id' => $mail['id']]);
+                echo "Email ID " . $mail['id'] . ": sent\n";
             } else {
                 $db->prepare("UPDATE email_queue SET status = 'failed' WHERE id = ?")->execute([$mail['id']]);
+                echo "Email ID " . $mail['id'] . ": failed\n";
             }
         }
-        file_put_contents($logPath, "[" . date('Y-m-d H:i:s') . "] Cron finished successfully\n", FILE_APPEND);
     } catch (Exception $e) {
-        $msg = "[" . date('Y-m-d H:i:s') . "] Cron Worker Error: " . $e->getMessage() . "\n";
-        file_put_contents($logPath, $msg, FILE_APPEND);
-        error_log($msg);
+        echo "ERROR: " . $e->getMessage() . "\n";
     }
