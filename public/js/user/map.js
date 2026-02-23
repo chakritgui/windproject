@@ -439,7 +439,7 @@ async function openPoles(poleId) {
                             background-color: rgba(255, 255, 255, 0.9); /* พื้นหลังสำรองกรณีรูปไม่เต็ม */
                             min-height: 450px; 
                         ` : 'background-color: #ffffff;' }">
-                        <div class="p-4">
+                        <div>
                             ${(data.content_id) ? `
                                 ${data.content?.cover && data.content?.cover_display === 'yes' ? `
                                     <div class="position-relative mb-4 overflow-hidden rounded-3 shadow-sm">
