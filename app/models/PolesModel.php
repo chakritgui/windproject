@@ -52,7 +52,8 @@ class PolesModel {
                     iEn.status as en_status,
                     iLo.status as lo_status,
                     iTh.status as th_status,
-                    p.created_at
+                    p.created_at,
+                    p.poles_source
                 FROM wp_poles p
                 LEFT JOIN wp_project pj ON pj.project_id = p.project_id
                 LEFT JOIN wp_type t ON t.type_id = p.type_id
@@ -167,7 +168,8 @@ class PolesModel {
                         type_id = :type,
                         installations_id = :installation,
                         status = :status,
-                        updated_at = NOW()
+                        updated_at = NOW(),
+                        poles_source = 'manual'
                     WHERE poles_id = :id
                 ";
             } else {
@@ -180,7 +182,8 @@ class PolesModel {
                         installations_id,
                         status,
                         created_at,
-                        updated_at
+                        updated_at,
+                        poles_source
                     ) VALUES (
                         :code,
                         :lat,
@@ -190,7 +193,8 @@ class PolesModel {
                         :installation,
                         :status,
                         NOW(),
-                        NOW()
+                        NOW(),
+                        'manual'
                     )
                 ";
             }
