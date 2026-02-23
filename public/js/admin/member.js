@@ -218,12 +218,12 @@ $(document).on('click', '.manage-member', function() {
                     </h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['firstname'] || "Firstname"}</label>
-                            <input type="text" class="form-control obj-required" id="first_name" maxlength="150">
+                            <label class="mb-2">${langData['firstname'] || "Firstname"}</label>
+                            <input type="text" class="form-control" id="first_name" maxlength="150">
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['lastname'] || "Lastname"}</label>
-                            <input type="text" class="form-control obj-required" id="last_name" maxlength="150">
+                            <label class="mb-2">${langData['lastname'] || "Lastname"}</label>
+                            <input type="text" class="form-control" id="last_name" maxlength="150">
                         </div>
                     </div>
                     <div class="row">
@@ -243,17 +243,17 @@ $(document).on('click', '.manage-member', function() {
                     </h6>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['email'] || "Email"}</label>
+                            <label class="mb-2">${langData['email'] || "Email"}</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fa-regular fa-envelope"></i></span>
-                                <input type="email" class="form-control obj-required" id="email" maxlength="200">
+                                <input type="email" class="form-control" id="email" maxlength="200">
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['mobile'] || "Mobile"}</label>
+                            <label class="mb-2">${langData['mobile'] || "Mobile"}</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
-                                <input type="text" class="form-control obj-required" id="phone" maxlength="20">
+                                <input type="text" class="form-control" id="phone" maxlength="20">
                             </div>
                         </div>
                     </div>
