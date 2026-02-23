@@ -81,7 +81,6 @@ function renderTable(data, isNewSearch) {
     let html = '';
     data.forEach((item, index) => {
         const activeLangs = item.settings?.language ? item.settings.language.split(',') : ['en'];
-        const defaultLang = item.settings?.language_content || 'en';
         let statusHtml = `
             <div class="mt-1 d-flex gap-1 flex-wrap">
                 ${activeLangs.map(lang => {
