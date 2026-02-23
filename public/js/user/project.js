@@ -124,11 +124,17 @@ function renderView(data, isNewSearch) {
                 subjects.lo ||
                 '-';
             if (parseInt(item.count_attachment) > 0) 
-                badgeHtml += `<span class="badge-tag tag-pdf"><i class="fa-solid fa-file-pdf"></i> <span>${langData['document'] || 'Document'}</span></span>`;
+                badgeHtml += `<span class="badge rounded-pill bg-danger-subtle text-danger me-1">
+                        <i class="fa-solid fa-file-pdf me-1"></i>${langData['document'] || 'Document'}
+                    </span>`;
             if (parseInt(item.count_image) > 0) 
-                badgeHtml += `<span class="badge-tag tag-img"><i class="fa-solid fa-images"></i> <span>${langData['image'] || 'Image'}</span></span>`;
+                badgeHtml += `<span class="badge rounded-pill bg-primary-subtle text-primary me-1">
+                        <i class="fa-solid fa-images me-1"></i>${langData['image'] || 'Image'}
+                    </span>`;
             if (parseInt(item.count_image360) > 0) 
-                badgeHtml += `<span class="badge-tag tag-vr"><i class="fa-solid fa-vr-cardboard"></i> <span>${langData['vr'] || 'VR'}</span></span>`;
+                badgeHtml += `<span class="badge rounded-pill bg-success-subtle text-success me-1">
+                        <i class="fa-solid fa-vr-cardboard me-1"></i>${langData['vr'] || 'VR'}
+                    </span>`;
         } else {
             folder_name = item.folder_name || '-';
         }
@@ -155,11 +161,22 @@ function renderView(data, isNewSearch) {
                                 <div class="doc-title news-title mb-3">${folder_name} ${badge}</div>
                                 ${isContent ? 
                                     `
-                                        <div class="news-meta">
-                                            <div class="meta-item">${typeHtml} <span class="small"><i class="fa-regular fa-calendar"></i> ${item.created_at}</span></div>
-                                        </div>
-                                        <div class="attachment-badges small">
-                                            ${badgeHtml}
+                                        <div class="row g-2 align-items-center mt-auto">
+                                            <div class="col-12 col-sm-6">
+                                                <div class="news-meta mb-0">
+                                                    <div class="meta-item">
+                                                        ${typeHtml} 
+                                                        <span class="small ms-2 text-muted">
+                                                            <i class="fa-regular fa-calendar"></i> ${item.created_at}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 col-sm-6 text-start text-sm-end">
+                                                <div class="attachment-badges justify-content-start justify-content-sm-end">
+                                                    ${badgeHtml}
+                                                </div>
+                                            </div>
                                         </div>
                                     ` : `
                                         <div class="text-muted mt-2 small"><i class="fa-regular fa-calendar"></i> ${item.created_at}</div>
