@@ -30,7 +30,7 @@ const fieldConfig = {
     username: {
         labelKey: 'username',
         type: 'text',
-        validate: (value) => /^[a-zA-Z0-9_@.]{8,50}$/.test(value)
+        validate: (value) => /^[A-Za-z0-9]{8,50}$/.test(value)
     },
     password: {
         labelKey: 'password',
@@ -154,8 +154,8 @@ $(document).on('keyup', '#edit-username', function () {
 });
 function validateUsername(input) {
     let un = $(input).val();
-    $('#un_len').prop('checked', un.length >= 8 && un.length <= 50);
-    $('#un_char').prop('checked', /^[a-z0-9_@.]+$/.test(un));
+    $('#un_len').prop('checked', un.length >= 5 && un.length <= 10);
+    $('#un_char').prop('checked', /^[a-z0-9]+$/.test(un));
 }
 $(document).on('keyup', '#edit-password', function () {
     let pw = $(this).val();

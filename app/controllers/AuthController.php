@@ -45,7 +45,7 @@ class AuthController extends Controller {
         if ($keepLoggedIn) {
             $selector = bin2hex(random_bytes(6));
             $validator = bin2hex(random_bytes(16));
-            $expires_days = 30;
+            $expires_days = 7;
             $expires_timestamp = time() + (86400 * $expires_days);
             $expires_at_utc = convertTimeZoneUTC(date('Y-m-d H:i:s', $expires_timestamp), 'Y-m-d H:i:s');
             $m->setRememberToken($user['member_id'], $selector, hash('sha256', $validator), $expires_at_utc);

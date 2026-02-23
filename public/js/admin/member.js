@@ -271,10 +271,10 @@ $(document).on('click', '.manage-member', function() {
                             </div>
                             <ul id="user-rules" class="mt-2 list-unstyled">
                                 <li><input type="checkbox" class="form-check-input me-1 pwc" id="user_len" disabled>
-                                    <span>${langData['user_line1'] || "8–50 Characters"}</span>
+                                    <span>${langData['user_line1'] || "5–10 Characters"}</span>
                                 </li>
                                 <li><input type="checkbox" class="form-check-input me-1 pwc" id="user_only" disabled>
-                                    <span>${langData['user_line2'] || "English letters or numbers only or email format or special characters @ _ - . & ! +"}</span>
+                                    <span>${langData['user_line2'] || "Letters and numbers only."}</span>
                                 </li>
                             </ul>
                         </div>
@@ -368,13 +368,8 @@ function verifyAuth(key, type){
         $('#pw_upper').prop('checked', /[A-Z]/.test(key));
         $('#pw_lower').prop('checked', /[a-z]/.test(key));
     } else {
-        if(isValidEmail(key)){
-            $('#user_len').prop('checked', true);
-            $('#user_only').prop('checked', true);
-            return;
-        }
-        $('#user_len').prop('checked', key.length >= 8 && key.length <= 50);
-        $('#user_only').prop('checked', /^[A-Za-z0-9@_\-\.&!+]+$/.test(key));
+        $('#user_len').prop('checked', key.length >= 5 && key.length <= 10);
+        $('#user_only').prop('checked', /^[A-Za-z0-9]+$/.test(key));
     }
 }
 function validPassword(pw){
@@ -387,17 +382,15 @@ function validPassword(pw){
     );
 }
 function validUsername(u){
-    if(isValidEmail(u)) return true;
     return (
-        u.length >= 8 &&
-        u.length <= 50 &&
-        /^[A-Za-z0-9@_\-\.&!+]+$/.test(u)
+        u.length >= 5 &&
+        u.length <= 10 &&
+        /^[A-Za-z0-9]+$/.test(u)
     );
 }
 $(document).on('blur', '#email', function () {
     let email = $(this).val().trim();
     if (email === '') {
-        $("#username_").val("");
         $('#email').removeClass('is-invalid');
         return;
     }
@@ -419,11 +412,6 @@ $(document).on('blur', '#email', function () {
                 $("#email").val("");
             } else {
                 $('#email').removeClass('is-invalid');
-                if($('#username_').val() === '') {
-                    $("#username_").val(email);
-                    checkUsernameUnique(email);
-                    verifyAuth(email, 'username');
-                }
             }
         }
     });
