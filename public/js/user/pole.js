@@ -4,9 +4,9 @@ const sensors = [
     { key: 'WD', name: 'Wind Direction', lang: 'wind_direction', unit: 'degree', color: '#54a0ff', icon: 'fa-solid fa-compass' },
     { key: 'AD', name: 'Air Density', lang: 'air_density', unit: 'kg/m³', color: '#8395a7', icon: 'fa-solid fa-smog'},
     { key: 'SP', name: 'Surface Pressure', lang: 'surface_pressure', unit: 'hPa', color: '#a29bfe', icon: 'fa-solid fa-gauge-high' },
-    { key: 'RH', name: 'Relative Humidity at 2 meters', lang: 'relative_humidity', unit: '%', color: '#48dbfb', icon: 'fa-solid fa-droplet'},
-    { key: 'TE', name: 'Air Temperature at 2 meters', lang: 'temperature', unit: 'degC', color: '#ff6b6b', icon: 'fa-solid fa-temperature-half' },
-    { key: 'TU', name: 'Turbulence intensity at height', lang: 'turbulence_intensity', unit: '%', color: '#ee5253', icon: 'fa-solid fa-tornado'}
+    { key: 'RH', name: 'Relative Humidity', lang: 'relative_humidity', unit: '%', color: '#48dbfb', icon: 'fa-solid fa-droplet'},
+    { key: 'TE', name: 'Air Temperature', lang: 'temperature', unit: 'degC', color: '#ff6b6b', icon: 'fa-solid fa-temperature-half' },
+    { key: 'TU', name: 'Turbulence intensity', lang: 'turbulence_intensity', unit: '%', color: '#ee5253', icon: 'fa-solid fa-tornado'}
 ];
 let charts = {};
 let reportState = {
