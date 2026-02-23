@@ -84,15 +84,13 @@ body {
     .header-title-main { font-size: 1.5rem; }
     .header-top { flex-direction: column; align-items: flex-start; }
 }
-/* คลุมโทนสีและ Typography */
 :root {
     --news-card-bg: #ffffff;
     --news-border: #f0f2f5;
     --text-title: #1e293b;
     --text-date: #64748b;
-    --accent-color: #2563eb; /* Blue professional */
+    --accent-color: #2563eb;
 }
-
 .news-item {
     display: flex;
     background: var(--news-card-bg);
@@ -104,33 +102,26 @@ body {
     text-decoration: none !important;
     position: relative;
 }
-
 .news-item:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
     border-color: rgba(37, 99, 235, 0.2);
 }
-
-/* ปรับปรุงรูปภาพให้เป็นสัดส่วนทองคำ */
 .news-thumbnail {
-    width: 240px; /* กว้างขึ้นเพื่อให้เห็นภาพข่าวชัดเจน */
+    width: 240px;
     min-height: 160px;
     position: relative;
     overflow: hidden;
 }
-
 .news-thumbnail img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     transition: transform 0.6s ease;
 }
-
 .news-item:hover .news-thumbnail img {
     transform: scale(1.05);
 }
-
-/* Content Layout */
 .news-content {
     flex: 1;
     padding: 20px 24px;
@@ -138,7 +129,6 @@ body {
     flex-direction: column;
 }
 .news-title {
-    font-size: 1rem;
     font-weight: 700;
     color: var(--text-title);
     line-height: 1.5;
@@ -171,9 +161,6 @@ body {
     .news-thumbnail {
         width: 100%;
         height: 200px;
-    }
-    .news-title {
-        font-size: 1.05rem;
     }
 }
 .news-thumbnail.no-image {

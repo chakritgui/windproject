@@ -77,7 +77,7 @@ function renderNews(items) {
                     <div class="mb-2">
                         ${typeBadge}
                     </div>
-                    <h5 class="news-title">${subject}</h5>
+                    <h6 class="news-title">${subject}</h6>
                     <div class="news-meta">
                         <div class="meta-left text-muted small">
                             <i class="fa-regular fa-calendar-check me-1"></i> ${item.created_at}
