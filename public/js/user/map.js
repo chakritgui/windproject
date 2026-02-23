@@ -296,7 +296,7 @@ function hideWindLoading() {
 }
 const MENU_LEVELS = {
     1: { title: 'PROJECT', lang: 'project', endpoint: `${BASE_URL}/api/project.get`, key: 'project_id', label: 'project_name' },
-    2: { title: 'POLE TYPE', lang: 'pole_types', endpoint: `${BASE_URL}/api/type.get`, key: 'type_id', label: 'type_name' },
+    2: { title: 'WIND MEASUREMENT EQUIPMENT', lang: 'pole_types', endpoint: `${BASE_URL}/api/type.get`, key: 'type_id', label: 'type_name' },
     3: { title: 'INSTALLATION', lang: 'installation', endpoint: `${BASE_URL}/api/installations.get`, key: 'installations_id', label: 'installations_name', isLast: true }
 };
 async function loadMenuLevel(level) {

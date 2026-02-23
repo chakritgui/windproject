@@ -104,7 +104,7 @@ function initTypesTable() {
             if ($filter.find('.manage-contract[data-id=""]').length === 0) {
                 let btn = `
                     <button class="btn btn-primary btn-sm manage-type" data-id="">
-                        <i class="fa-solid fa-plus"></i> <span>${langData['pole_types'] || 'Pole Types'}</span>
+                        <i class="fa-solid fa-plus"></i> <span>${langData['pole_types'] || 'Wind Measurement Equipment'}</span>
                     </button>
                 `;
                 $filter.append(btn);

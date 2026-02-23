@@ -285,7 +285,7 @@ $(document).on('click', '.manage-document', function () {
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2">${langData['pole_types'] || 'Pole Types'}</label>
+                            <label class="mb-2">${langData['pole_types'] || 'Wind Measurement Equipment'}</label>
                             <select id="type" class="form-select"></select>
                         </div>
                         <div class="col-md-6 mb-3">
