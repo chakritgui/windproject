@@ -174,7 +174,7 @@ function renderDocuments(items) {
 }
 const createBadge = (text, icon, colorClass) => {
     if (!text) return '';
-    return `<span class="badge ${colorClass} fw-normal d-inline-flex align-items-center me-1 mb-1" style="font-size: 8px; padding: 4px 8px; border-radius: 50rem;">
+    return `<span class="badge ${colorClass} fw-normal d-inline-flex align-items-center me-1 mb-1" style="font-size: 8px; padding: 4px 8px; border-radius: 50rem; max-width: 100%; overflow: hidden;">
                 <i class="${icon} me-1"></i>${text}
             </span>`;
 };
