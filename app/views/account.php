@@ -8,21 +8,30 @@
             <p class="profile-subtitle mb-0"><span data-i18n="manage_your_personal"></span></p>
         </div>
         <div class="profile-body">
-            <ul class="nav nav-pills mb-4" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab"><i class="fa-solid fa-clipboard-user me-2"></i><span data-i18n="personal_information"></span></button>
+            <ul class="nav nav-pills mb-4 d-flex flex-nowrap" role="tablist">
+                <li class="nav-item flex-fill" role="presentation">
+                    <button class="nav-link active w-100 py-3 py-md-2" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">
+                        <i class="fa-solid fa-clipboard-user icon-responsive"></i>
+                        <span class="d-none d-md-inline ms-2" data-i18n="personal_information"></span>
+                    </button>
                 </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab"><i class="fa-solid fa-clock-rotate-left me-2"></i><span data-i18n="usage_history"></span></button>
+                <li class="nav-item flex-fill" role="presentation">
+                    <button class="nav-link w-100 py-3 py-md-2" id="history-tab" data-bs-toggle="tab" data-bs-target="#history" type="button" role="tab">
+                        <i class="fa-solid fa-clock-rotate-left icon-responsive"></i>
+                        <span class="d-none d-md-inline ms-2" data-i18n="usage_history"></span>
+                    </button>
                 </li>
-                <li class="nav-item is-pwa d-none" role="presentation">
-                    <button class="nav-link" id="notification-tab" data-bs-toggle="tab" data-bs-target="#notification" type="button" role="tab"><i class="fa-solid fa-bell me-2"></i><span data-i18n="notification"></span></button>
+                <li class="nav-item flex-fill is-pwa d-none" role="presentation">
+                    <button class="nav-link w-100 py-3 py-md-2" id="notification-tab" data-bs-toggle="tab" data-bs-target="#notification" type="button" role="tab">
+                        <i class="fa-solid fa-bell icon-responsive"></i>
+                        <span class="d-none d-md-inline ms-2" data-i18n="notification"></span>
+                    </button>
                 </li>
             </ul>
             <div class="tab-content" id="profileTabContent">
                 <div class="tab-pane fade show active" id="info" role="tabpanel">
                     <div class="info-section">
-                        <h3 class="section-title"><i class="fa-regular fa-user"></i><span data-i18n="personal_information"></span></h3>
+                        <h6 class="section-title"><i class="fa-regular fa-user"></i><span data-i18n="personal_information"></span></h6>
                         <div class="info-row" id="row-firstName">
                             <div class="info-label"><i class="fa-solid fa-user"></i><span data-i18n="firstname"></span></div>
                             <div class="info-value">
@@ -53,7 +62,7 @@
                         </div>
                     </div>
                     <div class="info-section">
-                        <h3 class="section-title"><i class="fa-solid fa-user-shield"></i><span data-i18n="account"></span></h3>
+                        <h6 class="section-title"><i class="fa-solid fa-user-shield"></i><span data-i18n="account"></span></h6>
                         <div class="info-row" id="row-username">
                             <div class="info-label"><i class="fa-regular fa-circle-user"></i><span data-i18n="username"></span></div>
                             <div class="info-value">
