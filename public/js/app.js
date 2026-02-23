@@ -47,10 +47,9 @@ async function syncTimezone() {
     }
 }
 async function handlePWANotifications() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
     if (Notification.permission === 'denied') return;
-    if (sessionStorage.getItem('notification_asked_this_session')) {
-        return;
-    }
+    if (sessionStorage.getItem('notification_asked_this_session')) return;
     const registration = await navigator.serviceWorker.ready;
     const sub = await registration.pushManager.getSubscription();
     if (Notification.permission === 'default') {
@@ -65,37 +64,39 @@ async function handlePWANotifications() {
 }
 async function requestAndSubscribe(registration) {
     try {
+        sessionStorage.setItem('notification_asked_this_session', 'true');
         const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            Swal.fire({
-                title: langData['processing'],
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
-            const subscription = await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-            });
-            const response = await fetch(`${BASE_URL}/api/push.subscribe`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(subscription)
-            });
-            if (response.ok) {
-                Swal.fire({
-                    icon: 'success',
-                    title: langData['success'],
-                    text: langData['you_will_receive_notifications'],
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            } else {
-                throw new Error("Server response failed");
-            }
-        }
+        if (permission !== 'granted') return;
+        Swal.fire({
+            title: langData['processing'],
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+        if (!VAPID_PUBLIC_KEY) throw new Error("VAPID Public Key is missing");
+        const subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+        const response = await fetch(`${BASE_URL}/api/push.subscribe`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(subscription)
+        });
+        if (!response.ok) throw new Error("Server failed to save subscription");
+        Swal.fire({
+            icon: 'success',
+            title: langData['success'],
+            text: langData['you_will_receive_notifications'],
+            timer: 2000,
+            showConfirmButton: false
+        });
     } catch (error) {
         console.error("Push Subscription Error:", error);
-        showError(langData['process_failed']);
+        Swal.fire({
+            icon: 'error',
+            title: langData['process_failed'],
+            text: error.message
+        });
     }
 }
 async function showNotificationModal(onAllow, onLater) {
