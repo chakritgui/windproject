@@ -1,7 +1,9 @@
 <?php
-require 'vendor/PHPMailer/src/Exception.php';
-require 'vendor/PHPMailer/src/PHPMailer.php';
-require 'vendor/PHPMailer/src/SMTP.php';
+if (!class_exists('PHPMailer\PHPMailer\PHPMailer')) {
+    require_once __DIR__ . '/../../vendor/PHPMailer/src/Exception.php';
+    require_once __DIR__ . '/../../vendor/PHPMailer/src/PHPMailer.php';
+    require_once __DIR__ . '/../../vendor/PHPMailer/src/SMTP.php';
+}
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 class MailHelper {
