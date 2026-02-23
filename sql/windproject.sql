@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 23, 2026 at 07:31 AM
+-- Generation Time: Feb 23, 2026 at 08:22 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -171,7 +171,6 @@ CREATE TABLE `wp_content` (
   `cover` longtext,
   `cover_display` enum('yes','no') NOT NULL DEFAULT 'yes',
   `content_slug` varchar(255) DEFAULT NULL,
-  `folder_id` bigint(20) DEFAULT NULL,
   `folder_show_admin` enum('yes','no') NOT NULL DEFAULT 'no',
   `folder_show_user` enum('yes','no') NOT NULL DEFAULT 'no',
   `status` enum('scheduled','draft','published','deleted','active','inactive') NOT NULL DEFAULT 'draft',
@@ -180,6 +179,21 @@ CREATE TABLE `wp_content` (
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wp_content_folder`
+--
+
+CREATE TABLE `wp_content_folder` (
+  `id` bigint(20) NOT NULL,
+  `content_id` bigint(20) NOT NULL,
+  `folder_id` bigint(20) NOT NULL,
+  `status` enum('active','deleted') NOT NULL DEFAULT 'active',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -253,8 +267,8 @@ CREATE TABLE `wp_documents` (
   `document_name` varchar(255) NOT NULL,
   `document_type` varchar(255) DEFAULT NULL,
   `document_size` bigint(20) NOT NULL DEFAULT '0',
-  `document_start` datetime NOT NULL,
-  `document_end` datetime NOT NULL,
+  `document_start` datetime DEFAULT NULL,
+  `document_end` datetime DEFAULT NULL,
   `document_path` longtext,
   `status` enum('public','private','deleted') NOT NULL,
   `document_file_name` varchar(255) DEFAULT NULL,
@@ -582,6 +596,7 @@ CREATE TABLE `wp_poles` (
   `poles_lat` decimal(10,7) DEFAULT NULL,
   `poles_lng` decimal(10,7) DEFAULT NULL,
   `content_id` bigint(20) DEFAULT NULL,
+  `poles_source` enum('manual','import') NOT NULL DEFAULT 'import',
   `status` enum('online','inactive','deleted') NOT NULL DEFAULT 'online',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
@@ -770,6 +785,14 @@ ALTER TABLE `wp_content`
   ADD KEY `idx_content_status` (`content_id`,`status`);
 
 --
+-- Indexes for table `wp_content_folder`
+--
+ALTER TABLE `wp_content_folder`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `idx_content_folder` (`content_id`,`folder_id`),
+  ADD KEY `idx_status` (`status`);
+
+--
 -- Indexes for table `wp_content_item`
 --
 ALTER TABLE `wp_content_item`
@@ -818,7 +841,8 @@ ALTER TABLE `wp_edit_permissions`
 --
 ALTER TABLE `wp_folder`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_slug_parent` (`slug`,`parent_id`);
+  ADD KEY `idx_slug_parent` (`slug`,`parent_id`),
+  ADD KEY `idx_parent_content` (`parent_id`,`content_id`);
 
 --
 -- Indexes for table `wp_height`
@@ -1034,6 +1058,12 @@ ALTER TABLE `wind_staging`
 --
 ALTER TABLE `wp_content`
   MODIFY `content_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `wp_content_folder`
+--
+ALTER TABLE `wp_content_folder`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `wp_content_item`
