@@ -88,12 +88,11 @@ function renderNews(items) {
             typeHtml = `<span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project"></i> <span>${langData['project'] || 'Project'}</span></span>`;
         }
         const html = `
-            <a class="news-item ${isRead ? '' : 'unread'}" onclick="openContent('${item.content_slug}', 'view')">
+            <a class="news-item" onclick="openContent('${item.content_slug}', 'view')">
                 ${thumbHtml}
                 <div class="news-content">
                     <div class="news-header">
                         <h6 class="news-title">${subject}</h6>
-                        ${isRead ? '' : '<div class="unread-dot"></div>'}
                     </div>
                     <div class="news-meta">
                         <div class="meta-item">${typeHtml} <span class="small"><i class="fa-regular fa-calendar"></i> ${item.created_at}</span></div>
