@@ -90,37 +90,48 @@ function initNewsTable() {
             data: null,
             orderable: false,
             render: (data, type, row) => {
-                let folderHtml = '';
+                let allFoldersHtml = '';
                 let visibilityBadges = '';
-                if (Array.isArray(row.folder_chain) && row.folder_chain.length > 0) {
-                    const breadcrumb = row.folder_chain.slice().reverse().map((f, index, arr) => {
-                        if (index === arr.length - 1) {
-                            return `<span class="fw-semibold text-dark">${f.name}</span>`;
-                        }
-                        return `<span class="text-muted">${f.name}</span>`;
-                    }).join(' <span class="text-secondary">/</span> ');
-                    folderHtml = `
-                        <div class="small mb-1">
-                            <i class="fa-solid fa-folder-open text-warning me-1"></i>
-                            ${breadcrumb}
-                        </div>
-                    `;
-                    if (row.folder_show_admin === 'yes' && row.type === 'news') {
+                const hasFolders = Array.isArray(row.folder_chains) && row.folder_chains.length > 0;
+                if (Array.isArray(row.folder_chains) && row.folder_chains.length > 0) {
+                    allFoldersHtml = row.folder_chains.map((chain) => {
+                        if (!Array.isArray(chain) || chain.length === 0) return '';
+                        const breadcrumb = chain.slice().reverse().map((f, index, arr) => {
+                            if (index === arr.length - 1) {
+                                return `<span class="fw-semibold text-dark">${f.name}</span>`;
+                            }
+                            return `<span class="text-muted">${f.name}</span>`;
+                        }).join(' <span class="text-secondary" style="font-size: 0.8em;">/</span> ');
+                        return `
+                            <div class="small mb-1 d-flex align-items-center">
+                                <i class="fa-solid fa-folder-open text-warning me-1"></i>
+                                <span class="text-truncate">${breadcrumb}</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                if (row.type === 'news' && hasFolders) {
+                    if (row.folder_show_admin === 'yes') {
                         visibilityBadges += `
-                            <span class="badge bg-danger-subtle text-danger me-1">
-                                <i class="fa-solid fa-user-shield me-1"></i>Admin
+                            <span class="small badge bg-danger-subtle text-danger me-1">
+                                <i class="fa-solid fa-user-shield me-1"></i><span data-i18n="admin"></span>
                             </span>`;
                     }
-                    if (row.folder_show_user === 'yes' && row.type === 'news') {
+                    if (row.folder_show_user === 'yes') {
                         visibilityBadges += `
-                            <span class="badge bg-info-subtle text-info me-1">
-                                <i class="fa-solid fa-user me-1"></i>User
+                            <span class="small badge bg-info-subtle text-info me-1">
+                                <i class="fa-solid fa-user me-1"></i><span data-i18n="user"></span>
                             </span>`;
                     }
                 }
+                if (!allFoldersHtml) {
+                    allFoldersHtml = ``;
+                }
                 return `
-                    ${folderHtml}
-                    <div class="mb-1">${visibilityBadges}</div>
+                    <div class="folder-visibility-container">
+                        ${allFoldersHtml}
+                        <div class="mt-1">${visibilityBadges}</div>
+                    </div>
                 `;
             }
         },{
@@ -270,16 +281,18 @@ function getContentForm(d, publishTime) {
                         <label class="fw-bold mb-2" data-i18n="save_to_a_folder"></label>
                         <div class="d-flex gap-3">
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="use_folder_toggle" id="use_folder_no" value="no" ${!d.folder_id ? 'checked' : ''}>
+                                <input class="form-check-input" type="radio" name="use_folder_toggle" id="use_folder_no" value="no" 
+                                    ${(!d.folder_id || (Array.isArray(d.folder_id) && d.folder_id.length === 0)) ? 'checked' : ''}>
                                 <label class="form-check-label" for="use_folder_no" data-i18n="use_folder_no"></label>
                             </div>
                             <div class="form-check">
-                                <input class="form-check-input" type="radio" name="use_folder_toggle" id="use_folder_yes" value="yes" ${d.folder_id ? 'checked' : ''}>
+                                <input class="form-check-input" type="radio" name="use_folder_toggle" id="use_folder_yes" value="yes" 
+                                    ${(Array.isArray(d.folder_id) && d.folder_id.length > 0) ? 'checked' : ''}>
                                 <label class="form-check-label" for="use_folder_yes" data-i18n="use_folder_yes"></label>
                             </div>
                         </div>
                     </div>
-                    <div id="folder_tree_wrapper" style="${!d.folder_id ? 'display:none;' : ''}">
+                    <div id="folder_tree_wrapper" style="${!d.folder_id || (Array.isArray(d.folder_id) && d.folder_id.length === 0) ? 'display:none;' : ''}">
                         <div class="border rounded p-3 bg-white" style="max-height:300px; overflow:auto;">
                             ${renderFolderTree(d.folders, d.folder_id)}
                         </div>
@@ -332,24 +345,30 @@ $(document).on('change', 'input[name="use_folder_toggle"]', function() {
         $('input[name="folder_id"]').prop('checked', false);
     }
 });
-function renderFolderTree(folders, selectedId = null, level = 0) {
+function renderFolderTree(folders, selectedIds = [], level = 0) {
     if (!folders || !folders.length) return '';
+    const selectedArray = Array.isArray(selectedIds) ? selectedIds : [selectedIds];
     let html = '';
     folders.forEach(f => {
         const indent = level * 20;
         const hasChildren = f.children && f.children.length > 0;
         const isChildSelected = (items) => {
-            return items?.some(child => child.id == selectedId || isChildSelected(child.children));
+            return items?.some(child => 
+                selectedArray.includes(child.id.toString()) || 
+                selectedArray.includes(Number(child.id)) || 
+                isChildSelected(child.children)
+            );
         };
-        const shouldExpand = (f.id == selectedId || isChildSelected(f.children));
+        const isCurrentSelected = selectedArray.includes(f.id.toString()) || selectedArray.includes(Number(f.id));
+        const shouldExpand = (isCurrentSelected || isChildSelected(f.children));
         html += `
             <div class="folder-item-container">
-                <div class="form-check d-flex align-items-center" style="margin-left:${indent}px">
+                <div class="form-check d-flex align-items-center" style="margin-left:${indent}px; min-height: 32px;">
                     <span class="toggle-icon me-2" style="cursor:pointer; width: 20px; display: inline-block; text-align: center;" onclick="toggleFolder(this, 'child_container_${f.id}')">
                         ${hasChildren ? `<i class="fa-solid ${shouldExpand ? 'fa-square-minus' : 'fa-square-plus'} text-secondary"></i>` : ''}
                     </span>
-                    <input class="form-check-input me-2" type="radio" name="folder_id" value="${f.id}" id="folder_${f.id}" ${selectedId == f.id ? 'checked' : ''} style="margin-left: 0;">
-                    <label class="form-check-label" for="folder_${f.id}">
+                    <input class="form-check-input me-2" type="checkbox" name="folder_id[]" value="${f.id}" id="folder_${f.id}" ${isCurrentSelected ? 'checked' : ''} style="margin-left: 0; cursor: pointer;">        
+                    <label class="form-check-label" for="folder_${f.id}" style="cursor: pointer;">
                         ${level === 0 
                             ? `<i class="fa-solid fa-folder-tree text-primary me-1"></i>` 
                             : `<i class="fa-solid fa-folder text-warning me-1"></i>`}
@@ -358,7 +377,7 @@ function renderFolderTree(folders, selectedId = null, level = 0) {
                 </div>
                 ${hasChildren ? `
                     <div id="child_container_${f.id}" class="folder-children" style="display: ${shouldExpand ? 'block' : 'none'};">
-                        ${renderFolderTree(f.children, selectedId, level + 1)}
+                        ${renderFolderTree(f.children, selectedArray, level + 1)}
                     </div>
                 ` : ''}
             </div>
@@ -465,14 +484,23 @@ function executeSave() {
     if (cover) {
         formData.append("cover", cover);
     }
-    let useFolder = $('input[name="use_folder_toggle"]:checked').val();
-    let folder_id = null;
+    const useFolder = $('input[name="use_folder_toggle"]:checked').val();
+    let folder_show_admin = 'no';
+    let folder_show_user = 'no';
     if (useFolder === 'yes') {
-        folder_id = $('input[name="folder_id"]:checked').val() || null;
+        const selectedFolders = $('input[name="folder_id[]"]:checked');  
+        if (selectedFolders.length > 0) {
+            selectedFolders.each(function() {
+                formData.append('folder_id[]', $(this).val());
+            });
+            folder_show_admin = $('#folder_show_admin').is(':checked') ? 'yes' : 'no';
+            folder_show_user  = $('#folder_show_user').is(':checked') ? 'yes' : 'no';
+        } else {
+            formData.append('folder_id[]', ''); 
+        }
+    } else {
+        formData.append('folder_id[]', '');
     }
-    let folder_show_admin = $('#folder_show_admin').is(':checked') ? 'yes' : 'no';
-    let folder_show_user  = $('#folder_show_user').is(':checked') ? 'yes' : 'no';
-    formData.append("folder_id", folder_id ?? ""); 
     formData.append("folder_show_admin", folder_show_admin);
     formData.append("folder_show_user", folder_show_user);
     Swal.fire({

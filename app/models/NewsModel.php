@@ -54,7 +54,7 @@ class NewsModel {
                     SUM(CASE WHEN m.file_type = 'attachment' THEN 1 ELSE 0 END) as count_attachment,
                     SUM(CASE WHEN m.file_type = 'image' THEN 1 ELSE 0 END) as count_image,
                     SUM(CASE WHEN m.file_type = 'image360' THEN 1 ELSE 0 END) as count_image360,
-                    n.content_slug, n.folder_id, n.folder_show_admin, n.folder_show_user, n.type,
+                    n.content_slug, (SELECT GROUP_CONCAT(folder_id) FROM wp_content_folder WHERE content_id = n.content_id AND status = 'active') as all_folder_ids, n.folder_show_admin, n.folder_show_user, n.type,
                     f.parent_id as dynamic_parent_id 
                 FROM wp_content n
                 LEFT JOIN wp_content_item iEn ON iEn.content_id = n.content_id AND iEn.content_lang='en'
@@ -81,7 +81,13 @@ class NewsModel {
             if($r['type'] === 'project' && !empty($r['dynamic_parent_id'])) {
                 $r['folder_id'] = $r['dynamic_parent_id'];
             }
-            $r['folder_chain'] = !empty($r['folder_id']) ? $this->getParentFolders($r['folder_id']) : [];
+            $r['folder_chains'] = [];
+            if (!empty($r['all_folder_ids'])) {
+                $folder_ids = explode(',', $r['all_folder_ids']);
+                foreach ($folder_ids as $f_id) {
+                    $r['folder_chains'][] = $this->getParentFolders(trim($f_id));
+                }
+            }
             $r['settings'] = $settings;
         }
         return [
@@ -151,7 +157,7 @@ class NewsModel {
                 "publish_at" => convertTimeZoneUTC(date('Y-m-d H:i'), 'Y-m-d H:i'),
                 "cover" => "",
                 "cover_display" => "no",
-                "folder_id" => null,
+                "folder_id" => [],
                 "folder_show_admin" => "no",
                 "folder_show_user" => "no",
                 "attachments" => [],
@@ -167,13 +173,17 @@ class NewsModel {
                 "folders" => $folders
             ];
         }
-        $stmt = $pdo->prepare("SELECT content_id, status, publish_at, cover, cover_display,folder_id, folder_show_admin, folder_show_user FROM wp_content WHERE content_id = ?");
+        $stmt = $pdo->prepare("SELECT content_id, status, publish_at, cover, cover_display, folder_show_admin, folder_show_user FROM wp_content WHERE content_id = ?");
         $stmt->execute([(int)$id]);
         $n = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$n) return null;
-        if (!isset($folderMap[$n['folder_id']])) {
-            $n['folder_id'] = null;
-        }
+        $stmtFolder = $pdo->prepare("SELECT folder_id FROM wp_content_folder WHERE content_id = ? AND status = 'active'");
+        $stmtFolder->execute([(int)$id]);
+        $selectedFolders = $stmtFolder->fetchAll(PDO::FETCH_COLUMN);
+        $n['folder_id'] = array_filter($selectedFolders, function($f_id) use ($folderMap) {
+            return isset($folderMap[$f_id]);
+        });
+        $n['folder_id'] = array_values($n['folder_id']);
         $stmt = $pdo->prepare("SELECT content_lang, content_subject, content_body, status, response, translate_with FROM wp_content_item WHERE content_id = ?");
         $stmt->execute([$id]);
         $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -242,7 +252,6 @@ class NewsModel {
         $content_id = $data['content_id'] ?: null;
         $status = $data['status'] ?? 'draft';
         $cover_display = $data['cover_display'] ?? 'no';
-        $folder_id = !empty($data['folder_id']) ? (int)$data['folder_id'] : null;
         $folder_show_admin = $data['folder_show_admin'];
         $folder_show_user  = $data['folder_show_user'];
         $mediaHelper = new MediaHelper($pdo);
@@ -271,7 +280,6 @@ class NewsModel {
                         cover_display = :cover_display, 
                         content_slug = :content_slug, 
                         publish_at = :publish_at, 
-                        folder_id = :folder_id,
                         folder_show_admin = :folder_show_admin,
                         folder_show_user = :folder_show_user,
                         updated_at = NOW() 
@@ -280,62 +288,80 @@ class NewsModel {
                 $stmt->bindValue(':content_id', (int)$content_id, PDO::PARAM_INT);
             } else {
                 $stmt = $pdo->prepare("INSERT INTO wp_content 
-                    (status, cover_display, content_slug, publish_at, folder_id, folder_show_admin, folder_show_user, created_at, updated_at) 
+                    (status, cover_display, content_slug, publish_at, folder_show_admin, folder_show_user, created_at, updated_at) 
                     VALUES 
-                    (:status, :cover_display, :content_slug, :publish_at, :folder_id, :folder_show_admin, :folder_show_user, NOW(), NOW())
+                    (:status, :cover_display, :content_slug, :publish_at, :folder_show_admin, :folder_show_user, NOW(), NOW())
                 ");
             }
             $stmt->bindValue(':status', $status);
             $stmt->bindValue(':cover_display', $cover_display);
             $stmt->bindValue(':content_slug', $content_slug);
             $stmt->bindValue(':publish_at', $publish_at, $publish_at === null ? PDO::PARAM_NULL : PDO::PARAM_STR);
-            $stmt->bindValue(':folder_id', $folder_id, $folder_id === null ? PDO::PARAM_NULL : PDO::PARAM_INT);
             $stmt->bindValue(':folder_show_admin', $folder_show_admin);
             $stmt->bindValue(':folder_show_user', $folder_show_user);
             $stmt->execute();
             if (!$content_id) {
                 $content_id = $pdo->lastInsertId();
             }
-            if ($folder_id) {
-                $folder_name = 'Untitled';
-                if (!empty($data["title_en"])) {
-                    $folder_name = $data["title_en"];
-                } elseif (!empty($data["title_th"])) {
-                    $folder_name = $data["title_th"];
-                } elseif (!empty($data["title_lo"])) {
-                    $folder_name = $data["title_lo"];
+            $folder_ids = !empty($data['folder_id']) && is_array($data['folder_id']) ? $data['folder_id'] : [];
+            $folder_status_base = ($status === 'draft') ? 'inactive' : 'active';
+            if (!empty($folder_ids)) {
+                $placeholders = implode(',', array_fill(0, count($folder_ids), '?'));
+                $sql_soft_del_mapping = "UPDATE wp_content_folder 
+                                        SET status = 'deleted', updated_at = NOW() 
+                                        WHERE content_id = ? AND folder_id NOT IN ($placeholders)";
+                $pdo->prepare($sql_soft_del_mapping)->execute(array_merge([$content_id], $folder_ids));
+                $sql_soft_del_folder = "UPDATE wp_folder 
+                                        SET status = 'deleted', updated_at = NOW() 
+                                        WHERE content_id = ? AND parent_id NOT IN ($placeholders)";
+                $pdo->prepare($sql_soft_del_folder)->execute(array_merge([$content_id], $folder_ids));
+                foreach ($folder_ids as $f_id) {
+                    $f_id = (int)$f_id;
+                    if($f_id > 0) {
+                        $stmt_check = $pdo->prepare("SELECT id FROM wp_content_folder WHERE content_id = ? AND folder_id = ?");
+                        $stmt_check->execute([$content_id, $f_id]);
+                        if ($stmt_check->fetch()) {
+                            $pdo->prepare("UPDATE wp_content_folder SET status = 'active', updated_at = NOW() WHERE content_id = ? AND folder_id = ?")
+                                ->execute([$content_id, $f_id]);
+                        } else {
+                            $pdo->prepare("INSERT INTO wp_content_folder (content_id, folder_id, status, created_at, updated_at) VALUES (?, ?, 'active', NOW(), NOW())")
+                                ->execute([$content_id, $f_id]);
+                        }
+                        $folder_name = !empty($data["title_en"]) ? $data["title_en"] : (!empty($data["title_th"]) ? $data["title_th"] : 'Untitled');
+                        $stmt = $pdo->prepare("SELECT id FROM wp_folder WHERE parent_id = ? AND content_id = ?");
+                        $stmt->execute([$f_id, $content_id]);
+                        $existingFolder = $stmt->fetch(PDO::FETCH_ASSOC);
+                        if ($existingFolder) {
+                            $sql = "UPDATE wp_folder SET name = :name, status = :status, updated_at = NOW() WHERE id = :id";
+                            $pdo->prepare($sql)->execute([
+                                ':name'   => $folder_name,
+                                ':status' => $folder_status_base,
+                                ':id'     => $existingFolder['id']
+                            ]);
+                        } else {
+                            $stmt = $pdo->prepare("SELECT level FROM wp_folder WHERE id = ?");
+                            $stmt->execute([$f_id]);
+                            $parentData = $stmt->fetch(PDO::FETCH_ASSOC);
+                            $level = $parentData ? (int)$parentData['level'] + 1 : 1;
+                            $slug = $this->generateUniqueSlug($folder_name, $f_id);
+                            $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, sub_type, created_at, updated_at, content_id) 
+                                    VALUES (:name, :slug, :parent_id, :level, :status, 'content', 'news', NOW(), NOW(), :content_id)";
+                            $pdo->prepare($sql)->execute([
+                                ':name'       => $folder_name,
+                                ':slug'       => $slug,
+                                ':parent_id'  => $f_id,
+                                ':level'      => $level,
+                                ':status'     => $folder_status_base,
+                                ':content_id' => $content_id
+                            ]);
+                        }
+                    }
                 }
-                $folder_status = ($status === 'draft') ? 'inactive' : 'active';
-                $stmt = $pdo->prepare("SELECT id FROM wp_folder WHERE parent_id = ? AND content_id = ?");
-                $stmt->execute([$folder_id, $content_id]);
-                $existingFolder = $stmt->fetch(PDO::FETCH_ASSOC);
-                if ($existingFolder) {
-                    $sql = "UPDATE wp_folder SET name = :name, status = :status, updated_at = NOW() WHERE content_id = :id";
-                    $stmtFolder = $pdo->prepare($sql);
-                    $stmtFolder->execute([
-                        ':name'   => $folder_name,
-                        ':id'     => $content_id,
-                        ':status' => $folder_status
-                    ]);
-                } else {
-                    $stmt = $pdo->prepare("SELECT level FROM wp_folder WHERE id = ?");
-                    $stmt->execute([$folder_id]);
-                    $parentData = $stmt->fetch(PDO::FETCH_ASSOC);
-                    $level = $parentData ? (int)$parentData['level'] + 1 : 1;
-                    $parentId = $folder_id;
-                    $slug = $this->generateUniqueSlug($folder_name, $parentId);
-                    $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, sub_type, created_at, updated_at, content_id) 
-                            VALUES (:name, :slug, :parent_id, :level, :status, 'content', 'news', NOW(), NOW(), :content_id)";
-                    $stmtFolder = $pdo->prepare($sql);
-                    $stmtFolder->execute([
-                        ':name'       => $folder_name,
-                        ':slug'       => $slug,
-                        ':parent_id'  => $parentId,
-                        ':level'      => $level,
-                        ':status'     => $folder_status,
-                        ':content_id' => $content_id
-                    ]);
-                }
+            } else {
+                $pdo->prepare("UPDATE wp_content_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = ?")
+                    ->execute([$content_id]);
+                $pdo->prepare("UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = ?")
+                    ->execute([$content_id]);
             }
             $mediaHelper->handleContent($data, $content_id);
             if (empty($data['ex_cover'])) {

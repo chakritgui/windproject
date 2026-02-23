@@ -67,7 +67,7 @@ class NewsController extends BaseController {
             'auto_translate'       => $_POST['auto_translate'] ?? 'no',
             'send_notification'    => $_POST['send_notification'] ?? 'no',
             'cover_display'    => $_POST['cover_display'] ?? 'no',
-            'folder_id'    => $_POST['folder_id'] ?? null,
+            'folder_id' => isset($_POST['folder_id']) && is_array($_POST['folder_id']) ? $_POST['folder_id'] : [],
             'folder_show_admin'    => $_POST['folder_show_admin'] ?? 'no',
             'folder_show_user'    => $_POST['folder_show_user'] ?? 'no',
         ];
