@@ -16,10 +16,12 @@ class MapModel{
     public function poleslocation() {
         $sql = "SELECT 
             p.*, t.type_id, t.type_name, l.installations_name, t.type_icon
-        FROM wp_poles p 
+        FROM wp_winds w 
+        LEFT JOIN wp_poles p on p.poles_id = w.poles_id
         LEFT JOIN wp_type t on t.type_id = p.type_id 
         LEFT JOIN wp_installations l on l.installations_id = p.installations_id
-        WHERE p.status = 'online'";
+        WHERE p.status = 'online' 
+        GROUP BY p.poles_id";
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
