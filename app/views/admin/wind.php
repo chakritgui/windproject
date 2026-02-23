@@ -53,7 +53,12 @@
 <div class="container-fluid mt-3 mb-5">
     <div class="mb-3">
         <button class="btn btn-sm btn-primary import-history"><i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="import_history"></button> 
-        <button class="btn btn-sm btn-danger clear-data"><i class="fa-solid fa-trash-can"></i> <span data-i18n="clear_data"></button> 
+        <?php if (isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'administrator'): ?>
+            <button class="btn btn-sm btn-danger clear-data">
+                <i class="fa-solid fa-trash-can"></i>
+                <span data-i18n="clear_data"></span>
+            </button>
+        <?php endif; ?>
     </div>
     <div class="table-responsive">
         <table class="table table-striped table-hover" id="tb_wind">
