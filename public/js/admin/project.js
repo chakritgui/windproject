@@ -156,7 +156,9 @@ function renderTable(data, isNewSearch) {
                             ${(item.child_count === 0) ? `
                                 <button class="btn btn-link text-danger border-start delete-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-regular fa-trash-can"></i></button> 
                             ` : ``}
-                        ` : ``}
+                        ` : `
+                            <button class="btn btn-link text-danger border-start unlink-content" data-id="${item.id}" data-content="${item.content_id}"><i class="fa-solid fa-link-slash"></i></button>
+                        `}
                     </div>
                 </td>
             </tr>`;
@@ -248,6 +250,29 @@ $(document).on('click', '.delete-project', function () {
                     fetchFolders(currentLevel, currentFolderId);
                 } else {
                     showError(langData['cannot_delete']);
+                }   
+            },
+            error: function(){
+                showError(langData['cannot_delete']);
+            }
+        });
+    });
+});
+$(document).on('click', '.unlink-content', function () {
+    let id = $(this).data("id");
+    let content_id = $(this).data("content");
+    showConfirm(langData['confirm'], langData['confirm_unlink'], function(){
+        $.ajax({
+            url: `${BASE_URL}/api/project.unlink`,
+            method: 'POST',
+            data: { folder_id: id, content_id: content_id },
+            dataType: 'json',
+            success: function(res) {
+                if (res.status === 'success') {
+                    showSuccess(langData['successfully']);
+                    fetchFolders(currentLevel, currentFolderId);
+                } else {
+                    showError(langData['process_failed']);
                 }   
             },
             error: function(){

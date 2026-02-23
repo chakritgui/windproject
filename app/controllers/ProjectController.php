@@ -50,7 +50,6 @@ class ProjectController extends BaseController {
             'folder_id' => intval($_POST['folder_id'] ?? 0)
         ];
         $result = $this->model->delete($data);
-        
         if ($result) {
             $this->json(['status' => 'success', 'data' => $result]);
         } else {
@@ -101,7 +100,18 @@ class ProjectController extends BaseController {
             'content_id' => intval($_POST['content_id'] ?? 0)
         ];
         $result = $this->model->deleteContent($data);
-        
+        if ($result) {
+            $this->json(['status' => 'success', 'data' => $result]);
+        } else {
+            $this->json(['status' => 'error', 'message' => 'Data not found']);
+        }
+    }
+    public function unlink() {
+        $data = [
+            'folder_id' => intval($_POST['folder_id'] ?? 0),
+            'content_id' => intval($_POST['content_id'] ?? 0),
+        ];
+        $result = $this->model->unlink($data);
         if ($result) {
             $this->json(['status' => 'success', 'data' => $result]);
         } else {

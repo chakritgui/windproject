@@ -390,4 +390,35 @@ class ProjectModel {
         ]);
         return ($res1 && $res2);
     }
+    public function unlink($data) {
+        try {
+            $sql_get_parent = "SELECT parent_id FROM wp_folder WHERE id = :folder_id LIMIT 1";
+            $stmt_parent = $this->db->prepare($sql_get_parent);
+            $stmt_parent->execute([':folder_id' => $data['folder_id']]);
+            $folder = $stmt_parent->fetch(PDO::FETCH_ASSOC);
+            if (!$folder) {
+                return false;
+            }
+            $parent_id = $folder['parent_id'];
+            $sql_folder = "UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE id = :id";
+            $stmt_folder = $this->db->prepare($sql_folder);
+            $res1 = $stmt_folder->execute([':id' => $data['folder_id']]);
+            $sql_content = "UPDATE wp_content 
+                            SET 
+                                folder_id = NULL, 
+                                folder_show_admin = 'no', 
+                                folder_show_user = 'no', 
+                                updated_at = NOW() 
+                            WHERE content_id = :content_id 
+                            AND folder_id IN (SELECT id FROM wp_folder WHERE parent_id = :parent_id OR id = :parent_id)";
+            $stmt_content = $this->db->prepare($sql_content);
+            $res2 = $stmt_content->execute([
+                ':content_id' => $data['content_id'],
+                ':parent_id'  => $parent_id
+            ]);
+            return ($res1 && $res2);
+        } catch (Exception $e) {
+            return false;
+        }
+    }
 }

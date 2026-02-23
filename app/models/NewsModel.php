@@ -408,6 +408,10 @@ class NewsModel {
         $pdo->prepare("UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = ?")->execute([(int)$id]);
         return $pdo->prepare("UPDATE wp_notification_targets SET status = 'deleted', publish_at = NULL WHERE notifications_item = ? AND notifications_target = 'news'")->execute([(int)$id]);
     }
+    public function unlink($id) {
+        $pdo = $this->db;
+        return $pdo->prepare("UPDATE wp_content SET folder_show_admin = 'no', folder_show_user = 'no', updated_at = NOW() WHERE type = 'project' AND content_id = ?")->execute([(int)$id]);
+    }
     public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {
         $offset = ($page - 1) * $limit;
         $items = [];

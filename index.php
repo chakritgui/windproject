@@ -108,6 +108,7 @@
             $router->post('/api/news.save', 'NewsController@save');
             $router->post('/api/news.delete', 'NewsController@delete');
             $router->post('/api/news.filter', 'NewsController@filter');
+            $router->post('/api/news.unlink', 'NewsController@unlink');
             $router->post('/api/settings.info', 'SettingController@saveInfo');
             $router->post('/api/settings.lang', 'SettingController@saveLang');
             $router->post('/api/settings.shortcut', 'SettingController@saveShortcut');
@@ -173,6 +174,7 @@
             $router->post('/api/project.filter', 'ProjectController@filter');
             $router->post('/api/project.content.save', 'ProjectController@saveContent');
             $router->post('/api/project.content.delete', 'ProjectController@deleteContent');
+            $router->post('/api/project.unlink', 'ProjectController@unlink');
         } else {
             $router->get('/home', 'UserController@user');
             $router->get('/news', 'UserController@news');

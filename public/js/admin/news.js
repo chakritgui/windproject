@@ -152,7 +152,9 @@ function initNewsTable() {
                     ${(row.type === 'news') ? `
                         <button class="btn btn-link text-warning py-1 border-start manage-news" data-id="${row.content_id}"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button class="btn btn-link text-danger py-1 border-start delete-news" data-id="${row.content_id}"><i class="fa-regular fa-trash-can"></i></button>
-                    ` : ``}
+                    ` : `
+                        <button class="btn btn-link text-danger py-1 border-start unlink-news" data-id="${row.content_id}"><i class="fa-solid fa-link-slash"></i></button>
+                    `}
                 </div>`
         }],
         pageLength: typeof pageLength !== 'undefined' ? pageLength : 10,
@@ -523,6 +525,19 @@ $(document).on('click', '.delete-news', function() {
                 initNewsTable();
             } else {
                 showError(langData['cannot_delete']);
+            }
+        }, 'json');
+    });
+});
+$(document).on('click', '.unlink-news', function() {
+    const id = $(this).data("id");
+    showConfirm(langData['confirm'], langData['confirm_unlink'], function(){
+        $.post(`${BASE_URL}/api/news.unlink`, { id }, function(res) {
+            if(res.status === true){
+                showSuccess(langData['successfully']);
+                initNewsTable();
+            } else {
+                showError(langData['process_failed']);
             }
         }, 'json');
     });

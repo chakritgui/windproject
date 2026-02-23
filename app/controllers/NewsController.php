@@ -40,6 +40,10 @@ class NewsController extends BaseController {
         $id = intval($_POST['id'] ?? 0);
         $this->json(['status'=>$this->model->delete($id)]);
     }
+    public function unlink() {
+        $id = intval($_POST['id'] ?? 0);
+        $this->json(['status'=>$this->model->unlink($id)]);
+    }
     public function save() {
         $data = [
             'content_id'           => intval($_POST['content_id'] ?? 0),

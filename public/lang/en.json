@@ -141,6 +141,7 @@
     "banned": "Banned",
     "confirm": "Confirm",
     "confirm_delete": "Are you sure you want to delete this item?",
+    "confirm_unlink": "Are you sure you want to unlink this item?",
     "confirm_reject": "Are you sure you want to reject this request?",
     "deleted_successfully": "Deleted successfully",
     "reject_successfully": "Rejected successfully",

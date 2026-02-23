@@ -16,7 +16,7 @@
                 </div>
             </div>
             <div class="header-stats d-flex align-items-center gap-3">
-                <div class="dropdown">
+                <div class="dropdown d-none">
                     <button class="btn btn-white border shadow-sm dropdown-toggle d-flex align-items-center" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fa-solid fa-sort me-2 text-secondary"></i> 
                         <span id="selectedSortLabel" data-i18n="oldest" class="fw-medium"></span>
