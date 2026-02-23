@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 20, 2026 at 08:58 PM
+-- Generation Time: Feb 23, 2026 at 07:31 AM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -40,7 +40,9 @@ CREATE TABLE `email_queue` (
   `scheduled_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT 'เวลาที่ตั้งคิวไว้',
   `sent_at` datetime DEFAULT NULL COMMENT 'เวลาที่ส่งออกสำเร็จ',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `reference_id` int(11) DEFAULT NULL,
+  `reference_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -75,8 +77,13 @@ CREATE TABLE `pwa_notification_queue` (
   `title` varchar(255) NOT NULL,
   `message` text,
   `status` enum('pending','processing','sent','failed') NOT NULL DEFAULT 'pending',
+  `error_message` text,
+  `sent_at` datetime DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `scheduled_at` datetime DEFAULT NULL
+  `scheduled_at` datetime DEFAULT NULL,
+  `reference_id` int(11) DEFAULT NULL,
+  `reference_type` varchar(50) DEFAULT NULL,
+  `url` varchar(500) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -313,7 +320,7 @@ CREATE TABLE `wp_height` (
   `height_id` bigint(20) NOT NULL,
   `height_name` varchar(255) DEFAULT NULL,
   `height_limit` bigint(20) NOT NULL DEFAULT '3',
-  `status` enum('active','deleted') NOT NULL DEFAULT 'active',
+  `status` enum('active','inactive','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -612,7 +619,7 @@ CREATE TABLE `wp_project` (
 CREATE TABLE `wp_project_group` (
   `project_group_id` bigint(20) NOT NULL,
   `project_group_name` varchar(255) NOT NULL,
-  `status` enum('active','deleted') NOT NULL DEFAULT 'active',
+  `status` enum('active','inactive','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -640,7 +647,7 @@ CREATE TABLE `wp_project_status` (
   `project_status_id` bigint(20) NOT NULL,
   `project_status_name` varchar(255) NOT NULL,
   `project_status_color` varchar(255) DEFAULT '#3b82f6',
-  `status` enum('active','deleted') NOT NULL DEFAULT 'active',
+  `status` enum('active','inactive','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
