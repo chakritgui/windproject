@@ -347,7 +347,7 @@ $('.menu-panel').on('click', e => e.stopPropagation());
 async function openPoles(poleId) {
     const $modal = $("#windModal");
     const $dialog = $modal.find(".modal-dialog");
-    $dialog.addClass("modal-fullscreen");
+    $dialog.removeClass("modal-fullscreen");
     const modalBody = $modal.find(".modal-body");
     modalBody.html(`
         <div class="container py-4">
@@ -398,13 +398,25 @@ async function openPoles(poleId) {
             const title = hasContent ? (data.content.title[lang] || data.content.title['th']) : data.installations_name;
             let bodyContent = hasContent ? (data.content.content[lang] || data.content.content['th'] || '') : '';
             bodyContent = bodyContent.replace(/src="(?!(http|https|\/\/))/g, `src="${fullBaseUrl}/`);
-            const bg = data.project_bg;
+            const bg = data.project_bg || {};
             const project_background = bg.project_background;
             const project_opacity = bg.project_opacity;
             const opacityValue = project_opacity > 0 ? (project_opacity / 100) : 1;
+            let poleContentStyle = '';
+            if (project_background) {
+                poleContentStyle = `
+                    background-image: linear-gradient(rgba(255, 255, 255, ${1 - opacityValue}), rgba(255, 255, 255, ${1 - opacityValue})), 
+                                    url('${BASE_URL}/${project_background}');
+                    background-size: cover;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    background-attachment: local;
+                    border-radius: 1rem; /* ปรับให้โค้งรับกับ card */
+                `;
+            }
             const html = `
                 <div class="pole-detail-wrapper animate__animated animate__fadeIn">
-                    <div class="card border-0 bg-primary bg-opacity-10 rounded-4 mb-4 p-4 shadow-sm">
+                    <div class="card border-0 bg-primary bg-opacity-10 mb-4 p-4 shadow-sm" style="backdrop-filter: blur(10px);">
                         <div class="row align-items-center">
                             <div class="col-md-12">
                                 <span class="badge bg-primary mb-2">${data.type_name}</span>
@@ -418,11 +430,19 @@ async function openPoles(poleId) {
                             </div>
                         </div>
                     </div>
-                    ${(data.content_id) ? `
-                        <div class="row">
-                            <div class="col-lg-12">
+                    <div class="content-section rshadow-sm mb-4 overflow-hidden" 
+                        style="${project_background ? `
+                            background-image: linear-gradient(rgba(255, 255, 255, ${1 - opacityValue}), rgba(255, 255, 255, ${1 - opacityValue})), url('${BASE_URL}/${project_background}');
+                            background-size: contain; 
+                            background-position: top center; 
+                            background-repeat: no-repeat;
+                            background-color: rgba(255, 255, 255, 0.9); /* พื้นหลังสำรองกรณีรูปไม่เต็ม */
+                            min-height: 450px; 
+                        ` : 'background-color: #ffffff;' }">
+                        <div class="p-4">
+                            ${(data.content_id) ? `
                                 ${data.content?.cover && data.content?.cover_display === 'yes' ? `
-                                    <div class="position-relative mb-4 overflow-hidden shadow-sm">
+                                    <div class="position-relative mb-4 overflow-hidden rounded-3 shadow-sm">
                                         <img src="${fullBaseUrl}/${data.content.cover}" class="w-100 h-100 object-fit-cover" alt="cover" style="max-height: 275px; min-height: 275px;">
                                     </div>
                                 ` : ''}
@@ -431,33 +451,26 @@ async function openPoles(poleId) {
                                     <div class="d-flex align-items-center gap-3 text-muted mb-4 pb-3 border-bottom">
                                         <div class="small"><i class="fa-regular fa-calendar-check me-1"></i> ${data.updated_at || data.created_at}</div>
                                     </div>
-                                    <div class="article-content lh-lg text-secondary mb-5">
+                                    <div class="article-content lh-lg text-secondary mb-4">
                                         ${bodyContent}
                                     </div>
                                 </article>
-                            </div>
-                        </div>
-                        <div class="multimedia-container px-2">
-                            ${renderMultimedia(data.content, lang, fullBaseUrl)}
-                        </div>
-                    ` : `
-                        ${(project_background) ? `
-                            <div class="position-relative w-100" style="height: 400px; overflow: hidden;">
-                                <img src="${BASE_URL}/${project_background}" 
-                                    alt="Background" 
-                                    class="w-100 h-100" 
-                                    style="object-fit: contain; opacity: ${opacityValue};">
-                            </div>
-                        ` : `
-                            <div class="text-center py-5">
-                                <div class="mb-4">
-                                    <i class="fa-regular fa-file-lines text-light-emphasis" style="font-size: 64px; opacity: 0.5;"></i>
+                                <div class="multimedia-container px-2">
+                                    ${renderMultimedia(data.content, lang, fullBaseUrl)}
                                 </div>
-                                <h5 class="fw-bold text-dark">${langData['no_content_available'] || 'No content available'}</h5>
-                                <p class="text-muted mb-4">${langData['content_nothing_hear'] || 'It looks like there’s nothing here, or this page has moved.'}</p>
-                            </div>
-                        `}
-                    `}
+                            ` : `
+                                ${!project_background ? `
+                                    <div class="text-center py-5">
+                                        <div class="mb-4">
+                                            <i class="fa-regular fa-file-lines text-light-emphasis" style="font-size: 64px; opacity: 0.5;"></i>
+                                        </div>
+                                        <h5 class="fw-bold text-dark">${langData['no_content_available'] || 'No content available'}</h5>
+                                        <p class="text-muted mb-0">${langData['content_nothing_hear'] || 'It looks like there’s nothing here.'}</p>
+                                    </div>
+                                ` : '<div class="py-5"></div>'}
+                            `}
+                        </div>
+                    </div>
                 </div>
             `;
             modalBody.html(html);
