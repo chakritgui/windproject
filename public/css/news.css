@@ -157,6 +157,8 @@ body {
     border-radius: 50%;
     margin-top: 8px;
     box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+    flex-shrink: 0; 
+    display: inline-block;
 }
 .news-meta {
     display: flex;
