@@ -49,14 +49,14 @@ async function syncTimezone() {
 async function handlePWANotifications() {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
     if (Notification.permission === 'denied') return;
-    if (sessionStorage.getItem('notification_asked_this_session')) return;
+    if (localStorage.getItem('notification_asked_forever')) return; 
     const registration = await navigator.serviceWorker.ready;
     const sub = await registration.pushManager.getSubscription();
     if (Notification.permission === 'default') {
         showNotificationModal(async () => {
             await requestAndSubscribe(registration);
         }, () => {
-            sessionStorage.setItem('notification_asked_this_session', 'true');
+            localStorage.setItem('notification_asked_forever', 'true');
         });
     } else if (Notification.permission === 'granted' && !sub) {
         await requestAndSubscribe(registration);
@@ -64,7 +64,7 @@ async function handlePWANotifications() {
 }
 async function requestAndSubscribe(registration) {
     try {
-        sessionStorage.setItem('notification_asked_this_session', 'true');
+        localStorage.setItem('notification_asked_forever', 'true'); 
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') return;
         Swal.fire({
