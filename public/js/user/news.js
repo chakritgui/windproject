@@ -45,60 +45,48 @@ function initNews() {
 }
 function renderNews(items) {
     const $container = $('#listView');
-    if (newsPage === 1) {
-        $container.empty();
-        if (!items || items.length === 0) {
-            const emptyHtml = `
-                <div class="empty-state-container animated fadeIn">
-                    <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
-                    <h3 class="empty-title" data-i18n="no_items"></h3>
-                    <p class="empty-subtitle" data-i18n="no_items_subtitle"></p>
-                </div>
-            `;
-            $container.html(emptyHtml);
-            return;
-        }
-    }
+    if (newsPage === 1) $container.empty();
     items.forEach(item => {
         const lang = sessionStorage.getItem('lang') || 'th';
-        const fallback = {
-            'en': item.subject_en || item.subject_lo || item.subject_th,
-            'lo': item.subject_lo || item.subject_th || item.subject_en,
-            'th': item.subject_th || item.subject_lo || item.subject_en
-        };
-        const subject = fallback[lang] || langData['no_title'];
+        const subject = item[`subject_${lang}`] || item.subject_th || item.subject_en || 'No Title';
         let thumbHtml = '';
         if (item.cover_image) {
-            thumbHtml = `<div class="news-thumbnail"><img src="${item.cover_image}" alt="cover"></div>`;
+            thumbHtml = `<div class="news-thumbnail"><img src="${item.cover_image}" alt="news"></div>`;
         } else {
-            thumbHtml = `<div class="news-thumbnail no-image"><img src="${BASE_URL}/public/images/noimage.jpg" alt="cover"></div>`;
+            const colorMap = {
+                'news': { bg: '#EEF2FF', text: '#4F46E5', icon: 'fa-newspaper' },
+                'project': { bg: '#FFF7ED', text: '#EA580C', icon: 'fa-diagram-project' }
+            };
+            const style = colorMap[item.type] || colorMap['news'];
+            thumbHtml = `
+                <div class="news-thumbnail d-flex flex-column align-items-center justify-content-center" 
+                    style="background-color: ${style.bg}; border-right: 4px solid ${style.text}22;">
+                    <i class="fa-solid ${style.icon} mb-2" style="color: ${style.text}; font-size: 2.5rem; opacity: 0.6;"></i>
+                    <span style="color: ${style.text}; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8;">
+                        ${langData[item.type]}
+                    </span>
+                </div>`;
         }
-        let badgeHtml = '';
-        if (parseInt(item.count_attachment) > 0) 
-            badgeHtml += `<span class="badge-tag tag-pdf"><i class="fa-solid fa-file-pdf"></i> <span>${langData['document'] || 'Document'}</span></span>`;
-        if (parseInt(item.count_image) > 0) 
-            badgeHtml += `<span class="badge-tag tag-img"><i class="fa-solid fa-images"></i> <span>${langData['image'] || 'Image'}</span></span>`;
-        if (parseInt(item.count_image360) > 0) 
-            badgeHtml += `<span class="badge-tag tag-vr"><i class="fa-solid fa-vr-cardboard"></i> <span>${langData['vr'] || 'VR'}</span></span>`;
-        const isRead = parseInt(item.is_read) === 1;
-        let typeHtml = '';
-        if(item.type === 'news') {
-            typeHtml = `<span class="badge rounded-pill text-bg-primary"><i class="fa-regular fa-newspaper"></i> <span>${langData['news'] || 'News'}</span></span>`;
-        } else {
-            typeHtml = `<span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project"></i> <span>${langData['project'] || 'Project'}</span></span>`;
-        }
+        const typeBadge = item.type === 'news' 
+            ? `<span class="badge bg-primary-subtle text-primary shadow-sm" data-i18n="news"></span>`
+            : `<span class="badge bg-warning-subtle text-warning shadow-sm" data-i18n="project"></span>`;
         const html = `
-            <a class="news-item" onclick="openContent('${item.content_slug}', 'view')">
+            <a href="javascript:void(0)" class="news-item" onclick="openContent('${item.content_slug}', 'view')">
                 ${thumbHtml}
                 <div class="news-content">
-                    <div class="news-header">
-                        <h6 class="news-title">${subject}</h6>
+                    <div class="mb-2">
+                        ${typeBadge}
                     </div>
+                    <h5 class="news-title">${subject}</h5>
                     <div class="news-meta">
-                        <div class="meta-item">${typeHtml} <span class="small"><i class="fa-regular fa-calendar"></i> ${item.created_at}</span></div>
-                    </div>
-                    <div class="attachment-badges small">
-                        ${badgeHtml}
+                        <div class="meta-left text-muted small">
+                            <i class="fa-regular fa-calendar-check me-1"></i> ${item.created_at}
+                        </div>
+                        <div class="attachment-badges">
+                            ${parseInt(item.count_attachment) > 0 ? '<span class="badge rounded-pill bg-danger-subtle text-danger me-1"><i class="fa-solid fa-paperclip me-1"></i><span data-i18n="document"></span></span>' : ''}
+                            ${parseInt(item.count_image) > 0 ? '<span class="badge rounded-pill bg-info ms-2"><i class="fa-solid fa-images me-1"></i><span data-i18n="image"></span></span>' : ''}
+                            ${parseInt(item.count_image360) > 0 ? '<span class="badge rounded-pill bg-success ms-2"><i class="fa-solid fa-vr-cardboard me-1"></i>VR</span>' : ''}
+                        </div>
                     </div>
                 </div>
             </a>
