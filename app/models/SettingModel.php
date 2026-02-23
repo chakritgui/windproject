@@ -366,16 +366,16 @@ class SettingModel {
                 ]
             ];
             if (file_put_contents($manifestPath, json_encode($manifest, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) === false) {
-                throw new \Exception("ไม่สามารถเขียนไฟล์ manifest.json ได้");
+                throw new \Exception("Cannot write manifest.json");
             }
             $iosMeta = [
                 "apple-mobile-web-app-capable" => $data['webAppCapable'] ?? 'yes',
                 "apple-mobile-web-app-status-bar-style" => $data['statusBarStyle'] ?? 'default'
             ];
             if (file_put_contents($iosMetaPath, json_encode($iosMeta, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) === false) {
-                throw new \Exception("ไม่สามารถเขียนไฟล์ ios_meta.json ได้");
+                throw new \Exception("Cannot write ios_meta.json");
             }
-            return ['status' => true, 'message' => 'บันทึกสำเร็จ'];
+            return ['status' => true, 'message' => 'Success'];
         } catch (\Exception $e) {
             return ['status' => false, 'message' => $e->getMessage()];
         }
@@ -397,9 +397,7 @@ class SettingModel {
             $iosMeta = json_decode(file_get_contents($iosMetaFile), true);
         }
         $fileDate = function ($file) {
-            return file_exists($file)
-                ? date('Y/m/d H:i:s', filemtime($file))
-                : null;
+            return file_exists($file) ? convertTimeZone(date('Y/m/d H:i:s', filemtime($file)), 'Y/m/d H:i:s') : null;
         };
         $data = [
             'name'             => $manifest['name'] ?? '',
