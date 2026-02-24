@@ -54,10 +54,8 @@ async function handlePWANotifications(force = false) {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
     if (Notification.permission === 'denied') return;
     if (!force && localStorage.getItem('notification_asked_forever')) return;
-
     const registration = await navigator.serviceWorker.ready;
     const sub = await registration.pushManager.getSubscription();
-
     if (Notification.permission === 'default') {
         showNotificationModal(async () => {
             await requestAndSubscribe(registration);
@@ -72,19 +70,17 @@ async function handlePWANotifications(force = false) {
         if (typeof checkInitialStatus === 'function') checkInitialStatus();
     }
 }
-
 async function requestAndSubscribe(registration) {
     try {
         localStorage.setItem('notification_asked_forever', 'true');
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') return;
-
         Swal.fire({
             html: `
                 <div class="swal-loading-wrap">
                     <div class="swal-spinner"></div>
                     <div class="swal-loading-title">${langData['processing'] || 'Processing...'}</div>
-                    <div class="swal-loading-sub">Setting up your notifications</div>
+                    <div class="swal-loading-sub">${langData['setting_up_your_notifications'] || 'Setting up your notifications'}</div>
                 </div>
             `,
             allowOutsideClick: false,
@@ -94,22 +90,17 @@ async function requestAndSubscribe(registration) {
                 injectPWAStyles();
             }
         });
-
         if (!VAPID_PUBLIC_KEY) throw new Error("VAPID Public Key is missing");
-
         const subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
         });
-
         const response = await fetch(`${BASE_URL}/api/push.subscribe`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(subscription)
         });
-
         if (!response.ok) throw new Error("Server failed to save subscription");
-
         Swal.fire({
             html: `
                 <div class="swal-result-wrap">
@@ -148,10 +139,8 @@ async function requestAndSubscribe(registration) {
         });
     }
 }
-
 async function showNotificationModal(onAllow, onLater) {
     injectPWAStyles();
-
     const result = await Swal.fire({
         html: `
             <div class="swal-notify-icon-wrap">
@@ -163,7 +152,7 @@ async function showNotificationModal(onAllow, onLater) {
         `,
         showCancelButton: true,
         reverseButtons: true,
-        confirmButtonText: `<i class="fa-solid fa-bell" style="margin-right:6px;"></i>${langData['okay'] || 'Enable'}`,
+        confirmButtonText: `<i class="fa-solid fa-bell" style="margin-right:6px;"></i>${langData['enable'] || 'Enable'}`,
         cancelButtonText: langData['for_later'] || 'Maybe later',
         customClass: {
             popup:         'swal-pwa-popup',
@@ -180,22 +169,18 @@ async function showNotificationModal(onAllow, onLater) {
             popup: 'animate__animated animate__fadeOutUp animate__faster'
         }
     });
-
     if (result.isConfirmed) {
         onAllow();
     } else {
         onLater();
     }
 }
-
 function injectPWAStyles() {
     if (document.getElementById('swal-pwa-styles')) return;
     const style = document.createElement('style');
     style.id = 'swal-pwa-styles';
     style.textContent = `
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
-
-        /* ── Base popup ── */
         .swal-pwa-popup {
             font-family: 'DM Sans', sans-serif !important;
             border-radius: 22px !important;
@@ -205,8 +190,6 @@ function injectPWAStyles() {
             background: #fff !important;
             max-width: 380px !important;
         }
-
-        /* ── Notification modal icon ── */
         .swal-notify-icon-wrap {
             position: relative;
             width: 72px;
@@ -244,7 +227,6 @@ function injectPWAStyles() {
             0%, 100% { box-shadow: 0 0 0 0 rgba(45,125,210,0.18); }
             50%       { box-shadow: 0 0 0 12px rgba(45,125,210,0); }
         }
-
         .swal-notify-title {
             font-size: 20px;
             font-weight: 600;
@@ -257,8 +239,6 @@ function injectPWAStyles() {
             color: #888;
             line-height: 1.65;
         }
-
-        /* ── Buttons ── */
         .swal-pwa-actions {
             margin-top: 28px !important;
             gap: 10px !important;
@@ -298,8 +278,6 @@ function injectPWAStyles() {
         .swal-pwa-btn-cancel:hover {
             background: #ececec !important;
         }
-
-        /* ── Loading state ── */
         .swal-loading-wrap {
             display: flex;
             flex-direction: column;
@@ -328,8 +306,6 @@ function injectPWAStyles() {
             color: #aaa;
             margin-top: -6px;
         }
-
-        /* ── Result state (success / error) ── */
         .swal-result-wrap {
             display: flex;
             flex-direction: column;
@@ -366,8 +342,6 @@ function injectPWAStyles() {
             color: #999;
             line-height: 1.6;
         }
-
-        /* ── Timer bar color override ── */
         .swal2-timer-progress-bar {
             background: rgba(45,125,210,0.45) !important;
         }
