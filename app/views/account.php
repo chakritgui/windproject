@@ -3,7 +3,7 @@
     <div class="profile-card">
         <div class="profile-header">
             <h5 class="profile-title">
-                <i class="fa-solid fa-circle-user me-1"></i><span data-i18n="member_profile"></span>
+                <span data-i18n="member_profile"></span>
             </h5>
             <p class="profile-subtitle mb-0"><span data-i18n="manage_your_personal"></span></p>
         </div>
@@ -31,7 +31,7 @@
             <div class="tab-content" id="profileTabContent">
                 <div class="tab-pane fade show active" id="info" role="tabpanel">
                     <div class="info-section">
-                        <h6 class="section-title"><i class="fa-regular fa-user"></i><span data-i18n="personal_information"></span></h6>
+                        <h6><i class="fa-regular fa-user me-2"></i><span data-i18n="personal_information"></span></h6>
                         <div class="info-row" id="row-firstName">
                             <div class="info-label"><i class="fa-solid fa-user"></i><span data-i18n="firstname"></span></div>
                             <div class="info-value">
@@ -62,7 +62,7 @@
                         </div>
                     </div>
                     <div class="info-section">
-                        <h6 class="section-title"><i class="fa-solid fa-user-shield"></i><span data-i18n="account"></span></h6>
+                        <h6><i class="fa-solid fa-user-shield me-2"></i><span data-i18n="account"></span></h6>
                         <div class="info-row" id="row-username">
                             <div class="info-label"><i class="fa-regular fa-circle-user"></i><span data-i18n="username"></span></div>
                             <div class="info-value">
