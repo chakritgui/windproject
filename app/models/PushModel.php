@@ -55,13 +55,16 @@ class PushModel {
         if (strpos($user_agent, 'Linux')) return 'Linux';
         return 'Unknown';
     }
-    public function disableSubscription($endpoint) {
-        $sql = "UPDATE push_subscriptions SET is_active = 0, updated_at = NOW() WHERE endpoint = :endpoint";
+    public function disableSubscription($endpoint, $userId) {
+        $sql = "UPDATE push_subscriptions SET is_active = 0, updated_at = NOW() WHERE endpoint = :endpoint AND user_id = :user_id";  
         try {
             $stmt = $this->db->prepare($sql); 
-            return $stmt->execute([':endpoint' => $endpoint]);
+            return $stmt->execute([
+                ':endpoint' => $endpoint,
+                ':user_id'  => $userId
+            ]);
         } catch (PDOException $e) {
-            error_log($e->getMessage());
+            error_log("Error disabling subscription: " . $e->getMessage());
             return false;
         }
     }
