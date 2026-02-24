@@ -613,5 +613,9 @@
     "user_not_found": "User not found",
     "invalid_password": "Invalid password",
     "account_restricted": "Account restricted or suspended",
-    "missing_parameters": "Please fill in all required fields"
+    "missing_parameters": "Please fill in all required fields",
+    "disable_notifications": "Disable Notifications?",
+    "you_will_stop_receiving_push_notifications": "You will stop receiving push notifications from this website.",
+    "notifications_disabled": "Notifications Disabled",
+    "you_will_no_longer": "You will no longer receive push notifications."
 }

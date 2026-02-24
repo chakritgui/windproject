@@ -122,6 +122,135 @@ async function showNotificationModal(onAllow, onLater) {
     }
 }
 async function unsubscribeUser() {
+    if (!document.getElementById('swal-unsubscribe-styles')) {
+        const style = document.createElement('style');
+        style.id = 'swal-unsubscribe-styles';
+        style.textContent = `
+            @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+            .swal-unsubscribe-popup {
+                font-family: 'DM Sans', sans-serif !important;
+                border-radius: 20px !important;
+                padding: 36px 32px 28px !important;
+                box-shadow: 0 24px 60px rgba(0,0,0,0.15) !important;
+                border: 1px solid rgba(0,0,0,0.06) !important;
+                background: #fff !important;
+            }
+            .swal-unsubscribe-icon-wrap {
+                width: 68px;
+                height: 68px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #fff0f0, #ffe0e0);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 20px;
+                animation: iconPulse 2s ease-in-out infinite;
+            }
+            .swal-unsubscribe-icon-wrap i {
+                font-size: 26px;
+                color: #e03b3b;
+            }
+            @keyframes iconPulse {
+                0%, 100% { box-shadow: 0 0 0 0 rgba(224,59,59,0.15); }
+                50%       { box-shadow: 0 0 0 10px rgba(224,59,59,0); }
+            }
+            .swal-unsubscribe-title {
+                font-size: 20px !important;
+                font-weight: 600 !important;
+                color: #1a1a1a !important;
+                letter-spacing: -0.3px !important;
+                margin-bottom: 8px !important;
+            }
+            .swal-unsubscribe-body {
+                font-size: 14px;
+                color: #888;
+                line-height: 1.6;
+                margin-top: 4px;
+            }
+            .swal-unsubscribe-actions {
+                margin-top: 28px !important;
+                gap: 10px !important;
+            }
+            .swal-unsubscribe-confirm {
+                background: linear-gradient(135deg, #e03b3b, #c0392b) !important;
+                border-radius: 12px !important;
+                font-family: 'DM Sans', sans-serif !important;
+                font-weight: 500 !important;
+                font-size: 14px !important;
+                padding: 11px 24px !important;
+                box-shadow: 0 4px 14px rgba(192,57,43,0.35) !important;
+                transition: all 0.2s ease !important;
+                border: none !important;
+            }
+            .swal-unsubscribe-confirm:hover {
+                transform: translateY(-1px) !important;
+                box-shadow: 0 6px 18px rgba(192,57,43,0.45) !important;
+            }
+            .swal-unsubscribe-confirm:active {
+                transform: translateY(0) !important;
+            }
+            .swal-unsubscribe-cancel {
+                border-radius: 12px !important;
+                font-family: 'DM Sans', sans-serif !important;
+                font-weight: 500 !important;
+                font-size: 14px !important;
+                padding: 11px 24px !important;
+                background: #f5f5f5 !important;
+                color: #555 !important;
+                border: none !important;
+                transition: background 0.2s ease !important;
+            }
+            .swal-unsubscribe-cancel:hover {
+                background: #ebebeb !important;
+            }
+            .swal-success-popup {
+                font-family: 'DM Sans', sans-serif !important;
+                border-radius: 20px !important;
+                padding: 32px !important;
+                box-shadow: 0 24px 60px rgba(0,0,0,0.12) !important;
+            }
+            .swal-success-title {
+                font-size: 18px !important;
+                font-weight: 600 !important;
+                color: #1a1a1a !important;
+            }
+            .swal-success-text {
+                font-size: 13px !important;
+                color: #888 !important;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    const result = await Swal.fire({
+        html: `
+            <div class="swal-unsubscribe-icon-wrap">
+                <i class="fa-solid fa-bell-slash"></i>
+            </div>
+            <div class="swal-unsubscribe-title">${langData['disable_notifications'] || 'Disable Notifications?'}</div>
+            <div class="swal-unsubscribe-body">
+                ${langData['you_will_stop_receiving_push_notifications'] || 'You will stop receiving push notifications from this website.'}
+            </div>
+        `,
+        showCancelButton: true,
+        confirmButtonText: langData['yes'],
+        cancelButtonText: langData['cancel'],
+        reverseButtons: true,
+        customClass: {
+            popup:   'swal-unsubscribe-popup',
+            actions: 'swal-unsubscribe-actions',
+            confirmButton: 'swal-unsubscribe-confirm',
+            cancelButton:  'swal-unsubscribe-cancel',
+            htmlContainer: 'p-0'
+        },
+        buttonsStyling: false,
+        showClass: {
+            popup: 'animate__animated animate__fadeInDown animate__faster'
+        },
+        hideClass: {
+            popup: 'animate__animated animate__fadeOutUp animate__faster'
+        }
+    });
+    if (!result.isConfirmed) return;
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.getSubscription();
     if (subscription) {
@@ -131,7 +260,19 @@ async function unsubscribeUser() {
             body: JSON.stringify({ endpoint: subscription.endpoint })
         });
         await subscription.unsubscribe();
-        showSuccess(langData['saved_successfully']);
+        Swal.fire({
+            icon: 'success',
+            title: `${langData['notifications_disabled'] || 'Notifications Disabled'}`,
+            text: `${langData['you_will_no_longer'] || 'You will no longer receive push notifications.'}`,
+            timer: 2000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            customClass: {
+                popup: 'swal-success-popup',
+                title: 'swal-success-title',
+                htmlContainer: 'swal-success-text'
+            }
+        });
     }
 }
 function isPWA() {

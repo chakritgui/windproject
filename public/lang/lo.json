@@ -613,5 +613,9 @@
     "user_not_found": "ບໍ່ພົບຊື່ຜູ້ໃຊ້ນີ້ໃນລະບົບ",
     "invalid_password": "ລະຫັດຜ່ານບໍ່ຖືກຕ້ອງ",
     "account_restricted": "ບັນຊີຂອງທ່ານຖືກຈຳກັດສິດ ຫຼື ຖືກລະງັບການໃຊ້ງານ",
-    "missing_parameters": "ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບຖ້ວນ"
+    "missing_parameters": "ກະລຸນາປ້ອນຂໍ້ມູນໃຫ້ຄົບຖ້ວນ",
+    "disable_notifications": "ປິດການແຈ້ງເຕືອນ?",
+    "you_will_stop_receiving_push_notifications": "ທ່ານຈະບໍ່ໄດ້ຮັບການແຈ້ງເຕືອນແບບພຸຊຈາກເວັບໄຊນີ້ອີກຕໍ່ໄປ",
+    "notifications_disabled": "ປິດການແຈ້ງເຕືອນແລ້ວ",
+    "you_will_no_longer": "ທ່ານຈະບໍ່ໄດ້ຮັບການແຈ້ງເຕືອນແບບພຸຊອີກຕໍ່ໄປ"
 }

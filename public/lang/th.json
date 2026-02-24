@@ -613,5 +613,9 @@
     "user_not_found": "ไม่พบชื่อผู้ใช้นี้ในระบบ",
     "invalid_password": "รหัสผ่านไม่ถูกต้อง",
     "account_restricted": "บัญชีของคุณถูกจำกัดสิทธิ์หรือระงับการใช้งาน",
-    "missing_parameters": "กรุณากรอกข้อมูลให้ครบถ้วน"
+    "missing_parameters": "กรุณากรอกข้อมูลให้ครบถ้วน",
+    "disable_notifications": "ปิดการแจ้งเตือน?",
+    "you_will_stop_receiving_push_notifications": "คุณจะไม่ได้รับการแจ้งเตือนแบบพุชจากเว็บไซต์นี้อีกต่อไป",
+    "notifications_disabled": "ปิดการแจ้งเตือนแล้ว",
+    "you_will_no_longer": "คุณจะไม่ได้รับการแจ้งเตือนแบบพุชอีกต่อไป"
 }
