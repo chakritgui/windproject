@@ -617,5 +617,6 @@
     "disable_notifications": "ปิดการแจ้งเตือน?",
     "you_will_stop_receiving_push_notifications": "คุณจะไม่ได้รับการแจ้งเตือนแบบพุชจากเว็บไซต์นี้อีกต่อไป",
     "notifications_disabled": "ปิดการแจ้งเตือนแล้ว",
-    "you_will_no_longer": "คุณจะไม่ได้รับการแจ้งเตือนแบบพุชอีกต่อไป"
+    "you_will_no_longer": "คุณจะไม่ได้รับการแจ้งเตือนแบบพุชอีกต่อไป",
+    "select_all": "เลือกทั้งหมด"
 }

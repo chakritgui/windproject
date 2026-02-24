@@ -617,5 +617,6 @@
     "disable_notifications": "ປິດການແຈ້ງເຕືອນ?",
     "you_will_stop_receiving_push_notifications": "ທ່ານຈະບໍ່ໄດ້ຮັບການແຈ້ງເຕືອນແບບພຸຊຈາກເວັບໄຊນີ້ອີກຕໍ່ໄປ",
     "notifications_disabled": "ປິດການແຈ້ງເຕືອນແລ້ວ",
-    "you_will_no_longer": "ທ່ານຈະບໍ່ໄດ້ຮັບການແຈ້ງເຕືອນແບບພຸຊອີກຕໍ່ໄປ"
+    "you_will_no_longer": "ທ່ານຈະບໍ່ໄດ້ຮັບການແຈ້ງເຕືອນແບບພຸຊອີກຕໍ່ໄປ",
+    "select_all": "ເລືອກທັງໝົດ"
 }

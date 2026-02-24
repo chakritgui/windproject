@@ -584,14 +584,18 @@ function getContentForm(d) {
                     </div>
                     <hr class="my-4">
                     <div class="row mt-3">
+                        <div class="col-12 mb-2">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input switch-item" type="checkbox" id="folder_show_all" ${d.folder_show_admin == 'yes' && d.folder_show_user == 'yes' ? 'checked' : ''}>
+                                <label class="form-check-label fw-bold text-dark" for="folder_show_all">
+                                    <i class="fa-solid fa-check-double me-2 text-dark"></i>
+                                    ${langData['select_all'] || 'Select All'}
+                                </label>
+                            </div>
+                        </div>
                         <div class="col-md-6">
                             <div class="form-check form-switch">
-                                <input 
-                                    class="form-check-input" 
-                                    type="checkbox" 
-                                    id="folder_show_admin"
-                                    ${d.folder_show_admin == 'yes' ? 'checked' : ''}
-                                >
+                                <input class="form-check-input switch-item" type="checkbox" id="folder_show_admin" ${d.folder_show_admin == 'yes' ? 'checked' : ''}>
                                 <label class="form-check-label fw-bold" for="folder_show_admin">
                                     <i class="fa-solid fa-user-shield me-2 text-primary"></i>
                                     ${langData['show_news_admin'] || 'Show in News (Admin)'}
@@ -600,12 +604,7 @@ function getContentForm(d) {
                         </div>
                         <div class="col-md-6">
                             <div class="form-check form-switch">
-                                <input 
-                                    class="form-check-input" 
-                                    type="checkbox" 
-                                    id="folder_show_user"
-                                    ${d.folder_show_user == 'yes' ? 'checked' : ''}
-                                >
+                                <input class="form-check-input switch-item" type="checkbox" id="folder_show_user" ${d.folder_show_user == 'yes' ? 'checked' : ''}>
                                 <label class="form-check-label fw-bold" for="folder_show_user">
                                     <i class="fa-solid fa-users me-2 text-success"></i>
                                     ${langData['show_news_user'] || 'Show in News (User)'}
@@ -633,6 +632,15 @@ function getContentForm(d) {
         </form>
     `;
 }
+$(document).on('change', '#folder_show_all', function() {
+    const isChecked = $(this).is(':checked');
+    $('#folder_show_admin, #folder_show_user').prop('checked', isChecked);
+});
+$(document).on('change', '#folder_show_admin, #folder_show_user', function() {
+    const isAdminChecked = $('#folder_show_admin').is(':checked');
+    const isUserChecked = $('#folder_show_user').is(':checked');
+    $('#folder_show_all').prop('checked', isAdminChecked && isUserChecked);
+});
 $(document).on('click', '.save-content', function () {
     let hasError = [];
     $('.is-invalid').removeClass('is-invalid');

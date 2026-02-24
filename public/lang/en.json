@@ -617,5 +617,6 @@
     "disable_notifications": "Disable Notifications?",
     "you_will_stop_receiving_push_notifications": "You will stop receiving push notifications from this website.",
     "notifications_disabled": "Notifications Disabled",
-    "you_will_no_longer": "You will no longer receive push notifications."
+    "you_will_no_longer": "You will no longer receive push notifications.",
+    "select_all": "Select All"
 }

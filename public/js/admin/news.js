@@ -186,6 +186,9 @@ function initNewsTable() {
 }
 $(document).on("click", ".manage-news", function () {
     const id = $(this).data("id") || "";
+    manageNews(id);
+});
+function manageNews(id) {
     $.post(`${BASE_URL}/api/news.get`, { id }, function(res) {
         if(res.status !== "success") return;
         const d = res.data;
@@ -195,7 +198,10 @@ $(document).on("click", ".manage-news", function () {
         const $modal = $("#windModal");
         const $dialog = $modal.find(".modal-dialog");
         $dialog.removeClass("modal-fullscreen");
-        const modalInstance = new bootstrap.Modal($modal[0]);
+        let modalInstance = bootstrap.Modal.getInstance($modal[0]);
+        if (!modalInstance) {
+            modalInstance = new bootstrap.Modal($modal[0]);
+        }
         $modal.find(".modal-header").html(`
             <h5 class="modal-title">${langData['news_management'] || 'News Management'}</h5>
             <div class="ms-auto">
@@ -238,9 +244,11 @@ $(document).on("click", ".manage-news", function () {
         init360ImagesUpload(d.images360 || []);
         initSummernote();
         togglePublishControls();
-        modalInstance.show();
+        if (!modalInstance._isShown) {
+            modalInstance.show();
+        }
     }, "json");
-});
+}
 function getContentForm(d, publishTime) {
     const isEdit = !!d.id; 
     return `
@@ -297,21 +305,30 @@ function getContentForm(d, publishTime) {
                             ${renderFolderTree(d.folders, d.folder_id)}
                         </div>
                         <div class="row mt-3">
-                            <div class="col-md-6">
+                            <div class="col-12 mb-2">
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="folder_show_admin" ${d.folder_show_admin == 'yes' ? 'checked' : ''}>
-                                    <label class="form-check-label fw-bold" for="folder_show_admin">
-                                        <i class="fa-solid fa-user-shield me-2 text-primary"></i>
-                                        ${langData['show_project_admin'] || 'Show in Project (Admin)'}
+                                    <input class="form-check-input switch-item" type="checkbox" id="folder_show_all" ${d.folder_show_admin == 'yes' && d.folder_show_user == 'yes' ? 'checked' : ''}>
+                                    <label class="form-check-label fw-bold text-dark" for="folder_show_all">
+                                        <i class="fa-solid fa-check-double me-2 text-dark"></i>
+                                        ${langData['select_all'] || 'Select All'}
                                     </label>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" id="folder_show_user" ${d.folder_show_user == 'yes' ? 'checked' : ''}>
+                                    <input class="form-check-input switch-item" type="checkbox" id="folder_show_admin" ${d.folder_show_admin == 'yes' ? 'checked' : ''}>
+                                    <label class="form-check-label fw-bold" for="folder_show_admin">
+                                        <i class="fa-solid fa-user-shield me-2 text-primary"></i>
+                                        ${langData['show_news_admin'] || 'Show in News (Admin)'}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input switch-item" type="checkbox" id="folder_show_user" ${d.folder_show_user == 'yes' ? 'checked' : ''}>
                                     <label class="form-check-label fw-bold" for="folder_show_user">
                                         <i class="fa-solid fa-users me-2 text-success"></i>
-                                        ${langData['show_project_user'] || 'Show in Project (User)'}
+                                        ${langData['show_news_user'] || 'Show in News (User)'}
                                     </label>
                                 </div>
                             </div>
@@ -336,6 +353,15 @@ function getContentForm(d, publishTime) {
             <input type="hidden" id="content_id" value="${d.id ?? ''}">
         </form>`;
 }
+$(document).on('change', '#folder_show_all', function() {
+    const isChecked = $(this).is(':checked');
+    $('#folder_show_admin, #folder_show_user').prop('checked', isChecked);
+});
+$(document).on('change', '#folder_show_admin, #folder_show_user', function() {
+    const isAdminChecked = $('#folder_show_admin').is(':checked');
+    const isUserChecked = $('#folder_show_user').is(':checked');
+    $('#folder_show_all').prop('checked', isAdminChecked && isUserChecked);
+});
 $(document).on('change', 'input[name="use_folder_toggle"]', function() {
     const useFolder = $(this).val() === 'yes';
     if (useFolder) {
@@ -544,7 +570,7 @@ function executeSave() {
             if (res.status === true) {
                 showSuccess(langData['saved_successfully']);
                 initNewsTable();
-                $("#content_id").val(res.content_id)
+                manageNews(res.content_id);
             } else {
                 showError(res.message || 'Error');
             }
