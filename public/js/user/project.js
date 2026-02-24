@@ -158,7 +158,7 @@ function renderView(data, isNewSearch) {
                         <div class="d-flex align-items-center">
                             <div class="folder-icon-box me-3 flex-shrink-0">${iconHtml}</div>
                             <div class="flex-grow-1" style="overflow: hidden; text-overflow: ellipsis;">
-                                <div class="doc-title news-title mb-3">${folder_name} ${badge}</div>
+                                <div class="doc-title news-title">${folder_name} ${badge}</div>
                                 ${isContent ? 
                                     `
                                         <div class="row g-2 align-items-center mt-auto">
