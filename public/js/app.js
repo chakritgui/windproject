@@ -250,7 +250,7 @@ async function unsubscribeUser() {
             popup: 'animate__animated animate__fadeOutUp animate__faster'
         }
     });
-    if (!result.isConfirmed) return;
+    if (!result.isConfirmed) return false;
     const registration = await navigator.serviceWorker.ready;
     const subscription = await registration.pushManager.getSubscription();
     if (subscription) {
@@ -264,7 +264,7 @@ async function unsubscribeUser() {
             icon: 'success',
             title: `${langData['notifications_disabled'] || 'Notifications Disabled'}`,
             text: `${langData['you_will_no_longer'] || 'You will no longer receive push notifications.'}`,
-            timer: 2000,
+            timer: 2500,
             timerProgressBar: true,
             showConfirmButton: false,
             customClass: {
@@ -273,7 +273,9 @@ async function unsubscribeUser() {
                 htmlContainer: 'swal-success-text'
             }
         });
+        return true;
     }
+    return false;
 }
 function isPWA() {
     return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;

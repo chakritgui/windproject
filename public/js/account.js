@@ -435,8 +435,12 @@ document.addEventListener('DOMContentLoaded', () => {
             await handlePWANotifications(true);
             setTimeout(checkInitialStatus, 1000);
         } else {
-            await unsubscribeUser();
-            statusText.innerText = langData['deactivated'];
+            const unsubscribed = await unsubscribeUser();
+            if (!unsubscribed) {
+                pushToggle.checked = true;
+            } else {
+                statusText.innerText = langData['deactivated'];
+            }
         }
     });
     window.checkInitialStatus = checkInitialStatus;
