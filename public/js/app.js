@@ -28,7 +28,7 @@ async function initApp() {
         refreshAllTables();
         if (isPWA() && USER) {
             try {
-                await handlePWANotifications(true);
+                await handlePWANotifications();
             } catch (error) {
                 console.error('PWA Notification Error:', error);
             }
@@ -172,7 +172,6 @@ async function showNotificationModal(onAllow, onLater) {
     if (result.isConfirmed) {
         onAllow();
     } else {
-        localStorage.setItem('notification_asked_forever', 'true');
         onLater();
     }
 }
