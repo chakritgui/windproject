@@ -228,7 +228,6 @@ $('#btnSaveSort').on('click', function () {
         contentType: "application/json",
         success: function (res) {
             Swal.close();
-            alert(res.status);
             if (res.status === true) {
                 $('#btnSaveSort').addClass('d-none');
                 showSuccess(langData['saved_successfully'] || "Sort updated");
