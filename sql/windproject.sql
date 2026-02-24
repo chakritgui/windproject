@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 23, 2026 at 08:22 PM
+-- Generation Time: Feb 24, 2026 at 03:37 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -319,6 +319,7 @@ CREATE TABLE `wp_folder` (
   `level` bigint(20) DEFAULT NULL,
   `parent_id` bigint(20) DEFAULT NULL,
   `content_id` bigint(20) DEFAULT NULL,
+  `folder_order` bigint(20) DEFAULT NULL,
   `status` enum('active','inactive','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
