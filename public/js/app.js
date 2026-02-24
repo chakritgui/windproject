@@ -79,13 +79,25 @@ async function handlePWANotifications(force = false) {
 async function requestAndSubscribe(registration) {
     try {
         localStorage.setItem('notification_asked_forever', 'true');
-        await registration.update();
-        const oldSub = await registration.pushManager.getSubscription();
-        if (oldSub) {
-            await oldSub.unsubscribe();
+        let sub = await registration.pushManager.getSubscription();
+        if (sub) {
+            console.log("Old subscription found, forcing removal...");
+            const oldEndpoint = sub.endpoint;
+            await sub.unsubscribe();
+            try {
+                await fetch(`${BASE_URL}/api/push.unsubscribe`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ endpoint: oldEndpoint })
+                });
+            } catch (e) { console.warn("Server unsubscription silent fail", e); }
         }
+        await registration.update();
+
         const permission = await Notification.requestPermission();
-        if (permission !== 'granted') return;
+        if (permission !== 'granted') {
+            throw new Error(langData['permission_denied'] || "Permission not granted");
+        }
         Swal.fire({
             html: `
                 <div class="swal-loading-wrap">
@@ -97,19 +109,18 @@ async function requestAndSubscribe(registration) {
             allowOutsideClick: false,
             showConfirmButton: false,
             customClass: { popup: 'swal-pwa-popup' },
-            didOpen: () => {
-                injectPWAStyles();
-            }
+            didOpen: () => { injectPWAStyles(); }
         });
         if (!VAPID_PUBLIC_KEY) throw new Error("VAPID Public Key is missing");
-        const subscription = await registration.pushManager.subscribe({
+        const newSubscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
         });
+        console.log("New Subscription generated:", newSubscription.endpoint);
         const response = await fetch(`${BASE_URL}/api/push.subscribe`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(subscription)
+            body: JSON.stringify(newSubscription)
         });
         if (!response.ok) throw new Error("Server failed to save subscription");
         Swal.fire({
@@ -127,7 +138,6 @@ async function requestAndSubscribe(registration) {
             showConfirmButton: false,
             customClass: { popup: 'swal-pwa-popup' }
         });
-
     } catch (error) {
         console.error("Push Subscription Error:", error);
         Swal.fire({
