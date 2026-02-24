@@ -140,7 +140,7 @@ function renderView(data, isNewSearch) {
         }
         const iconHtml = isContent
             ? (item.cover 
-                ? `<img src="${BASE_URL}/${item.cover}" class="rounded-2" style="width:100%;height:100%;object-fit:cover;">`
+                ? `<img src="${BASE_URL}/${item.cover}" class="rounded-2" style="width:100%;height:100%;object-fit:cover;" loading="lazy">`
                 : `<i class="fa-regular fa-newspaper text-primary fa-3x"></i>`)
             : `<i class="fa-solid fa-folder-open fa-3x"></i>`;
         let typeHtml = '';

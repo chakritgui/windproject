@@ -355,7 +355,7 @@ function initImagesUpload(existingImages = []) {
             <div class="col-4 col-md-3 col-lg-2" data-index="${index}">
                 <div class="card">
                     <div class="position-relative">
-                        <img src="${img.preview || img.url}" class="card-img-top" style="height: 100px; object-fit: contain;">
+                        <img src="${img.preview || img.url}" class="card-img-top" style="height: 100px; object-fit: contain;" loading="lazy">
                         <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" onclick="removeImage(${index})"><i class="fa-solid fa-x"></i></button>
                     </div>
                     <div class="card-body p-2">
@@ -445,7 +445,7 @@ function init360ImagesUpload(existing360Images = []) {
             <div class="col-4 col-md-3 col-lg-2" data-index="${index}">
                 <div class="card border-info">
                     <div class="position-relative">
-                        <img src="${img.preview || img.url}" class="card-img-top" style="height: 100px; object-fit: contain;">
+                        <img src="${img.preview || img.url}" class="card-img-top" style="height: 100px; object-fit: contain;" loading="lazy">
                         <div class="position-absolute top-0 start-0 m-1">
                             <span class="badge bg-info">360°</span>
                         </div>
@@ -615,8 +615,8 @@ function renderCover(d, type = '') {
             <input type="file" id="cover" accept="image/*" hidden>
             <div id="coverPreviewWrapper" class="h-100 d-flex align-items-center justify-content-center">
                 ${d.cover 
-                    ? `<img id="coverPreview" src="${BASE_URL}/${d.cover}" class="img-fluid rounded shadow-sm" style="max-height:150px;">`
-                    : `<img id="coverPreview" class="img-fluid rounded shadow-sm d-none" style="max-height:150px;">`
+                    ? `<img id="coverPreview" src="${BASE_URL}/${d.cover}" class="img-fluid rounded shadow-sm" style="max-height:150px;" loading="lazy">`
+                    : `<img id="coverPreview" class="img-fluid rounded shadow-sm d-none" style="max-height:150px;" loading="lazy">`
                 }
             </div>
             <div id="coverDropLabel" class="${d.cover ? 'd-none' : ''}">

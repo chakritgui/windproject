@@ -25,7 +25,7 @@ function initNewsTable() {
             render: (data, type, row) => {
                 return `${row.cover_image ? `
                     <div class="news-cover-wrapper mx-auto">
-                        <img src="${BASE_URL}/${row.cover_image}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';">
+                        <img src="${BASE_URL}/${row.cover_image}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';" loading="lazy">
                     </div>
                     ` : `
                         <div class="folder-icon-box mx-auto">

@@ -120,7 +120,7 @@ function renderTable(data, isNewSearch) {
                     <div style="width: 50px; height: 50px; line-height: 50px; overflow: hidden; margin: 0 auto; border-radius: 4px; border: 1px solid #eee;">
                     ${(item.type === 'content') ? `
                         ${item.cover ? 
-                            `<img src="${BASE_URL}/${item.cover}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';">` : 
+                            `<img src="${BASE_URL}/${item.cover}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';" loading="lazy">` : 
                             `<i class="fa-solid ${icon} fa-3x"></i>`
                         }
                     ` : `

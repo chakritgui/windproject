@@ -16,7 +16,7 @@ function initShortcut() {
                 $('#appleWebAppCapable').val(d.webAppCapable || 'yes');
                 if (d.iosIcon && d.iosIcon.path) {
                     $('#iosIconPreview').html(
-                        `<img src="${BASE_URL}/public/${d.iosIcon.path}?v=${Date.now()}" alt="iOS Icon">`
+                        `<img src="${BASE_URL}/public/${d.iosIcon.path}?v=${Date.now()}" alt="iOS Icon" loading="lazy">`
                     );
                     $("#iosIcon").removeClass("obj-required");
                 }
@@ -28,7 +28,7 @@ function initShortcut() {
                 $('#orientation').val(d.orientation || 'any');
                 if (d.androidIcon && d.androidIcon.path) {
                     $('#androidIconPreview').html(
-                        `<img src="${BASE_URL}/public/${d.androidIcon.path}?v=${Date.now()}" alt="Android Icon">`
+                        `<img src="${BASE_URL}/public/${d.androidIcon.path}?v=${Date.now()}" alt="Android Icon" loading="lazy">`
                     );
                     $("#androidIcon").removeClass("obj-required");
                 }
@@ -70,7 +70,7 @@ function previewIcon(event, previewId) {
         const reader = new FileReader();
         reader.onload = function(e) {
             const preview = document.getElementById(previewId);
-            preview.innerHTML = `<img src="${e.target.result}" alt="Icon preview">`;
+            preview.innerHTML = `<img src="${e.target.result}" alt="Icon preview" loading="lazy">`;
         };
         reader.readAsDataURL(file);
     }

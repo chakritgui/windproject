@@ -10,7 +10,7 @@ function openContent(slugFromParam, modeFromParam) {
     const $dialog = $modal.find(".modal-dialog");
     $dialog.addClass("modal-fullscreen");
     $modal.find(".modal-footer").html(`
-        <div class="d-flex justify-content-center align-items-center w-100"><img src="${BASE_URL}/public/images/iwind.png" alt="wind" class="footer-logo me-2">${footer}</div>
+        <div class="d-flex justify-content-center align-items-center w-100"><img src="${BASE_URL}/public/images/iwind.png" alt="wind" class="footer-logo me-2" loading="lazy">${footer}</div>
     `);
     const modalBody = $modal.find(".modal-body");
     modalBody.html(`
@@ -85,7 +85,7 @@ function renderContent(data) {
     if (data.cover && data.cover_display === 'yes') {
         $('#contentCover').html(`
             <div class="position-relative mb-4 overflow-hidden shadow-sm rounded-4">
-                <img src="${BASE_URL}/${data.cover}" class="img-fluid w-100 object-fit-cover" style="max-height: 400px; min-height: 275px;">
+                <img src="${BASE_URL}/${data.cover}" class="img-fluid w-100 object-fit-cover" style="max-height: 400px; min-height: 275px;" loading="lazy">
             </div>
         `);
     }

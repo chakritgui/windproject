@@ -443,7 +443,7 @@ async function openPoles(poleId) {
                             ${(data.content_id) ? `
                                 ${data.content?.cover && data.content?.cover_display === 'yes' ? `
                                     <div class="position-relative mb-4 overflow-hidden rounded-3 shadow-sm">
-                                        <img src="${fullBaseUrl}/${data.content.cover}" class="w-100 h-100 object-fit-cover" alt="cover" style="max-height: 275px; min-height: 275px;">
+                                        <img src="${fullBaseUrl}/${data.content.cover}" class="w-100 h-100 object-fit-cover" alt="cover" style="max-height: 275px; min-height: 275px;" loading="lazy">
                                     </div>
                                 ` : ''}
                                 <article class="px-2">
@@ -517,7 +517,7 @@ function renderMultimedia(content, lang, baseUrl) {
                     <div class="col-4 col-md-2 col-lg-2">
                         <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 vr-card cursor-pointer" onclick="openVRModal('${baseUrl}/${vr.url}')">
                             <div class="position-relative h-100" style="max-height: 100px;">
-                                <img src="${baseUrl}/${vr.url}" class="w-100 h-100 object-fit-cover">
+                                <img src="${baseUrl}/${vr.url}" class="w-100 h-100 object-fit-cover" loading="lazy">
                                 <div class="position-absolute top-0 start-0 m-2">
                                     <span class="badge rounded-pill bg-dark bg-opacity-75 fw-light">
                                         <i class="fa-solid fa-rotate me-1 fa-spin"></i> 360°

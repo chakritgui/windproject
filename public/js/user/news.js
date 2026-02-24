@@ -51,7 +51,7 @@ function renderNews(items) {
         const subject = item[`subject_${lang}`] || item.subject_th || item.subject_en || 'No Title';
         let thumbHtml = '';
         if (item.cover_image) {
-            thumbHtml = `<div class="news-thumbnail"><img src="${item.cover_image}" alt="news"></div>`;
+            thumbHtml = `<div class="news-thumbnail"><img src="${item.cover_image}" alt="news" loading="lazy"></div>`;
         } else {
             const colorMap = {
                 'news': { bg: '#EEF2FF', text: '#4F46E5', icon: 'fa-newspaper' },

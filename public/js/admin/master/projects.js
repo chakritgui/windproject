@@ -176,8 +176,8 @@ $(document).on('click', '.manage-background', function() {
                     <input type="file" id="cover" accept="image/*" hidden>
                     <div id="coverPreviewWrapper" class="h-100 d-flex align-items-center justify-content-center">
                         ${bgData.project_background 
-                            ? `<img id="coverPreview" src="${BASE_URL}/${bgData.project_background}" class="img-fluid rounded shadow-sm" style="max-height:150px;">`
-                            : `<img id="coverPreview" class="img-fluid rounded shadow-sm d-none" style="max-height:150px;">`
+                            ? `<img id="coverPreview" src="${BASE_URL}/${bgData.project_background}" class="img-fluid rounded shadow-sm" style="max-height:150px;" loading="lazy">`
+                            : `<img id="coverPreview" class="img-fluid rounded shadow-sm d-none" style="max-height:150px;" loading="lazy">`
                         }
                     </div>
                     <div id="coverDropLabel" class="${bgData.project_background ? 'd-none' : ''}">

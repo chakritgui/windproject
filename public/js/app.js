@@ -256,7 +256,7 @@ function buildLanguageMenu(langs) {
         const item = $(`
             <li>
                 <a class="dropdown-item" href="javascript:void(0)" data-value="${lang}">
-                    <img src="${BASE_URL}/public/flags/${info.flag}.png" width="15" class="me-2">
+                    <img src="${BASE_URL}/public/flags/${info.flag}.png" width="15" class="me-2" loading="lazy">
                     ${info.full}
                 </a>
             </li>
@@ -310,7 +310,7 @@ function initAutoLanguageObserver() {
 function updateDropdownLabel(lang) {
     const info = langInfo[lang] || langInfo.en;
     $('.dropdown-language .dropdown-toggle').html(`
-        <img src="${BASE_URL}/public/flags/${info.flag}.png" width="15" class="me-1">
+        <img src="${BASE_URL}/public/flags/${info.flag}.png" width="15" class="me-1" loading="lazy">
         <span class="d-none d-md-inline">${info.label}</span>
     `);
 }

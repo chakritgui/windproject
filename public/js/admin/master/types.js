@@ -26,10 +26,10 @@ function initTypesTable() {
             searchable: false,
             render: function(data){
                 if (!data) {
-                    return `<img src="${BASE_URL}/public/images/noimage.jpg" style="height:60px; border-radius:6px; object-fit:cover;">`;
+                    return `<img src="${BASE_URL}/public/images/noimage.jpg" style="height:60px; border-radius:6px; object-fit:cover;" loading="lazy">`;
                 }
                 return `
-                    <img src="${BASE_URL}/${data}" style="height:60px; border-radius:6px; object-fit:cover;">
+                    <img src="${BASE_URL}/${data}" style="height:60px; border-radius:6px; object-fit:cover;" loading="lazy">
                 `;
             }
         },{ 
