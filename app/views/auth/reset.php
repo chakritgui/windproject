@@ -20,10 +20,9 @@
                             </span>
                         </div>
                         <ul id="pw-rules" class="list-unstyled rules-container">
-                            <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_len" disabled><span data-i18n="pw_line1"></span></li>
-                            <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_only" disabled><span data-i18n="pw_line2"></span></li>
-                            <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_upper" disabled><span data-i18n="pw_line3"></span></li>
-                            <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_lower" disabled><span data-i18n="pw_line4"></span></li>
+                            <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_len" disabled><span data-i18n="limit_5_10_characters"></span></li>
+                            <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_only" disabled><span data-i18n="letters_and_number_only"></span></li>
+                            <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_upper" disabled><span data-i18n="at_least_1_uppercase_letter"></span></li>
                         </ul>
                     </div>
                     <div class="w-100 mb-4 text-start">

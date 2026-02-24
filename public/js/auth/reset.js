@@ -19,10 +19,9 @@ $(document).on('click', '#togglePasswordNew, #togglePasswordConfirm', function (
 });
 $(document).on('keyup', '#new_password', function () {
     let pw = $(this).val();
-    $('#pw_len').prop('checked', pw.length >= 4 && pw.length <= 20);
-    $('#pw_only').prop('checked', /^[A-Za-z0-9@_\-\.&!+]+$/.test(pw));
+    $('#pw_len').prop('checked', pw.length >= 5 && pw.length <= 10);
+    $('#pw_only').prop('checked', /^[A-Za-z0-9]+$/.test(pw));
     $('#pw_upper').prop('checked', /[A-Z]/.test(pw));
-    $('#pw_lower').prop('checked', /[a-z]/.test(pw));
 });
 $(document).on('click', '.btn-reset-submit', function() {
     const newPassword = $("#new_password").val();

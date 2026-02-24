@@ -271,10 +271,10 @@ $(document).on('click', '.manage-member', function() {
                             </div>
                             <ul id="user-rules" class="mt-2 list-unstyled">
                                 <li><input type="checkbox" class="form-check-input me-1 pwc" id="user_len" disabled>
-                                    <span>${langData['user_line1'] || "5–10 Characters"}</span>
+                                    <span>${langData['limit_5_10_characters'] || "5–10 Characters"}</span>
                                 </li>
                                 <li><input type="checkbox" class="form-check-input me-1 pwc" id="user_only" disabled>
-                                    <span>${langData['user_line2'] || "Letters and numbers only."}</span>
+                                    <span>${langData['letters_and_number_only'] || "Letters and numbers only."}</span>
                                 </li>
                             </ul>
                         </div>
@@ -289,16 +289,13 @@ $(document).on('click', '.manage-member', function() {
                             </div>
                             <ul id="pw-rules" class="mt-2 list-unstyled">
                                 <li><input type="checkbox" class="form-check-input me-1 pwc" id="pw_len" disabled>
-                                    <span>${langData['pw_line1'] || "4–20 Characters"}</span>
-                                </li>
-                                <li><input type="checkbox" class="form-check-input me-1 pwc" id="pw_only" disabled>
-                                    <span>${langData['pw_line2'] || "English letters or numbers only"}</span>
+                                    <span>${langData['limit_5_10_characters'] || "5–10 Characters"}</span>
                                 </li>
                                 <li><input type="checkbox" class="form-check-input me-1 pwc" id="pw_upper" disabled>
-                                    <span>${langData['pw_line3'] || "At least 1 uppercase letter"}</span>
+                                    <span>${langData['at_least_1_uppercase_letter'] || "At least 1 uppercase letter"}</span>
                                 </li>
-                                <li><input type="checkbox" class="form-check-input me-1 pwc" id="pw_lower" disabled>
-                                    <span>${langData['pw_line4'] || "t least 1 lowercase letter"}</span>
+                                <li><input type="checkbox" class="form-check-input me-1 pwc" id="pw_only" disabled>
+                                    <span>${langData['letters_and_number_only'] || "Letters and numbers only."}</span>
                                 </li>
                             </ul>
                         </div>
@@ -363,10 +360,9 @@ $(document).on('keyup', '#username_', function () {
 });
 function verifyAuth(key, type){
     if(type === 'password'){ 
-        $('#pw_len').prop('checked', key.length >= 4 && key.length <= 20);
-        $('#pw_only').prop('checked', /^[A-Za-z0-9@_\-\.&!+]+$/.test(key));
+        $('#pw_len').prop('checked', key.length >= 5 && key.length <= 10);
+        $('#pw_only').prop('checked', /^[A-Za-z0-9]+$/.test(key));
         $('#pw_upper').prop('checked', /[A-Z]/.test(key));
-        $('#pw_lower').prop('checked', /[a-z]/.test(key));
     } else {
         $('#user_len').prop('checked', key.length >= 5 && key.length <= 10);
         $('#user_only').prop('checked', /^[A-Za-z0-9]+$/.test(key));
@@ -374,11 +370,10 @@ function verifyAuth(key, type){
 }
 function validPassword(pw){
     return (
-        pw.length >= 4 &&
-        pw.length <= 20 &&
-        /^[A-Za-z0-9@_\-\.&!+]+$/.test(pw) &&
-        /[A-Z]/.test(pw) &&
-        /[a-z]/.test(pw)
+        pw.length >= 5 &&
+        pw.length <= 10 &&
+        /^[A-Za-z0-9]+$/.test(pw) &&
+        /[A-Z]/.test(pw)
     );
 }
 function validUsername(u){
@@ -826,10 +821,9 @@ function initRequestTable() {
 }
 $(document).on('keyup', '#new_password', function () {
     let pw = $(this).val();
-    $('#pw_lens').prop('checked', pw.length >= 4 && pw.length <= 20);
-    $('#pw_onlys').prop('checked', /^[A-Za-z0-9@_\-\.&!+]+$/.test(pw));
+    $('#pw_lens').prop('checked', pw.length >= 5 && pw.length <= 10);
+    $('#pw_onlys').prop('checked', /^[A-Za-z0-9]+$/.test(key));
     $('#pw_uppers').prop('checked', /[A-Z]/.test(pw));
-    $('#pw_lowers').prop('checked', /[a-z]/.test(pw));
 });
 
 $(document).on('click', '#togglePasswordNew', function () {
@@ -862,10 +856,9 @@ $(document).on('click', '.manage-request', function () {
                 <div class="p-3 bg-light rounded shadow-sm">
                     <small class="text-muted d-block mb-2">เงื่อนไขรหัสผ่าน:</small>
                     <ul id="pw-rules" class="list-unstyled mb-0">
-                        <li class="mb-1"><input type="checkbox" class="form-check-input me-2" id="pw_lens" disabled> <small data-i18n="pw_line1"></small></li>
-                        <li class="mb-1"><input type="checkbox" class="form-check-input me-2" id="pw_onlys" disabled> <small data-i18n="pw_line2"></small></li>
-                        <li class="mb-1"><input type="checkbox" class="form-check-input me-2" id="pw_uppers" disabled> <small data-i18n="pw_line3"></small></li>
-                        <li class="mb-0"><input type="checkbox" class="form-check-input me-2" id="pw_lowers" disabled> <small data-i18n="pw_line4"></small></li>
+                        <li class="mb-1"><input type="checkbox" class="form-check-input me-2" id="pw_lens" disabled> <small data-i18n="limit_5_10_characters"></small></li>
+                        <li class="mb-1"><input type="checkbox" class="form-check-input me-2" id="pw_onlys" disabled> <small data-i18n="letters_and_number_only"></small></li>
+                        <li class="mb-1"><input type="checkbox" class="form-check-input me-2" id="pw_uppers" disabled> <small data-i18n="at_least_1_uppercase_letter"></small></li>
                     </ul>
                 </div>
                 <hr class="my-4">

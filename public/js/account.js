@@ -30,17 +30,15 @@ const fieldConfig = {
     username: {
         labelKey: 'username',
         type: 'text',
-        validate: (value) => /^[A-Za-z0-9]{8,50}$/.test(value)
+        validate: (value) => /^[A-Za-z0-9]{5,10}$/.test(value)
     },
     password: {
         labelKey: 'password',
         type: 'password',
         validate: (value) => {
-            const isLen = value.length >= 4 && value.length <= 20;
-            const isSafe = /^[A-Za-z0-9@_\-\.&!+]+$/.test(value);
+            const isSafe = /^[A-Za-z0-9]{5,10}$/.test(value);
             const hasUpper = /[A-Z]/.test(value);
-            const hasLower = /[a-z]/.test(value);
-            return isLen && isSafe && hasUpper && hasLower;
+            return isLen && isSafe && hasUpper;
         }
     }
 };
@@ -128,16 +126,15 @@ function editField(fieldName) {
     if (fieldName === 'username') {
         editHTML += `
             <ul id="username-rules" class="list-unstyled rules-container">
-                <li><input type="checkbox" class="form-check-input me-2 pwc" id="un_len" disabled><span data-i18n="user_line1"></span></li>
-                <li><input type="checkbox" class="form-check-input me-2 pwc" id="un_char" disabled><span data-i18n="user_line2"></span></li>
+                <li><input type="checkbox" class="form-check-input me-2 pwc" id="un_len" disabled><span data-i18n="limit_5_10_characters"></span></li>
+                <li><input type="checkbox" class="form-check-input me-2 pwc" id="un_char" disabled><span data-i18n="letters_and_number_only"></span></li>
             </ul>`;
     } else if (fieldName === 'password') {
         editHTML += `
             <ul id="pw-rules" class="list-unstyled rules-container">
-                <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_len" disabled><span data-i18n="pw_line1"></span></li>
-                <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_only" disabled><span data-i18n="pw_line2"></span></li>
-                <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_upper" disabled><span data-i18n="pw_line3"></span></li>
-                <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_lower" disabled><span data-i18n="pw_line4"></span></li>
+                <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_len" disabled><span data-i18n="limit_5_10_characters"></span></li>
+                <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_only" disabled><span data-i18n="letters_and_number_only"></span></li>
+                <li><input type="checkbox" class="form-check-input me-2 pwc" id="pw_upper" disabled><span data-i18n="at_least_1_uppercase_letter"></span></li>
             </ul>`;
     }
     editHTML += `</div>`;
@@ -159,10 +156,9 @@ function validateUsername(input) {
 }
 $(document).on('keyup', '#edit-password', function () {
     let pw = $(this).val();
-    $('#pw_len').prop('checked', pw.length >= 4 && pw.length <= 20);
-    $('#pw_only').prop('checked', /^[A-Za-z0-9@_\-\.&!+]+$/.test(pw));
+    $('#pw_len').prop('checked', pw.length >= 5 && pw.length <= 10);
+    $('#pw_only').prop('checked', /^[A-Za-z0-9]+$/.test(pw));
     $('#pw_upper').prop('checked', /[A-Z]/.test(pw));
-    $('#pw_lower').prop('checked', /[a-z]/.test(pw));
 });
 function togglePasswordVisibility(fieldName) {
     const input = document.getElementById(`edit-${fieldName}`);
