@@ -475,18 +475,33 @@ async function openPoles(poleId) {
             `;
             modalBody.html(html);
             modalTitle.text(`${data.poles_code}`);
-            $(".article-content").find('img').each(function() {
+            $(".article-content").find('img').each(function () {
                 const $img = $(this);
-                if (!$img.parent('a').length) {
-                    const imgSrc = $img.attr('src');
-                    if (!imgSrc) return;
-                    $img.wrap(`<a href="${imgSrc}" data-fancybox="content-images" class="content-img-link"></a>`);
-                    $img.css({
-                        cursor: 'zoom-in',
-                        transition: 'opacity 0.2s'
-                    }).addClass('hover-opacity');
+                const imgSrc = $img.attr('src');
+                if (!imgSrc) return;
+                $img.removeAttr('width height');
+                let style = $img.attr('style');
+                if (style) {
+                    style = style
+                        .replace(/width\s*:\s*[^;]+;?/gi, '')
+                        .replace(/height\s*:\s*[^;]+;?/gi, '');
+                    $img.attr('style', style.trim());
+                }
+                if (!$img.attr('loading')) {
                     $img.attr('loading', 'lazy');
                 }
+                if (!$img.parent('a').length) {
+                    $img.wrap(`
+                        <a href="${imgSrc}"
+                        data-fancybox="content-images"
+                        class="content-img-link">
+                        </a>
+                    `);
+                }
+                $img.css({
+                    cursor: 'zoom-in',
+                    transition: 'opacity 0.2s'
+                }).addClass('hover-opacity');
             });
             if (typeof Fancybox !== 'undefined') {
                 Fancybox.bind('[data-fancybox]', {

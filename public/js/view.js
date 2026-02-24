@@ -96,11 +96,22 @@ function renderContent(data) {
 function setupFancybox() {
     $('#contentBody img').each(function() {
         const $img = $(this);
+        $img.removeAttr('width height');
+        let style = $img.attr('style');
+        if (style) {
+            style = style
+                .replace(/width\s*:\s*[^;]+;?/gi, '')
+                .replace(/height\s*:\s*[^;]+;?/gi, '');
+            $img.attr('style', style);
+        }
         if (!$img.parent('a').length) {
             $img.wrap(`<a href="${$img.attr('src')}" data-fancybox="content-images" class="content-img-link"></a>`);
-            $img.css({ 'cursor': 'zoom-in', 'transition': 'opacity 0.2s' }).addClass('hover-opacity');
-            $img.attr("loading", "lazy");
         }
+        $img.css({
+            cursor: 'zoom-in',
+            transition: 'opacity 0.2s'
+        }).addClass('hover-opacity');
+        $img.attr("loading", "lazy");
     });
     if (typeof Fancybox !== 'undefined') {
         Fancybox.bind('[data-fancybox]', {
