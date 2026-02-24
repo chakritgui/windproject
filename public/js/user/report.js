@@ -149,13 +149,13 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                             <label class="form-label required">
                                 <i class="fas fa-calendar-day me-2"></i><span data-i18n="startDate"></span>
                             </label>
-                            <input type="text" class="form-control obj-required" id="startDate" value="${data.min_datetime}">
+                            <input type="text" class="form-control obj-required" id="startDate" value="${data.min_datetime}" autocomplete="off">
                         </div>
                         <div class="col-md-4 col-lg-4 mb-3">
                             <label class="form-label required">
                                 <i class="fas fa-calendar-day me-2"></i><span data-i18n="endDate"></span>
                             </label>
-                            <input type="text" class="form-control obj-required" id="endDate" value="${data.max_datetime}">
+                            <input type="text" class="form-control obj-required" id="endDate" value="${data.max_datetime}" autocomplete="off">
                         </div>
                         <div class="col-md-4 col-lg-4 mb-3">
                             <label class="form-label required">
@@ -253,6 +253,38 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
         let maxVal = data.max_datetime_val ? new Date(data.max_datetime_val) : null;
         initDatePicker('#startDate', minVal, maxVal);
         initDatePicker('#endDate', minVal, maxVal);
+        $('#startDate, #endDate').on('blur', function() {
+            const $input = $(this);
+            let val = $input.val();
+            if (!val) return;
+            let parts = val.split('/');
+            let selectedDate = new Date(parts[2], parts[1] - 1, parts[0]);
+            if (isNaN(selectedDate.getTime()) || parts.length !== 3) {
+                $input.val(''); 
+                return;
+            }
+            if (minVal && selectedDate < minVal) {
+                selectedDate = new Date(minVal);
+            } else if (maxVal && selectedDate > maxVal) {
+                selectedDate = new Date(maxVal);
+            }
+            const startVal = $('#startDate').val().split('/');
+            const endVal = $('#endDate').val().split('/');
+            let startDate = new Date(startVal[2], startVal[1] - 1, startVal[0]);
+            let endDate = new Date(endVal[2], endVal[1] - 1, endVal[0]);
+            if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+                if (startDate > endDate) {
+                    selectedDate = ($input.attr('id') === 'startDate') ? endDate : startDate;
+                }
+            }
+            $input.val(formatThaiDate(selectedDate));
+        });
+        function formatThaiDate(date) {
+            let day = ("0" + date.getDate()).slice(-2);
+            let month = ("0" + (date.getMonth() + 1)).slice(-2);
+            let year = date.getFullYear();
+            return day + '/' + month + '/' + year;
+        }
         initSelect2Remote('#heightSelect', `${BASE_URL}/api/level.get`, { poles_id: poles_id });
         $('#poleDetailModal .modal-footer').html(`
             <button class="btn btn-primary me-2" onclick="renderReport(${poles_id}, '${type}')" data-i18n="generate_report">${langData['generate_report'] || 'Generate Report'}</button>
