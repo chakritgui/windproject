@@ -172,6 +172,7 @@ async function showNotificationModal(onAllow, onLater) {
     if (result.isConfirmed) {
         onAllow();
     } else {
+        localStorage.setItem('notification_asked_forever', 'true');
         onLater();
     }
 }
