@@ -111,7 +111,7 @@ async function requestAndSubscribe(registration) {
                     <div class="swal-result-body">${langData['you_will_receive_notifications'] || 'You\'ll now receive push notifications.'}</div>
                 </div>
             `,
-            timer: 2200,
+            timer: 2500, 
             timerProgressBar: true,
             showConfirmButton: false,
             customClass: { popup: 'swal-pwa-popup' }
