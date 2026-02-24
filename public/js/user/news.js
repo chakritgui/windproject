@@ -44,6 +44,16 @@ function initNews() {
     });
 }
 function renderNews(items) {
+    if (!items.length) {
+        $('#listView').html(`
+            <div class="empty-state-container animated fadeIn">
+                <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
+                <h3 class="empty-title" data-i18n="no_items"></h3>
+                <p class="empty-subtitle" data-i18n="no_items_subtitle"></p>
+            </div>
+        `);
+        return;
+    }
     const $container = $('#listView');
     if (newsPage === 1) $container.empty();
     items.forEach(item => {
