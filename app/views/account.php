@@ -2,9 +2,9 @@
 <div class="container py-5 mt-5 profile-container">
     <div class="profile-card">
         <div class="profile-header">
-            <h1 class="profile-title">
-                <i class="fa-solid fa-circle-user me-2"></i><span data-i18n="member_profile"></span>
-            </h1>
+            <h5 class="profile-title">
+                <i class="fa-solid fa-circle-user me-1"></i><span data-i18n="member_profile"></span>
+            </h5>
             <p class="profile-subtitle mb-0"><span data-i18n="manage_your_personal"></span></p>
         </div>
         <div class="profile-body">
