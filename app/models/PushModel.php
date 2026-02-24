@@ -56,6 +56,7 @@ class PushModel {
         return 'Unknown';
     }
     public function disableSubscription($endpoint, $userId) {
+        $userId = $_SESSION['user']['id'];
         $sql = "UPDATE push_subscriptions SET is_active = 0, updated_at = NOW() WHERE endpoint = :endpoint AND user_id = :user_id";  
         try {
             $stmt = $this->db->prepare($sql); 
