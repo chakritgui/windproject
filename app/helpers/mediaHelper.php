@@ -293,29 +293,24 @@ class MediaHelper {
         $domain = rtrim($this->configs['DOMAIN_NAME'], '/');
         if ($target === 'document') {
             $stmt = $this->db->prepare("SELECT d.document_name, d.document_size,
-                    p.project_name, c.contract_name, t.type_name,  i.installations_name, pl.poles_code
-                FROM wp_documents d
-                LEFT JOIN wp_project p ON p.project_id = d.project_id
-                LEFT JOIN wp_contract c ON c.contract_id = d.contract_id
-                LEFT JOIN wp_type t ON t.type_id = d.type_id
-                LEFT JOIN wp_installations i on i.installations_id = d.installations_id
-                LEFT JOIN wp_poles pl on pl.poles_id = d.poles_id
-                WHERE d.document_id = ?
+                        p.project_name, c.contract_name, t.type_name, i.installations_name, pl.poles_code
+                    FROM wp_documents d
+                    LEFT JOIN wp_project p ON p.project_id = d.project_id
+                    LEFT JOIN wp_contract c ON c.contract_id = d.contract_id
+                    LEFT JOIN wp_type t ON t.type_id = d.type_id
+                    LEFT JOIN wp_installations i on i.installations_id = d.installations_id
+                    LEFT JOIN wp_poles pl on pl.poles_id = d.poles_id
+                    WHERE d.document_id = ?
             ");
             $stmt->execute([$id]);
             $doc = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$doc) return null;
-            $url = $domain . "/document";
+            $url = $domain . "/document"; 
             $subject = "New Document: " . $doc['document_name'];
             $bodyHtml = "
                 <h3>New Document Available</h3>
                 <p><strong>Document:</strong> {$doc['document_name']}</p>
                 <p><strong>Project:</strong> {$doc['project_name']}</p>
-                <p><strong>Contract:</strong> {$doc['contract_name']}</p>
-                <p><strong>Installation:</strong> {$doc['installations_name']}</p>
-                <p><strong>Poles:</strong> {$doc['poles_code']}</p>
-                <p><strong>Type:</strong> {$doc['type_name']}</p>
-                <p><strong>Size:</strong> {$doc['document_size']}</p>
                 <p><a href='{$url}' style='background:#28a745;color:#fff;padding:8px 15px;text-decoration:none;'>Download</a></p>
             ";
             return [
@@ -323,6 +318,21 @@ class MediaHelper {
                 'email_body'    => $this->wrapEmailTemplate($subject, $bodyHtml),
                 'pwa_title'     => $subject,
                 'pwa_body'      => $doc['project_name'] . " - " . $doc['type_name'],
+                'url'           => $url
+            ];
+        }
+        if ($target === 'project') {
+            $path = getProjectPath($id, $this->db);
+            $url = $domain . '/' . ($path ? 'pstg/' . $path : 'pstg');
+            $stmt = $this->db->prepare("SELECT content_subject, content_body FROM wp_content_item WHERE content_id=? AND content_lang=?");
+            $stmt->execute([$id, $lang]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$row) return null;
+            return [
+                'email_subject' => $row['content_subject'],
+                'email_body'    => $this->wrapEmailTemplate($row['content_subject'], $row['content_body']),
+                'pwa_title'     => $row['content_subject'],
+                'pwa_body'      => "Project Update",
                 'url'           => $url
             ];
         }
@@ -335,7 +345,7 @@ class MediaHelper {
             'email_subject' => $row['content_subject'],
             'email_body'    => $this->wrapEmailTemplate($row['content_subject'], $row['content_body']),
             'pwa_title'     => $row['content_subject'],
-            'pwa_body'      => "New update available",
+            'pwa_body'      => "New news update",
             'url'           => $url
         ];
     }

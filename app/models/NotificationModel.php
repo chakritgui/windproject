@@ -148,19 +148,3 @@ class NotificationModel {
         }
     }
 }
-function getProjectPath($contentId, $pdo){
-    $stmt = $pdo->prepare("SELECT id, slug, parent_id, level FROM wp_folder WHERE content_id = ? AND status = 'active' LIMIT 1");
-    $stmt->execute([$contentId]);
-    $node = $stmt->fetch(PDO::FETCH_ASSOC);
-    if (!$node) return null;
-    $slugs = [];
-    while ($node && $node['parent_id'] != 0) {
-        $stmt = $pdo->prepare("SELECT id, slug, parent_id, level FROM wp_folder WHERE id = ?");
-        $stmt->execute([$node['parent_id']]);
-        $node = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($node) {
-            array_unshift($slugs, $node['slug']);
-        }
-    }
-    return implode('/', $slugs);
-}
