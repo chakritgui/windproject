@@ -332,7 +332,7 @@ class SettingModel {
             if (!empty($data['androidIcon']['tmp_name'])) {
                 $androidFile = $iconDir . "icon-android.png";
                 if (!move_uploaded_file($data['androidIcon']['tmp_name'], $androidFile)) {
-                    throw new \Exception("อัปโหลด Android Icon ไม่สำเร็จ" .$iconDir);
+                    throw new \Exception("อัปโหลด Android Icon ไม่สำเร็จ");
                 }
             }
             if (!empty($data['iosIcon']['tmp_name'])) {
