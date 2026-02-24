@@ -436,7 +436,7 @@ async function openPoles(poleId) {
                             background-size: contain; 
                             background-position: top center; 
                             background-repeat: no-repeat;
-                            background-color: rgba(255, 255, 255, 0.9); /* พื้นหลังสำรองกรณีรูปไม่เต็ม */
+                            background-color: rgba(255, 255, 255, 0.9);
                             min-height: 450px; 
                         ` : 'background-color: #ffffff;' }">
                         <div>
@@ -490,7 +490,7 @@ function renderMultimedia(content, lang, baseUrl) {
         html += `
             <div class="section-title mb-3 mt-4">
                 <h5 class="fw-bold d-flex align-items-center text-dark">
-                    <i class="fa-solid fa-vr-cardboard text-info me-2"></i> ${langData['vr_experience'] || '360° Experience'}
+                    <i class="fa-street-view text-info me-2"></i> ${langData['vr_experience'] || '360° Experience'}
                 </h5>
             </div>
             <div class="row g-3 mb-5">
@@ -573,27 +573,4 @@ Fancybox.bind("[data-fancybox='gallery']", {
             right: ["iterateZoom", "close"],
         },
     },
-});
-function openVRModal(imgUrl) {
-    const modal = new bootstrap.Modal(document.getElementById('vrModal'));
-    modal.show();
-    if (vrViewer) {
-        vrViewer.destroy();
-    }
-    setTimeout(() => {
-        vrViewer = pannellum.viewer('panorama-viewer', {
-            "type": "equirectangular",
-            "panorama": imgUrl,
-            "autoLoad": true,
-            "autoRotate": -2,
-            "compass": true,
-            "hfov": 110
-        });
-    }, 300);
-}
-$('#vrModal').on('hidden.bs.modal', function () {
-    if (vrViewer) {
-        vrViewer.destroy();
-        vrViewer = null;
-    }
 });

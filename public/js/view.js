@@ -180,10 +180,14 @@ function renderGridItems(type, items) {
         return `
             <div class="col-4 col-md-2">
                 <div class="gallery-card rounded-3 overflow-hidden border shadow-sm position-relative cursor-pointer h-100" ${onClickAttr}>
-                    <a href="${url}" ${fancyboxAttr} class="d-block ratio ratio-1x1">
+                    ${(type === 'gallery') ? `
+                        <a href="${url}" ${fancyboxAttr} class="d-block ratio ratio-1x1">
+                    ` : ``}
                         <img src="${url}" class="object-fit-cover hover-zoom" loading="lazy">
                         ${badge}
-                    </a>
+                    ${(type === 'gallery') ? `
+                        </a>
+                    ` : ``}
                 </div>
             </div>`;
     }).join('');

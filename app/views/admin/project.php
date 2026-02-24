@@ -1,3 +1,10 @@
+<script>
+    const initialData = {
+        currentFolderId: <?= json_encode($currentFolderId ?? null) ?>,
+        currentLevel: <?= json_encode($currentLevel ?? 1) ?>,
+        initialPath: <?= json_encode($initialPath ?? [['id' => null, 'name' => 'PSTG PROJECT', 'level' => 1, 'slug' => '']]) ?>
+    };
+</script>
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/admin/project.css?v=<?php echo time(); ?>">
 <div class="container-fluid mt-90 mb-5">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm"
@@ -93,4 +100,3 @@
     <div id="scrollEnd"></div>
 </div>
 <script src="<?=BASE_URL?>/public/js/admin/project.js?v=<?=time()?>"></script>
-<script src="<?=BASE_URL?>/public/js/view.js?v=<?=time();?>" defer></script>

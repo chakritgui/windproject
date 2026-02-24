@@ -1,16 +1,35 @@
-let currentFolderId = null;
-let currentLevel = 1; 
-let currentPath = [{id: null, name: 'PSTG PROJECT', level: 1, project_id: null}];
+let currentFolderId = (typeof initialData !== 'undefined') ? initialData.currentFolderId : null;
+let currentLevel = (typeof initialData !== 'undefined') ? initialData.currentLevel : 1;
+let currentPath = (typeof initialData !== 'undefined' && initialData.initialPath) 
+                  ? initialData.initialPath 
+                  : [{id: null, name: 'PSTG PROJECT', level: 1, slug: ''}]; 
 let cachedData = []; 
 let offset = 0;
-const limit = 20;
+let limit = 20;
 let isLoading = false;
 let isFull = false;
 let currentSearch = '';
 let currentSort = 'asc';
+function updateURL() {
+    const slugString = currentPath.filter(p => p.slug) .map(p => p.slug).join('/');
+    const newURL = `${BASE_URL}/project/${slugString}`;
+    window.history.pushState({ path: currentPath, folderId: currentFolderId, level: currentLevel }, '', newURL);
+}
 initProject();
 function initProject() {
     fetchFolders(true);
+}
+function updateBrowserURL() {
+    const slugString = currentPath
+        .filter(p => p.slug && p.slug !== '') 
+        .map(p => p.slug)
+        .join('/');
+    const newURL = `${BASE_URL}/project/${slugString}`;
+    window.history.pushState({ 
+        path: currentPath, 
+        folderId: currentFolderId, 
+        level: currentLevel 
+    }, '', newURL);
 }
 function fetchFolders(isNewSearch = false) {
     if (isLoading) return;
@@ -46,12 +65,7 @@ function fetchFolders(isNewSearch = false) {
                     isFull = true;
                 }
                 offset += limit;
-            } else {
-                showError(langData['cannot_load']);
             }
-        },
-        error: function () {
-            showError(langData['cannot_load']);
         },
         complete: function() {
             isLoading = false;
@@ -59,13 +73,6 @@ function fetchFolders(isNewSearch = false) {
         }
     });
 }
-$(document).on('click', '.sort-option', function() {
-    const sortValue = $(this).data('sort');
-    const label = $(this).data('label');
-    currentSort = sortValue;
-    $('#selectedSortLabel').text(langData[label]);
-    fetchFolders(true); 
-});
 function renderTable(data, isNewSearch) {
     const $body = $('#listViewBody');
     const $empty = $('#emptyState');
@@ -88,20 +95,14 @@ function renderTable(data, isNewSearch) {
                     return typeof renderLangStatus === 'function' ? renderLangStatus(lang, status) : '';
                 }).join('')}
             </div>`;
+
         const globalIndex = cachedData.length - data.length + index;
         let icon = 'fa-folder-open text-warning';
         if (item.type === 'content') icon = 'fa-regular fa-newspaper text-primary';
         const badge = item.child_count > 0 ? `<span class="badge rounded-pill bg-light text-dark border ms-2" style="font-size: 0.7rem;">${item.child_count}</span>` : '';
         let folder_name = '-';
         if (item.type === 'content') {
-            folder_name =
-                (currentLang === 'th' && item.th_subject) ||
-                (currentLang === 'en' && item.en_subject) ||
-                (currentLang === 'lo' && item.lo_subject) ||
-                item.th_subject ||
-                item.en_subject ||
-                item.lo_subject ||
-                '-';
+            folder_name = (currentLang === 'th' && item.th_subject) || (currentLang === 'en' && item.en_subject) || (currentLang === 'lo' && item.lo_subject) || item.th_subject || item.en_subject || item.lo_subject || '-';
         } else {
             folder_name = item.folder_name || '-';
         }
@@ -138,14 +139,12 @@ function renderTable(data, isNewSearch) {
                 </td>
                 <td>${item.created_at || '-'}</td>
                 <td>
-                    ${(item.type === 'content') ? `
-                        ${statusHtml}
-                    ` : ``}
+                    ${(item.type === 'content') ? statusHtml : ``}
                 </td>
                 <td>
                     ${statusBody}
                 </td>
-                <td style="white-space: nowrap;">
+                <td style="white-space: nowrap;" class="text-end">
                     <div class="btn-group border rounded-3 bg-white">
                         ${(item.type === 'content') ? `
                             <a onclick="openContent('${item.content_slug}', 'preview')" class="btn btn-link text-info view-content"><i class="fa-solid fa-eye"></i></a> 
@@ -168,24 +167,61 @@ function renderTable(data, isNewSearch) {
         $body.append(html);
     }
     $body.find('tr').off('click').on('click', function(e) {
-        if ($(e.target).closest('button').length) return;
+        if ($(e.target).closest('button').length || $(e.target).closest('a').length) return;
         const index = $(this).data('index');
         const rowData = cachedData[index];
         if (rowData) {
-            if (rowData.type === 'content') {
-                return; 
-            }
+            if (rowData.type === 'content') return;
             currentFolderId = rowData.id;
             currentLevel = parseInt(rowData.level) + 1;
             currentPath.push({
                 id: currentFolderId,
                 name: rowData.folder_name, 
-                level: currentLevel,
+                level: rowData.level,
+                slug: rowData.slug
             });
+            updateBrowserURL(); 
             fetchFolders(true); 
         }
     });
 }
+function renderBreadcrumb() {
+    let html = '';
+    currentPath.forEach((p, idx) => {
+        const isHome = idx === 0;
+        const isActive = idx === currentPath.length - 1;
+        const homeIcon = isHome ? '<i class="fa-solid fa-house me-1"></i> ' : '';
+        let displayName = p.name;
+        html += `
+            <li class="breadcrumb-item ${isActive ? 'active' : ''}">
+                ${isActive 
+                    ? `<span>${homeIcon}${displayName}</span>` 
+                    : `<a href="javascript:void(0)" class="text-decoration-none" data-idx="${idx}">${homeIcon}${displayName}</a>`
+                }
+            </li>`;
+    });
+    $('#breadcrumb').html(html);
+    $('#breadcrumb a').off('click').on('click', function() {
+        const idx = $(this).data('idx');
+        currentPath = currentPath.slice(0, idx + 1);
+        const target = currentPath[idx];  
+        currentFolderId = target.id;
+        currentLevel = target.id === null ? 1 : parseInt(target.level) + 1;
+        updateURL();
+        fetchFolders(true);
+    });
+}
+window.onpopstate = function(event) {
+    if (event.state && event.state.path) {
+        currentPath = event.state.path;
+        const lastStep = currentPath[currentPath.length - 1];
+        currentFolderId = lastStep.id;
+        currentLevel = lastStep.id === null ? 1 : parseInt(lastStep.level) + 1;
+        fetchFolders(true);
+    } else {
+        window.location.reload();
+    }
+};
 const observer = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting) {
         fetchFolders(false);
@@ -203,34 +239,6 @@ $('#txtSearch').on('keyup', function() {
         fetchFolders(true);
     }, 500); 
 });
-function renderBreadcrumb() {
-    let html = '';
-    currentPath.forEach((p, idx) => {
-        const isHome = idx === 0;
-        const isActive = idx === currentPath.length - 1;
-        const homeIcon = isHome ? '<i class="fa-solid fa-house me-1"></i> ' : '';
-        let displayName = p.name;
-        if (!isActive && displayName.length > 20) {
-            displayName = displayName.substring(0, 20) + '...';
-        }
-        html += `
-            <li class="breadcrumb-item ${isActive ? 'active' : ''}">
-                ${isActive 
-                    ? `<span>${homeIcon}${displayName}</span>` 
-                    : `<a href="javascript:void(0)" class="text-decoration-none" data-idx="${idx}">${homeIcon}${displayName}</a>`
-                }
-            </li>`;
-    });
-    $('#breadcrumb').html(html);
-    $('#breadcrumb a').off('click').on('click', function() {
-        const idx = $(this).data('idx');
-        currentPath = currentPath.slice(0, idx + 1);
-        const target = currentPath[idx];
-        currentFolderId = target.id;
-        currentLevel = target.level;
-        fetchFolders(currentLevel, currentFolderId);
-    });
-}
 $(document).on('click', '.manage-project', function () {
     let id = $(this).data("id");
     manageFolder(id);

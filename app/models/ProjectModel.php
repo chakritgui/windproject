@@ -7,33 +7,28 @@ class ProjectModel {
     public function get($start = 0, $length = 20, $filters = [], $search = '', $order = 'asc') {
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
         $sql = "SELECT 
-            f.id, f.name as folder_name, f.level, f.parent_id, f.created_at, f.type, f.content_id, c.cover, c.content_slug, 
-            iEn.status as en_status,
-            iLo.status as lo_status,
-            iTh.status as th_status,
-            iEn.content_subject as en_subject,
-            iLo.content_subject as lo_subject,
-            iTh.content_subject as th_subject,
-            f.created_at,
-            f.status,
-            f.sub_type
-        FROM wp_folder f 
-        LEFT JOIN wp_content c on c.content_id = f.content_id
-        LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang='en'
-        LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang='lo'
-        LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang='th'
-        {$mainWhere} ORDER BY f.id {$order}";
+                f.id, f.name as folder_name, f.slug, f.level, f.parent_id, f.created_at, f.type, f.content_id, 
+                c.cover, c.content_slug, 
+                iEn.status as en_status, iLo.status as lo_status, iTh.status as th_status,
+                iEn.content_subject as en_subject, iLo.content_subject as lo_subject, iTh.content_subject as th_subject,
+                f.status, f.sub_type
+            FROM wp_folder f 
+            LEFT JOIN wp_content c on c.content_id = f.content_id
+            LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang='en'
+            LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang='lo'
+            LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang='th'
+            {$mainWhere} ORDER BY f.id {$order}";
         $stmt = $this->db->prepare($sql);
         foreach ($mainParams as $k => $v) { $stmt->bindValue($k, $v); }
         $stmt->execute();
         $folderRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        $finalItems = [];
         $stmt = $this->db->prepare("SELECT setting_type, setting_value FROM wp_setting WHERE setting_type IN ('language', 'language_content')");
         $stmt->execute();
         $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+        $finalItems = [];
         foreach ($folderRows as $row) {
             if (!empty($search) && stripos($row['folder_name'], $search) === false) continue;
-            $item = $this->formatRow($row);
+            $item = $row;
             $item['child_count'] = $this->countChildren($row['id'], $row['level']);
             $item['settings'] = $settings;
             $finalItems[] = $item;

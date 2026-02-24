@@ -69,6 +69,7 @@
         if ($role === 'admin' || $role === 'administrator') {
             $router->get('/dashboard', 'AdminController@index');
             $router->get('/member', 'AdminController@member');
+            $router->get('/project/(.*)', 'AdminController@project');
             $router->get('/project', 'AdminController@project');
             $router->get('/map', 'AdminController@map');
             $router->get('/document', 'AdminController@document');
@@ -204,7 +205,6 @@
     }
     $router->post('/api/menu.load', 'MenuController@load');
     $router->get('/logout', 'AuthController@logout');
-    $router->get('/content/{mode}/{slug}', 'ContentController@content');
     $router->post('/api/content.slug', 'ContentController@getBySlug');
     $router->post('/api/document.filter', 'DocumentController@filter');
     $router->post('/api/shortcut.get', 'SettingController@shortcut');

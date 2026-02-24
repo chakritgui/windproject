@@ -9,9 +9,4 @@ class ContentController extends Controller {
         $mode = $_POST['mode'] ?? 'preview';
         $this->json(['status'=>'success','data'=>$this->model->getBySlug($slug,$mode)]);
     }
-    public function content($mode, $slug) {
-        ensure_login();
-        $decoded_slug = urldecode($slug);
-        $this->view('content/view', ['decoded_slug' => $decoded_slug, 'mode' => $mode]);
-    }
 }

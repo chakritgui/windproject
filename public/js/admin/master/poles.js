@@ -465,25 +465,26 @@ $(document).on('click', '#btnSaveContent', function() {
 });
 function executeSave() {
     const btn = $(this); 
+    btn.prop("disabled", true);
     const formData = new FormData();
-    const attachments = window.getAttachmentsData();
-    attachments.forEach((att, index) => {
+    const attachments = window.getAttachmentsData ? window.getAttachmentsData() : [];
+    attachments.forEach((att) => {
         if (att.type === 'new') {
             formData.append('new_attachments[]', att.file);
         } else {
             formData.append('existing_attachments[]', att.id);
         }
     });
-    const images = window.getImagesData();
-    images.forEach((img, index) => {
+    const images = window.getImagesData ? window.getImagesData() : [];
+    images.forEach((img) => {
         if (img.type === 'new') {
             formData.append('new_images[]', img.file);
         } else {
             formData.append('existing_images[]', img.id);
         }
     });
-    const images360 = window.get360ImagesData();
-    images360.forEach((img, index) => {
+    const images360 = window.get360ImagesData ? window.get360ImagesData() : [];
+    images360.forEach((img) => {
         if (img.type === 'new') {
             formData.append('new_images360[]', img.file);
         } else {
@@ -495,6 +496,9 @@ function executeSave() {
     formData.append("title_en", $("#title_en").val() || "");
     formData.append("title_lo", $("#title_lo").val() || "");
     formData.append("title_th", $("#title_th").val() || "");
+    if (typeof currentFolderId !== 'undefined') {
+        formData.append("parent_id", currentFolderId);
+    }
     const getCleanContent = (lang) => {
         const $el = $(`#content_${lang}`);
         if (!$el.length) return '';
@@ -506,13 +510,12 @@ function executeSave() {
     formData.append("content_lo", getCleanContent('lo'));
     formData.append("content_th", getCleanContent('th'));
     formData.append("auto_translate", $("#auto_translate").is(":checked") ? 'yes' : 'no');
-    const cover = $("#cover")[0].files[0] || null;
-    if (cover) {
-        formData.append("cover", cover);
+    const coverFile = $("#cover")[0]?.files[0] || null;
+    if (coverFile) {
+        formData.append("cover", coverFile);
     }
-    formData.append("ex_cover", $("#ex_cover").val());
-    const coverDisplayStatus = $("input[name='cover_display']:checked").val() || "no";
-    formData.append("cover_display", coverDisplayStatus);
+    formData.append("ex_cover", $("#ex_cover").val() || "");
+    formData.append("cover_display", $("input[name='cover_display']:checked").val() || "no");
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
@@ -544,14 +547,18 @@ function executeSave() {
                         bar.innerText = percent + "%";
                     }
                 }
-            });
+            }, false);
             return xhr;
         },
         success: function (res) {
-            if (res.status === 'success') {
-                 showSuccess(langData['saved_successfully']);
-                if (typeof initPolesTable === "function") initPolesTable();
-                $('#windModal').modal('hide');
+            if (res.status === 'success' || res.status === true) {
+                Swal.fire({
+                    icon: 'success',
+                    title: langData['saved_successfully'] || 'Saved!',
+                }).then(() => {
+                    if (typeof initPolesTable === "function") initPolesTable();
+                    $('#windModal').modal('hide');
+                });
             } else {
                 showError((langData['cannot_save'] || 'Error: ') + (res.message || 'Unknown error'));
             }
@@ -566,7 +573,9 @@ function executeSave() {
         },
         complete: function() {
             btn.prop("disabled", false);
-            if (Swal.isVisible() && !Swal.isLoading()) Swal.close();
+            if (Swal.isVisible() && $('.swal2-loader').is(':visible')) {
+                Swal.close();
+            }
         }
     });
 }
