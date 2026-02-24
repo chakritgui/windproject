@@ -79,6 +79,11 @@ async function handlePWANotifications(force = false) {
 async function requestAndSubscribe(registration) {
     try {
         localStorage.setItem('notification_asked_forever', 'true');
+        await registration.update();
+        const oldSub = await registration.pushManager.getSubscription();
+        if (oldSub) {
+            await oldSub.unsubscribe();
+        }
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') return;
         Swal.fire({
