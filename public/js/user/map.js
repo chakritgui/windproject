@@ -475,7 +475,7 @@ async function openPoles(poleId) {
             `;
             modalBody.html(html);
             modalTitle.text(`${data.poles_code}`);
-            modalBody.find('img').each(function() {
+            $(".article-content").find('img').each(function() {
                 const $img = $(this);
                 if (!$img.parent('a').length) {
                     const imgSrc = $img.attr('src');
