@@ -118,4 +118,16 @@ class ProjectController extends BaseController {
             $this->json(['status' => 'error', 'message' => 'Data not found']);
         }
     }
+    public function sort() {
+        $input = json_decode(file_get_contents("php://input"), true);
+        if (!isset($input['items']) || !is_array($input['items'])) {
+            $this->json([
+                'status' => false,
+                'message' => 'Invalid items'
+            ]);
+            return;
+        }
+        $result = $this->model->sort($input['items']);
+        $this->json($result);
+    }
 }

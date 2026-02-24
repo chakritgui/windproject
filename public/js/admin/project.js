@@ -1,8 +1,6 @@
 let currentFolderId = (typeof initialData !== 'undefined') ? initialData.currentFolderId : null;
 let currentLevel = (typeof initialData !== 'undefined') ? initialData.currentLevel : 1;
-let currentPath = (typeof initialData !== 'undefined' && initialData.initialPath) 
-                  ? initialData.initialPath 
-                  : [{id: null, name: 'PSTG PROJECT', level: 1, slug: ''}]; 
+let currentPath = (typeof initialData !== 'undefined' && initialData.initialPath) ? initialData.initialPath : [{id: null, name: 'PSTG PROJECT', level: 1, slug: ''}]; 
 let cachedData = []; 
 let offset = 0;
 let limit = 20;
@@ -65,6 +63,7 @@ function fetchFolders(isNewSearch = false) {
                     isFull = true;
                 }
                 offset += limit;
+                $('#btnSaveSort').addClass('d-none');
             }
         },
         complete: function() {
@@ -95,7 +94,6 @@ function renderTable(data, isNewSearch) {
                     return typeof renderLangStatus === 'function' ? renderLangStatus(lang, status) : '';
                 }).join('')}
             </div>`;
-
         const globalIndex = cachedData.length - data.length + index;
         let icon = 'fa-folder-open text-warning';
         if (item.type === 'content') icon = 'fa-regular fa-newspaper text-primary';
@@ -115,7 +113,10 @@ function renderTable(data, isNewSearch) {
             typeHtml = `<span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project"></i> <span>${langData['project'] || 'Project'}</span></span>`;
         }
         html += `
-            <tr data-index="${globalIndex}" style="${item.type === 'content' ? 'cursor:default;' : 'cursor:pointer;'}">
+            <tr data-index="${globalIndex}" data-id="${item.id}" data-type="${item.type}" style="${item.type === 'content' ? 'cursor:default;' : 'cursor:pointer;'}">
+                <td>
+                    <i class="fa-solid fa-grip-vertical drag-handle text-muted me-2" style="cursor:grab;"></i>
+                </td>
                 <td class="text-center" style="width: 80px;">
                     <div style="width: 50px; height: 50px; line-height: 50px; overflow: hidden; margin: 0 auto; border-radius: 4px; border: 1px solid #eee;">
                     ${(item.type === 'content') ? `
@@ -184,7 +185,66 @@ function renderTable(data, isNewSearch) {
             fetchFolders(true); 
         }
     });
+    enableSorting();
 }
+let sortableInstance = null;
+function enableSorting() {
+    const el = document.getElementById('listViewBody');
+    if (sortableInstance) {
+        sortableInstance.destroy();
+    }
+    sortableInstance = new Sortable(el, {
+        animation: 150,
+        ghostClass: 'bg-light',
+        handle: '.drag-handle',
+        onEnd: function () {
+            $('#btnSaveSort').removeClass('d-none');
+        }
+    });
+}
+$('#btnSaveSort').on('click', function () {
+    const btn = $(this);
+    btn.prop("disabled", true);
+    const sortedIds = [];
+    $('#listViewBody tr').each(function (index) {
+        const id = $(this).data('id');
+        if (!id) return;
+        sortedIds.push({
+            id: id,
+            sort_order: index + 1
+        });
+    });
+    Swal.fire({
+        title: langData['saving'] || 'Saving...',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    $.ajax({
+        url: `${BASE_URL}/api/project.sort`,
+        type: "POST",
+        data: JSON.stringify({
+            items: sortedIds
+        }),
+        contentType: "application/json",
+        success: function (res) {
+            Swal.close();
+            alert(res.status);
+            if (res.status === true) {
+                $('#btnSaveSort').addClass('d-none');
+                showSuccess(langData['saved_successfully'] || "Sort updated");
+            } else {
+                showError(res.message || "Cannot save sort");
+            }
+        },
+        error: function () {
+            Swal.close();
+            showError("Server error");
+        },
+        complete: function () {
+            btn.prop("disabled", false);
+        }
+    });
+});
 function renderBreadcrumb() {
     let html = '';
     currentPath.forEach((p, idx) => {

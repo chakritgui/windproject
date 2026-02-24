@@ -5,6 +5,7 @@
         initialPath: <?= json_encode($initialPath ?? [['id' => null, 'name' => 'PSTG PROJECT', 'level' => 1, 'slug' => '']]) ?>
     };
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/admin/project.css?v=<?php echo time(); ?>">
 <div class="container-fluid mt-90 mb-5">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm"
@@ -72,10 +73,16 @@
             </div>
         </div>
     </div>
+    <div class="mb-2 text-end">
+        <button id="btnSaveSort" class="btn btn-success d-none">
+            <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="save_ordering"></span>
+        </button>
+    </div>
     <div id="listView" class="bg-white rounded table-responsive">
         <table class="table table-striped table-hover mb-0">
             <thead class="table-light">
                 <tr>
+                    <th></th>
                     <th style="width: 60px;"></th>
                     <th data-i18n="name"></th>
                     <th data-i18n="type"></th>
@@ -100,3 +107,11 @@
     <div id="scrollEnd"></div>
 </div>
 <script src="<?=BASE_URL?>/public/js/admin/project.js?v=<?=time()?>"></script>
+<style>
+    #listViewBody, #listViewBody * {
+        -webkit-user-select: none; 
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+</style>

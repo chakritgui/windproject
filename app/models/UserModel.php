@@ -283,7 +283,7 @@ class UserModel {
             WHERE status = 'active'
             GROUP BY content_id
         ) m ON m.content_id = c.content_id
-        {$mainWhere} ORDER BY f.id {$order}";
+        {$mainWhere} ORDER BY ifnull(f.folder_order, f.id) {$order}";
         $stmt = $this->db->prepare($sql);
         foreach ($mainParams as $k => $v) { $stmt->bindValue($k, $v); }
         $stmt->execute();

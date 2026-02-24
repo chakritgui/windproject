@@ -17,7 +17,7 @@ class ProjectModel {
             LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang='en'
             LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang='lo'
             LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang='th'
-            {$mainWhere} ORDER BY f.id {$order}";
+            {$mainWhere} ORDER BY ifnull(f.folder_order, f.id) {$order}";
         $stmt = $this->db->prepare($sql);
         foreach ($mainParams as $k => $v) { $stmt->bindValue($k, $v); }
         $stmt->execute();
@@ -407,6 +407,34 @@ class ProjectModel {
             return ($res1 && $res2);
         } catch (Exception $e) {
             return false;
+        }
+    }
+    public function sort($items) {
+        $pdo = $this->db;
+        try {
+            $pdo->beginTransaction();
+            $stmt = $pdo->prepare("
+                UPDATE wp_folder
+                SET folder_order = :sort_order,
+                    updated_at = NOW()
+                WHERE id = :id
+            ");
+            foreach ($items as $item) {
+                $stmt->execute([
+                    ':sort_order' => (int)$item['sort_order'],
+                    ':id'         => (int)$item['id']
+                ]);
+            }
+            $pdo->commit();
+            return [
+                'status' => true
+            ];
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            return [
+                'status' => false,
+                'message' => $e->getMessage()
+            ];
         }
     }
 }

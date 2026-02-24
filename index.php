@@ -176,6 +176,7 @@
             $router->post('/api/project.content.save', 'ProjectController@saveContent');
             $router->post('/api/project.content.delete', 'ProjectController@deleteContent');
             $router->post('/api/project.unlink', 'ProjectController@unlink');
+            $router->post('/api/project.sort', 'ProjectController@sort');
         } else {
             $router->get('/home', 'UserController@user');
             $router->get('/news', 'UserController@news');

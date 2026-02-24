@@ -168,14 +168,7 @@ class UserController extends Controller {
         $parentId = null;
         if (!empty($_POST['path']) && is_array($_POST['path'])) {
             foreach ($_POST['path'] as $slug) {
-                $stmt = $this->db->prepare("
-                    SELECT id, name, slug, level, parent_id
-                    FROM wp_folder
-                    WHERE slug = :slug
-                    AND parent_id <=> :parent
-                    AND status = 'active'
-                    LIMIT 1
-                ");
+                $stmt = $this->db->prepare("SELECT id, name, slug, level, parent_id FROM wp_folder WHERE slug = :slug AND parent_id <=> :parent AND status = 'active' LIMIT 1");
                 $stmt->execute([
                     ':slug'   => $slug,
                     ':parent' => $parentId
