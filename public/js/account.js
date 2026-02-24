@@ -431,9 +431,21 @@ document.addEventListener('DOMContentLoaded', () => {
     checkInitialStatus();
     pushToggle.addEventListener('change', async () => {
         if (pushToggle.checked) {
-            localStorage.setItem('notification_asked_forever', 'true');
-            await handlePWANotifications(true);
-            setTimeout(checkInitialStatus, 1000);
+            pushToggle.checked = false;
+            const allowed = await new Promise((resolve) => {
+                showNotificationModal(
+                    async () => {
+                        await requestAndSubscribe(await navigator.serviceWorker.ready);
+                        setTimeout(checkInitialStatus, 1000);
+                        resolve(true);
+                    },
+                    () => {
+                        localStorage.setItem('notification_asked_forever', 'true');
+                        resolve(false);
+                    }
+                );
+            });
+            pushToggle.checked = allowed;
         } else {
             const unsubscribed = await unsubscribeUser();
             if (!unsubscribed) {

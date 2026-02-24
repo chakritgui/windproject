@@ -59,6 +59,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     const BASE_URL = "<?=BASE_URL?>";
+    const USER = <?= json_encode(!empty($_SESSION['user']['id']) ? $_SESSION['user']['id'] : null) ?>;
     <?php if (file_exists($manifestFile)) { ?>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {

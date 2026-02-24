@@ -26,8 +26,12 @@ async function initApp() {
         initAutoLanguageObserver();
         initMeta();
         refreshAllTables();
-        if (isPWA()) {
-            await handlePWANotifications();
+        if (isPWA() && USER) {
+            try {
+                await handlePWANotifications();
+            } catch (error) {
+                console.error('PWA Notification Error:', error);
+            }
         }
     } catch (error) {
         console.error("Initialization failed:", error);
@@ -50,8 +54,10 @@ async function handlePWANotifications(force = false) {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
     if (Notification.permission === 'denied') return;
     if (!force && localStorage.getItem('notification_asked_forever')) return;
+
     const registration = await navigator.serviceWorker.ready;
     const sub = await registration.pushManager.getSubscription();
+
     if (Notification.permission === 'default') {
         showNotificationModal(async () => {
             await requestAndSubscribe(registration);
@@ -66,60 +72,307 @@ async function handlePWANotifications(force = false) {
         if (typeof checkInitialStatus === 'function') checkInitialStatus();
     }
 }
+
 async function requestAndSubscribe(registration) {
     try {
-        localStorage.setItem('notification_asked_forever', 'true'); 
+        localStorage.setItem('notification_asked_forever', 'true');
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') return;
+
         Swal.fire({
-            title: langData['processing'],
+            html: `
+                <div class="swal-loading-wrap">
+                    <div class="swal-spinner"></div>
+                    <div class="swal-loading-title">${langData['processing'] || 'Processing...'}</div>
+                    <div class="swal-loading-sub">Setting up your notifications</div>
+                </div>
+            `,
             allowOutsideClick: false,
-            didOpen: () => { Swal.showLoading(); }
+            showConfirmButton: false,
+            customClass: { popup: 'swal-pwa-popup' },
+            didOpen: () => {
+                injectPWAStyles();
+            }
         });
+
         if (!VAPID_PUBLIC_KEY) throw new Error("VAPID Public Key is missing");
+
         const subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
         });
+
         const response = await fetch(`${BASE_URL}/api/push.subscribe`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(subscription)
         });
+
         if (!response.ok) throw new Error("Server failed to save subscription");
+
         Swal.fire({
-            icon: 'success',
-            title: langData['success'],
-            text: langData['you_will_receive_notifications'],
-            timer: 2000,
-            showConfirmButton: false
+            html: `
+                <div class="swal-result-wrap">
+                    <div class="swal-result-icon success">
+                        <i class="fa-solid fa-bell"></i>
+                    </div>
+                    <div class="swal-result-title">${langData['success'] || 'All set!'}</div>
+                    <div class="swal-result-body">${langData['you_will_receive_notifications'] || 'You\'ll now receive push notifications.'}</div>
+                </div>
+            `,
+            timer: 2200,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            customClass: { popup: 'swal-pwa-popup' }
         });
+
     } catch (error) {
         console.error("Push Subscription Error:", error);
         Swal.fire({
-            icon: 'error',
-            title: langData['process_failed'],
-            text: error.message
+            html: `
+                <div class="swal-result-wrap">
+                    <div class="swal-result-icon error">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div class="swal-result-title">${langData['process_failed'] || 'Something went wrong'}</div>
+                    <div class="swal-result-body">${error.message}</div>
+                </div>
+            `,
+            showConfirmButton: true,
+            confirmButtonText: 'OK',
+            customClass: {
+                popup: 'swal-pwa-popup',
+                confirmButton: 'swal-pwa-btn-confirm'
+            },
+            buttonsStyling: false
         });
     }
 }
+
 async function showNotificationModal(onAllow, onLater) {
+    injectPWAStyles();
+
     const result = await Swal.fire({
-        title: langData['do_you_receive'],
-        text: langData['we_will_keep_you'],
-        icon: 'info',
+        html: `
+            <div class="swal-notify-icon-wrap">
+                <i class="fa-solid fa-bell"></i>
+                <span class="swal-notify-badge"><i class="fa-solid fa-check"></i></span>
+            </div>
+            <div class="swal-notify-title">${langData['do_you_receive'] || 'Enable Notifications?'}</div>
+            <div class="swal-notify-body">${langData['we_will_keep_you'] || 'We\'ll keep you updated with the latest alerts and updates.'}</div>
+        `,
         showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#aaa',
-        confirmButtonText: langData['okay'],
-        cancelButtonText: langData['for_later'],
-        reverseButtons: true
+        reverseButtons: true,
+        confirmButtonText: `<i class="fa-solid fa-bell" style="margin-right:6px;"></i>${langData['okay'] || 'Enable'}`,
+        cancelButtonText: langData['for_later'] || 'Maybe later',
+        customClass: {
+            popup:         'swal-pwa-popup',
+            actions:       'swal-pwa-actions',
+            confirmButton: 'swal-pwa-btn-confirm',
+            cancelButton:  'swal-pwa-btn-cancel',
+            htmlContainer: 'p-0'
+        },
+        buttonsStyling: false,
+        showClass: {
+            popup: 'animate__animated animate__fadeInDown animate__faster'
+        },
+        hideClass: {
+            popup: 'animate__animated animate__fadeOutUp animate__faster'
+        }
     });
+
     if (result.isConfirmed) {
         onAllow();
     } else {
         onLater();
     }
+}
+
+function injectPWAStyles() {
+    if (document.getElementById('swal-pwa-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'swal-pwa-styles';
+    style.textContent = `
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+
+        /* ── Base popup ── */
+        .swal-pwa-popup {
+            font-family: 'DM Sans', sans-serif !important;
+            border-radius: 22px !important;
+            padding: 36px 32px 28px !important;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.13) !important;
+            border: 1px solid rgba(0,0,0,0.06) !important;
+            background: #fff !important;
+            max-width: 380px !important;
+        }
+
+        /* ── Notification modal icon ── */
+        .swal-notify-icon-wrap {
+            position: relative;
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #e8f4ff, #cce4ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            animation: notifyPulse 2.4s ease-in-out infinite;
+        }
+        .swal-notify-icon-wrap > i {
+            font-size: 28px;
+            color: #2d7dd2;
+        }
+        .swal-notify-badge {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #2d7dd2;
+            border: 2px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .swal-notify-badge i {
+            font-size: 9px;
+            color: #fff;
+        }
+        @keyframes notifyPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(45,125,210,0.18); }
+            50%       { box-shadow: 0 0 0 12px rgba(45,125,210,0); }
+        }
+
+        .swal-notify-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            letter-spacing: -0.3px;
+            margin-bottom: 8px;
+        }
+        .swal-notify-body {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.65;
+        }
+
+        /* ── Buttons ── */
+        .swal-pwa-actions {
+            margin-top: 28px !important;
+            gap: 10px !important;
+        }
+        .swal-pwa-btn-confirm {
+            background: linear-gradient(135deg, #2d7dd2, #1a5fa8) !important;
+            color: #fff !important;
+            border: none !important;
+            border-radius: 12px !important;
+            font-family: 'DM Sans', sans-serif !important;
+            font-weight: 500 !important;
+            font-size: 14px !important;
+            padding: 11px 22px !important;
+            box-shadow: 0 4px 14px rgba(26,95,168,0.35) !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
+        }
+        .swal-pwa-btn-confirm:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 6px 18px rgba(26,95,168,0.45) !important;
+        }
+        .swal-pwa-btn-confirm:active {
+            transform: translateY(0) !important;
+        }
+        .swal-pwa-btn-cancel {
+            background: #f5f5f5 !important;
+            color: #666 !important;
+            border: none !important;
+            border-radius: 12px !important;
+            font-family: 'DM Sans', sans-serif !important;
+            font-weight: 500 !important;
+            font-size: 14px !important;
+            padding: 11px 22px !important;
+            transition: background 0.2s ease !important;
+            cursor: pointer !important;
+        }
+        .swal-pwa-btn-cancel:hover {
+            background: #ececec !important;
+        }
+
+        /* ── Loading state ── */
+        .swal-loading-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+        }
+        .swal-spinner {
+            width: 44px;
+            height: 44px;
+            border: 3px solid #e5eef8;
+            border-top-color: #2d7dd2;
+            border-radius: 50%;
+            animation: spin 0.75s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .swal-loading-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        .swal-loading-sub {
+            font-size: 13px;
+            color: #aaa;
+            margin-top: -6px;
+        }
+
+        /* ── Result state (success / error) ── */
+        .swal-result-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 0;
+        }
+        .swal-result-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-bottom: 4px;
+        }
+        .swal-result-icon.success {
+            background: linear-gradient(135deg, #e6faf0, #c6f0d8);
+            color: #1e9e57;
+            animation: notifyPulse 2s ease-in-out infinite;
+        }
+        .swal-result-icon.error {
+            background: linear-gradient(135deg, #fff0f0, #ffd8d8);
+            color: #e03b3b;
+        }
+        .swal-result-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        .swal-result-body {
+            font-size: 13px;
+            color: #999;
+            line-height: 1.6;
+        }
+
+        /* ── Timer bar color override ── */
+        .swal2-timer-progress-bar {
+            background: rgba(45,125,210,0.45) !important;
+        }
+    `;
+    document.head.appendChild(style);
 }
 async function unsubscribeUser() {
     if (!document.getElementById('swal-unsubscribe-styles')) {
