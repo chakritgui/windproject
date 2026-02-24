@@ -28,7 +28,7 @@ async function initApp() {
         refreshAllTables();
         if (isPWA() && USER) {
             try {
-                await handlePWANotifications();
+                await handlePWANotifications(true);
             } catch (error) {
                 console.error('PWA Notification Error:', error);
             }
