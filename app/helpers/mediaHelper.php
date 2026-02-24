@@ -289,82 +289,169 @@ class MediaHelper {
             ]);
         }
     }
-    private function buildNotificationContent($id, $target, $lang){
+    private function buildNotificationContent($id, $target, $lang) {
+        $lang = in_array($lang, ['en', 'lo', 'th']) ? $lang : 'en';
         $domain = rtrim($this->configs['DOMAIN_NAME'], '/');
         if ($target === 'document') {
-            $stmt = $this->db->prepare("SELECT d.document_name, d.document_size,
-                        p.project_name, c.contract_name, t.type_name, i.installations_name, pl.poles_code
-                    FROM wp_documents d
-                    LEFT JOIN wp_project p ON p.project_id = d.project_id
-                    LEFT JOIN wp_contract c ON c.contract_id = d.contract_id
-                    LEFT JOIN wp_type t ON t.type_id = d.type_id
-                    LEFT JOIN wp_installations i on i.installations_id = d.installations_id
-                    LEFT JOIN wp_poles pl on pl.poles_id = d.poles_id
-                    WHERE d.document_id = ?
+            $stmt = $this->db->prepare("SELECT d.document_name, d.document_path, d.document_size,
+                            p.project_name, c.contract_name, t.type_name, i.installations_name, pl.poles_code
+                        FROM wp_documents d
+                        LEFT JOIN wp_project p ON p.project_id = d.project_id
+                        LEFT JOIN wp_contract c ON c.contract_id = d.contract_id
+                        LEFT JOIN wp_type t ON t.type_id = d.type_id
+                        LEFT JOIN wp_installations i on i.installations_id = d.installations_id
+                        LEFT JOIN wp_poles pl on pl.poles_id = d.poles_id
+                        WHERE d.document_id = ?
             ");
             $stmt->execute([$id]);
             $doc = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$doc) return null;
-            $url = $domain . "/document"; 
-            $subject = "New Document: " . $doc['document_name'];
+            $labels = [
+                'en' => [
+                    'subject' => "New Document: " . $doc['document_name'],
+                    'header'  => "New Document Available",
+                    'doc'     => "Document",
+                    'project' => "Project",
+                    'type'    => "Type",
+                    'btn'     => "View Online",
+                    'footer_msg' => "This is an automated notification from the iWind System."
+                ],
+                'lo' => [
+                    'subject' => "ເອກະສານໃໝ່: " . $doc['document_name'],
+                    'header'  => "ມີເອກະສານໃໝ່ໃນລະບົບ",
+                    'doc'     => "ເອກະສານ",
+                    'project' => "ໂຄງການ",
+                    'type'    => "ປະເພດ",
+                    'btn'     => "ເບິ່ງເອກະສານ",
+                    'footer_msg' => "ນີ້ແມ່ນການແຈ້ງເຕືອນອັດຕະໂນມັດຈາກລະບົບ iWind."
+                ],
+                'th' => [
+                    'subject' => "เอกสารใหม่: " . $doc['document_name'],
+                    'header'  => "มีเอกสารใหม่ในระบบ",
+                    'doc'     => "ชื่อเอกสาร",
+                    'project' => "โครงการ",
+                    'type'    => "ประเภท",
+                    'btn'     => "ดูรายละเอียด",
+                    'footer_msg' => "นี่คือการแจ้งเตือนอัตโนมัติจากระบบ iWind"
+                ]
+            ];
+            $t = $labels[$lang];
+            $url = $domain . "/document";
             $bodyHtml = "
-                <h3>New Document Available</h3>
-                <p><strong>Document:</strong> {$doc['document_name']}</p>
-                <p><strong>Project:</strong> {$doc['project_name']}</p>
-                <p><a href='{$url}' style='background:#28a745;color:#fff;padding:8px 15px;text-decoration:none;'>Download</a></p>
+                <div style='background-color:#f8f9fa; padding:20px; border-radius:8px; border:1px solid #e9ecef;'>
+                    <h3 style='color:#2c3e50; margin-top:0;'>{$t['header']}</h3>
+                    <table style='width:100%; border-collapse:collapse;'>
+                        <tr>
+                            <td style='padding:8px 0; color:#6c757d; width:100px;'><strong>{$t['doc']}:</strong></td>
+                            <td style='padding:8px 0; color:#212529;'>{$doc['document_name']}</td>
+                        </tr>
+                        <tr>
+                            <td style='padding:8px 0; color:#6c757d;'><strong>{$t['project']}:</strong></td>
+                            <td style='padding:8px 0; color:#212529;'>{$doc['project_name']}</td>
+                        </tr>
+                        <tr>
+                            <td style='padding:8px 0; color:#6c757d;'><strong>{$t['type']}:</strong></td>
+                            <td style='padding:8px 0; color:#212529;'>{$doc['type_name']}</td>
+                        </tr>
+                    </table>
+                    <div style='margin-top:25px; text-align:center;'>
+                        <a href='{$url}' style='background:#007bff; color:#ffffff; padding:12px 25px; text-decoration:none; border-radius:5px; font-weight:bold; display:inline-block;'>{$t['btn']}</a>
+                    </div>
+                </div>
+                <p style='font-size:12px; color:#999; margin-top:20px;'>{$t['footer_msg']}</p>
             ";
+            $fullPath = $_SERVER['DOCUMENT_ROOT'] . '/' . ltrim($doc['document_path'], '/');
+            $attachment = null;
+            if (!empty($doc['document_path']) && file_exists($fullPath)) {
+                $attachment = [
+                    'path' => $fullPath,
+                    'name' => $doc['document_name']
+                ];
+            }
             return [
-                'email_subject' => $subject,
-                'email_body'    => $this->wrapEmailTemplate($subject, $bodyHtml),
-                'pwa_title'     => $subject,
+                'email_subject' => $t['subject'],
+                'email_body'    => $this->wrapEmailTemplate($t['subject'], $bodyHtml),
+                'pwa_title'     => $t['subject'],
                 'pwa_body'      => $doc['project_name'] . " - " . $doc['type_name'],
-                'url'           => $url
+                'url'           => $url,
+                'attachment'    => $attachment
             ];
         }
+        $row = $this->getContentWithFallback($id, $lang);
+        if (!$row) return null;
+        $processedBody = $this->fixContentImagePaths($row['content_body'], $domain);
         if ($target === 'project') {
             $path = getProjectPath($id, $this->db);
             $url = $domain . '/' . ($path ? 'pstg/' . $path : 'pstg');
-            $stmt = $this->db->prepare("SELECT content_subject, content_body FROM wp_content_item WHERE content_id=? AND content_lang=?");
-            $stmt->execute([$id, $lang]);
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            if (!$row) return null;
-            return [
-                'email_subject' => $row['content_subject'],
-                'email_body'    => $this->wrapEmailTemplate($row['content_subject'], $row['content_body']),
-                'pwa_title'     => $row['content_subject'],
-                'pwa_body'      => "Project Update",
-                'url'           => $url
-            ];
+            $pwaLabels = ['en' => 'Project Update', 'lo' => 'ອັບເດດໂຄງການ', 'th' => 'อัปเดตโครงการ'];
+            $pwaBody = $pwaLabels[$lang] ?? $pwaLabels['en'];
+            $subject = "Project Update: " . $row['content_subject'];
+        } else {
+            $url = $domain . "/news";
+            $pwaLabels = ['en' => 'New news update', 'lo' => 'ມີຂ່າວສານໃໝ່', 'th' => 'ข่าวสารใหม่ล่าสุด'];
+            $pwaBody = $pwaLabels[$lang] ?? $pwaLabels['en'];
+            $subject = "News: " . $row['content_subject'];
         }
-        $stmt = $this->db->prepare("SELECT content_subject, content_body FROM wp_content_item WHERE content_id=? AND content_lang=?");
-        $stmt->execute([$id, $lang]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$row) return null;
-        $url = $domain . "/news";
         return [
-            'email_subject' => $row['content_subject'],
-            'email_body'    => $this->wrapEmailTemplate($row['content_subject'], $row['content_body']),
+            'email_subject' => $subject,
+            'email_body'    => $this->wrapEmailTemplate($row['content_subject'], $processedBody),
             'pwa_title'     => $row['content_subject'],
-            'pwa_body'      => "New news update",
+            'pwa_body'      => $pwaBody,
             'url'           => $url
         ];
     }
-    private function wrapEmailTemplate($title, $body){
+    private function fixContentImagePaths($content, $domain) {
+        if (empty($content)) return "";
+        $pattern = '/src=["\'](uploads\/[^"\']+)["\']/i';
+        $replacement = 'src="' . $domain . '/$1"'; 
+        return preg_replace($pattern, $replacement, $content);
+    }
+    private function getContentWithFallback($contentId, $lang) {
+        $languages = array_unique([$lang, 'en', 'lo', 'th']);
+        foreach ($languages as $l) {
+            $stmt = $this->db->prepare("SELECT content_subject, content_body FROM wp_content_item WHERE content_id = ? AND content_lang = ? AND status = 'ready' LIMIT 1");
+            $stmt->execute([$contentId, $l]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row && !empty($row['content_subject'])) {
+                return $row;
+            }
+        }
+        return null;
+    }
+    private function wrapEmailTemplate($title, $body) {
         $domain = rtrim($this->configs['DOMAIN_NAME'], '/');
         $logo   = $domain . "/public/images/logo.png";
-        $footer = $this->siteSettings['footer'] ?? 'Copyright © 2026 iWind Corporation Limited';
+        $year   = date("Y");
+        $footer = $this->siteSettings['footer'] ?? "Copyright © {$year} iWind Corporation Limited";
         return "
-        <div style='font-family:Arial;max-width:600px;margin:auto'>
-            <div style='text-align:center;padding:20px'>
-                <img src='{$logo}' style='max-height:60px'>
+            <div style='background-color:#f4f7f6; padding:30px 0; font-family:\"Helvetica Neue\",Helvetica,Arial,sans-serif;'>
+                <table align='center' border='0' cellpadding='0' cellspacing='0' width='100%' style='max-width:600px; background-color:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 4px 6px rgba(0,0,0,0.1);'>
+                    <tr>
+                        <td style='padding:30px; text-align:center; background-color:#ffffff; border-bottom:1px solid #f0f0f0;'>
+                            <img src='{$logo}' alt='Logo' style='max-height:50px; width:auto;'>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style='padding:40px 30px;'>
+                            <div style='line-height:1.6; color:#333; font-size:15px;'>
+                                <h2 style='color:#2c3e50; margin-top:0; margin-bottom:20px; font-size:20px;'>{$title}</h2>
+                                <div class='content-area' style='word-break: break-word;'>
+                                    <style>
+                                        .content-area img { max-width: 100% !important; height: auto !important; border-radius: 5px; margin: 10px 0; }
+                                        .content-area p { margin-bottom: 15px; }
+                                    </style>
+                                    {$body}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style='padding:20px; text-align:center; background-color:#fcfcfc; border-top:1px solid #f0f0f0;'>
+                            <p style='font-size:11px; color:#999; margin:0;'>{$footer}</p>
+                        </td>
+                    </tr>
+                </table>
             </div>
-            <h2>{$title}</h2>
-            <div>{$body}</div>
-            <hr>
-            <div style='font-size:12px;color:#777;text-align:center'>
-                {$footer}
-            </div>
-        </div>
         ";
     }
     public function handleContent($data, $content_id) {
