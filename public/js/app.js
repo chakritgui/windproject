@@ -66,8 +66,14 @@ async function handlePWANotifications(force = false) {
             if (toggle) toggle.checked = false;
         });
     } else if (Notification.permission === 'granted' && !sub) {
-        await requestAndSubscribe(registration);
-        if (typeof checkInitialStatus === 'function') checkInitialStatus();
+        showNotificationModal(async () => {
+            await requestAndSubscribe(registration);
+            if (typeof checkInitialStatus === 'function') checkInitialStatus();
+        }, () => {
+            localStorage.setItem('notification_asked_forever', 'true');
+            const toggle = document.querySelector('#pwaPushToggle');
+            if (toggle) toggle.checked = false;
+        });
     }
 }
 async function requestAndSubscribe(registration) {
