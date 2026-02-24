@@ -121,7 +121,7 @@ function handleNotificationItem(items) {
             }
         }
         const html = `
-            <li class="notification-item" data-redirect="${item.redirect}">
+            <li class="notification-item" data-redirect="${item.redirect}" style="cursor: pointer;">
                 <div class="dropdown-item py-3 border-bottom" style="font-size: 12px !important;">
                     <div class="d-flex align-items-start">
                         <div class="flex-shrink-0 me-3">
