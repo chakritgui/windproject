@@ -320,7 +320,7 @@ class UserModel {
             (f.sub_type = 'news' AND c.status = 'published' AND c.folder_show_user = 'yes' and c.publish_at is not null and c.publish_at <> '' and c.publish_at <= NOW())
             OR
             (f.sub_type = 'project' AND f.status = 'active')
-        )";
+        ) AND f.status = 'active' ";
         $sql = "SELECT COUNT(DISTINCT f.id) FROM wp_folder f LEFT JOIN wp_content c ON c.content_id = f.content_id WHERE f.parent_id = :pid AND f.level = :lvl {$where}";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
@@ -333,7 +333,7 @@ class UserModel {
         $where  = " WHERE  
             ((f.sub_type = 'news' AND c.status = 'published' AND c.folder_show_user = 'yes')
             OR
-            (f.sub_type = 'project' AND f.status = 'active') )
+            (f.sub_type = 'project' AND f.status = 'active') ) AND f.status = 'active'
         ";
         $params = [];
         if (!empty($filters['level'])) {

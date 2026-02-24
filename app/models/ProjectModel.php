@@ -54,7 +54,7 @@ class ProjectModel {
             (f.sub_type = 'news' AND c.status = 'published' AND c.folder_show_admin = 'yes')
             OR
             (f.sub_type = 'project' AND f.status = 'active')
-        )";
+        ) AND f.status = 'active' ";
         $sql = "SELECT COUNT(DISTINCT f.id) FROM wp_folder f LEFT JOIN wp_content c ON c.content_id = f.content_id WHERE f.parent_id = :pid AND f.level = :lvl {$where}";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
@@ -143,7 +143,7 @@ class ProjectModel {
         $where  = " WHERE  
             ((f.sub_type = 'news' AND c.status = 'published' AND c.folder_show_admin = 'yes')
             OR
-            (f.sub_type = 'project' AND f.status = 'active') )
+            (f.sub_type = 'project') ) AND f.status = 'active'
         ";
         $params = [];
         if (!empty($filters['level'])) {
@@ -403,18 +403,11 @@ class ProjectModel {
             $sql_folder = "UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE id = :id";
             $stmt_folder = $this->db->prepare($sql_folder);
             $res1 = $stmt_folder->execute([':id' => $data['folder_id']]);
-            $sql_content = "UPDATE wp_content 
-                            SET 
-                                folder_id = NULL, 
-                                folder_show_admin = 'no', 
-                                folder_show_user = 'no', 
-                                updated_at = NOW() 
-                            WHERE content_id = :content_id 
-                            AND folder_id IN (SELECT id FROM wp_folder WHERE parent_id = :parent_id OR id = :parent_id)";
+            $sql_content = "UPDATE wp_content_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = :content_id AND folder_id = :folder_id";
             $stmt_content = $this->db->prepare($sql_content);
             $res2 = $stmt_content->execute([
                 ':content_id' => $data['content_id'],
-                ':parent_id'  => $parent_id
+                ':folder_id'  => $parent_id
             ]);
             return ($res1 && $res2);
         } catch (Exception $e) {
