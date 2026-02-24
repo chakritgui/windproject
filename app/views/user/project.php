@@ -57,4 +57,3 @@
 </div>
 <div id="scrollEnd" style="height: 50px;"></div>
 <script src="<?=BASE_URL?>/public/js/user/project.js?v=<?=time();?>" defer></script>
-<script src="<?=BASE_URL?>/public/js/view.js?v=<?=time();?>" defer></script>

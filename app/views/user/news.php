@@ -45,4 +45,3 @@
 </div>
 <div id="scrollEnd"></div>
 <script src="<?=BASE_URL?>/public/js/user/news.js?v=<?=time();?>" defer></script>
-<script src="<?=BASE_URL?>/public/js/view.js?v=<?=time();?>" defer></script>

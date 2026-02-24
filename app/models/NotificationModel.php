@@ -122,6 +122,14 @@ class NotificationModel {
             $stmt->execute();
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             foreach ($rows as &$r) {
+                if ($r['notifications_target'] === 'document') {
+                    $r['redirect'] = 'document';
+                } else if ($r['notifications_target'] === 'news') {
+                    $r['redirect'] = 'news';
+                } else if ($r['notifications_target'] === 'project') {
+                    $path = getProjectPath($r['notifications_item'], $pdo);
+                    $r['redirect'] = $path ? 'pstg/' . $path : 'pstg';
+                }
                 foreach (['read_at', 'publish_at', 'notification_at'] as $field) {
                     if (!empty($r[$field])) {
                         $r[$field] = convertTimeZone($r[$field], 'Y/m/d H:i:s');
@@ -139,4 +147,20 @@ class NotificationModel {
             ];
         }
     }
+}
+function getProjectPath($contentId, $pdo){
+    $stmt = $pdo->prepare("SELECT id, slug, parent_id, level FROM wp_folder WHERE content_id = ? AND status = 'active' LIMIT 1");
+    $stmt->execute([$contentId]);
+    $node = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$node) return null;
+    $slugs = [];
+    while ($node && $node['parent_id'] != 0) {
+        $stmt = $pdo->prepare("SELECT id, slug, parent_id, level FROM wp_folder WHERE id = ?");
+        $stmt->execute([$node['parent_id']]);
+        $node = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($node) {
+            array_unshift($slugs, $node['slug']);
+        }
+    }
+    return implode('/', $slugs);
 }

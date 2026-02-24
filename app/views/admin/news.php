@@ -93,4 +93,3 @@
     </div>
 </div>
 <script src="<?=BASE_URL?>/public/js/admin/news.js?v=<?=time()?>"></script>
-<script src="<?=BASE_URL?>/public/js/view.js?v=<?=time();?>" defer></script>

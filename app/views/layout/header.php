@@ -84,6 +84,7 @@
 <script src="<?=BASE_URL?>/public/js/object.js?v=<?=time();?>" defer></script>
 <script src="<?=BASE_URL?>/public/js/notification.js?v=<?=time();?>" defer></script>
 <script src="<?=BASE_URL?>/public/js/menu.js?v=<?=time();?>" defer></script>
+<script src="<?=BASE_URL?>/public/js/view.js?v=<?=time();?>" defer></script>
 <button type="button" id="btn-back-to-top" class="btn btn-sm btn-primary rounded-circle shadow-lg transition-all" title="Back to Top">
     <i class="fa-solid fa-angle-up"></i>
 </button>

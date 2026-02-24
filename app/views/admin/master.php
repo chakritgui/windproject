@@ -327,4 +327,3 @@
 <script src="<?=BASE_URL?>/public/js/admin/master/poles.js?v=<?=time();?>"></script>
 <script src="<?=BASE_URL?>/public/js/admin/master/project-status.js?v=<?=time();?>"></script>
 <script src="<?=BASE_URL?>/public/js/admin/master/level.js?v=<?=time();?>"></script>
-<script src="<?=BASE_URL?>/public/js/view.js?v=<?=time();?>" defer></script>

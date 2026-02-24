@@ -121,16 +121,8 @@ function handleNotificationItem(items) {
             }
         }
         const html = `
-            <li>
-                ${(item.notifications_target !== 'document') ? `
-                    ${(isPWA()) ? `
-                        <a onclick="openContent('${item.content_slug}', 'preview')" class="dropdown-item py-3 border-bottom view-content ${isUnread}">
-                    ` : `
-                        <a href="${BASE_URL}/content/view/${item.content_slug}" class="dropdown-item py-3 border-bottom ${isUnread}" target="_blank">
-                    `}
-                ` : `
-                        <div class="dropdown-item py-3 border-bottom" style="font-size: 12px !important;">
-                `}
+            <li class="notification-item" data-redirect="${item.redirect}">
+                <div class="dropdown-item py-3 border-bottom" style="font-size: 12px !important;">
                     <div class="d-flex align-items-start">
                         <div class="flex-shrink-0 me-3">
                             <div class="${bg} bg-opacity-10 rounded-circle p-2">
@@ -148,18 +140,23 @@ function handleNotificationItem(items) {
                             <div class="ms-2">
                                 <button class="btn btn-sm btn-outline-primary download-btn w-100 w-md-auto" data-id="${item.notifications_item}" data-path="${item.path}" data-file-name="${item.item_name}"><i class="fa-solid fa-download"></i></button>
                             </div>
-                        ` : ``}
+                        ` : `
+                             <div class="ms-2">
+                                <button class="btn btn-sm btn-outline-primary download-btn w-100 w-md-auto open-content" data-slug="${item.content_slug}"><i class="fa-solid fa-folder-open"></i></button>
+                            </div>
+                        `}
                         ${!item.read_at ? `<span class="badge bg-danger rounded-pill ms-2">${langData['new'] || 'New'}</span>` : ''}
                     </div>
-                ${(item.notifications_target !== 'document') ? `
-                    </a>
-                ` : `
-                    </div>
-                `}
-            </li>`;
+                </div>
+            </li>
+        `;
         $list.append(html);
     });
 }
+$(document).on('click', '.notification-item', function () {
+    const redirect = $(this).data('redirect');
+    window.location = `${BASE_URL}/${redirect}`;
+});
 $('.notification-list').on('scroll', async function () {
     const el = this;
     if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
@@ -180,7 +177,7 @@ function updateUnreadBadge(unread) {
     }
 }
 $(document).on('click', '.download-btn', function (e) {
-    e.preventDefault();
+    e.stopPropagation();
     const btn  = $(this);
     const id   = btn.data('id');
     const path = btn.data('path');
@@ -207,3 +204,8 @@ function triggerDownload(url, fileName='') {
     a.click();
     document.body.removeChild(a);
 }
+$(document).on('click', '.open-content', function (e) {
+    e.stopPropagation()
+    const slug = $(this).data('slug');
+    openContent(slug, 'view');
+});

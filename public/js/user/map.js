@@ -574,7 +574,6 @@ Fancybox.bind("[data-fancybox='gallery']", {
         },
     },
 });
-let vrViewer = null;
 function openVRModal(imgUrl) {
     const modal = new bootstrap.Modal(document.getElementById('vrModal'));
     modal.show();

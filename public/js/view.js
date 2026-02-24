@@ -132,7 +132,6 @@ function renderMultimediaSections(data) {
     });
     $('#multimediaArea').html(extraHtml);
 }
-let vrViewer = null;
 function openVRModal(imgUrl) {
     const modal = new bootstrap.Modal(document.getElementById('vrModal'));
     modal.show();
