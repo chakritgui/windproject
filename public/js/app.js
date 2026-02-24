@@ -93,7 +93,6 @@ async function requestAndSubscribe(registration) {
             } catch (e) { console.warn("Server unsubscription silent fail", e); }
         }
         await registration.update();
-
         const permission = await Notification.requestPermission();
         if (permission !== 'granted') {
             throw new Error(langData['permission_denied'] || "Permission not granted");
