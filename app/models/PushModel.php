@@ -17,6 +17,7 @@ class PushModel {
                 VALUES (?, ?, ?, ?, 'pwa', ?, ?, 1)
                 ON DUPLICATE KEY UPDATE 
                 user_id = VALUES(user_id),
+                endpoint = VALUES(endpoint),
                 p256dh = VALUES(p256dh),
                 auth = VALUES(auth),
                 browser = VALUES(browser),
