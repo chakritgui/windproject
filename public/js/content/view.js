@@ -1,10 +1,3 @@
-let contentState = {
-    pages: 'viewContent',
-    type: '',
-    lang: typeof currentLang !== 'undefined' ? currentLang : 'th',
-    isInternalReferrer: document.referrer && document.referrer.includes(window.location.hostname)
-};
-let vrViewer = null;
 $(document).ready(initViewContent);
 function initViewContent() {
     const urlParts = window.location.pathname.split('/');

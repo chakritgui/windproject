@@ -4,6 +4,7 @@ let contentState = {
     lang: typeof currentLang !== 'undefined' ? currentLang : 'th',
     isInternalReferrer: document.referrer && document.referrer.includes(window.location.hostname)
 };
+let vrViewer = null;
 function openContent(slugFromParam, modeFromParam) {
     const $modal = $("#windModal");
     const $dialog = $modal.find(".modal-dialog");
