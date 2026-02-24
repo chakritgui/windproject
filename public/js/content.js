@@ -100,7 +100,7 @@ function uploadImage(file, editor) {
         success: function (res) {
             let result = typeof res === 'string' ? JSON.parse(res) : res;
             if (result.uploaded && result.url) {
-                $(editor).summernote('insertImage', result.url);
+                $(editor).summernote('insertImage', BASE_URL + '/' +result.url);
             }
         },
         error: function () {

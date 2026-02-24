@@ -493,9 +493,6 @@ function executeSave() {
     });
     formData.append("poles_id", $("#poles_id").val() || "");
     formData.append("content_id", $("#content_id").val() || "");
-    formData.append("title_en", $("#title_en").val() || "");
-    formData.append("title_lo", $("#title_lo").val() || "");
-    formData.append("title_th", $("#title_th").val() || "");
     if (typeof currentFolderId !== 'undefined') {
         formData.append("parent_id", currentFolderId);
     }
@@ -506,9 +503,23 @@ function executeSave() {
         const plainText = content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim();
         return plainText === '' ? '' : content;
     };
-    formData.append("content_en", getCleanContent('en'));
-    formData.append("content_lo", getCleanContent('lo'));
-    formData.append("content_th", getCleanContent('th'));
+    ['en', 'lo', 'th'].forEach(lang => {
+        const $editor = $(`#content_${lang}`);
+        const $title = $(`#title_${lang}`);
+        if ($editor.length) {
+            let htmlContent = $editor.summernote('code').trim();
+            const hasText = htmlContent.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim().length > 0;
+            const hasImage = htmlContent.includes('<img');
+            if (hasText || hasImage) {
+                formData.append(`content_${lang}`, htmlContent);
+            } else {
+                formData.append(`content_${lang}`, ''); 
+            }
+        }
+        if ($title.length) {
+            formData.append(`title_${lang}`, $title.val().trim());
+        }
+    });
     formData.append("auto_translate", $("#auto_translate").is(":checked") ? 'yes' : 'no');
     const coverFile = $("#cover")[0]?.files[0] || null;
     if (coverFile) {

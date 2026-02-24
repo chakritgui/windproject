@@ -469,11 +469,20 @@ function executeSave() {
     formData.append("send_notification",$("#send_notification").is(":checked") ? 'yes' : 'no');
     ['en', 'lo', 'th'].forEach(lang => {
         const $editor = $(`#content_${lang}`);
-        if (!$editor.length) return;
-        const html = $editor.summernote('code').trim();
-        const text = html.replace(/<br\s*\/?>/gi, '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim();
-        formData.append(`content_${lang}`, text === '' ? '' : html);
-        formData.append(`title_${lang}`, $(`#title_${lang}`).val() || "");
+        const $title = $(`#title_${lang}`);
+        if ($editor.length) {
+            let htmlContent = $editor.summernote('code').trim();
+            const hasText = htmlContent.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim().length > 0;
+            const hasImage = htmlContent.includes('<img');
+            if (hasText || hasImage) {
+                formData.append(`content_${lang}`, htmlContent);
+            } else {
+                formData.append(`content_${lang}`, ''); 
+            }
+        }
+        if ($title.length) {
+            formData.append(`title_${lang}`, $title.val().trim());
+        }
     });
     formData.append("content_id", $("#content_id").val() || "");
     formData.append("status", $("#status").val() || "draft");

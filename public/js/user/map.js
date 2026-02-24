@@ -411,7 +411,7 @@ async function openPoles(poleId) {
                     background-position: center;
                     background-repeat: no-repeat;
                     background-attachment: local;
-                    border-radius: 1rem; /* ปรับให้โค้งรับกับ card */
+                    border-radius: 1rem;
                 `;
             }
             const html = `
@@ -475,6 +475,25 @@ async function openPoles(poleId) {
             `;
             modalBody.html(html);
             modalTitle.text(`${data.poles_code}`);
+            modalBody.find('img').each(function() {
+                const $img = $(this);
+                if (!$img.parent('a').length) {
+                    const imgSrc = $img.attr('src');
+                    if (!imgSrc) return;
+                    $img.wrap(`<a href="${imgSrc}" data-fancybox="content-images" class="content-img-link"></a>`);
+                    $img.css({
+                        cursor: 'zoom-in',
+                        transition: 'opacity 0.2s'
+                    }).addClass('hover-opacity');
+                    $img.attr('loading', 'lazy');
+                }
+            });
+            if (typeof Fancybox !== 'undefined') {
+                Fancybox.bind('[data-fancybox]', {
+                    Hash: false,
+                    Toolbar: { display: { left: ["infobar"], right: ["close"] } }
+                });
+            }
         } else {
             modalBody.html(renderErrorAlert('warning', langData['no_data_found'] || 'No data found'));
         }

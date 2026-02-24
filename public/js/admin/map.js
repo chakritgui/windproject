@@ -200,8 +200,6 @@ function renderPolygonList() {
 function openEditPopup(id) {
     const poly = polygons.find(p => p.poly_id == id);
     if (!poly) return;
-    console.log(poly);
-    
     const modalHtml = `
     <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-sm modal-dialog-centered">

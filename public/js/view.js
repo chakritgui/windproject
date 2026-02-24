@@ -99,6 +99,7 @@ function setupFancybox() {
         if (!$img.parent('a').length) {
             $img.wrap(`<a href="${$img.attr('src')}" data-fancybox="content-images" class="content-img-link"></a>`);
             $img.css({ 'cursor': 'zoom-in', 'transition': 'opacity 0.2s' }).addClass('hover-opacity');
+            $img.attr("loading", "lazy");
         }
     });
     if (typeof Fancybox !== 'undefined') {
