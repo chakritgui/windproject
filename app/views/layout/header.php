@@ -35,7 +35,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link href="<?=BASE_URL?>/public/css/style.css?v=<?= time(); ?>" rel="stylesheet">
 <?php if (file_exists($manifestFile)) { ?>
-    <link rel="manifest" href="<?= BASE_URL ?>/public/manifest.json?v=<?php echo time(); ?>">
+    <link rel="manifest" href="<?= BASE_URL ?>/public/manifest.json?v=1.0.0">
     <link rel="apple-touch-icon" href="<?=BASE_URL?>/public/icons/icon-ios.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -65,7 +65,6 @@
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register(BASE_URL + '/sw.js')
                 .then(function(registration) {
-                    registration.update();
                     console.log('SW Registered with scope:', registration.scope);
                 })
                 .catch(function(error) {
