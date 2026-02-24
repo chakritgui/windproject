@@ -5,7 +5,7 @@ let state = {
     level: 1,
     refId: null,
     path: [{ id: null, slug: null, name: 'PSTG PROJECT', level: 1}],
-    sort: 'asc',
+    sort: 'desc',
     offset: 0,
     isLoading: false,
     isFull: false,

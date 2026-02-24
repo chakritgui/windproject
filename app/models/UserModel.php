@@ -254,7 +254,7 @@ class UserModel {
             }
         }
     }
-    public function info($start = 0, $length = 20, $filters = [], $order = 'asc') {
+    public function info($start = 0, $length = 20, $filters = [], $order = 'desc') {
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
         $sql = "SELECT 
             f.id, f.name as folder_name, f.slug, f.level, f.parent_id, f.created_at, f.type, f.content_id, c.cover, c.content_slug, f.sub_type,
@@ -283,7 +283,11 @@ class UserModel {
             WHERE status = 'active'
             GROUP BY content_id
         ) m ON m.content_id = c.content_id
-        {$mainWhere} ORDER BY ifnull(f.folder_order, f.id) {$order}";
+        {$mainWhere} 
+        ORDER BY 
+            (CASE WHEN f.type = 'folder' THEN 0 ELSE 1 END) ASC,
+            (CASE WHEN f.type = 'folder' THEN ifnull(f.folder_order, f.id) END) ASC,
+            (CASE WHEN f.type != 'folder' THEN f.id END) {$order}";
         $stmt = $this->db->prepare($sql);
         foreach ($mainParams as $k => $v) { $stmt->bindValue($k, $v); }
         $stmt->execute();

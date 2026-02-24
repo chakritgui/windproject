@@ -7,7 +7,17 @@ let limit = 20;
 let isLoading = false;
 let isFull = false;
 let currentSearch = '';
-let currentSort = 'asc';
+let currentSort = 'desc';
+$(document).on('click', '.sort-option', function() {
+    const sortValue = $(this).data('sort');
+    const label = $(this).data('label');
+    currentSort = sortValue;
+    $('#selectedSortLabel').text(langData[label]);
+    offset = 1;
+    isFull = true;
+    $('#listViewBody').empty();
+    initProject(); 
+});
 function updateURL() {
     const slugString = currentPath.filter(p => p.slug) .map(p => p.slug).join('/');
     const newURL = `${BASE_URL}/project/${slugString}`;

@@ -16,10 +16,10 @@
                 </div>
             </div>
             <div class="header-stats d-flex align-items-center gap-3">
-                <div class="dropdown d-none">
+                <div class="dropdown">
                     <button class="btn btn-white border shadow-sm dropdown-toggle d-flex align-items-center" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fa-solid fa-sort me-2 text-secondary"></i> 
-                        <span id="selectedSortLabel" data-i18n="oldest" class="fw-medium"></span>
+                        <span id="selectedSortLabel" data-i18n="newest" class="fw-medium"></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="sortDropdown">
                         <li>

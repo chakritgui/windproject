@@ -48,10 +48,10 @@
         </div>
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
             <div class="d-flex gap-2">
-                <div class="dropdown d-none">
+                <div class="dropdown">
                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fa-solid fa-sort me-1"></i> 
-                        <span id="selectedSortLabel" data-i18n="oldest"></span>
+                        <span id="selectedSortLabel" data-i18n="newest"></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
                         <li>

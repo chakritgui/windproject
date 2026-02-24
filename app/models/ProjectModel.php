@@ -4,7 +4,7 @@ class ProjectModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function get($start = 0, $length = 20, $filters = [], $search = '', $order = 'asc') {
+    public function get($start = 0, $length = 20, $filters = [], $search = '', $order = 'desc') {
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
         $sql = "SELECT 
                 f.id, f.name as folder_name, f.slug, f.level, f.parent_id, f.created_at, f.type, f.content_id, 
@@ -17,7 +17,11 @@ class ProjectModel {
             LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang='en'
             LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang='lo'
             LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang='th'
-            {$mainWhere} ORDER BY ifnull(f.folder_order, f.id) {$order}";
+            {$mainWhere} 
+            ORDER BY 
+                (CASE WHEN f.type = 'folder' THEN 0 ELSE 1 END) ASC,
+                (CASE WHEN f.type = 'folder' THEN ifnull(f.folder_order, f.id) END) ASC,
+                (CASE WHEN f.type != 'folder' THEN f.id END) {$order}";
         $stmt = $this->db->prepare($sql);
         foreach ($mainParams as $k => $v) { $stmt->bindValue($k, $v); }
         $stmt->execute();
