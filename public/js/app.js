@@ -148,7 +148,7 @@ async function requestAndSubscribe(registration) {
                         <i class="fa-solid fa-triangle-exclamation"></i>
                     </div>
                     <div class="swal-result-title">${langData['process_failed'] || 'Something went wrong'}</div>
-                    <div class="swal-result-body">${error.message} Subscribe detailed error: ${error.name}</div>
+                    <div class="swal-result-body">${error.message} Subscribe detailed error: ${error.name} ${VAPID_PUBLIC_KEY} ${VAPID_PUBLIC_KEY.length}</div>
                 </div>
             `,
             showConfirmButton: true,
