@@ -9,7 +9,7 @@ body {
     font-size: 12px !important;
     margin: 0; padding: 0;
 }
-.swal-notify-title, .swal-notify-body, .swal2-confirm, .swal2-cancel {
+.swal-notify-title, .swal-notify-body, .swal2-confirm, .swal2-cancel, .swal-result-title, .swal-result-body {
     font-family: 'Sarabun', sans-serif !important;
 }
 body { 

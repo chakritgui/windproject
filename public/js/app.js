@@ -146,11 +146,11 @@ async function requestAndSubscribe(registration) {
                         <i class="fa-solid fa-triangle-exclamation"></i>
                     </div>
                     <div class="swal-result-title">${langData['process_failed'] || 'Something went wrong'}</div>
-                    <div class="swal-result-body">${error.message}</div>
+                    <div class="swal-result-body">${error.message} Subscribe detailed error: ${e.name}</div>
                 </div>
             `,
             showConfirmButton: true,
-            confirmButtonText: 'OK',
+            confirmButtonText: langData['ok'],
             customClass: {
                 popup: 'swal-pwa-popup',
                 confirmButton: 'swal-pwa-btn-confirm'
