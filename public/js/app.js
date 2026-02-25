@@ -92,7 +92,7 @@ async function requestAndSubscribe(registration) {
                 });
             } catch (e) { console.warn("Server unsubscription silent fail", e); }
         }
-        await registration.update();
+        // await registration.update();
         if (Notification.permission !== 'granted') {
             const permission = await Notification.requestPermission();
             if (permission !== 'granted') {
