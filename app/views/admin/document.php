@@ -52,11 +52,11 @@
                             <p><i class="fa-solid fa-tags"></i> <span data-i18n="pole_types"></span></p>
                             <select id="filter_type" class="form-select filter"></select>
                         </div>
-                        <div class="col-sm-2 col-6">
+                        <div class="col-sm-2 col-6 d-none">
                             <p><i class="fa-solid fa-location-dot"></i> <span data-i18n="installation"></span></p>
                             <select id="filter_installations" class="form-select filter"></select>
                         </div>
-                        <div class="col-sm-2 col-6">
+                        <div class="col-sm-2 col-6 d-none">
                             <p><i class="fa-solid fa-tower-broadcast"></i> <span data-i18n="poles"></span></p>
                             <select id="filter_poles" class="form-select filter"></select>
                         </div>
