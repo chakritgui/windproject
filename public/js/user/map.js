@@ -225,23 +225,23 @@ async function loadPoles(map) {
     }
 }
 async function updatePoleWind(lat, lng, windId, arrowId) {
-    // try {
-    //     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=ms`;
-    //     const res = await fetch(url);
-    //     const weather = await res.json();
-    //     if (weather.current) {
-    //         const speed = weather.current.wind_speed_10m;
-    //         const dir = weather.current.wind_direction_10m;
-    //         const el = document.getElementById(windId);
-    //         const arrow = document.getElementById(arrowId);
-    //         if (el) el.innerText = `${speed.toFixed(1)} m/s`;
-    //         if (arrow) {
-    //             arrow.style.transform = `rotate(${dir - 90}deg)`;
-    //         }
-    //     }
-    // } catch (e) {
-    //     console.error("Point Forecast failed", e);
-    // }
+    try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=ms`;
+        const res = await fetch(url);
+        const weather = await res.json();
+        if (weather.current) {
+            const speed = weather.current.wind_speed_10m;
+            const dir = weather.current.wind_direction_10m;
+            const el = document.getElementById(windId);
+            const arrow = document.getElementById(arrowId);
+            if (el) el.innerText = `${speed.toFixed(1)} m/s`;
+            if (arrow) {
+                arrow.style.transform = `rotate(${dir - 90}deg)`;
+            }
+        }
+    } catch (e) {
+        console.error("Point Forecast failed", e);
+    }
 }
 function toggleWind(isOn) {
     if (!windyAPI) return;
