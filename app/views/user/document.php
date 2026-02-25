@@ -62,19 +62,19 @@
         <div class="card shadow-sm border-0 rounded-4 mb-4">
             <div class="card-body p-3 p-lg-4">
                 <div class="row g-3 align-items-end">
-                    <div class="col-lg-3 col-md-3 col-6">
+                    <div class="col-lg-3 col-md-3 col-12">
                         <label class="form-label small fw-bold text-muted mb-1">
                             <i class="fa-regular fa-calendar me-1"></i><span data-i18n="month-year"></span>
                         </label>
                         <input type="text" id="filter_date" class="form-control rounded-3" placeholder="MM/YYYY">
                     </div>
-                    <div class="col-lg-3 col-md-3 col-6">
+                    <div class="col-lg-3 col-md-3 col-12">
                         <label class="form-label small fw-bold text-muted mb-1">
                             <i class="fa-solid fa-file-lines me-1"></i><span data-i18n="contract"></span>
                         </label>
                         <select id="filter_contract" class="form-select filter rounded-3"></select>
                     </div>
-                    <div class="col-lg-3 col-md-3 col-6">
+                    <div class="col-lg-3 col-md-3 col-12">
                         <label class="form-label small fw-bold text-muted mb-1">
                             <i class="fa-solid fa-folder-tree me-1"></i><span data-i18n="project"></span>
                         </label>
