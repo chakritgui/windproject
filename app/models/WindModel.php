@@ -174,16 +174,16 @@ class WindModel{
             'status'  => true,
         ];
     }
-    public function import(array $data): array{
+    public function import(array $data): array {
         if (!isset($_FILES['wind_file'])) {
-            return ['status' => false, 'message' => 'No file'];
+            return ['status' => false, 'message' => 'Uploaded file not found.'];
         }
         if ($_FILES['wind_file']['error'] !== UPLOAD_ERR_OK) {
             return ['status' => false, 'message' => 'Upload error code: ' . $_FILES['wind_file']['error']];
         }
         $importId = null;
         try {
-            $stmt = $this->db->prepare("INSERT INTO wp_imports (import_start, status, import_record, remark) VALUES (NOW(), 'complete', 0, 'Importing...')");
+            $stmt = $this->db->prepare("INSERT INTO wp_imports (import_start, status, import_record, remark) VALUES (NOW(), 'processing', 0, 'กำลังตรวจสอบและนำเข้าข้อมูล...')");
             $stmt->execute();
             $importId = (int)$this->db->lastInsertId();
             $importRecord = $this->handleFileImport($_FILES['wind_file']);
@@ -195,7 +195,7 @@ class WindModel{
             ]);
             return [
                 'status'  => true,
-                'message' => 'Import success',
+                'message' => 'import_successfully',
                 'record'  => $importRecord
             ];
         } catch (Throwable $e) {
@@ -218,15 +218,15 @@ class WindModel{
         if (!is_dir($tmpDir)) {
             mkdir($tmpDir, 0777, true);
         }
+        $csvFiles = [];
         if ($ext === 'xlsx') {
             $csvFiles = $this->convertXlsxToCsv($file['tmp_name'], $tmpDir);
         } elseif ($ext === 'csv') {
-            $csvFiles = [[
-                'sheet' => 'DEFAULT',
-                'file'  => $this->moveUploadedCsv($file, $tmpDir)
-            ]];
+            $uploadedPath = $this->moveUploadedCsv($file, $tmpDir);
+            $validatedPath = $this->validateCsvFile($uploadedPath, $tmpDir);
+            $csvFiles = [['sheet' => 'CSV_Data', 'file' => $validatedPath]];
         } else {
-            throw new Exception('Unsupported file type');
+            throw new Exception('Unsupported file type. Only .xlsx and .csv files are supported.');
         }
         $importer = $this->detectImporter();
         $counter = 0;
@@ -235,49 +235,6 @@ class WindModel{
         }
         $this->cleanup($tmpDir);
         return $counter;
-    }
-    private function normalizeCell($cell): string {
-        if ($cell instanceof DateTime) {
-            return $cell->format('Y-m-d H:i:s');
-        }
-        if ($cell === null) return '';
-        $value = trim(str_replace(["\r", "\n"], ' ', (string)$cell));
-        if ($value === '') return '';
-        $formats = [
-            'j/n/Y H:i', 
-            'd/m/Y H:i', 
-            'd/m/Y H:i:s',
-            'd/m/Y h:i:s A',
-            'Y-m-d H:i:s'
-        ];
-        foreach ($formats as $format) {
-            $d = DateTime::createFromFormat($format, $value);
-            if ($d) {
-                return $d->format('Y-m-d H:i:s');
-            }
-        }
-        return $value;
-    }
-    private function convertXlsxToCsv(string $xlsx, string $tmpDir): array {
-        $reader = ReaderEntityFactory::createXLSXReader();
-        $reader->open($xlsx);
-        $files = [];
-        foreach ($reader->getSheetIterator() as $sheet) {
-            $name = preg_replace('/[^a-zA-Z0-9_]/', '_', $sheet->getName());
-            $csv  = "{$tmpDir}/{$name}.csv";
-            $fp   = fopen($csv, 'w');
-            foreach ($sheet->getRowIterator() as $row) {
-                $cleanRow = [];
-                foreach ($row->toArray() as $cell) {
-                    $cleanRow[] = $this->normalizeCell($cell);
-                }
-                fputcsv($fp, $cleanRow);
-            }
-            fclose($fp);
-            $files[] = ['sheet' => $name, 'file' => $csv];
-        }
-        $reader->close();
-        return $files;
     }
     private function moveUploadedCsv(array $file, string $dir): string{
         if (!is_uploaded_file($file['tmp_name'])) {
@@ -289,6 +246,94 @@ class WindModel{
             throw new Exception('Failed to move uploaded CSV');
         }
         return $target;
+    }
+    private function validateAndCleanRow(array $cells, int $rowIndex, string $sourceName): array {
+        if (count($cells) < 17) {
+            throw new Exception("[$sourceName] Row $rowIndex: Data is incomplete. Expected 17 columns (A–Q).");
+        }
+        $cleanRow = [];
+        foreach ($cells as $index => $cell) {
+            $value = $this->normalizeCell($cell);
+            $colLetter = chr(65 + $index);
+            if ($index <= 9 && ($value === null || $value === '')) {
+                throw new Exception("[$sourceName] Row $rowIndex: The value in column $colLetter must not be empty.");
+            }
+            if ($index === 5) {
+                $d = DateTime::createFromFormat('Y-m-d H:i:s', $value);
+                if (!$d || $d->format('Y-m-d H:i:s') !== $value) {
+                    throw new Exception("[$sourceName] Row $rowIndex: The date format in column F is invalid.");
+                }
+            }
+            if ($index === 8 || $index === 9) {
+                if (!is_numeric($value)) {
+                    throw new Exception("[$sourceName] Row $rowIndex: Column $colLetter must contain a numeric coordinate value.");
+                }
+            }
+            if ($index >= 10 && $index <= 16) {
+                if (!is_numeric($value) || $value === '') {
+                    $value = 0;
+                }
+            }
+            $cleanRow[] = $value;
+        }
+        return $cleanRow;
+    }
+    private function convertXlsxToCsv(string $xlsx, string $tmpDir): array {
+        $reader = \Box\Spout\Reader\Common\Creator\ReaderEntityFactory::createXLSXReader();
+        $reader->open($xlsx);
+        $files = [];
+        foreach ($reader->getSheetIterator() as $sheet) {
+            $name = preg_replace('/[^a-zA-Z0-9_]/', '_', $sheet->getName());
+            $csvPath = "{$tmpDir}/{$name}.csv";
+            $fp = fopen($csvPath, 'w');
+            foreach ($sheet->getRowIterator() as $rowIndex => $row) {
+                $cells = $row->toArray();
+                if ($rowIndex === 1) { 
+                    fputcsv($fp, $cells);
+                    continue;
+                }
+                $cleanRow = $this->validateAndCleanRow($cells, $rowIndex, $sheet->getName());
+                fputcsv($fp, $cleanRow);
+            }
+            fclose($fp);
+            $files[] = ['sheet' => $name, 'file' => $csvPath];
+        }
+        $reader->close();
+        return $files;
+    }
+    private function validateCsvFile(string $filePath, string $tmpDir): string {
+        $targetPath = $tmpDir . '/v_' . basename($filePath);
+        $readFp = fopen($filePath, 'r');
+        $writeFp = fopen($targetPath, 'w');
+        $rowIndex = 1;
+        while (($cells = fgetcsv($readFp)) !== FALSE) {
+            if ($rowIndex === 1) {
+                fputcsv($writeFp, $cells);
+            } else {
+                $cleanRow = $this->validateAndCleanRow($cells, $rowIndex, 'CSV');
+                fputcsv($writeFp, $cleanRow);
+            }
+            $rowIndex++;
+        }
+        fclose($readFp);
+        fclose($writeFp);
+        return $targetPath;
+    }
+    private function normalizeCell($cell): string {
+        if ($cell instanceof DateTime) {
+            return $cell->format('Y-m-d H:i:s');
+        }
+        if ($cell === null) return '';
+        $value = trim(str_replace(["\r", "\n"], ' ', (string)$cell));
+        if ($value === '') return '';
+        $formats = ['j/n/Y H:i', 'd/m/Y H:i', 'd/m/Y H:i:s', 'd/m/Y h:i:s A', 'Y-m-d H:i:s'];
+        foreach ($formats as $format) {
+            $d = DateTime::createFromFormat($format, $value);
+            if ($d && $d->format($format) === $value) {
+                return $d->format('Y-m-d H:i:s');
+            }
+        }
+        return $value;
     }
     private function detectImporter(): ImporterInterface{
         return new LoadDataStagingImporter($this->db);
