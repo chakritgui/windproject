@@ -396,8 +396,25 @@ async function openPoles(poleId) {
             const hasContent = data.content;
             const fullBaseUrl = BASE_URL.replace(/\/$/, "");
             const title = hasContent ? (data.content.title[lang] || data.content.title['th']) : data.installations_name;
-            let bodyContent = hasContent ? (data.content.content[lang] || data.content.content['th'] || '') : '';
-            bodyContent = bodyContent.replace(/src="(?!(http|https|\/\/))/g, `src="${fullBaseUrl}/`);
+            let bodyContent = '';
+            if (hasContent && data.content && data.content.content) {
+                const contentObj = data.content.content;
+                const priority = ['en', 'lo', 'th'];
+                const orderedLangs = [
+                    lang,
+                    ...priority.filter(l => l !== lang)
+                ];
+                for (const l of orderedLangs) {
+                    if (contentObj[l] && contentObj[l].trim() !== '') {
+                        bodyContent = contentObj[l];
+                        break;
+                    }
+                }
+            }
+            bodyContent = bodyContent.replace(
+                /src="(?!(http|https|\/\/))/g,
+                `src="${fullBaseUrl}/`
+            );
             const bg = data.project_bg || {};
             const project_background = bg.project_background;
             const project_opacity = bg.project_opacity;
@@ -482,9 +499,7 @@ async function openPoles(poleId) {
                 $img.removeAttr('width height');
                 let style = $img.attr('style');
                 if (style) {
-                    style = style
-                        .replace(/width\s*:\s*[^;]+;?/gi, '')
-                        .replace(/height\s*:\s*[^;]+;?/gi, '');
+                    style = style.replace(/width\s*:\s*[^;]+;?/gi, '').replace(/height\s*:\s*[^;]+;?/gi, '');
                     $img.attr('style', style.trim());
                 }
                 if (!$img.attr('loading')) {
@@ -492,10 +507,7 @@ async function openPoles(poleId) {
                 }
                 if (!$img.parent('a').length) {
                     $img.wrap(`
-                        <a href="${imgSrc}"
-                        data-fancybox="content-images"
-                        class="content-img-link">
-                        </a>
+                        <a href="${imgSrc}" data-fancybox="content-images" class="content-img-link"></a>
                     `);
                 }
                 $img.css({
