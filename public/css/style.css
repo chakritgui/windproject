@@ -9,6 +9,9 @@ body {
     font-size: 12px !important;
     margin: 0; padding: 0;
 }
+.swal-notify-title, .swal-notify-body, .swal2-confirm, .swal2-cancel {
+    font-family: 'Sarabun', sans-serif !important;
+}
 body { 
     opacity: 0; 
     transition: opacity 0.4s ease-in-out; 
