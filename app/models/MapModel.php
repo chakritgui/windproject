@@ -15,75 +15,62 @@ class MapModel{
     }
     public function poleslocation() {
         $sql = "SELECT 
-            p.*, t.type_id, t.type_name, l.installations_name, t.type_icon
-        FROM wp_winds w 
-        LEFT JOIN wp_poles p on p.poles_id = w.poles_id
-        LEFT JOIN wp_type t on t.type_id = p.type_id 
-        LEFT JOIN wp_installations l on l.installations_id = p.installations_id
-        WHERE p.status = 'online' 
-        GROUP BY p.poles_id";
+                    p.*, 
+                    t.type_id, 
+                    t.type_name, 
+                    l.installations_name, 
+                    t.type_icon
+                FROM wp_poles p
+                INNER JOIN wp_type t ON t.type_id = p.type_id 
+                INNER JOIN wp_installations l ON l.installations_id = p.installations_id
+                WHERE p.status = 'online'";
+        
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-    public function project(){
-        $sql = "SELECT 
-            p.project_id,
-            CASE 
-                WHEN p.project_name_display IS NOT NULL AND p.project_name_display <> '' 
-                    THEN p.project_name_display
-                WHEN p.project_name IS NOT NULL AND p.project_name <> '' 
-                    THEN p.project_name
-                ELSE '' 
-            END AS project_name
-        FROM wp_winds w
-        LEFT JOIN wp_poles po on po.poles_id = w.poles_id
-        LEFT JOIN wp_project p on p.project_id = po.project_id 
-        WHERE p.status = 'active' 
-        GROUP BY p.project_id
-        ORDER BY p.project_id ASC";
+    public function project() {
+        $sql = "SELECT DISTINCT
+                    p.project_id,
+                    COALESCE(NULLIF(p.project_name_display, ''), p.project_name, '') AS project_name
+                FROM wp_project p
+                INNER JOIN wp_poles po ON po.project_id = p.project_id
+                WHERE p.status = 'active' AND po.status = 'online'
+                ORDER BY p.project_id ASC";
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function type($project_id) {
-        $sql = "SELECT 
-            t.type_id,  
-            CASE 
-                WHEN t.type_name_display IS NOT NULL AND t.type_name_display <> '' 
-                    THEN t.type_name_display
-                WHEN t.type_name IS NOT NULL AND t.type_name <> '' 
-                    THEN t.type_name
-                ELSE '' 
-            END AS type_name
-        FROM wp_winds w
-        LEFT JOIN wp_poles po on po.poles_id = w.poles_id
-        LEFT JOIN wp_type t on t.type_id = po.type_id 
-        WHERE t.status = 'active' and po.status = 'online' and po.project_id = :project_id
-        GROUP BY t.type_id 
-        ORDER BY t.type_id";
+        $sql = "SELECT DISTINCT
+                    t.type_id,  
+                    COALESCE(NULLIF(t.type_name_display, ''), t.type_name, '') AS type_name
+                FROM wp_type t
+                INNER JOIN wp_poles po ON po.type_id = t.type_id 
+                WHERE t.status = 'active' 
+                  AND po.status = 'online' 
+                  AND po.project_id = :project_id
+                ORDER BY t.type_id ASC";
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':project_id' => $project_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function station($project_id, $type_id) {
         $sql = "SELECT 
-            l.installations_id, 
-            CASE 
-                WHEN l.installations_name_display IS NOT NULL AND l.installations_name_display <> '' 
-                    THEN l.installations_name_display
-                WHEN l.installations_name IS NOT NULL AND l.installations_name <> '' 
-                    THEN l.installations_name
-                ELSE '' 
-            END AS installations_name,
-            p.poles_lat, p.poles_lng, p.poles_id
-            FROM wp_winds w
-            LEFT JOIN wp_poles p on p.poles_id = w.poles_id
-            LEFT JOIN wp_installations l on l.installations_id = p.installations_id
-            WHERE l.status = 'active' and p.status = 'online' 
-            AND p.project_id = :project_id AND p.type_id = :type_id
-            GROUP BY l.installations_id 
-            ORDER BY l.installations_id
-        ";
+                    l.installations_id, 
+                    COALESCE(NULLIF(l.installations_name_display, ''), l.installations_name, '') AS installations_name,
+                    p.poles_lat, 
+                    p.poles_lng, 
+                    p.poles_id
+                FROM wp_installations l
+                INNER JOIN wp_poles p ON p.installations_id = l.installations_id
+                WHERE l.status = 'active' 
+                  AND p.status = 'online' 
+                  AND p.project_id = :project_id 
+                  AND p.type_id = :type_id
+                ORDER BY l.installations_id ASC";
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             ':project_id' => $project_id,
