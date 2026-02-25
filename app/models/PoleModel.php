@@ -96,7 +96,7 @@ class PoleModel {
                 AND w.wind_datetime BETWEEN ? AND ? 
                 AND w.status = 'active' 
                 GROUP BY w.levels_id, DATE_FORMAT(w.wind_datetime, '%Y-%m-%d %H:%i') 
-                ORDER BY w.wind_datetime ASC, hl.height_levels DESC";
+                ORDER BY w.wind_datetime ASC, ifnull(hl.height_order, hl.levels_id) ASC";
         $stmt = $this->db->prepare($sql);
         $executeParams = array_merge([$params['poles_id']], $levels, [$start, $end]);
         $stmt->execute($executeParams); 
@@ -138,7 +138,7 @@ class PoleModel {
         $sqlLevels = "SELECT levels_id, height_levels
                     FROM wp_height_levels
                     WHERE height_id = ? AND status <> 'deleted'
-                    ORDER BY CAST(height_levels AS UNSIGNED) DESC"; 
+                    ORDER BY ifnull(height_order, levels_id) ASC"; 
         $stmtLevels = $this->db->prepare($sqlLevels);
         $stmtLevels->execute([$params['height_id']]);
         $levels = $stmtLevels->fetchAll(PDO::FETCH_ASSOC);

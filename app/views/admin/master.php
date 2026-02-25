@@ -318,6 +318,7 @@
         </div>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script src="<?=BASE_URL?>/public/js/admin/master.js?v=<?=time();?>"></script>
 <script src="<?=BASE_URL?>/public/js/admin/master/contracts.js?v=<?=time();?>"></script>
 <script src="<?=BASE_URL?>/public/js/admin/master/group.js?v=<?=time();?>"></script>

@@ -26,7 +26,7 @@ class LevelModel {
                 h.height_name,
                 h.height_limit,
                 h.created_at,
-                GROUP_CONCAT(l.height_levels ORDER BY l.levels_id) AS height_levels,
+                GROUP_CONCAT(l.height_levels ORDER BY IFNULL(l.height_order, l.levels_id) ASC) AS height_levels,
                 h.status
             FROM wp_height h
             LEFT JOIN wp_height_levels l ON l.height_id = h.height_id AND l.status <> 'deleted'
@@ -81,9 +81,7 @@ class LevelModel {
         if (!$id) {
             return ['height_id' => '', 'height_name' => '', 'height_levels' => '', 'height_limit' => 3, 'status' => 'active'];
         }
-        $sql = "SELECT h.height_id, h.height_name, h.height_limit, h.created_at, group_concat(l.height_levels order by l.levels_id) as height_levels, h.status
-                FROM wp_height h
-                LEFT JOIN wp_height_levels l on l.height_id = h.height_id and l.status <> 'deleted' WHERE h.height_id = ?";
+        $sql = "SELECT h.height_id, h.height_name, h.height_limit, h.created_at, group_concat(l.height_levels order by ifnull(l.height_order, l.levels_id) ASC) as height_levels, h.status FROM wp_height h LEFT JOIN wp_height_levels l on l.height_id = h.height_id and l.status <> 'deleted' WHERE h.height_id = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([(int)$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
@@ -94,6 +92,7 @@ class LevelModel {
         $levels_str = $data['height_levels'] ?? '';
         $height_limit = $data['height_limit'] ?? 3;
         $status = $data['status'] ?? 'active';
+
         if ($this->isDuplicateName($name, $id)) {
             return ['status' => false, 'message' => 'already_exists'];
         }
@@ -103,10 +102,8 @@ class LevelModel {
                 $sql = "UPDATE wp_height SET height_name = :name, height_limit = :height_limit, updated_at = NOW(), status = :status WHERE height_id = :id";
                 $stmt = $this->db->prepare($sql);
                 $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
-                $stmt->bindValue(':height_limit', (int)$height_limit, PDO::PARAM_INT);
             } else {
-                $sql = "INSERT INTO wp_height (height_name, height_limit, status, created_at, updated_at) 
-                        VALUES (:name, :height_limit :status, NOW(), NOW())";
+                $sql = "INSERT INTO wp_height (height_name, height_limit, status, created_at, updated_at) VALUES (:name, :height_limit, :status, NOW(), NOW())";
                 $stmt = $this->db->prepare($sql);
             }
             $stmt->bindValue(':name', $name);
@@ -116,31 +113,24 @@ class LevelModel {
             $current_height_id = $id ?: $this->db->lastInsertId();
             $sqlMarkDeleted = "UPDATE wp_height_levels SET status = 'deleted', updated_at = NOW() WHERE height_id = :hid";
             $stmtMark = $this->db->prepare($sqlMarkDeleted);
-            $stmtMark->bindValue(':hid', $current_height_id, PDO::PARAM_INT);
-            $stmtMark->execute();
+            $stmtMark->execute([':hid' => $current_height_id]);
             if (!empty($levels_str)) {
-                $levels_array = array_unique(explode(',', $levels_str));
-                $sqlUpsert = "INSERT INTO wp_height_levels (height_id, height_levels, status, created_at, updated_at) 
-                            VALUES (:hid, :lvl, 'active', NOW(), NOW())
-                            ON DUPLICATE KEY UPDATE status = 'active', updated_at = NOW()";
-                $stmtIns = $this->db->prepare($sqlUpsert);
-                foreach ($levels_array as $val) {
+                $levels_array = array_unique(array_filter(explode(',', $levels_str)));
+                $sqlUpsert = "INSERT INTO wp_height_levels (height_id, height_levels, height_order, status, created_at, updated_at) 
+                            VALUES (:hid, :lvl, :ord, 'active', NOW(), NOW())
+                            ON DUPLICATE KEY UPDATE 
+                                height_order = VALUES(height_order), 
+                                status = 'active', 
+                                updated_at = NOW()";
+                $stmtIn = $this->db->prepare($sqlUpsert);
+                foreach ($levels_array as $index => $val) {
                     $val = trim($val);
                     if ($val !== "") {
-                        $sqlCheck = "SELECT levels_id FROM wp_height_levels WHERE height_id = :hid AND height_levels = :lvl LIMIT 1";
-                        $stmtCheck = $this->db->prepare($sqlCheck);
-                        $stmtCheck->execute([':hid' => $current_height_id, ':lvl' => $val]);
-                        $existing = $stmtCheck->fetch();
-                        if ($existing) {
-                            $sqlUpdate = "UPDATE wp_height_levels SET status = 'active', updated_at = NOW() WHERE levels_id = :lid";
-                            $stmtUpd = $this->db->prepare($sqlUpdate);
-                            $stmtUpd->execute([':lid' => $existing['levels_id']]);
-                        } else {
-                            $sqlInsert = "INSERT INTO wp_height_levels (height_id, height_levels, status, created_at, updated_at) 
-                                        VALUES (:hid, :lvl, 'active', NOW(), NOW())";
-                            $stmtIn = $this->db->prepare($sqlInsert);
-                            $stmtIn->execute([':hid' => $current_height_id, ':lvl' => $val]);
-                        }
+                        $stmtIn->execute([
+                            ':hid' => $current_height_id,
+                            ':lvl' => $val,
+                            ':ord' => $index + 1 
+                        ]);
                     }
                 }
             }

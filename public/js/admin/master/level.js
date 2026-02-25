@@ -209,15 +209,41 @@ $(document).on('click', '.manage-level', function() {
 function renderTags() {
     const container = $('#tag-container');
     container.find('.tag-item').remove();
-    levelsArray.forEach((val, index) => {
+    levelsArray.forEach((val) => {
         $(`
-            <span class="badge bg-primary d-flex align-items-center gap-2 tag-item p-2" style="font-weight: 400;">
+            <span class="badge bg-primary d-flex align-items-center gap-2 tag-item p-2" 
+                  style="font-weight: 400; cursor: move;" 
+                  data-value="${val}">
                 ${val}
-                <span class="remove-tag" data-index="${index}" style="cursor:pointer; font-weight: bold; line-height: 1; font-size: 16px;">&times;</span>
+                <span class="remove-tag" style="cursor:pointer; font-weight: bold; line-height: 1; font-size: 16px;">&times;</span>
             </span>
         `).insertBefore('#tag-input');
     });
+    updateHiddenInput();
+    initSortable();
+}
+function updateHiddenInput() {
+    let currentTags = [];
+    $('.tag-item').each(function() {
+        currentTags.push($(this).data('value'));
+    });
+    levelsArray = currentTags;
     $('#height_levels_hidden').val(levelsArray.join(','));
+}
+let sortableInstance = null;
+function initSortable() {
+    const el = document.getElementById('tag-container');
+    if (sortableInstance) {
+        sortableInstance.destroy();
+    }
+    sortableInstance = new Sortable(el, {
+        draggable: ".tag-item",
+        animation: 150,
+        ghostClass: 'bg-light',
+        onEnd: function () {
+            updateHiddenInput();
+        }
+    });
 }
 $(document).on('click', '#tag-container', function() {
     $('#tag-input').focus();
@@ -269,7 +295,6 @@ $(document).on('click', '.save-level', function () {
         showWarning(langData['limit_must_be_1'] || 'Limit must be at least 1');
         return;
     }
-
     saveLevel();
 });
 function saveLevel() {
