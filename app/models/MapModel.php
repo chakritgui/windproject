@@ -24,7 +24,6 @@ class MapModel{
                 INNER JOIN wp_type t ON t.type_id = p.type_id 
                 INNER JOIN wp_installations l ON l.installations_id = p.installations_id
                 WHERE p.status = 'online'";
-        
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -36,7 +35,6 @@ class MapModel{
                 INNER JOIN wp_poles po ON po.project_id = p.project_id
                 WHERE p.status = 'active' AND po.status = 'online'
                 ORDER BY p.project_id ASC";
-
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -51,7 +49,6 @@ class MapModel{
                   AND po.status = 'online' 
                   AND po.project_id = :project_id
                 ORDER BY t.type_id ASC";
-
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':project_id' => $project_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
