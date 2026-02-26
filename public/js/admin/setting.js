@@ -1,3 +1,4 @@
+const version = new Date().getTime();
 const apiPost = (url, data, options = {}) => {
     return $.ajax({
         url: `${BASE_URL}${url}`,
@@ -142,7 +143,7 @@ function applySetting(item) {
 }
 function renderImage(previewId, path) {
     $(`#${previewId}`).html(`
-        <img src="${BASE_URL}/${path}" class="preview-img">
+        <img src="${BASE_URL}/${path}?v=${version}" class="preview-img">
     `);
 }
 function renderBg(previewId, path, type) {
@@ -153,11 +154,11 @@ function renderBg(previewId, path, type) {
     if (isVideo) {
         $(`#${previewId}`).html(`
             <video class="preview-video" controls style="width:100%; height:100%; object-fit:contain;">
-                <source src="${path}" type="video/${extension}">
+                <source src="${path}?v=${version}" type="video/${extension}">
             </video>
         `);
     } else {
-        $(`#${previewId}`).html(`<img src="${path}" class="preview-img" style="width:100%; height:100%; object-fit:contain;">`);
+        $(`#${previewId}`).html(`<img src="${path}?v=${version}" class="preview-img" style="width:100%; height:100%; object-fit:contain;">`);
     }
     $(`.btn-remove-${type}`).removeClass('d-none');
     const hiddenInputId = type === 'infography' ? '#oldinfographyBg' : (type === 'mobile' ? '#oldLoginMobileBg' : '#oldLoginBg');
