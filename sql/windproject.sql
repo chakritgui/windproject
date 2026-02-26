@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 24, 2026 at 03:37 PM
+-- Generation Time: Feb 26, 2026 at 06:13 AM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -350,6 +350,7 @@ CREATE TABLE `wp_height_levels` (
   `levels_id` bigint(20) NOT NULL,
   `height_id` bigint(20) NOT NULL,
   `height_levels` varchar(50) DEFAULT NULL,
+  `height_order` bigint(20) DEFAULT NULL,
   `status` enum('active','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
@@ -737,6 +738,7 @@ ALTER TABLE `email_queue`
 ALTER TABLE `push_subscriptions`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uniq_endpoint` (`endpoint`(191)),
+  ADD UNIQUE KEY `user_id` (`user_id`),
   ADD KEY `idx_user` (`user_id`),
   ADD KEY `idx_active` (`is_active`);
 
@@ -819,7 +821,9 @@ ALTER TABLE `wp_contract`
 --
 ALTER TABLE `wp_documents`
   ADD PRIMARY KEY (`document_id`),
-  ADD KEY `idx_doc_status` (`document_id`,`status`);
+  ADD KEY `idx_doc_status` (`document_id`,`status`),
+  ADD KEY `idx_documents_status` (`document_id`,`status`),
+  ADD KEY `idx_documents_status_only` (`status`);
 
 --
 -- Indexes for table `wp_documents_download_logs`
@@ -870,7 +874,8 @@ ALTER TABLE `wp_imports`
 --
 ALTER TABLE `wp_installations`
   ADD PRIMARY KEY (`installations_id`),
-  ADD UNIQUE KEY `uniq_project_type_name` (`project_id`,`type_id`,`installations_name`(191));
+  ADD UNIQUE KEY `uniq_project_type_name` (`project_id`,`type_id`,`installations_name`(191)),
+  ADD KEY `idx_install_status` (`status`,`installations_id`);
 
 --
 -- Indexes for table `wp_login_logs`
@@ -899,8 +904,7 @@ ALTER TABLE `wp_map_polygons`
 --
 ALTER TABLE `wp_members`
   ADD PRIMARY KEY (`member_id`),
-  ADD UNIQUE KEY `username` (`username`),
-  ADD UNIQUE KEY `email` (`email`);
+  ADD UNIQUE KEY `username` (`username`);
 
 --
 -- Indexes for table `wp_members_language`
@@ -928,7 +932,9 @@ ALTER TABLE `wp_menu_translations`
 ALTER TABLE `wp_notification_targets`
   ADD PRIMARY KEY (`targets_id`),
   ADD UNIQUE KEY `notifications_item` (`notifications_item`,`member_id`,`notifications_target`) USING BTREE,
-  ADD KEY `idx_member_publish` (`member_id`,`status`,`publish_at`);
+  ADD KEY `idx_member_publish` (`member_id`,`status`,`publish_at`),
+  ADD KEY `idx_notification_content` (`member_id`,`notifications_target`,`status`,`read_at`,`publish_at`),
+  ADD KEY `idx_notification_document` (`member_id`,`notifications_target`,`status`,`read_at`,`publish_at`);
 
 --
 -- Indexes for table `wp_password_resets`
@@ -957,14 +963,17 @@ ALTER TABLE `wp_poles`
   ADD UNIQUE KEY `uq_pole` (`poles_code`),
   ADD KEY `idx_project` (`project_id`),
   ADD KEY `idx_type` (`type_id`),
-  ADD KEY `installations_id` (`installations_id`);
+  ADD KEY `installations_id` (`installations_id`),
+  ADD KEY `idx_poles_lookup` (`project_id`,`type_id`,`status`),
+  ADD KEY `idx_poles_install` (`installations_id`);
 
 --
 -- Indexes for table `wp_project`
 --
 ALTER TABLE `wp_project`
   ADD PRIMARY KEY (`project_id`),
-  ADD UNIQUE KEY `project_name` (`project_name`);
+  ADD UNIQUE KEY `project_name` (`project_name`),
+  ADD KEY `idx_project_status` (`status`,`project_id`);
 
 --
 -- Indexes for table `wp_project_group`
@@ -996,7 +1005,8 @@ ALTER TABLE `wp_setting`
 --
 ALTER TABLE `wp_type`
   ADD PRIMARY KEY (`type_id`),
-  ADD UNIQUE KEY `uq_type_name` (`type_name`);
+  ADD UNIQUE KEY `uq_type_name` (`type_name`),
+  ADD KEY `idx_type_status` (`status`,`type_id`);
 
 --
 -- Indexes for table `wp_winds`
