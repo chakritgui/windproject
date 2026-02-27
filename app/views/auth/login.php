@@ -30,8 +30,8 @@
                 </div>
                 <div class="text-dark mt-3 text-center project-info"></div>
             </div>
-            <div class="col-lg-8 col-md-7 d-flex align-items-center justify-content-center bg-dark-overlay p-3">
-                <div class="infography w-100 h-100"></div>
+            <div class="col-lg-8 col-md-7 d-flex align-items-center justify-content-center">
+                <div id="infographyContainer" class="infography w-100 h-100"></div>
             </div>
         </div>
     </div>

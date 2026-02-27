@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 26, 2026 at 06:13 AM
+-- Generation Time: Feb 27, 2026 at 08:05 AM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -366,7 +366,7 @@ CREATE TABLE `wp_imports` (
   `imports_id` bigint(20) NOT NULL,
   `import_start` datetime NOT NULL,
   `import_end` datetime DEFAULT NULL,
-  `status` enum('complete','failed') NOT NULL DEFAULT 'complete',
+  `status` enum('complete','failed','processing') NOT NULL DEFAULT 'complete',
   `import_record` bigint(20) NOT NULL,
   `remark` longtext
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;

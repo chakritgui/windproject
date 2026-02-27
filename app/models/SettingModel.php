@@ -269,23 +269,24 @@ class SettingModel {
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$value, $type]);
     }
-    private function uploadAndSave($inputName, $settingType){
+    private function uploadAndSave($inputName, $settingType) {
         if (empty($_FILES[$inputName]) || $_FILES[$inputName]['error'] !== UPLOAD_ERR_OK) {
             return;
         }
         $file = $_FILES[$inputName];
-        $mimeType = mime_content_type($file['tmp_name']); 
+        $mimeType = mime_content_type($file['tmp_name']);
         $dir = dirname(__DIR__, 2) . "/uploads/website/";
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
         if (str_contains($mimeType, 'video/')) {
+            if ($file['size'] > 10 * 1024 * 1024) return; 
             $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-            $filename = $settingType . "." . $extension; 
+            $filename = $settingType . "." . $extension;
             $target = $dir . $filename;
+            array_map('unlink', glob($dir . $settingType . ".*"));
             if (move_uploaded_file($file['tmp_name'], $target)) {
-                $filePath = "uploads/website/" . $filename;
-                $this->updateSetting($settingType, $filePath);
+                $this->updateSetting($settingType, "uploads/website/" . $filename);
             }
         } else if (str_contains($mimeType, 'image/')) {
             $filename = $settingType . ".webp";
@@ -298,20 +299,32 @@ class SettingModel {
                     imagepalettetotruecolor($image);
                     break;
                 case 'image/gif':  $image = imagecreatefromgif($file['tmp_name']); break;
-                case 'image/avif': 
-                    if (function_exists('imagecreatefromavif')) {
-                        $image = imagecreatefromavif($file['tmp_name']);
-                    }
-                    break;
                 case 'image/webp': $image = imagecreatefromwebp($file['tmp_name']); break;
+                case 'image/avif': 
+                    if (function_exists('imagecreatefromavif')) $image = imagecreatefromavif($file['tmp_name']); 
+                    break;
             }
             if ($image) {
+                $width = imagesx($image);
+                $height = imagesy($image);
+                $maxDim = 1920; 
+                if ($width > $maxDim || $height > $maxDim) {
+                    $ratio = ($width > $height) ? ($maxDim / $width) : ($maxDim / $height);
+                    $newW = round($width * $ratio);
+                    $newH = round($height * $ratio);
+                    $newImg = imagecreatetruecolor($newW, $newH);
+                    imagealphablending($newImg, false);
+                    imagesavealpha($newImg, true);
+                    imagecopyresampled($newImg, $image, 0, 0, 0, 0, $newW, $newH, $width, $height);
+                    imagedestroy($image);
+                    $image = $newImg;
+                }
                 imagealphablending($image, true);
                 imagesavealpha($image, true);
-                imagewebp($image, $target, 80);
+                $quality = 80; 
+                imagewebp($image, $target, $quality);
                 imagedestroy($image);
-                $filePath = "uploads/website/" . $filename;
-                $this->updateSetting($settingType, $filePath);
+                $this->updateSetting($settingType, "uploads/website/" . $filename);
             }
         }
     }
