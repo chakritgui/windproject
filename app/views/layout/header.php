@@ -99,7 +99,7 @@
 <header class="bg-white border-bottom py-2">
     <div class="container-fluid d-flex justify-content-between align-items-center gx-0 gy-0">
         <div class="d-flex align-items-center">
-            <?php if(!empty($_SESSION)) { ?>
+            <?php if(isset($_SESSION['user'])) { ?>
                 <button id="mapFilter" class="btn btn-sm btn-dark"><i class="fa-solid fa-bars"></i></button>
                 <div class="side-menu-wrapper">
                     <div id="menu-level-1" class="menu-panel"></div>
@@ -120,7 +120,7 @@
             <?php if(isset($_SESSION['user']) && !in_array($_SESSION['user']['role'], ['admin','administrator'])) { ?>
                 <ul class="nav d-none d-lg-flex align-items-center me-3" id="main-sidebar-header"></ul>
             <?php } ?>
-            <?php if(!empty($_SESSION)) { ?>
+            <?php if(isset($_SESSION['user'])) { ?>
                 <div class="dropdown">
                     <button class="btn btn-light btn-sm position-relative btn-notification" data-bs-toggle="dropdown">
                         <i class="fa-solid fa-bell"></i>
@@ -148,7 +148,7 @@
                 <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"></button>
                 <ul class="dropdown-menu" id="languageMenu"></ul>
             </div>
-            <?php if(!empty($_SESSION)) { ?>
+            <?php if(isset($_SESSION['user'])) { ?>
                 <div class="dropdown">
                     <button class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown">
                         <i class="fa-regular fa-user"></i>
