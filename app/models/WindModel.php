@@ -183,7 +183,7 @@ class WindModel{
         }
         $importId = null;
         try {
-            $stmt = $this->db->prepare("INSERT INTO wp_imports (import_start, status, import_record, remark) VALUES (NOW(), 'processing', 0, 'กำลังตรวจสอบและนำเข้าข้อมูล...')");
+            $stmt = $this->db->prepare("INSERT INTO wp_imports (import_start, status, import_record, remark) VALUES (NOW(), 'processing', 0, 'Processing...')");
             $stmt->execute();
             $importId = (int)$this->db->lastInsertId();
             $importRecord = $this->handleFileImport($_FILES['wind_file']);
