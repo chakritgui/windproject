@@ -154,11 +154,10 @@ body {
     transition: all 0.3s ease;
 }
 .list-view-item:hover {
-    border-color: #667eea;
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
 }
 .list-view-item h6 {
-    font-size: 1rem;
+    font-size: 0.85rem;
     font-weight: 600;
     margin-bottom: 0.25rem;
     display: -webkit-box;
@@ -224,3 +223,27 @@ body {
     transform: rotate(180deg);
 }
 .rounded-4 { border-radius: 1rem !important; }
+.doc-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    min-height: 2.8em;
+}
+.doc-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+}
+.list-view-item .doc-meta {
+    justify-content: flex-start;
+}
+.badge {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

@@ -174,9 +174,7 @@ function renderDocuments(items) {
 }
 const createBadge = (text, icon, colorClass) => {
     if (!text) return '';
-    return `<span class="badge ${colorClass} fw-normal d-inline-flex align-items-center me-1 mb-1" style="font-size: 8px; padding: 4px 8px; border-radius: 50rem; max-width: 100%; overflow: hidden;">
-                <i class="${icon} me-1"></i>${text}
-            </span>`;
+    return `<span class="badge ${colorClass} fw-normal d-inline-flex align-items-center me-1 mb-1" style="font-size: 8px; padding: 4px 8px; border-radius: 50rem; max-width: 100%; overflow: hidden;"><i class="${icon} me-1"></i>${text}</span>`;
 };
 function renderGridView(items) {
     let html = '';
@@ -184,33 +182,32 @@ function renderGridView(items) {
         const icon = getFileIconClass(item.document_type);
         const size = formatFileSize(item.document_size);
         html += `
-        <div class="col-12 col-md-4">
-            <div class="doc-card card h-100">
-                <div class="card-body text-center p-3">
+            <div class="col-12 col-sm-6 col-md-4 mb-3"> <div class="doc-card card h-100 shadow-sm">
+                <div class="card-body text-center p-3 d-flex flex-column">
                     <div class="doc-icon mx-auto mb-2">
-                        <i class="${icon}"></i>
+                        <i class="${icon} fa-2x"></i>
                     </div>
-                    <h6 class="card-title doc-title">
+                    <h6 class="card-title doc-title mb-2" title="${item.document_name}">
                         ${item.document_name}
                     </h6>
-                    <div class="doc-meta small text-muted">
-                        <div class="mb-1" style="font-size: 10px;">
-                            <i class="fa-regular fa-calendar"></i>
-                            ${item.document_start || '-'}
+                    <div class="doc-meta mt-auto"> <div class="w-100 small text-muted mb-1" style="font-size: 10px;">
+                            <i class="fa-regular fa-calendar"></i> ${item.document_start || '-'}
                             ${item.document_end ? ' - ' + item.document_end : ''}
                         </div>
-                        <div class="mb-1" style="font-size: 10px;">
+                        <div class="w-100 small text-muted mb-2" style="font-size: 10px;">
                             <i class="fa-solid fa-hard-drive"></i> ${size} · <i class="fa-regular fa-file"></i> ${item.document_type.toUpperCase()}
                         </div>
-                        ${createBadge(item.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
-                        ${createBadge(item.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
-                        ${createBadge(item.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
-                        ${createBadge(item.installations_name, 'fa-solid fa-location-dot', 'bg-warning-subtle text-warning-emphasis')}
-                        ${createBadge(item.poles_code, 'fa-solid fa-tower-broadcast', 'bg-dark-subtle text-dark')}
+                        <div class="d-flex flex-wrap justify-content-center gap-1">
+                            ${createBadge(item.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
+                            ${createBadge(item.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
+                            ${createBadge(item.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
+                            ${createBadge(item.installations_name, 'fa-solid fa-location-dot', 'bg-warning-subtle text-warning-emphasis')}
+                            ${createBadge(item.poles_code, 'fa-solid fa-tower-broadcast', 'bg-dark-subtle text-dark')}
+                        </div>
                     </div>
-                    <button class="btn btn-outline-primary download-btn w-100 mt-2" data-id="${item.document_id}" data-path="${item.document_path}" data-file-name="${item.document_file_name}">
+                    <button class="btn btn-primary download-btn w-100 mt-3" data-id="${item.document_id}" data-path="${item.document_path}" data-file-name="${item.document_file_name}">
                         <i class="fa-solid fa-download"></i>
-                        <span class="btn-text" data-i18n="download"></span>
+                        <span class="btn-text d-none d-sm-inline">${langData['download'] || 'Download'}</span>
                     </button>
                 </div>
             </div>
@@ -224,35 +221,33 @@ function renderListView(items) {
         const icon = getFileIconClass(item.document_type);
         const size = formatFileSize(item.document_size);
         html += `
-        <div class="list-view-item">
+        <div class="list-view-item p-2 border-bottom">
             <div class="row align-items-center g-2">
                 <div class="col-auto">
                     <div class="doc-icon">
-                        <i class="${icon}"></i>
+                        <i class="${icon} fa-lg"></i>
                     </div>
                 </div>
                 <div class="col">
-                    <h6 class="mb-2 doc-title">${item.document_name}</h6>
+                    <h6 class="mb-1 doc-title-list text-truncate" style="max-width: 250px;">${item.document_name}</h6>
                     <div class="doc-meta small text-muted">
-                        <div class="mb-1" style="font-size: 10px;">
-                            <i class="fa-regular fa-calendar"></i>
-                            ${item.document_start || '-'}
-                            ${item.document_end ? ' - ' + item.document_end : ''}
-                        </div>
-                        <div class="mb-1" style="font-size: 10px;">
+                        <span class="me-2" style="font-size: 10px;"><i class="fa-regular fa-calendar"></i> ${item.document_start || '-'}
+                            ${item.document_end ? ' - ' + item.document_end : ''}</span>
+                        <span style="font-size: 10px;">
                             <i class="fa-solid fa-hard-drive"></i> ${size} · <i class="fa-regular fa-file"></i> ${item.document_type.toUpperCase()}
+                        </span>
+                        <div class="d-flex flex-wrap gap-1">
+                            ${createBadge(item.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
+                            ${createBadge(item.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
+                            <div class="d-none d-sm-inline-flex gap-1">
+                                ${createBadge(item.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
+                            </div>
                         </div>
-                        ${createBadge(item.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
-                        ${createBadge(item.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
-                        ${createBadge(item.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
-                        ${createBadge(item.installations_name, 'fa-solid fa-location-dot', 'bg-warning-subtle text-warning-emphasis')}
-                        ${createBadge(item.poles_code, 'fa-solid fa-tower-broadcast', 'bg-dark-subtle text-dark')}
                     </div>
                 </div>
                 <div class="col-12 col-md-auto text-end">
-                    <button class="btn btn-outline-primary download-btn w-100 w-md-auto" data-id="${item.document_id}" data-path="${item.document_path}" data-file-name="${item.document_file_name}">
+                    <button class="btn btn-sm btn-outline-primary download-btn w-100 w-md-auto" data-id="${item.document_id}">
                         <i class="fa-solid fa-download"></i>
-                        <span class="btn-text" data-i18n="download"></span>
                     </button>
                 </div>
             </div>
@@ -308,7 +303,7 @@ $(document).on('click', '.history-download', function (e) {
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
     `);
     modalEl.find(".modal-body").html(`
-        <div id="downloadHistoryList" class="d-flex flex-column gap-3"></div>
+        <div id="downloadHistoryList" class="d-flex flex-column"></div>
         <div class="text-center py-2" id="historyLoading" style="display:none;">
             <div class="spinner-border"></div>
         </div>
@@ -369,42 +364,29 @@ function renderHistoryRows(items) {
         return;
     }
     items.forEach((row) => {
-        const device = parseUA(row.download_device);
         const icon = getFileIconClass(row.document_type);
         const size = formatFileSize(row.document_size);
         html += `
-        <div class="card shadow-sm mb-3">
-            <div class="card-body py-3">
-                <h6 class="card-title mb-2 text-truncate">
-                    <i class="${icon} me-1"></i>
-                    ${row.document_name}
-                </h6>
-                <div class="small text-muted mb-1 d-flex flex-wrap gap-2 align-items-center">
-                    ${createBadge(row.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
-                    ${createBadge(row.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
-                    ${createBadge(row.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
-                    ${createBadge(row.installations_name, 'fa-solid fa-location-dot', 'bg-warning-subtle text-warning-emphasis')}
-                    ${createBadge(row.poles_code, 'fa-solid fa-tower-broadcast', 'bg-dark-subtle text-dark')}
+        <div class="list-view-item p-2 border-bottom">
+            <div class="row align-items-center g-2">
+                <div class="col-auto">
+                    <div class="doc-icon">
+                        <i class="${icon} fa-lg"></i>
+                    </div>
                 </div>
-                <div class="small text-muted mb-1 d-flex flex-wrap gap-2 align-items-center">
-                    <span>
-                        <i class="fa-regular fa-file"></i>
-                        ${row.document_type.toUpperCase()}
-                    </span>
-                    <span>
-                        <i class="fa-solid fa-hard-drive"></i>
-                        ${size}
-                    </span>
-                </div>
-                <div class="small text-muted d-flex flex-wrap gap-3 align-items-center">
-                    <span>
-                        <i class="fa-regular fa-calendar"></i>
-                        ${row.download_date}
-                    </span>
-                    <span>
-                        <i class="fa-solid fa-download"></i>
-                        ${device.label}
-                    </span>
+                <div class="col">
+                    <h6 class="mb-1 doc-title-list text-truncate" style="max-width: 250px;">${row.document_name}</h6>
+                    <div class="doc-meta small text-muted">
+                        <span class="me-2" style="font-size: 10px;"><i class="fa-solid fa-download me-1"></i>${row.download_date || '-'}</span>
+                        <span style="font-size: 10px;"><i class="fa-solid fa-hard-drive"></i> ${size}</span>
+                        <div class="d-flex flex-wrap gap-1">
+                            ${createBadge(row.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
+                            ${createBadge(row.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
+                            <div class="d-none d-sm-inline-flex gap-1">
+                                ${createBadge(row.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>`;
