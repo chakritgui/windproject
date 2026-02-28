@@ -184,9 +184,6 @@ body {
         transform: none;
         box-shadow: none;
     }
-    .doc-card .card-title,.list-view-item h6 {
-        font-size: 0.95rem;
-    }
     .doc-meta {
         font-size: 0.75rem;
     }

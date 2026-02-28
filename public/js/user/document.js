@@ -174,7 +174,14 @@ function renderDocuments(items) {
 }
 const createBadge = (text, icon, colorClass) => {
     if (!text) return '';
-    return `<span class="badge ${colorClass} fw-normal d-inline-flex align-items-center me-1 mb-1" style="font-size: 8px; padding: 4px 8px; border-radius: 50rem; max-width: 250px; overflow: hidden;"><i class="${icon} me-1"></i>${text}</span>`;
+    return `
+        <span class="badge ${colorClass} fw-normal d-inline-flex align-items-center me-1 mb-1" 
+              style="font-size: 9px; padding: 4px 8px; border-radius: 50rem; max-width: 140px; white-space: nowrap;">
+            <i class="${icon} me-1" style="flex-shrink: 0;"></i>
+            <span style="overflow: hidden; text-overflow: ellipsis; display: inline-block;">
+                ${text}
+            </span>
+        </span>`;
 };
 function renderGridView(items) {
     let html = '';
@@ -187,7 +194,7 @@ function renderGridView(items) {
                     <div class="doc-icon mx-auto mb-2">
                         <i class="${icon} fa-2x"></i>
                     </div>
-                    <h6 class="card-title doc-title mb-2" title="${item.document_name}">
+                    <h6 class="card-title doc-title mb-3" title="${item.document_name}">
                         ${item.document_name}
                     </h6>
                     <div class="doc-meta mt-auto"> <div class="w-100 small text-muted mb-1" style="font-size: 10px;">
