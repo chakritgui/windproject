@@ -204,10 +204,10 @@ function renderGridView(items) {
                             <i class="fa-solid fa-hard-drive"></i> ${size} · <i class="fa-regular fa-file"></i> ${item.document_type.toUpperCase()}
                         </div>
                         <div class="d-flex flex-wrap justify-content-center gap-1">
-                            ${createBadge(item.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
-                            ${createBadge(item.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
-                            ${createBadge(item.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
-                            ${createBadge(item.installations_name, 'fa-solid fa-location-dot', 'bg-warning-subtle text-warning-emphasis')}
+                            ${createBadge(item.contract_name, 'fa-solid fa-file-lines', 'bg-dark-subtle text-dark')}
+                            ${createBadge(item.project_name, 'fa-solid fa-folder-tree', 'bg-dark-subtle text-dark')}
+                            ${createBadge(item.type_name, 'fa-solid fa-tags', 'bg-dark-subtle text-dark')}
+                            ${createBadge(item.installations_name, 'fa-solid fa-location-dot', 'bg-dark-subtle text-dark')}
                             ${createBadge(item.poles_code, 'fa-solid fa-tower-broadcast', 'bg-dark-subtle text-dark')}
                         </div>
                     </div>
@@ -243,10 +243,10 @@ function renderListView(items) {
                             <i class="fa-solid fa-hard-drive"></i> ${size} · <i class="fa-regular fa-file"></i> ${item.document_type.toUpperCase()}
                         </span>
                         <div class="d-flex flex-wrap gap-1">
-                            ${createBadge(item.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
-                            ${createBadge(item.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
-                            ${createBadge(item.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
-                            ${createBadge(item.installations_name, 'fa-solid fa-location-dot', 'bg-warning-subtle text-warning-emphasis')}
+                            ${createBadge(item.contract_name, 'fa-solid fa-file-lines', 'bg-dark-subtle text-dark')}
+                            ${createBadge(item.project_name, 'fa-solid fa-folder-tree', 'bg-dark-subtle text-dark')}
+                            ${createBadge(item.type_name, 'fa-solid fa-tags', 'bg-dark-subtle text-dark')}
+                            ${createBadge(item.installations_name, 'fa-solid fa-location-dot', 'bg-dark-subtle text-dark')}
                             ${createBadge(item.poles_code, 'fa-solid fa-tower-broadcast', 'bg-dark-subtle text-dark')}
                         </div>
                     </div>
@@ -387,10 +387,10 @@ function renderHistoryRows(items) {
                         <span class="me-2" style="font-size: 10px;"><i class="fa-solid fa-download me-1"></i>${row.download_date || '-'}</span>
                         <span style="font-size: 10px;"><i class="fa-solid fa-hard-drive"></i> ${size}</span>
                         <div class="d-flex flex-wrap gap-1">
-                            ${createBadge(row.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
-                            ${createBadge(row.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
-                            ${createBadge(row.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
-                            ${createBadge(row.installations_name, 'fa-solid fa-location-dot', 'bg-warning-subtle text-warning-emphasis')}
+                            ${createBadge(row.contract_name, 'fa-solid fa-file-lines', 'bg-dark-subtle text-dark')}
+                            ${createBadge(row.project_name, 'fa-solid fa-folder-tree', 'bg-dark-subtle text-dark')}
+                            ${createBadge(row.type_name, 'fa-solid fa-tags', 'bg-dark-subtle text-dark')}
+                            ${createBadge(row.installations_name, 'fa-solid fa-location-dot', 'bg-dark-subtle text-dark')}
                             ${createBadge(row.poles_code, 'fa-solid fa-tower-broadcast', 'bg-dark-subtle text-dark')}
                         </div>
                     </div>
