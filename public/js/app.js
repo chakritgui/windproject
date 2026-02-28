@@ -54,9 +54,13 @@ async function handlePWANotifications(force = false) {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
     if (Notification.permission === 'denied') return;
     if (!force && localStorage.getItem('notification_asked_forever')) return;
+
     try {
+        // รอให้ Service Worker พร้อมจริงๆ
         const registration = await navigator.serviceWorker.ready;
         const sub = await registration.pushManager.getSubscription();
+
+        // เคสที่ต้องแสดง Modal: ยังไม่เคยขอ (default) หรือ เคยอนุญาตแล้วแต่ subscription ในเครื่องหายไป
         if (Notification.permission === 'default' || (Notification.permission === 'granted' && !sub)) {
             showNotificationModal(async () => {
                 await requestAndSubscribe(registration);
@@ -66,44 +70,111 @@ async function handlePWANotifications(force = false) {
                 const toggle = document.querySelector('#pwaPushToggle');
                 if (toggle) toggle.checked = false;
             });
-        } else if (sub) {
-            await updateSubscriptionOnServer(sub);
+        } 
+        // เคสที่มี Subscription อยู่แล้ว: ส่งไปอัปเดตที่ Server เผื่อ Token เปลี่ยนหรือผูกกับ User ID ปัจจุบัน
+        else if (sub) {
+            await syncSubscriptionWithServer(sub);
         }
     } catch (err) {
-        console.error("Error handling PWA Notifications:", err);
+        console.error("PWA Init Error:", err);
     }
 }
 async function requestAndSubscribe(registration) {
     try {
+        // 1. ขอ Permission (ต้องเกิดจาก User Click ใน Modal เท่านั้น)
         let permission = Notification.permission;
         if (permission !== 'granted') {
             permission = await Notification.requestPermission();
-            if (permission !== 'granted') throw new Error("Permission denied by user");
+            if (permission !== 'granted') throw new Error("Permission not granted");
         }
-        showLoadingSwal();
+
+        showLoadingSwal(); // แสดง Swal กำลังประมวลผล
+
+        // 2. ตรวจสอบ Subscription เดิม
         let sub = await registration.pushManager.getSubscription();
+        
+        // ถ้าไม่มีเลยค่อยสร้างใหม่
         if (!sub) {
-            if (!VAPID_PUBLIC_KEY) throw new Error("VAPID Key is missing");
+            if (!VAPID_PUBLIC_KEY) throw new Error("VAPID Public Key is missing");
             sub = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
             });
         }
-        await updateSubscriptionOnServer(sub);
-        showSuccessSwal();
+
+        // 3. ส่งข้อมูลไปเก็บที่ Server
+        await syncSubscriptionWithServer(sub);
+
+        showSuccessSwal(); // แสดง Swal สำเร็จ
         localStorage.setItem('notification_asked_forever', 'true');
+
     } catch (error) {
-        console.error("Push Error:", error);
-        showErrorSwal(error.message);
+        console.error("Push Subscription Error:", error);
+        showErrorSwal(error.message); // แสดง Swal แจ้ง Error
     }
 }
-async function updateSubscriptionOnServer(subscription) {
+async function syncSubscriptionWithServer(subscription) {
+    // ส่งทั้งวัตถุ subscription ไปที่ Backend
+    // Backend ควรเก็บ endpoint, p256dh, และ auth ไว้ใน Database คู่กับ user_id
     const response = await fetch(`${BASE_URL}/api/push.subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(subscription)
+        body: JSON.stringify(subscription) 
     });
-    if (!response.ok) throw new Error("Server failed to save subscription");
+    
+    if (!response.ok) throw new Error("Server failed to sync subscription");
+    return await response.json();
+}
+function showSuccessSwal() {
+    Swal.fire({
+        html: `
+            <div class="swal-result-wrap">
+                <div class="swal-result-icon success">
+                    <i class="fa-solid fa-bell-check"></i>
+                </div>
+                <div class="swal-result-title">${langData['success'] || 'All set!'}</div>
+                <div class="swal-result-body">
+                    ${langData['you_will_receive_notifications'] || 'You\'ll now receive push notifications.'}
+                </div>
+            </div>
+        `,
+        timer: 2500,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        customClass: {
+            popup: 'swal-pwa-popup'
+        },
+        didOpen: () => {
+            // เรียกใช้เพื่อฉีด CSS ถ้ายังไม่มี
+            if (typeof injectPWAStyles === 'function') injectPWAStyles();
+        }
+    });
+}
+function showErrorSwal(errorMessage) {
+    Swal.fire({
+        html: `
+            <div class="swal-result-wrap">
+                <div class="swal-result-icon error">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="swal-result-title">${langData['process_failed'] || 'Something went wrong'}</div>
+                <div class="swal-result-body">
+                    ${errorMessage}<br>
+                    <small style="opacity: 0.7;">Please check your browser settings.</small>
+                </div>
+            </div>
+        `,
+        showConfirmButton: true,
+        confirmButtonText: langData['ok'] || 'OK',
+        customClass: {
+            popup: 'swal-pwa-popup',
+            confirmButton: 'swal-pwa-btn-confirm'
+        },
+        buttonsStyling: false,
+        didOpen: () => {
+            if (typeof injectPWAStyles === 'function') injectPWAStyles();
+        }
+    });
 }
 async function showNotificationModal(onAllow, onLater) {
     injectPWAStyles();
