@@ -175,8 +175,7 @@ function renderDocuments(items) {
 const createBadge = (text, icon, colorClass) => {
     if (!text) return '';
     return `
-        <span class="badge ${colorClass} fw-normal d-inline-flex align-items-center me-1 mb-1" 
-              style="font-size: 9px; padding: 4px 8px; border-radius: 50rem; max-width: 140px; white-space: nowrap;">
+        <span class="badge ${colorClass} fw-normal d-inline-flex align-items-center me-1 mb-1" style="font-size: 9px; padding: 4px 8px; border-radius: 50rem; max-width: 140px; white-space: nowrap;">
             <i class="${icon} me-1" style="flex-shrink: 0;"></i>
             <span style="overflow: hidden; text-overflow: ellipsis; display: inline-block;">
                 ${text}
@@ -192,9 +191,9 @@ function renderGridView(items) {
             <div class="col-12 col-sm-6 col-md-4 mb-3"> <div class="doc-card card h-100 shadow-sm">
                 <div class="card-body text-center p-3 d-flex flex-column">
                     <div class="doc-icon mx-auto mb-2">
-                        <i class="${icon} fa-2x"></i>
+                        <i class="${icon} fa-3x"></i>
                     </div>
-                    <h6 class="card-title doc-title mb-3" title="${item.document_name}">
+                    <h6 class="card-title doc-title" title="${item.document_name}">
                         ${item.document_name}
                     </h6>
                     <div class="doc-meta mt-auto"> <div class="w-100 small text-muted mb-1" style="font-size: 10px;">
@@ -236,7 +235,7 @@ function renderListView(items) {
                     </div>
                 </div>
                 <div class="col">
-                    <h6 class="mb-1 doc-title-list text-truncate" style="max-width: 250px;">${item.document_name}</h6>
+                    <h6 class="mb-3 doc-title-list" style="max-width: 250px;">${item.document_name}</h6>
                     <div class="doc-meta small text-muted">
                         <span class="me-2" style="font-size: 10px;"><i class="fa-regular fa-calendar"></i> ${item.document_start || '-'}
                             ${item.document_end ? ' - ' + item.document_end : ''}</span>
@@ -246,15 +245,16 @@ function renderListView(items) {
                         <div class="d-flex flex-wrap gap-1">
                             ${createBadge(item.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
                             ${createBadge(item.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
-                            <div class="d-none d-sm-inline-flex gap-1">
-                                ${createBadge(item.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
-                            </div>
+                            ${createBadge(item.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
+                            ${createBadge(item.installations_name, 'fa-solid fa-location-dot', 'bg-warning-subtle text-warning-emphasis')}
+                            ${createBadge(item.poles_code, 'fa-solid fa-tower-broadcast', 'bg-dark-subtle text-dark')}
                         </div>
                     </div>
                 </div>
                 <div class="col-12 col-md-auto text-end">
-                    <button class="btn btn-sm btn-outline-primary download-btn w-100 w-md-auto" data-id="${item.document_id}">
+                    <button class="btn btn-sm btn-primary download-btn w-100 w-md-auto" data-id="${item.document_id}">
                         <i class="fa-solid fa-download"></i>
+                        <span class="btn-text d-inline d-sm-none ms-1">${langData['download'] || 'Download'}</span>
                     </button>
                 </div>
             </div>
@@ -382,7 +382,7 @@ function renderHistoryRows(items) {
                     </div>
                 </div>
                 <div class="col">
-                    <h6 class="mb-1 doc-title-list text-truncate" style="max-width: 250px;">${row.document_name}</h6>
+                    <h6 class="mb-3 doc-title-list" style="max-width: 250px;">${row.document_name}</h6>
                     <div class="doc-meta small text-muted">
                         <span class="me-2" style="font-size: 10px;"><i class="fa-solid fa-download me-1"></i>${row.download_date || '-'}</span>
                         <span style="font-size: 10px;"><i class="fa-solid fa-hard-drive"></i> ${size}</span>
