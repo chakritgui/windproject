@@ -111,7 +111,7 @@ function showSuccessSwal() {
         html: `
             <div class="swal-result-wrap">
                 <div class="swal-result-icon success">
-                    <i class="fa-solid fa-bell-check"></i>
+                    <i class="fa-solid fa-bell"></i>
                 </div>
                 <div class="swal-result-title">${langData['success'] || 'All set!'}</div>
                 <div class="swal-result-body">
