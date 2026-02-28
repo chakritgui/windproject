@@ -54,112 +54,56 @@ async function handlePWANotifications(force = false) {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
     if (Notification.permission === 'denied') return;
     if (!force && localStorage.getItem('notification_asked_forever')) return;
-    const registration = await navigator.serviceWorker.ready;
-    const sub = await registration.pushManager.getSubscription();
-    if (Notification.permission === 'default') {
-        showNotificationModal(async () => {
-            await requestAndSubscribe(registration);
-            if (typeof checkInitialStatus === 'function') checkInitialStatus();
-        }, () => {
-            localStorage.setItem('notification_asked_forever', 'true');
-            const toggle = document.querySelector('#pwaPushToggle');
-            if (toggle) toggle.checked = false;
-        });
-    } else if (Notification.permission === 'granted' && !sub) {
-        showNotificationModal(async () => {
-            await requestAndSubscribe(registration);
-            if (typeof checkInitialStatus === 'function') checkInitialStatus();
-        }, () => {
-            localStorage.setItem('notification_asked_forever', 'true');
-            const toggle = document.querySelector('#pwaPushToggle');
-            if (toggle) toggle.checked = false;
-        });
+    try {
+        const registration = await navigator.serviceWorker.ready;
+        const sub = await registration.pushManager.getSubscription();
+        if (Notification.permission === 'default' || (Notification.permission === 'granted' && !sub)) {
+            showNotificationModal(async () => {
+                await requestAndSubscribe(registration);
+                if (typeof checkInitialStatus === 'function') checkInitialStatus();
+            }, () => {
+                localStorage.setItem('notification_asked_forever', 'true');
+                const toggle = document.querySelector('#pwaPushToggle');
+                if (toggle) toggle.checked = false;
+            });
+        } else if (sub) {
+            await updateSubscriptionOnServer(sub);
+        }
+    } catch (err) {
+        console.error("Error handling PWA Notifications:", err);
     }
 }
 async function requestAndSubscribe(registration) {
     try {
-        localStorage.setItem('notification_asked_forever', 'true');
+        let permission = Notification.permission;
+        if (permission !== 'granted') {
+            permission = await Notification.requestPermission();
+            if (permission !== 'granted') throw new Error("Permission denied by user");
+        }
+        showLoadingSwal();
         let sub = await registration.pushManager.getSubscription();
-        if (sub) {
-            console.log("Old subscription found, forcing removal...");
-            const oldEndpoint = sub.endpoint;
-            await sub.unsubscribe();
-            try {
-                await fetch(`${BASE_URL}/api/push.unsubscribe`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ endpoint: oldEndpoint })
-                });
-            } catch (e) { console.warn("Server unsubscription silent fail", e); }
+        if (!sub) {
+            if (!VAPID_PUBLIC_KEY) throw new Error("VAPID Key is missing");
+            sub = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+            });
         }
-        // await registration.update();
-        if (Notification.permission !== 'granted') {
-            const permission = await Notification.requestPermission();
-            if (permission !== 'granted') {
-                throw new Error("Permission not granted");
-            }
-        }
-        Swal.fire({
-            html: `
-                <div class="swal-loading-wrap">
-                    <div class="swal-spinner"></div>
-                    <div class="swal-loading-title">${langData['processing'] || 'Processing...'}</div>
-                    <div class="swal-loading-sub">${langData['setting_up_your_notifications'] || 'Setting up your notifications'}</div>
-                </div>
-            `,
-            allowOutsideClick: false,
-            showConfirmButton: false,
-            customClass: { popup: 'swal-pwa-popup' },
-            didOpen: () => { injectPWAStyles(); }
-        });
-        if (!VAPID_PUBLIC_KEY) throw new Error("VAPID Public Key is missing");
-        const newSubscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
-        });
-        console.log("New Subscription generated:", newSubscription.endpoint);
-        const response = await fetch(`${BASE_URL}/api/push.subscribe`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newSubscription)
-        });
-        if (!response.ok) throw new Error("Server failed to save subscription");
-        Swal.fire({
-            html: `
-                <div class="swal-result-wrap">
-                    <div class="swal-result-icon success">
-                        <i class="fa-solid fa-bell"></i>
-                    </div>
-                    <div class="swal-result-title">${langData['success'] || 'All set!'}</div>
-                    <div class="swal-result-body">${langData['you_will_receive_notifications'] || 'You\'ll now receive push notifications.'}</div>
-                </div>
-            `,
-            timer: 2500, 
-            timerProgressBar: true,
-            showConfirmButton: false,
-            customClass: { popup: 'swal-pwa-popup' }
-        });
+        await updateSubscriptionOnServer(sub);
+        showSuccessSwal();
+        localStorage.setItem('notification_asked_forever', 'true');
     } catch (error) {
-        console.error("Push Subscription Error:", error);
-        Swal.fire({
-            html: `
-                <div class="swal-result-wrap">
-                    <div class="swal-result-icon error">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                    </div>
-                    <div class="swal-result-title">${langData['process_failed'] || 'Something went wrong'}</div>
-                    <div class="swal-result-body">${error.message} Subscribe detailed error: ${error.name}</div>
-                </div>
-            `,
-            showConfirmButton: true,
-            confirmButtonText: langData['ok'],
-            customClass: {
-                popup: 'swal-pwa-popup',
-                confirmButton: 'swal-pwa-btn-confirm'
-            },
-            buttonsStyling: false
-        });
+        console.error("Push Error:", error);
+        showErrorSwal(error.message);
     }
+}
+async function updateSubscriptionOnServer(subscription) {
+    const response = await fetch(`${BASE_URL}/api/push.subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(subscription)
+    });
+    if (!response.ok) throw new Error("Server failed to save subscription");
 }
 async function showNotificationModal(onAllow, onLater) {
     injectPWAStyles();
