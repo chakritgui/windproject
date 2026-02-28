@@ -252,7 +252,7 @@ function renderListView(items) {
                     </div>
                 </div>
                 <div class="col-12 col-md-auto text-end">
-                    <button class="btn btn-sm btn-primary download-btn w-100 w-md-auto" data-id="${item.document_id}">
+                    <button class="btn btn-sm btn-primary download-btn w-100 w-md-auto" data-id="${item.document_id}" data-id="${item.document_id}" data-path="${item.document_path}" data-file-name="${item.document_file_name}">
                         <i class="fa-solid fa-download"></i>
                         <span class="btn-text d-inline d-sm-none ms-1">${langData['download'] || 'Download'}</span>
                     </button>
