@@ -212,6 +212,27 @@ async function showNotificationModal(onAllow, onLater) {
         onLater();
     }
 }
+function showLoadingSwal() {
+    Swal.fire({
+        html: `
+            <div class="swal-loading-wrap">
+                <div class="swal-spinner"></div>
+                <div class="swal-loading-title">${langData['processing'] || 'Processing...'}</div>
+                <div class="swal-loading-sub">${langData['setting_up_your_notifications'] || 'Setting up your notifications'}</div>
+            </div>
+        `,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        customClass: {
+            popup: 'swal-pwa-popup'
+        },
+        didOpen: () => {
+            // ฉีด Style เข้าไปเพื่อให้ Spinner หมุน
+            if (typeof injectPWAStyles === 'function') injectPWAStyles();
+        }
+    });
+}
 function injectPWAStyles() {
     if (document.getElementById('swal-pwa-styles')) return;
     const style = document.createElement('style');
