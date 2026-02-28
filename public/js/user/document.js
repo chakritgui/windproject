@@ -235,7 +235,7 @@ function renderListView(items) {
                     </div>
                 </div>
                 <div class="col">
-                    <h6 class="mb-3 doc-title-list" style="max-width: 250px;">${item.document_name}</h6>
+                    <h6 class="mb-3 doc-title-list">${item.document_name}</h6>
                     <div class="doc-meta small text-muted">
                         <span class="me-2" style="font-size: 10px;"><i class="fa-regular fa-calendar"></i> ${item.document_start || '-'}
                             ${item.document_end ? ' - ' + item.document_end : ''}</span>
@@ -382,16 +382,16 @@ function renderHistoryRows(items) {
                     </div>
                 </div>
                 <div class="col">
-                    <h6 class="mb-3 doc-title-list" style="max-width: 250px;">${row.document_name}</h6>
+                    <h6 class="mb-3 doc-title-list">${row.document_name}</h6>
                     <div class="doc-meta small text-muted">
                         <span class="me-2" style="font-size: 10px;"><i class="fa-solid fa-download me-1"></i>${row.download_date || '-'}</span>
                         <span style="font-size: 10px;"><i class="fa-solid fa-hard-drive"></i> ${size}</span>
                         <div class="d-flex flex-wrap gap-1">
                             ${createBadge(row.contract_name, 'fa-solid fa-file-lines', 'bg-primary-subtle text-primary')}
                             ${createBadge(row.project_name, 'fa-solid fa-folder-tree', 'bg-info-subtle text-info')}
-                            <div class="d-none d-sm-inline-flex gap-1">
-                                ${createBadge(row.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
-                            </div>
+                            ${createBadge(row.type_name, 'fa-solid fa-tags', 'bg-secondary-subtle text-secondary')}
+                            ${createBadge(row.installations_name, 'fa-solid fa-location-dot', 'bg-warning-subtle text-warning-emphasis')}
+                            ${createBadge(row.poles_code, 'fa-solid fa-tower-broadcast', 'bg-dark-subtle text-dark')}
                         </div>
                     </div>
                 </div>
