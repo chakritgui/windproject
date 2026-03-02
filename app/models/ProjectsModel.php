@@ -350,13 +350,28 @@ class ProjectsModel {
                         return $img;
                     })($file['tmp_name']),
                     'image/gif'  => imagecreatefromgif($file['tmp_name']),
+                    'image/webp' => imagecreatefromwebp($file['tmp_name']), 
                     default      => false,
                 };
                 if ($image) {
                     $newName = $baseName . ".webp";
-                    if (imagewebp($image, $uploadPath . $newName, 80)) {
-                        $dbPath = $dir . $newName;
-                    }
+                    $fullPath = $uploadPath . $newName;
+                    $quality = 85; 
+                    $max_size = 1024 * 1024; 
+                    do {
+                        ob_start();
+                        imagewebp($image, null, $quality);
+                        $tempImageData = ob_get_contents();
+                        ob_end_clean();
+                        $currentSize = strlen($tempImageData);
+                        if ($currentSize <= $max_size || $quality <= 15) {
+                            if (file_put_contents($fullPath, $tempImageData)) {
+                                $dbPath = $dir . $newName;
+                            }
+                            break;
+                        }
+                        $quality -= 10;
+                    } while ($quality > 5);
                     imagedestroy($image);
                 }
             }
@@ -367,8 +382,8 @@ class ProjectsModel {
                     $dbPath = $dir . $newName;
                 }
             }
-            if ($dbPath && !empty($ex_cover) && file_exists($this->basePath . '/' . $ex_cover)) {
-                @unlink($this->basePath . '/' . $ex_cover);
+            if ($dbPath && !empty($ex_cover) && file_exists($this->basePath . DIRECTORY_SEPARATOR . $ex_cover)) {
+                @unlink($this->basePath . DIRECTORY_SEPARATOR . $ex_cover);
             }
         } else {
             $dbPath = !empty($ex_cover) ? $ex_cover : null;

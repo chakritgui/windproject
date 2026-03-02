@@ -180,15 +180,46 @@ class TypesModel {
         return $stmt->fetchColumn() > 0;
     }
     private function handleFileUpload($type_id, $file) {
-        $this->handleFileDelete($type_id);
+        $this->handleFileDelete($type_id);  
         $dir = "uploads/type/";
-        $fullDir = $dir;
-        if (!is_dir($fullDir)) mkdir($fullDir, 0755, true);
-        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-        $newName = $type_id . "_" . time() . "." . $ext;
-        $dbPath = $dir . $newName;
-        if (move_uploaded_file($file['tmp_name'], dirname(__DIR__, 2) . '/' . $dir . $newName)) {
-            $this->db->prepare("UPDATE wp_type SET type_icon=? WHERE type_id =?")->execute([$dbPath, $type_id]);
+        $baseDir = dirname(__DIR__, 2) . '/' . $dir;
+        if (!is_dir($baseDir)) mkdir($baseDir, 0755, true);
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $image = false;
+        switch ($ext) {
+            case 'jpeg':
+            case 'jpg':  $image = @imagecreatefromjpeg($file['tmp_name']); break;
+            case 'png':   $image = @imagecreatefrompng($file['tmp_name']);  break;
+            case 'gif':   $image = @imagecreatefromgif($file['tmp_name']);  break;
+            case 'webp':  $image = @imagecreatefromwebp($file['tmp_name']); break;
+        }
+        if ($image) {
+            $newName = $type_id . "_" . time() . ".webp";
+            $targetFull = $baseDir . $newName;
+            $dbPath = $dir . $newName;
+            $quality = 85;
+            do {
+                ob_start();
+                imagewebp($image, null, $quality);
+                $imageData = ob_get_contents();
+                ob_end_clean();
+                if (strlen($imageData) <= 1048576 || $quality <= 20) {
+                    break;
+                }
+                $quality -= 10;
+            } while ($quality > 10);
+            if (file_put_contents($targetFull, $imageData)) {
+                $this->db->prepare("UPDATE wp_type SET type_icon=? WHERE type_id =?")->execute([$dbPath, $type_id]);
+            }
+            imagedestroy($image);
+
+        } else {
+            $newName = $type_id . "_" . time() . "." . $ext;
+            $targetFull = $baseDir . $newName;
+            $dbPath = $dir . $newName;
+            if (move_uploaded_file($file['tmp_name'], $targetFull)) {
+                $this->db->prepare("UPDATE wp_type SET type_icon=? WHERE type_id =?")->execute([$dbPath, $type_id]);
+            }
         }
     }
     private function handleFileDelete($type_id){
