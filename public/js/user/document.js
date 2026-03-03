@@ -213,7 +213,7 @@ function renderGridView(items) {
                     </div>
                     <button class="btn btn-outline-primary download-btn w-100 mt-3" data-id="${item.document_id}" data-path="${item.document_path}" data-file-name="${item.document_file_name}">
                         <i class="fa-solid fa-download"></i>
-                        <span class="btn-text">${langData['download'] || 'Download'}</span>
+                        <span class="btn-text" data-i18n="download">${langData['download'] || 'Download'}</span>
                     </button>
                 </div>
             </div>
@@ -254,7 +254,7 @@ function renderListView(items) {
                 <div class="col-12 col-md-auto text-end">
                     <button class="btn btn-sm btn-outline-primary download-btn w-100 w-md-auto mt-3" data-id="${item.document_id}" data-id="${item.document_id}" data-path="${item.document_path}" data-file-name="${item.document_file_name}">
                         <i class="fa-solid fa-download"></i>
-                        <span class="btn-text d-inline d-sm-none ms-1">${langData['download'] || 'Download'}</span>
+                        <span class="btn-text d-inline d-sm-none ms-1" data-i18n="download">${langData['download'] || 'Download'}</span>
                     </button>
                 </div>
             </div>
