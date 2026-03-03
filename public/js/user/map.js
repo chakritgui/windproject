@@ -207,40 +207,47 @@ async function loadPoles(map) {
                     <span class="arrow-icon" id="${arrowId}" style="display:inline-block; transition: transform 1s ease-in-out;">➤</span>
                     <span class="wind-value" id="${windId}">...</span>
                 </div>`,
-                { permanent: true, direction: 'right', className: 'wind-custom-tooltip', offset: [20, -15] }
+                { 
+                    permanent: true, 
+                    direction: 'right',
+                    className: 'wind-custom-tooltip', 
+                    offset: [20, -15],
+                    opacity: 0.9  
+                }
             ).openTooltip();
             marker.on('click', () => openPoles(pole.poles_id));
         }
         const refreshAllWindData = async () => {
-            for (const id in poleMarkers) {
-                const p = poleMarkers[id];
-                updatePoleWind(p.lat, p.lng, p.windId, p.arrowId);
+            const poleIds = Object.keys(poleMarkers);
+            if (poleIds.length === 0) return;
+            const lats = poleIds.map(id => poleMarkers[id].lat).join(',');
+            const lngs = poleIds.map(id => poleMarkers[id].lng).join(',');
+            try {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lngs}&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=ms`;
+                const res = await fetch(url);
+                const data = await res.json();
+                const weatherResults = Array.isArray(data) ? data : [data];
+                poleIds.forEach((id, index) => {
+                    const weather = weatherResults[index];
+                    const p = poleMarkers[id];
+                    if (weather && weather.current) {
+                        const speed = weather.current.wind_speed_10m;
+                        const dir = weather.current.wind_direction_10m;
+                        const el = document.getElementById(p.windId);
+                        const arrow = document.getElementById(p.arrowId);
+                        if (el) el.innerText = `${speed.toFixed(1)} m/s`;
+                        if (arrow) arrow.style.transform = `rotate(${dir - 90}deg)`;
+                    }
+                });
+            } catch (e) {
+                console.error("Batch Update Failed:", e);
             }
         };
         refreshAllWindData();
-        if (windRefreshInterval) clearInterval(windRefreshInterval);
+        if (typeof windRefreshInterval !== 'undefined') clearInterval(windRefreshInterval);
         windRefreshInterval = setInterval(refreshAllWindData, 60000);
     } catch (err) {
         console.error("LoadPoles Error:", err);
-    }
-}
-async function updatePoleWind(lat, lng, windId, arrowId) {
-    try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=ms`;
-        const res = await fetch(url);
-        const weather = await res.json();
-        if (weather.current) {
-            const speed = weather.current.wind_speed_10m;
-            const dir = weather.current.wind_direction_10m;
-            const el = document.getElementById(windId);
-            const arrow = document.getElementById(arrowId);
-            if (el) el.innerText = `${speed.toFixed(1)} m/s`;
-            if (arrow) {
-                arrow.style.transform = `rotate(${dir - 90}deg)`;
-            }
-        }
-    } catch (e) {
-        console.error("Point Forecast failed", e);
     }
 }
 function toggleWind(isOn) {

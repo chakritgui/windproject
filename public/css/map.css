@@ -408,3 +408,25 @@ header .nav-link:hover {
 .leaflet-tooltip-pane {
     z-index: 9999991 !important;
 }
+.wind-custom-tooltip {
+    background: rgba(255, 255, 255, 0.85) !important;
+    border: 1px solid #ccc !important;
+    border-radius: 12px !important;
+    padding: 2px 4px !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    pointer-events: none;
+    white-space: nowrap;
+}
+.wind-custom-tooltip::before {
+    display: none !important;
+}
+.wind-pill {
+    display: flex;
+    align-items: center;
+    gap: 0px;
+    font-weight: bold;
+    font-size: 9px;
+}
+.arrow-icon {
+    color: #007bff;
+}
