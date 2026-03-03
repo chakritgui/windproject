@@ -173,11 +173,31 @@ function handlePickerOpening(latlng, picker) {
     }
 }
 let windRefreshInterval = null;
-let refreshAllWindData = async () => {
-    if (!windOn) return;
-    for (const id in poleMarkers) {
-        const p = poleMarkers[id];
-        updatePoleWind(p.lat, p.lng, p.windId, p.arrowId);
+const refreshAllWindData = async () => {
+    const poleIds = Object.keys(poleMarkers);
+    if (!windOn || poleIds.length === 0) return;
+    const lats = poleIds.map(id => poleMarkers[id].lat).join(',');
+    const lngs = poleIds.map(id => poleMarkers[id].lng).join(',');
+    try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lngs}&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=ms`;
+        const res = await fetch(url);
+        const data = await res.json();
+        const weatherResults = Array.isArray(data) ? data : [data];
+        poleIds.forEach((id, index) => {
+            const weather = weatherResults[index];
+            const p = poleMarkers[id];
+            if (weather && weather.current) {
+                const speed = weather.current.wind_speed_10m;
+                const dir = weather.current.wind_direction_10m; 
+                const el = document.getElementById(p.windId);
+                const arrow = document.getElementById(p.arrowId);
+                if (el) el.innerText = `${speed.toFixed(1)} m/s`;
+                if (arrow) arrow.style.transform = `rotate(${dir - 90}deg)`;
+            }
+        });
+        console.log("Wind data refreshed");
+    } catch (e) {
+        console.error("Batch Update Failed:", e);
     }
 };
 async function loadPoles(map) {
@@ -214,64 +234,40 @@ async function loadPoles(map) {
                     offset: [20, -15],
                     opacity: 0.9  
                 }
-            ).openTooltip();
+            );
+            if (!windOn) {
+                marker.closeTooltip();
+            } else {
+                marker.openTooltip();
+            }
             marker.on('click', () => openPoles(pole.poles_id));
         }
-        const refreshAllWindData = async () => {
-            const poleIds = Object.keys(poleMarkers);
-            if (poleIds.length === 0) return;
-            const lats = poleIds.map(id => poleMarkers[id].lat).join(',');
-            const lngs = poleIds.map(id => poleMarkers[id].lng).join(',');
-            try {
-                const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lngs}&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=ms`;
-                const res = await fetch(url);
-                const data = await res.json();
-                const weatherResults = Array.isArray(data) ? data : [data];
-                poleIds.forEach((id, index) => {
-                    const weather = weatherResults[index];
-                    const p = poleMarkers[id];
-                    if (weather && weather.current) {
-                        const speed = weather.current.wind_speed_10m;
-                        const dir = weather.current.wind_direction_10m;
-                        const el = document.getElementById(p.windId);
-                        const arrow = document.getElementById(p.arrowId);
-                        if (el) el.innerText = `${speed.toFixed(1)} m/s`;
-                        if (arrow) arrow.style.transform = `rotate(${dir - 90}deg)`;
-                    }
-                });
-            } catch (e) {
-                console.error("Batch Update Failed:", e);
-            }
-        };
-        refreshAllWindData();
-        if (typeof windRefreshInterval !== 'undefined') clearInterval(windRefreshInterval);
-        windRefreshInterval = setInterval(refreshAllWindData, 60000);
+        if (windOn) {
+            refreshAllWindData();
+        }
+
     } catch (err) {
         console.error("LoadPoles Error:", err);
     }
 }
 function toggleWind(isOn) {
-    if (!windyAPI) return;
     windOn = isOn;
-    const { store } = windyAPI;
-    store.set('overlay', windOn ? 'wind' : 'none');
+    if (typeof windyAPI !== 'undefined' && windyAPI.store) {
+        windyAPI.store.set('overlay', windOn ? 'wind' : 'none');
+    }
     Object.keys(poleMarkers).forEach(id => {
         const p = poleMarkers[id];
-        if (windOn) {
-            p.marker.openTooltip();
-        } else {
-            p.marker.closeTooltip();
+        if (p && p.marker) {
+            windOn ? p.marker.openTooltip() : p.marker.closeTooltip();
         }
     });
+    if (windRefreshInterval) {
+        clearInterval(windRefreshInterval);
+        windRefreshInterval = null;
+    }
     if (windOn) {
-        refreshAllWindData(); 
-        if (windRefreshInterval) clearInterval(windRefreshInterval);
+        refreshAllWindData();
         windRefreshInterval = setInterval(refreshAllWindData, 60000);
-    } else {
-        if (windRefreshInterval) {
-            clearInterval(windRefreshInterval);
-            windRefreshInterval = null;
-        }
     }
 }
 function getDivIcon(typeId) {
