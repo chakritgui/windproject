@@ -42,7 +42,7 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="installation-tab" data-bs-toggle="pill" data-bs-target="#installation-tab" data-page="installation" type="button">
+            <button class="nav-link" id="installation-tab" data-bs-toggle="pill" data-bs-target="#installation-tabs" data-page="installation" type="button">
                 <i class="fa-solid fa-location-dot"></i> <span data-i18n="installation"></span>
             </button>
         </li>
@@ -210,7 +210,7 @@
                 </table>
             </div>
         </div>
-        <div class="tab-pane fade" id="installation-tab" role="tabpanel">
+        <div class="tab-pane fade" id="installation-tabs" role="tabpanel">
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <div class="row g-2 mb-3">
