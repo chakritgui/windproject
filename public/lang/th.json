@@ -495,7 +495,7 @@
     "processing": "กำลังดำเนินการ...",
     "invalid_or_expired_token": "ลิงก์รีเซ็ตรหัสผ่านไม่ถูกต้อง หรือหมดอายุแล้ว",
     "allow_images_and_videos_only": "เฉพาะรูปภาพและวิดีโอเท่านั้น",
-    "image/video": "รูปภาพ/วิดีโอ (1080 × 1920px)",
+    "image/video": "รูปภาพ/วิดีโอ (2560 × 1440px)",
     "infography": "อินโฟกราฟิก",
     "configuration": "การจัดการค่าระบบ",
     "general_settings": "ตั้งค่าทั่วไป",

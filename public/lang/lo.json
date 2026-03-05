@@ -495,7 +495,7 @@
     "processing": "ກຳລັງດຳເນີນການ...",
     "invalid_or_expired_token": "ລິ້ງຕັ້ງຄ່າລະຫັດຜ່ານໃໝ່ບໍ່ຖືກຕ້ອງ ຫຼື ໝົດອາຍຸແລ້ວ",
     "allow_images_and_videos_only": "ສະເພາະຮູບພາບ ແລະ ວິດີໂອເທົ່ານັ້ນ",
-    "image/video": "ຮູບພາບ/ວິດີໂອ (1080 × 1920px)",
+    "image/video": "ຮູບພາບ/ວິດີໂອ (2560 × 1440px)",
     "infography": "ອິນໂຟກຣາຟິກ",
     "configuration": "ການຈັດການຄ່າລະບົບ",
     "general_settings": "ຕັ້ງຄ່າທົ່ວໄປ",

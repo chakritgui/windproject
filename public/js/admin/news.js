@@ -319,7 +319,7 @@ function getContentForm(d, publishTime) {
                                     <input class="form-check-input switch-item" type="checkbox" id="folder_show_admin" ${d.folder_show_admin == 'yes' ? 'checked' : ''}>
                                     <label class="form-check-label fw-bold" for="folder_show_admin">
                                         <i class="fa-solid fa-user-shield me-2 text-primary"></i>
-                                        ${langData['show_news_admin'] || 'Show in News (Admin)'}
+                                        ${langData['show_project_admin'] || 'Show in Project (Admin)'}
                                     </label>
                                 </div>
                             </div>
@@ -328,7 +328,7 @@ function getContentForm(d, publishTime) {
                                     <input class="form-check-input switch-item" type="checkbox" id="folder_show_user" ${d.folder_show_user == 'yes' ? 'checked' : ''}>
                                     <label class="form-check-label fw-bold" for="folder_show_user">
                                         <i class="fa-solid fa-users me-2 text-success"></i>
-                                        ${langData['show_news_user'] || 'Show in News (User)'}
+                                        ${langData['show_project_user'] || 'Show in Project (User)'}
                                     </label>
                                 </div>
                             </div>
