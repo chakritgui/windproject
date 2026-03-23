@@ -100,8 +100,14 @@ function initMonthYearPicker(selector, callback) {
         format: "mm/yyyy",
         startView: "months",
         minViewMode: "months",
-        autoclose: true
+        autoclose: true,
+        clearBtn: true,
+        container: 'body' 
     }).on('changeDate', function () {
+        if (typeof callback === 'function') {
+            callback();
+        }
+    }).on('clearDate', function () {
         if (typeof callback === 'function') {
             callback();
         }

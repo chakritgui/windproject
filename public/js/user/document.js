@@ -307,13 +307,13 @@ document.addEventListener('DOMContentLoaded', function () {
         hasMore = true;
         $('#gridView').empty();
         $('#listView').empty();
-        loadDocuments();
+        resetAndLoad();
     });
     $('#btnSearch').on('click', function () {
         docPage = 1;
         hasMore = true;
         $('#gridView, #listView').empty();
-        loadDocuments();
+        resetAndLoad();
     });
     $('#filter_keyword').on('keypress', function (e) {
         if (e.which === 13) {
