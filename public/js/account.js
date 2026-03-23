@@ -347,7 +347,7 @@ function loadUsageHistory() {
                                                     ${log.ip_address}
                                                 </small>
                                                 ${log.login_location ? `
-                                                    <span class="location-link" style="font-size: 0.75rem; color: #377dff;">
+                                                    <span class="location-link text-blue small" style="font-size: 0.6rem;">
                                                         <i class="fa-solid fa-location-dot me-1"></i>${log.login_location}
                                                     </span>
                                                 ` : ''}
