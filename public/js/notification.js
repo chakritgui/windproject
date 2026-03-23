@@ -9,13 +9,14 @@ async function loadNotification() {
             showError(langData['cannot_load']);
             return;
         }
-        notifyPage = 1;
         updateUnreadBadge(res.data.unread);
     } catch (err) {
         showError(langData['cannot_load']);
     }
 }
 $(document).on('click', '.btn-notification', async function (e) {
+    notifyPage = 1; 
+    notifyFinished = false; 
     $('.notification-list').empty();
     e.preventDefault();
     e.stopPropagation();
@@ -29,10 +30,6 @@ async function readNotification() {
             method: 'POST',
             dataType: 'json'
         });
-        if (!res || res.status !== true) {
-            showError(langData['cannot_load']);
-            return;
-        }
         notifyPage = 1;
         notifyFinished = false;
         $('.notification-list').empty();
