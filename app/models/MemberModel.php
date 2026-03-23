@@ -172,17 +172,21 @@ class MemberModel {
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $userAgent = new AgentHelper($pdo);
         foreach ($rows as &$r) {
-            $r['login_at'] = !empty($r['login_at']) ? convertTimeZone($r['login_at'], 'd/m/Y H:i:s') : '-';
-            $r['logout_at'] = !empty($r['logout_at']) ? convertTimeZone($r['logout_at'], 'd/m/Y H:i:s') : '-';
             $usage = '-';
             if (!empty($r['login_at']) && !empty($r['logout_at'])) {
-                $start = new DateTime($r['login_at']);
-                $end   = new DateTime($r['logout_at']);
-                $interval = $start->diff($end);
-                $hours = ($interval->days * 24) + $interval->h;
-                $usage = sprintf('%02d:%02d:%02d', $hours, $interval->i, $interval->s);
+                try {
+                    $startTime = new DateTime($r['login_at']);
+                    $endTime   = new DateTime($r['logout_at']);
+                    $interval = $startTime->diff($endTime);
+                    $totalHours = ($interval->days * 24) + $interval->h;
+                    $usage = sprintf('%02d:%02d:%02d', $totalHours, $interval->i, $interval->s);
+                } catch (Exception $e) {
+                    $usage = '-';
+                }
             }
             $r['usage'] = $usage;
+            $r['login_at'] = !empty($r['login_at']) ? convertTimeZone($r['login_at'], 'd/m/Y H:i:s') : '-';
+            $r['logout_at'] = !empty($r['logout_at']) ? convertTimeZone($r['logout_at'], 'd/m/Y H:i:s') : '-';
             $ua_info = $userAgent->parse_user_agent($r['login_device']);
             $r['device_os'] = $ua_info['os'];
             $r['device_browser'] = $ua_info['browser'];
