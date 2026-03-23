@@ -257,7 +257,7 @@ class UserModel {
     public function info($start = 0, $length = 20, $filters = [], $order = 'desc') {
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
         $sql = "SELECT 
-            f.id, f.name as folder_name, f.slug, f.level, f.parent_id, f.created_at, f.type, f.content_id, c.cover, c.content_slug, f.sub_type,
+            f.id, f.name as folder_name, f.slug, f.level, f.parent_id, f.created_at, f.type, f.content_id, c.content_slug, f.sub_type,
             iEn.status as en_status,
             iLo.status as lo_status,
             iTh.status as th_status,
@@ -267,7 +267,11 @@ class UserModel {
             f.created_at,
             COALESCE(m.count_attachment, 0) AS count_attachment,
             COALESCE(m.count_image, 0) AS count_image,
-            COALESCE(m.count_image360, 0) AS count_image360
+            COALESCE(m.count_image360, 0) AS count_image360,
+            CASE
+                WHEN f.type = 'folder' THEN f.cover
+                ELSE c.cover
+            END as cover
         FROM wp_folder f 
         LEFT JOIN wp_content c on c.content_id = f.content_id
         LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang = 'en' AND iEn.status IN ('ready','success')
