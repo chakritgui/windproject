@@ -147,7 +147,8 @@ class MemberModel {
             5 => "l.login_device",
             6 => "l.login_device",
             7 => "l.timezone",
-            8 => "l.log_type"
+            8 => "l.login_location",
+            9 => "l.log_type"
         ];
         $order = $orderMap[$colIndex] ?? 'l.login_at';
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';

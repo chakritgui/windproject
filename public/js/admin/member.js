@@ -641,6 +641,9 @@ function initHistoryTable() {
             data: "timezone",
             orderable: true,
         },{
+            data: "login_location",
+            orderable: true,
+        },{
             data: "log_type",
             orderable: true, 
             className: "text-center",

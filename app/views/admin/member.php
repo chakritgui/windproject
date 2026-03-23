@@ -119,6 +119,7 @@
                             <th data-i18n="device"></th>
                             <th data-i18n="browsers"></th>
                             <th data-i18n="timezone"></th>
+                            <th data-i18n="location"></th>
                             <th data-i18n="status"></th>
                         </tr>
                     </thead>
