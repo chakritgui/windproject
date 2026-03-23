@@ -9,6 +9,7 @@ async function loadNotification() {
             showError(langData['cannot_load']);
             return;
         }
+        notifyPage = 1;
         updateUnreadBadge(res.data.unread);
     } catch (err) {
         showError(langData['cannot_load']);
@@ -61,7 +62,7 @@ async function loadNotificationItem() {
             return;
         }
         const items = res.data.data ?? [];
-        handleNotificationItem(items, res.data.total);
+        handleNotificationItem(items);
         notifyPage++;
     } catch (err) {
         console.error('Notification load error:', err);
@@ -78,7 +79,7 @@ const NOTIF_ICON = {
 function getNotifIconCls(target) {
     return NOTIF_ICON[target] || NOTIF_ICON['news'];
 }
-function handleNotificationItem(items, total) {
+function handleNotificationItem(items) {
     const $list = $('.notification-list');
     if (notifyPage === 1) $list.empty();
     if (!items || items.length === 0) {
