@@ -220,8 +220,8 @@
                     <thead>
                         <tr>
                             <th class="ps-4" data-i18n="member"></th>
-                            <th data-i18n="login_time"></th>
-                            <th class="hide-mobile" data-i18n="logout_time"></th>
+                            <th data-i18n="login"></th>
+                            <th class="hide-mobile" data-i18n="logout"></th>
                             <th data-i18n="ip_address"></th>
                             <th class="hide-mobile" data-i18n="device"></th>
                             <th class="text-center pe-4" data-i18n="status"></th>

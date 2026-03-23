@@ -113,8 +113,9 @@
                         <tr>
                             <th data-i18n="member"></th>
                             <th data-i18n="role"></th>
-                            <th data-i18n="login_time"></th>
-                            <th data-i18n="logout_time"></th>
+                            <th data-i18n="login"></th>
+                            <th data-i18n="logout"></th>
+                            <th data-i18n="usage"></th>
                             <th data-i18n="ip_address"></th>
                             <th data-i18n="device"></th>
                             <th data-i18n="browsers"></th>

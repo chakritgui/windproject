@@ -598,6 +598,9 @@ function initHistoryTable() {
                 return `<div class="d-flex flex-column">${logout}</div>`;
             }
         },{ 
+            data: "usage",
+            orderable: false, 
+        },{ 
             data: "ip_address",
             orderable: true, 
             render: function(data) {

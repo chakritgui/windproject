@@ -143,12 +143,12 @@ class MemberModel {
             1 => "m.role",
             2 => "l.login_at",
             3 => "l.logout_at",
-            4 => "l.ip_address",
-            5 => "l.login_device",
+            5 => "l.ip_address",
             6 => "l.login_device",
-            7 => "l.timezone",
-            8 => "l.login_location",
-            9 => "l.log_type"
+            7 => "l.login_device",
+            8 => "l.timezone",
+            9 => "l.login_location",
+            10 => "l.log_type"
         ];
         $order = $orderMap[$colIndex] ?? 'l.login_at';
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
@@ -174,6 +174,15 @@ class MemberModel {
         foreach ($rows as &$r) {
             $r['login_at'] = !empty($r['login_at']) ? convertTimeZone($r['login_at'], 'd/m/Y H:i:s') : '-';
             $r['logout_at'] = !empty($r['logout_at']) ? convertTimeZone($r['logout_at'], 'd/m/Y H:i:s') : '-';
+            $usage = '-';
+            if (!empty($r['login_at']) && !empty($r['logout_at'])) {
+                $start = new DateTime($r['login_at']);
+                $end   = new DateTime($r['logout_at']);
+                $interval = $start->diff($end);
+                $hours = ($interval->days * 24) + $interval->h;
+                $usage = sprintf('%02d:%02d:%02d', $hours, $interval->i, $interval->s);
+            }
+            $r['usage'] = $usage;
             $ua_info = $userAgent->parse_user_agent($r['login_device']);
             $r['device_os'] = $ua_info['os'];
             $r['device_browser'] = $ua_info['browser'];
