@@ -17,12 +17,15 @@ $(document).ready(function () {
     setupObservers();
     initEventListeners();
 });
+function toggleSort() {
+    state.sort = state.sort === 'desc' ? 'asc' : 'desc';
+    const label = document.getElementById('sortLabel');
+    if (label) {
+        label.textContent =  state.sort === 'desc' ? (typeof langData !== 'undefined' ? langData['newest'] : 'Newest') : (typeof langData !== 'undefined' ? langData['oldest'] : 'เก่าสุด');
+    }
+    fetchFolders(true);
+}
 function initEventListeners() {
-    $(document).on('click', '.sort-option', function() {
-        state.sort = $(this).data('sort');
-        $('#selectedSortLabel').text(langData[$(this).data('label')]);
-        fetchFolders(true);
-    });
     $('#listView').on('click', '.fetchFolder', function () {
         const index = $(this).data('index');
         const rowData = state.cachedData[index];

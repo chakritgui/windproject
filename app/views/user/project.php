@@ -40,24 +40,10 @@
                         </ol>
                 </nav>
                 <div class="header-stats">
-                    <div class="dropdown">
-                        <button class="btn btn-white border shadow-sm dropdown-toggle d-flex align-items-center" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fa-solid fa-sort me-2 text-secondary"></i> 
-                            <span id="selectedSortLabel" data-i18n="newest" class="fw-medium">Newest</span>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="sortDropdown">
-                            <li>
-                                <a class="dropdown-item sort-option py-2" href="javascript:void(0)" data-sort="desc" data-label="newest">
-                                    <i class="fa-solid fa-arrow-down-9-1 me-2 text-muted"></i><span data-i18n="newest">Newest</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item sort-option py-2" href="javascript:void(0)" data-sort="asc" data-label="oldest">
-                                    <i class="fa-solid fa-arrow-up-1-9 me-2 text-muted"></i><span data-i18n="oldest">Oldest</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
+                    <button class="toolbar-btn" id="sortBtn" onclick="toggleSort()">
+                        <i class="fa-solid fa-sort"></i>
+                        <span id="sortLabel" data-i18n="newest"></span>
+                    </button>
                 </div>
             </div>
         </div>
