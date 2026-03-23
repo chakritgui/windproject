@@ -281,7 +281,7 @@
 .dl-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     padding: 8px 16px;
     border-radius: 11px;
     background: linear-gradient(135deg, #5bb8f5, #2d7fc1);
