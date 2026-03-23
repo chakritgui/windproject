@@ -12,6 +12,8 @@ class AuthController extends Controller {
         $username     = $_POST['username'] ?? null;
         $pass         = $_POST['password'] ?? null;
         $timezone     = $_POST['timezone'] ?? null;
+        $lat     = $_POST['lat'] ?? null;
+        $lng     = $_POST['lng'] ?? null;
         $keepLoggedIn = filter_var($_POST['keepLoggedIn'] ?? false, FILTER_VALIDATE_BOOLEAN);
         if (!$username || !$pass) {
             echo json_encode(['status' => 'error', 'message' => 'missing_parameters']);
@@ -33,7 +35,7 @@ class AuthController extends Controller {
         }
         session_regenerate_id(true); 
         $session_id = session_id();  
-        $m->updateLogin($user['member_id'], $timezone, $session_id);
+        $m->updateLogin($user['member_id'], $timezone, $session_id, $lat, $lng);
         $_SESSION['session_id'] = $session_id;
         $_SESSION['user'] = [
             'id'   => $user['member_id'],

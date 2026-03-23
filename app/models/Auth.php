@@ -26,16 +26,27 @@
             $sendResult = $mailHelper->sendMail($email, $lang, $token);
             return $sendResult ? 'success' : 'mail_error';
         }
-        public function updateLogin($member_id, $timezone, $session_id) {
+        public function updateLogin($member_id, $timezone, $session_id, $lat, $lng) {
             $stmt = $this->db->prepare('UPDATE wp_members SET last_login_at = NOW() WHERE member_id = ?');
             $stmt->execute([$member_id]);
             $stmt = $this->db->prepare("UPDATE wp_login_logs SET logout_at = NOW(), log_type = 'kick' WHERE member_id = ? AND logout_at IS NULL");
             $stmt->execute([$member_id]);
-            $stmt = $this->db->prepare('INSERT INTO wp_login_logs (member_id, login_at, ip_address, login_device, timezone, session_id) VALUES (?, NOW(), ?, ?, ?, ?)');
+            $login_location = (!empty($lat) && !empty($lng)) ? "$lat,$lng" : null;
+            $sql = 'INSERT INTO wp_login_logs 
+                    (member_id, login_at, ip_address, login_device, timezone, session_id, login_location) 
+                    VALUES (?, NOW(), ?, ?, ?, ?, ?)';
+            $stmt = $this->db->prepare($sql);
             $ip_address = getClientIp();
             if ($ip_address === '::1') $ip_address = '127.0.0.1';
             $login_device = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
-            $stmt->execute([$member_id, $ip_address, $login_device, $timezone, $session_id]);
+            $stmt->execute([
+                $member_id, 
+                $ip_address, 
+                $login_device, 
+                $timezone, 
+                $session_id, 
+                $login_location
+            ]);
         }
         public function setRememberToken($member_id, $selector, $validator_hash, $expires_at) {
             $stmt = $this->db->prepare('UPDATE wp_members SET remember_selector = ?, remember_validator_hash = ?, remember_expires_at = ? WHERE member_id = ?');
