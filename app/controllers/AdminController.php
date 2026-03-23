@@ -1,9 +1,9 @@
 <?php
     class AdminController extends Controller {
         private $db;
-    public function __construct(){ 
-        $this->db = Database::getInstance()->pdo;
-    }
+        public function __construct(){ 
+            $this->db = Database::getInstance()->pdo;
+        }
         public function index() {
             ensure_login();
             if (!is_admin()) { 

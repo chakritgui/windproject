@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.css">
 <script src="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.js"></script>
+<link href="<?=BASE_URL?>/public/css/page.css?v=<?=time();?>" rel="stylesheet">
 <script>
     let options = { lat: 16.5, lon: 106.0, zoom: 8, labels: false };
     let DEFAULT_LEVEL = '100m';
@@ -38,13 +39,15 @@
     </div>
 </div>
 <div id="ui">
-    <div class="wind-toggle-card">
-        <div class="wind-icon"><i class="fa-solid fa-fan"></i></div>
-        <div class="wind-label">WIND MAP</div>
-        <div class="form-check form-switch">
+    <label class="wind-toggle-card" for="windSwitch">
+        <div class="wind-icon">
+            <i class="fa-solid fa-fan"></i>
+        </div>
+        <div class="wind-label">Wind Map</div>
+        <div class="switch-container">
             <input class="form-check-input" type="checkbox" id="windSwitch" checked>
         </div>
-    </div>
+    </label>
 </div>
 <div id="windy"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>

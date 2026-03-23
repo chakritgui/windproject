@@ -94,17 +94,18 @@ class UserController extends Controller {
         ]);
     }
     public function documentList() {
-        $page     = max(1, (int)($_POST['page'] ?? 1));
-        $contract_id  = ($_POST['contract'] !== '') ? (int)$_POST['contract'] : null;
-        $project_id  = ($_POST['project'] !== '') ? (int)$_POST['project'] : null;
-        $type_id  = ($_POST['type'] !== '') ? (int)$_POST['type'] : null;
-        $installations_id  = ($_POST['installations'] !== '') ? (int)$_POST['installations'] : null;
-        $poles_id  = ($_POST['poles'] !== '') ? (int)$_POST['poles'] : null;
-        $date     = trim($_POST['date'] ?? '');
-        $keyword  = trim($_POST['keyword'] ?? '');
-        $view     = $_POST['view'] ?? 'grid';
-        $limit = ($view === 'list') ? 15 : 9;
-        $order = $_POST['order'] ?? 'desc';
+        $input = json_decode(file_get_contents("php://input"), true);
+        $page     = max(1, (int)($input['page'] ?? 1));
+        $contract_id  = ($input['contract'] !== '') ? (int)$input['contract'] : null;
+        $project_id  = ($input['project'] !== '') ? (int)$input['project'] : null;
+        $type_id  = ($input['type'] !== '') ? (int)$_POST['type'] : null;
+        $installations_id  = ($input['installations'] !== '') ? (int)$input['installations'] : null;
+        $poles_id  = ($input['poles'] !== '') ? (int)$input['poles'] : null;
+        $date     = trim($input['date'] ?? '');
+        $keyword  = trim($input['keyword'] ?? '');
+        $view     = $input['view'] ?? 'grid';
+        $limit = ($view === 'list') ? 15 : 12;
+        $order = $input['order'] ?? 'desc';
         $data = $this->model->documentList(
             $page,
             $limit,
@@ -119,7 +120,7 @@ class UserController extends Controller {
         );
         $this->json([
             'status' => true,
-            'data'   => $data
+            'data'   => $data,
         ]);
     }
     public function documentDownload() {
@@ -138,7 +139,8 @@ class UserController extends Controller {
         ]);
     }
     public function documentDownloadHistory() {
-        $page  = $_POST['page']  ?? 1;
+        $input = json_decode(file_get_contents("php://input"), true);
+        $page  = $input['page']  ?? 1;
         $limit = 10;
         $data = $this->model->documentDownloadHistory($page, $limit);
         $this->json([

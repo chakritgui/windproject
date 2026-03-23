@@ -1,59 +1,78 @@
 <script>
     const initialFolderPath = <?= json_encode($folderIds ?? []) ?>;
 </script>
+<link href="<?=BASE_URL?>/public/css/page.css?v=<?=time();?>" rel="stylesheet">
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/news.css?v=<?=time();?>">
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/project.css?v=<?=time();?>">
-<div class="container py-5 mt-5">  
-    <div class="header-section mb-3">
-        <div class="header-top">
-            <div class="header-title-wrapper">
-                <div class="header-icon">
-                    <i class="fa-solid fa-diagram-project"></i>
-                </div>
-                <div class="header-text">
-                    <h2 class="header-title-main" data-i18n="project"></h2>
-                    <p class="header-subtitle" data-i18n="header-project-subtitle"></p>
-                </div>
+<div class="sky-wrap" id="skyWrap"></div>
+<div class="container">  
+    <div class="page">
+        <div class="hero">
+            <div class="wind-particles">
+                <div class="particle pp-1"></div>
+                <div class="particle pp-2"></div>
+                <div class="particle pp-3"></div>
+                <div class="particle pp-4"></div>
+                <div class="particle pp-5"></div>
             </div>
-            <div class="header-stats d-flex align-items-center gap-3">
-                <div class="dropdown">
-                    <button class="btn btn-white border shadow-sm dropdown-toggle d-flex align-items-center" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fa-solid fa-sort me-2 text-secondary"></i> 
-                        <span id="selectedSortLabel" data-i18n="newest" class="fw-medium"></span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="sortDropdown">
-                        <li>
-                            <a class="dropdown-item sort-option py-2" href="javascript:void(0)" data-sort="desc" data-label="newest">
-                                <i class="fa-solid fa-arrow-down-9-1 me-2 text-muted"></i><span data-i18n="newest"></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item sort-option py-2" href="javascript:void(0)" data-sort="asc" data-label="oldest">
-                                <i class="fa-solid fa-arrow-up-1-9 me-2 text-muted"></i><span data-i18n="oldest"></span>
-                            </a>
-                        </li>
-                    </ul>
+            <div class="deco-cluster cluster-tl">
+                <i class="fa-solid fa-diagram-project deco-1"></i> 
+                <i class="fa-solid fa-wind deco-2"></i> 
+            </div>
+            <div class="deco-cluster cluster-br">
+                <i class="fa-solid fa-map-location-dot deco-3"></i>
+                <i class="fa-solid fa-list-check deco-4"></i>
+                <i class="fa-solid fa-chart-line deco-5"></i>
+            </div>
+            <div class="hero-content">
+                <div class="hero-icon"><i class="fa-solid fa-diagram-project text-white"></i></div>
+                <div class="hero-text">
+                    <h1 data-i18n="pstg_project"></h1>
+                    <p data-i18n="header-project-subtitle"></p>
+                    <div class="hero-accent"></div>
                 </div>
             </div>
         </div>
-        <div class="header-divider">
-            <div class="divider-line"></div>
-            <div class="divider-dot"></div>
+        <div class="header-section toolbar">
+            <div class="breadcrumb-area w-100 d-flex align-items-center justify-content-between flex-wrap">
+                <nav aria-label="breadcrumb" class="breadcrumb-wrapper">
+                    <ol class="breadcrumb mb-0" id="breadcrumb">
+                        </ol>
+                </nav>
+                <div class="header-stats">
+                    <div class="dropdown">
+                        <button class="btn btn-white border shadow-sm dropdown-toggle d-flex align-items-center" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-sort me-2 text-secondary"></i> 
+                            <span id="selectedSortLabel" data-i18n="newest" class="fw-medium">Newest</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="sortDropdown">
+                            <li>
+                                <a class="dropdown-item sort-option py-2" href="javascript:void(0)" data-sort="desc" data-label="newest">
+                                    <i class="fa-solid fa-arrow-down-9-1 me-2 text-muted"></i><span data-i18n="newest">Newest</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item sort-option py-2" href="javascript:void(0)" data-sort="asc" data-label="oldest">
+                                    <i class="fa-solid fa-arrow-up-1-9 me-2 text-muted"></i><span data-i18n="oldest">Oldest</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-    <nav aria-label="breadcrumb" class="breadcrumb-wrapper mb-4">
-        <ol class="breadcrumb mb-0" id="breadcrumb"></ol>
-    </nav>
-    <div id="listView"></div>
-    <div id="loadingIndicator" class="text-center py-4 d-none">
-        <div class="spinner-border text-primary spinner-border-sm" role="status"></div>
-        <span class="ms-2 small text-muted" data-i18n="loading"></span>
-    </div>
-    <div id="emptyState" class="empty-state-container animated fadeIn">
-        <div class="empty-icon"><i class="fa-regular fa-folder-open"></i></div>
-        <h3 class="empty-title" data-i18n="no_items"></h3>
-        <p class="empty-subtitle" data-i18n="no_items_subtitle"></p>
+        <div id="listView"></div>
+        <div id="loadingIndicator" class="text-center py-4 d-none">
+            <div class="spinner-border text-blue spinner-border-sm" role="status"></div>
+            <span class="ms-2 small text-muted" data-i18n="loading"></span>
+        </div>
+        <div id="emptyState" class="empty-state animated fadeIn">
+            <span class="empty-icon">📂</span>
+            <h3 data-i18n="no_items"></h3>
+            <p data-i18n="no_items_subtitle"></p>
+        </div>
     </div>
 </div>
 <div id="scrollEnd" style="height: 50px;"></div>
+<script src="<?=BASE_URL?>/public/js/user/sky.js?v=<?=time();?>"></script>
 <script src="<?=BASE_URL?>/public/js/user/project.js?v=<?=time();?>" defer></script>

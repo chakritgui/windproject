@@ -100,7 +100,7 @@ function displayInstructions(deviceType) {
 }
 function generateStepHTML(type) {
     let steps = '';
-    const header = `<h5 class="mb-4 fw-bold"><i class="fa-solid fa-circle-info text-primary me-2"></i><span data-i18n="download_line11">How to install</span></h5>`;
+    const header = `<h5 class="mb-4 fw-bold"><i class="fa-solid fa-circle-info text-blue me-2"></i><span data-i18n="download_line11">How to install</span></h5>`;
     if (type === 'android') {
         steps = `
             ${renderStep(1, 'download_line12', 'download_line13')}
@@ -108,7 +108,7 @@ function generateStepHTML(type) {
             ${renderStep(3, 'download_line16', 'download_line17')}`;
     } else if (type === 'ios') {
         steps = `
-            ${renderStep(1, 'download_line18', '', `Click the <strong>Share</strong> button <i class="fa-solid fa-arrow-up-from-bracket mx-1 text-primary"></i> in the browser bar.`)}
+            ${renderStep(1, 'download_line18', '', `Click the <strong>Share</strong> button <i class="fa-solid fa-arrow-up-from-bracket mx-1 text-blue"></i> in the browser bar.`)}
             ${renderStep(2, 'download_line21', 'download_line22')}
             ${renderStep(3, 'download_line23', 'download_line24')}`;
     } else if (type === 'desktop') {
@@ -135,21 +135,21 @@ function displayInstallButton(deviceType) {
     let html = '';
     const container = $('#installButtonContainer');
     if (deviceType === 'installed') {
-        html = `<a href="/" class="btn btn-install btn-success w-100 shadow"><i class="fa-solid fa-arrow-up-right-from-square me-2"></i><span data-i18n="open_app">Open App</span></a>`;
+        html = `<a href="/" class="btn btn-install btn-success shadow"><i class="fa-solid fa-arrow-up-right-from-square me-2"></i><span data-i18n="open_app">Open App</span></a>`;
     } else if (deviceType === 'android' || deviceType === 'desktop') {
-        html = `<button id="installBtn" class="btn btn-install btn-primary w-100 shadow" disabled>
+        html = `<button id="installBtn" class="btn btn-install btn-blue shadow" disabled>
                     <i class="fa-solid fa-spinner fa-spin me-2"></i>
                     <span data-i18n="preparing...">Checking Support...</span>
                 </button>`;
     } else if (deviceType === 'ios') {
         html = `
             <div class="alert alert-primary alert-custom text-center border-0 shadow-sm mb-0">
-                <i class="fa-solid fa-hand-pointer mb-2 d-block fs-4 text-primary"></i>
+                <i class="fa-solid fa-hand-pointer mb-2 fs-4 text-blue"></i>
                 <strong data-i18n="download_line34">Manual Install Required</strong><br>
                 <small data-i18n="download_line35">Tap Share icon then 'Add to Home Screen'</small>
             </div>`;
     } else {
-        html = `<button class="btn btn-install btn-secondary w-100" disabled><i class="fa-solid fa-circle-xmark me-2"></i><span data-i18n="download_line36">Not Available</span></button>`;
+        html = `<button class="btn btn-install btn-secondary" disabled><i class="fa-solid fa-circle-xmark me-2"></i><span data-i18n="download_line36">Not Available</span></button>`;
     }
     container.html(html);
 }
@@ -157,10 +157,7 @@ function startPreparingTimeout() {
     setTimeout(() => {
         const $btn = $('#installBtn');
         if ($btn.length && !deferredPrompt && $btn.prop('disabled')) {
-            $btn.prop('disabled', false)
-                .removeClass('btn-primary')
-                .addClass('btn-outline-secondary')
-                .html(`<i class="fa-solid fa-circle-check me-2 text-success"></i><span data-i18n="check_home">Check your Apps</span>`);
+            $btn.prop('disabled', false).removeClass('btn-blue').addClass('btn-outline-secondary').html(`<i class="fa-solid fa-circle-check me-2"></i><span data-i18n="check_home">Check your Apps</span>`);
             $btn.off('click').on('click', () => { window.location.href = '/'; });
         }
     }, 4000);
@@ -170,10 +167,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
     deferredPrompt = e;
     const $btn = $('#installBtn');
     if ($btn.length) {
-        $btn.prop('disabled', false)
-            .removeClass('btn-outline-secondary')
-            .addClass('btn-primary')
-            .html(`<i class="fa-solid fa-download me-2 animate__animated animate__bounceIn"></i><span data-i18n="install_app">Install Now</span>`);
+        $btn.prop('disabled', false).removeClass('btn-outline-secondary').addClass('btn-blue').html(`<i class="fa-solid fa-download me-2 animate__animated animate__bounceIn"></i><span data-i18n="install_app">Install Now</span>`);
         if (typeof updateText === 'function') updateText($btn);
     }
 });

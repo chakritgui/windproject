@@ -1,5 +1,5 @@
 .install-container {
-    max-width: 500px;
+    max-width: 720px;
     margin: 0 auto;
 }
 .install-card {
@@ -23,7 +23,7 @@
     width: 100px;
     height: 100px;
     margin: 0 auto;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5bb8f5, #2d7fc1);
     border-radius: 22px;
     display: flex;
     align-items: center;
@@ -59,7 +59,7 @@
 }
 .instruction-step {
     background: #f8f9fa;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid #5bb8f5;
     padding: 15px;
     margin-bottom: 15px;
     border-radius: 8px;
@@ -68,7 +68,7 @@
     display: inline-flex;
     width: 28px;
     height: 28px;
-    background: #667eea;
+    background: #5bb8f5;
     color: white;
     border-radius: 50%;
     align-items: center;
@@ -78,7 +78,7 @@
     margin-right: 12px;
 }
 .btn-install {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #5bb8f5, #2d7fc1);
     border: none;
     padding: 14px 40px;
     font-size: 18px;
@@ -106,7 +106,7 @@
     margin-bottom: 12px;
 }
 .feature-item i {
-    color: #667eea;
+    color: #5bb8f5;
     font-size: 20px;
     margin-right: 12px;
 }
@@ -116,4 +116,7 @@
     padding: 20px;
     border-radius: 12px;
     text-align: center;
+}
+.page {
+    max-width: 720px;
 }

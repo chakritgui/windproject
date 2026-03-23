@@ -115,7 +115,7 @@ function editField(fieldName) {
     }
     editHTML += `
             <div class="edit-actions" style="display: flex; gap: 5px; flex-shrink: 0;">
-                <button class="btn btn-primary btn-save" onclick="saveField('${fieldName}')">
+                <button class="btn btn-blue btn-save" onclick="saveField('${fieldName}')">
                     <i class="fa-solid fa-check"></i>
                 </button>
                 <button class="btn btn-light btn-cancel" onclick="cancelEdit('${fieldName}')">

@@ -37,7 +37,6 @@
     "success": "สำเร็จ",
     "admin_tools": "เครื่องมือผู้ดูแลระบบ",
     "user_panel": "แผงควบคุมผู้ใช้งาน",
-    "account_settings": "ตั้งค่าบัญชี",
     "account": "บัญชี",
     "logout": "ออกจากระบบ",
     "member": "สมาชิก",
@@ -174,6 +173,7 @@
     "start_date": "วันที่เริ่มต้น",
     "end_date": "วันที่สิ้นสุด",
     "download_history": "ประวัติการดาวน์โหลด",
+    "history": "ประวัติ",
     "total_downloads": "จำนวนการดาวน์โหลดทั้งหมด",
     "information": "ข้อมูลทั่วไป",
     "background": "พื้นหลัง",
@@ -215,6 +215,7 @@
     "web_app_mode": "โหมดเว็บแอป",
     "yes_full_screen": "ใช่ (Standalone - เต็มจอ)",
     "no_open": "ไม่ใช่ (เปิดในเบราว์เซอร์)",
+    "open": "เปิด",
     "help-text6": "รันเป็นแอปอิสระโดยไม่มีส่วนติดต่อของเบราว์เซอร์",
     "help-text7": "รูปภาพ PNG สี่เหลี่ยมจัตุรัส ขนาดที่แนะนำ: 512x512px",
     "theme": "ธีมและสี",
@@ -239,6 +240,7 @@
     "help-text11": "ล็อกการหมุนของหน้าจอ",
     "png_only": "กรุณาเลือกเฉพาะไฟล์ PNG เท่านั้น",
     "news": "ข่าวสาร",
+    "news_updates": "ข่าวสารอัปเดต",
     "news_management": "จัดการข่าวสาร",
     "preview": "ตัวอย่าง",
     "uploading": "กำลังอัปโหลด...",
@@ -320,6 +322,7 @@
     "no_documents_found": "ไม่พบเอกสาร",
     "found": "พบ",
     "documents": "เอกสาร",
+    "wind_report": "รายงานข้อมูลลม",
     "area": "พื้นที่",
     "color_setting": "ตั้งค่าสี",
     "quick_start_guide": "คู่มือการใช้งานเบื้องต้น",
@@ -618,5 +621,6 @@
     "you_will_stop_receiving_push_notifications": "คุณจะไม่ได้รับการแจ้งเตือนแบบพุชจากเว็บไซต์นี้อีกต่อไป",
     "notifications_disabled": "ปิดการแจ้งเตือนแล้ว",
     "you_will_no_longer": "คุณจะไม่ได้รับการแจ้งเตือนแบบพุชอีกต่อไป",
-    "select_all": "เลือกทั้งหมด"
+    "select_all": "เลือกทั้งหมด",
+    "pstg_project": "โครงการ PSTG"
 }

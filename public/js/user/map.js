@@ -348,188 +348,172 @@ $('#mapFilter').on('click', function (e) {
 $(document).on('click', function () { $('.menu-panel').fadeOut(); });
 $('.menu-panel').on('click', e => e.stopPropagation());
 async function openPoles(poleId) {
-    const $modal = $("#windModal");
-    const $dialog = $modal.find(".modal-dialog");
-    $dialog.removeClass("modal-fullscreen");
-    const modalBody = $modal.find(".modal-body");
-    modalBody.html(`
-        <div class="container py-4">
-            <div class="skeleton-loader p-0">
-                <div class="skeleton-rect mb-4 shadow-sm" style="height: 275px; border-radius: 1.5rem; background: #eee;"></div>
-                <div class="skeleton-line mb-3" style="width: 70%; height: 30px; background: #eee; border-radius: 8px;"></div>
-                <div class="skeleton-line mb-4" style="width: 30%; height: 20px; background: #eee; border-radius: 8px;"></div>
-                <div class="skeleton-line mb-2" style="height: 15px; background: #eee; border-radius: 5px;"></div>
-                <div class="skeleton-line mb-2" style="height: 15px; background: #eee; border-radius: 5px;"></div>
-                <div class="skeleton-line mb-2" style="width: 90%; height: 15px; background: #eee; border-radius: 5px;"></div>
+    const $modal   = $('#windModal');
+    const $dialog  = $modal.find('.modal-dialog');
+    const $body    = $modal.find('.modal-body');
+    const $header  = $modal.find('.modal-header');
+    const $footer  = $modal.find('.modal-footer');
+    $dialog.removeClass('modal-fullscreen');
+    $header.html(`
+        <h5 class="modal-title" style="font-family:'Syne',sans-serif;font-weight:700;color:#1a4e7a;"></h5>
+        <div class="ms-auto d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm poles-ctrl-btn" id="btn-fullscreen" title="Fullscreen">
+                <i class="fa-regular fa-window-maximize"></i>
+            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+    `);
+    $body.html(`
+        <div class="poles-skeleton">
+            <div class="sk-cover"></div>
+            <div style="padding:24px 20px;">
+                <div class="sk-line" style="width:55%;height:22px;margin-bottom:10px;"></div>
+                <div class="sk-line" style="width:28%;height:14px;margin-bottom:24px;"></div>
+                <div class="sk-line" style="height:12px;margin-bottom:8px;"></div>
+                <div class="sk-line" style="height:12px;margin-bottom:8px;"></div>
+                <div class="sk-line" style="width:80%;height:12px;"></div>
             </div>
         </div>
     `);
-    $modal.find(".modal-header").html(`
-        <h5 class="modal-title fw-bold text-dark"></h5>
-        <div class="ms-auto d-flex align-items-center">
-            <button type="button" class="btn btn-sm btn-light me-2" id="btn-fullscreen">
-                <i class="fa-regular fa-window-maximize"></i>
-            </button>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
+    $footer.html(`
+        <button type="button" class="poles-btn-primary" onclick="openFilterModal(${poleId});" data-i18n="view_report"></button>
+        <button type="button" class="poles-btn-ghost" data-bs-dismiss="modal" data-i18n="close"></button>
     `);
-    $modal.modal('show');
-    const modalTitle = $modal.find(".modal-title");
-    $modal.find("#btn-fullscreen").off("click").on("click", function() {
-        $modal.find(".modal-dialog").toggleClass("modal-fullscreen");
-        $(this).find("i").toggleClass("fa-regular fa-window-maximize fa-regular fa-window-restore");
+    bootstrap.Modal.getOrCreateInstance($modal[0]).show();
+    $modal.find('#btn-fullscreen').off('click').on('click', function () {
+        $dialog.toggleClass('modal-fullscreen');
+        $(this).find('i').toggleClass('fa-window-maximize fa-window-restore');
     });
-    $modal.find(".modal-footer").html(`
-        <button type="button" class="btn btn-outline-primary me-2" onclick="openFilterModal(${poleId});" data-i18n="view_report"></button>
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="close"></button>
-    `);
-    const modalInstance = bootstrap.Modal.getOrCreateInstance($modal[0]);
-    modalInstance.show();
     try {
-        const response = await fetch(`${BASE_URL}/api/poles.info`, {
-            method: 'POST',
+        const res  = await fetch(`${BASE_URL}/api/poles.info`, {
+            method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: poleId })
+            body:    JSON.stringify({ id: poleId }),
         });
-        if (!response.ok) throw new Error('Network response was not ok');
-        const res = await response.json();
-        const data = res.poles_id ? res : res.data;
-        if (data && data.poles_id) {
-            const lang = typeof currentLang !== 'undefined' ? currentLang : 'th';
-            const hasContent = data.content;
-            const fullBaseUrl = BASE_URL.replace(/\/$/, "");
-            const title = hasContent ? (data.content.title[lang] || data.content.title['th']) : data.installations_name;
-            let bodyContent = '';
-            if (hasContent && data.content && data.content.content) {
-                const contentObj = data.content.content;
-                const priority = ['en', 'lo', 'th'];
-                const orderedLangs = [
-                    lang,
-                    ...priority.filter(l => l !== lang)
-                ];
-                for (const l of orderedLangs) {
-                    if (contentObj[l] && contentObj[l].trim() !== '') {
-                        bodyContent = contentObj[l];
-                        break;
-                    }
-                }
+        if (!res.ok) throw new Error('Network error');
+        const json = await res.json();
+        const data = json.poles_id ? json : json.data;
+        if (!data?.poles_id) {
+            $body.html(renderErrorAlert('warning', langData['no_data_found'] || 'No data found'));
+            return;
+        }
+        const lang         = typeof currentLang !== 'undefined' ? currentLang : 'th';
+        const fullBase     = BASE_URL.replace(/\/$/, '');
+        const hasContent   = !!data.content;
+        const title        = hasContent
+            ? (data.content.title[lang] || data.content.title['th'])
+            : data.installations_name;
+        let bodyContent = '';
+        if (hasContent && data.content?.content) {
+            const co  = data.content.content;
+            const ord = [lang, ...['en','lo','th'].filter(l => l !== lang)];
+            for (const l of ord) {
+                if (co[l]?.trim()) { bodyContent = co[l]; break; }
             }
-            bodyContent = bodyContent.replace(
-                /src="(?!(http|https|\/\/))/g,
-                `src="${fullBaseUrl}/`
-            );
-            const bg = data.project_bg || {};
-            const project_background = bg.project_background;
-            const project_opacity = bg.project_opacity;
-            const opacityValue = project_opacity > 0 ? (project_opacity / 100) : 1;
-            let poleContentStyle = '';
-            if (project_background) {
-                poleContentStyle = `
-                    background-image: linear-gradient(rgba(255, 255, 255, ${1 - opacityValue}), rgba(255, 255, 255, ${1 - opacityValue})), 
-                                    url('${BASE_URL}/${project_background}');
-                    background-size: cover;
-                    background-position: center;
-                    background-repeat: no-repeat;
-                    background-attachment: local;
-                    border-radius: 1rem;
-                `;
-            }
-            const html = `
-                <div class="pole-detail-wrapper animate__animated animate__fadeIn">
-                    <div class="card border-0 bg-primary bg-opacity-10 mb-4 p-4 shadow-sm" style="backdrop-filter: blur(10px);">
-                        <div class="row align-items-center">
-                            <div class="col-md-12">
-                                <span class="badge bg-primary mb-2">${data.type_name}</span>
-                                <h5 class="fw-bolder text-primary mb-1">${data.installations_name}</h5>
-                                <div class="d-flex flex-wrap gap-3 text-muted">
-                                    <span><i class="fa-solid fa-diagram-project me-1"></i>${data.project_name}</span>
-                                    <span><i class="fa-solid fa-circle me-1" style="color: ${data.project_status_color || "#CCCCCC"}"></i>${data.project_status_name || '-'}</span>
-                                    <span><i class="fa-solid fa-signal me-1"></i>${data.height_name}</span>
-                                    <span><i class="fa-solid fa-location-dot me-1"></i>${data.poles_lat}, ${data.poles_lng}</span>
-                                </div>
-                            </div>
-                        </div>
+        }
+        bodyContent = bodyContent.replace(
+            /src="(?!(http|https|\/\/))/g,
+            `src="${fullBase}/`
+        );
+        const bg           = data.project_bg || {};
+        const projBg       = bg.project_background;
+        const opacityVal   = bg.project_opacity > 0 ? bg.project_opacity / 100 : 1;
+        const bgStyle      = projBg
+            ? `background-image:linear-gradient(rgba(255,255,255,${1 - opacityVal}),rgba(255,255,255,${1 - opacityVal})),url('${fullBase}/${projBg}');background-size:cover;background-position:top center;background-repeat:no-repeat;`
+            : '';
+        const coverHtml = (hasContent && data.content?.cover && data.content?.cover_display === 'yes')
+            ? `<div class="poles-cover-wrap">
+                   <img src="${fullBase}/${data.content.cover}" alt="cover" loading="lazy" class="poles-cover-img">
+                   <div class="poles-cover-overlay"></div>
+               </div>`
+            : '';
+        const chip = (iconClass, colorVar, labelKey, value) => `
+            <div class="poles-chip">
+                <div class="poles-chip-icon" style="color:${colorVar};">
+                    <i class="${iconClass}"></i>
+                </div>
+                <div>
+                    <div class="poles-chip-label" data-i18n="${labelKey}"></div>
+                    <div class="poles-chip-value">${value}</div>
+                </div>
+            </div>`;
+        const html = `
+        <div class="poles-detail animate__animated animate__fadeIn">
+            <div class="poles-header-card">
+                <div class="poles-header-left">
+                    <div class="poles-avatar">
+                        <i class="fas fa-broadcast-tower"></i>
                     </div>
-                    <div class="content-section rshadow-sm mb-4 overflow-hidden" 
-                        style="${project_background ? `
-                            background-image: linear-gradient(rgba(255, 255, 255, ${1 - opacityValue}), rgba(255, 255, 255, ${1 - opacityValue})), url('${BASE_URL}/${project_background}');
-                            background-size: contain; 
-                            background-position: top center; 
-                            background-repeat: no-repeat;
-                            background-color: rgba(255, 255, 255, 0.9);
-                            min-height: 450px; 
-                        ` : 'background-color: #ffffff;' }">
-                        <div>
-                            ${(data.content_id) ? `
-                                ${data.content?.cover && data.content?.cover_display === 'yes' ? `
-                                    <div class="position-relative mb-4 overflow-hidden rounded-3 shadow-sm">
-                                        <img src="${fullBaseUrl}/${data.content.cover}" class="w-100 h-100 object-fit-cover" alt="cover" style="max-height: 275px; min-height: 275px;" loading="lazy">
-                                    </div>
-                                ` : ''}
-                                <article class="px-2">
-                                    <h4 class="fw-bold mb-3">${title}</h4>
-                                    <div class="d-flex align-items-center gap-3 text-muted mb-4 pb-3 border-bottom">
-                                        <div class="small"><i class="fa-regular fa-calendar-check me-1"></i> ${data.updated_at || data.created_at}</div>
-                                    </div>
-                                    <div class="article-content lh-lg text-secondary mb-4">
-                                        ${bodyContent}
-                                    </div>
-                                </article>
-                                <div class="multimedia-container px-2">
-                                    ${renderMultimedia(data.content, lang, fullBaseUrl)}
-                                </div>
-                            ` : `
-                                ${!project_background ? `
-                                    <div class="text-center py-5">
-                                        <div class="mb-4">
-                                            <i class="fa-regular fa-file-lines text-light-emphasis" style="font-size: 64px; opacity: 0.5;"></i>
-                                        </div>
-                                        <h5 class="fw-bold text-dark">${langData['no_content_available'] || 'No content available'}</h5>
-                                        <p class="text-muted mb-0">${langData['content_nothing_hear'] || 'It looks like there’s nothing here.'}</p>
-                                    </div>
-                                ` : '<div class="py-5"></div>'}
-                            `}
+                    <div>
+                        <div class="poles-name">
+                            ${data.installations_name}
+                            <span class="poles-code">#${data.poles_code}</span>
+                        </div>
+                        <div class="poles-status-pill">
+                            <span class="poles-status-dot" style="background:${data.project_status_color || '#ccc'};"></span>
+                            <span>${data.project_status_name || '—'}</span>
                         </div>
                     </div>
                 </div>
-            `;
-            modalBody.html(html);
-            modalTitle.text(`${data.poles_code}`);
-            $(".article-content").find('img').each(function () {
-                const $img = $(this);
-                const imgSrc = $img.attr('src');
-                if (!imgSrc) return;
-                $img.removeAttr('width height');
-                let style = $img.attr('style');
-                if (style) {
-                    style = style.replace(/width\s*:\s*[^;]+;?/gi, '').replace(/height\s*:\s*[^;]+;?/gi, '');
-                    $img.attr('style', style.trim());
-                }
-                if (!$img.attr('loading')) {
-                    $img.attr('loading', 'lazy');
-                }
-                if (!$img.parent('a').length) {
-                    $img.wrap(`
-                        <a href="${imgSrc}" data-fancybox="content-images" class="content-img-link"></a>
-                    `);
-                }
-                $img.css({
-                    cursor: 'zoom-in',
-                    transition: 'opacity 0.2s'
-                }).addClass('hover-opacity');
-            });
-            if (typeof Fancybox !== 'undefined') {
-                Fancybox.bind('[data-fancybox]', {
-                    Hash: false,
-                    Toolbar: { display: { left: ["infobar"], right: ["close"] } }
-                });
+            </div>
+            <div class="poles-chips">
+                ${chip('fa-solid fa-diagram-project', '#2d7fc1', 'project',  data.project_name)}
+                ${chip('fa-solid fa-arrows-alt-v',    '#0891b2', 'level',    data.height_name)}
+                ${chip('fa-solid fa-map-marker-alt',  '#059669', 'location', `${data.poles_lat}, ${data.poles_lng}`)}
+            </div>
+            <div class="poles-content-section" style="${bgStyle}">
+                ${data.content_id ? `
+                    ${coverHtml}
+                    <article class="poles-article">
+                        <h4 class="poles-article-title">${title}</h4>
+                        <div class="poles-article-meta">
+                            <i class="fa-regular fa-calendar-check"></i>
+                            ${data.updated_at || data.created_at || ''}
+                        </div>
+                        <div class="poles-article-body article-content">
+                            ${bodyContent}
+                        </div>
+                    </article>
+                    <div class="multimedia-container px-1">
+                        ${renderMultimedia(data.content, lang, fullBase)}
+                    </div>
+                ` : `
+                    ${!projBg ? `
+                        <div class="poles-empty">
+                            <i class="fa-regular fa-file-lines"></i>
+                            <div class="poles-empty-title">${langData['no_content_available'] || 'No content available'}</div>
+                            <div class="poles-empty-sub">${langData['content_nothing_hear'] || "It looks like there's nothing here."}</div>
+                        </div>
+                    ` : '<div style="padding:40px 0;"></div>'}
+                `}
+            </div>
+        </div>`;
+        $body.html(html);
+        $header.find('.modal-title').text(data.poles_code);
+        if (typeof updateText === 'function') updateText($body[0]);
+        $body.find('.article-content img').each(function () {
+            const $img = $(this);
+            const src  = $img.attr('src');
+            if (!src) return;
+            $img.removeAttr('width height');
+            let style = ($img.attr('style') || '')
+                .replace(/width\s*:\s*[^;]+;?/gi, '')
+                .replace(/height\s*:\s*[^;]+;?/gi, '');
+            $img.attr('style', style.trim()).attr('loading', 'lazy');
+            if (!$img.parent('a').length) {
+                $img.wrap(`<a href="${src}" data-fancybox="content-images" class="content-img-link"></a>`);
             }
-        } else {
-            modalBody.html(renderErrorAlert('warning', langData['no_data_found'] || 'No data found'));
+            $img.css({ cursor: 'zoom-in', transition: 'opacity 0.2s' }).addClass('hover-opacity');
+        });
+        if (typeof Fancybox !== 'undefined') {
+            Fancybox.bind('[data-fancybox]', {
+                Hash: false,
+                Toolbar: { display: { left: ['infobar'], right: ['close'] } },
+            });
         }
-    } catch (error) {
-        console.error("OpenPoles Error:", error);
-        modalBody.html(renderErrorAlert('danger', langData['cannot_load'] || 'Failed to load data. Please try again later.'));
+    } catch (err) {
+        console.error('OpenPoles Error:', err);
+        $body.html(renderErrorAlert('danger', langData['cannot_load'] || 'Failed to load data. Please try again later.'));
     }
 }
 function renderMultimedia(content, lang, baseUrl) {
@@ -537,74 +521,70 @@ function renderMultimedia(content, lang, baseUrl) {
     let html = '';
     if (content.images360?.length > 0) {
         html += `
-            <div class="section-title mb-3 mt-4">
-                <h5 class="fw-bold d-flex align-items-center text-dark">
-                    <i class="fa-street-view text-info me-2"></i> ${langData['vr_experience'] || '360° Experience'}
-                </h5>
+        <div class="mm-section">
+            <div class="mm-section-header">
+                <div class="mm-section-icon" style="background:rgba(6,182,212,0.12);color:#0891b2;">
+                    <i class="fa-solid fa-street-view"></i>
+                </div>
+                <span>${langData['vr_experience'] || '360° Experience'}</span>
             </div>
-            <div class="row g-3 mb-5">
+            <div class="mm-grid">
                 ${content.images360.map(vr => `
-                    <div class="col-4 col-md-2 col-lg-2">
-                        <div class="card border-0 shadow-sm rounded-4 overflow-hidden h-100 vr-card cursor-pointer" onclick="openVRModal('${baseUrl}/${vr.url}')">
-                            <div class="position-relative h-100" style="max-height: 100px;">
-                                <img src="${baseUrl}/${vr.url}" class="w-100 h-100 object-fit-cover" loading="lazy">
-                                <div class="position-absolute top-0 start-0 m-2">
-                                    <span class="badge rounded-pill bg-dark bg-opacity-75 fw-light">
-                                        <i class="fa-solid fa-rotate me-1 fa-spin"></i> 360°
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="mm-thumb" onclick="openVRModal('${baseUrl}/${vr.url}')">
+                        <img src="${baseUrl}/${vr.url}" loading="lazy">
+                        <div class="mm-vr-badge"><i class="fa-solid fa-rotate fa-spin"></i> 360°</div>
+                        <div class="mm-thumb-overlay"><i class="fa-solid fa-expand"></i></div>
                     </div>
                 `).join('')}
             </div>
-        `;
+        </div>`;
     }
     if (content.images?.length > 0) {
         html += `
-            <div class="section-title mb-3">
-                <h5 class="fw-bold d-flex align-items-center text-dark">
-                    <i class="fa-solid fa-images text-primary me-2"></i> ${langData['gallery'] || 'Gallery'}
-                </h5>
+        <div class="mm-section">
+            <div class="mm-section-header">
+                <div class="mm-section-icon" style="background:rgba(45,127,193,0.12);color:#2d7fc1;">
+                    <i class="fa-solid fa-images"></i>
+                </div>
+                <span>${langData['gallery'] || 'Gallery'}</span>
             </div>
-            <div class="row g-2 mb-5">
+            <div class="mm-grid">
                 ${content.images.map(img => `
-                    <div class="col-4 col-md-2 col-lg-2">
-                        <a href="${baseUrl}/${img.url}" data-fancybox="pole-gallery" class="gallery-item d-block ratio ratio-1x1 overflow-hidden rounded-3 border bg-light">
-                            <img src="${baseUrl}/${img.url}" class="gallery-img hover-zoom" loading="lazy">
-                        </a>
-                    </div>
+                    <a href="${baseUrl}/${img.url}" data-fancybox="pole-gallery" class="mm-thumb">
+                        <img src="${baseUrl}/${img.url}" loading="lazy">
+                        <div class="mm-thumb-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+                    </a>
                 `).join('')}
             </div>
-        `;
+        </div>`;
     }
     if (content.attachments?.length > 0) {
         html += `
-            <div class="section-title mb-3">
-                <h5 class="fw-bold d-flex align-items-center text-dark">
-                    <i class="fa-solid fa-file-pdf text-danger me-2"></i> ${langData['attachments'] || 'Attachments'}
-                </h5>
+        <div class="mm-section">
+            <div class="mm-section-header">
+                <div class="mm-section-icon" style="background:rgba(220,38,38,0.10);color:#dc2626;">
+                    <i class="fa-solid fa-paperclip"></i>
+                </div>
+                <span>${langData['attachments'] || 'Attachments'}</span>
             </div>
-            <div class="row row-cols-1 row-cols-md-4 row-cols-lg-4 g-3">
+            <div class="mm-attachments">
                 ${content.attachments.map(file => {
                     const isPdf = file.url.toLowerCase().endsWith('.pdf');
+                    const ext   = file.url.split('.').pop().toUpperCase();
                     return `
-                        <div class="col">
-                            <a href="${baseUrl}/${file.url}" download class="doc-card shadow-sm border rounded-4 p-3 d-flex align-items-center text-decoration-none hover-shadow transition-all">
-                                <div class="doc-icon me-3 bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
-                                    <i class="fa-solid ${isPdf ? 'fa-file-pdf text-danger' : 'fa-file-lines text-primary'} fs-3"></i>
-                                </div>
-                                <div class="doc-info text-truncate">
-                                    <div class="fw-bold text-dark text-truncate">${file.name}</div>
-                                    <div class="small text-muted text-uppercase">${file.url.split('.').pop()} File</div>
-                                </div>
-                                <i class="fa-solid fa-download ms-auto fa-2x text-muted"></i>
-                            </a>
+                    <a href="${baseUrl}/${file.url}" download class="mm-att-item">
+                        <div class="mm-att-icon ${isPdf ? 'mm-att-pdf' : 'mm-att-file'}">
+                            <i class="fa-solid ${isPdf ? 'fa-file-pdf' : 'fa-file-lines'}"></i>
                         </div>
-                    `;
+                        <div class="mm-att-info">
+                            <div class="mm-att-name">${file.name}</div>
+                            <div class="mm-att-ext">${ext} File</div>
+                        </div>
+                        <div class="mm-att-dl"><i class="fa-solid fa-download"></i></div>
+                    </a>`;
                 }).join('')}
             </div>
-        `;
+        </div>`;
     }
     return html;
 }

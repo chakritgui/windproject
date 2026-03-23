@@ -13,18 +13,6 @@ let reportState = {
     poles_id: '', startDate: '', endDate: '', height_id: '',
     sensors_data: [], levels_data: []
 };
-const chartDefaultOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-        legend: { display: true, position: 'top', labels: { usePointStyle: true, font: { size: 12 } } },
-        tooltip: { backgroundColor: 'rgba(0, 0, 0, 0.8)', usePointStyle: true }
-    },
-    scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-        y: { beginAtZero: true, grid: { color: 'rgba(200, 200, 200, 0.1)' } }
-    }
-};
 $(document).ready(() => {
     updateStateFromInputs();
     generateReport();
@@ -98,6 +86,88 @@ async function renderStatsAndWeather() {
         fetchExternalWeather(data.lat, data.lng);
     }
 }
+const chartDefaultOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+        duration: 800,
+        easing: 'easeInOutQuart'
+    },
+    interaction: {
+        mode: 'index',
+        intersect: false
+    },
+    plugins: {
+        legend: {
+            display: false
+        },
+        tooltip: {
+            backgroundColor: 'rgba(255,255,255,0.95)',
+            borderColor: 'rgba(0,0,0,0.08)',
+            borderWidth: 1,
+            titleColor: '#111827',
+            bodyColor: '#6b7280',
+            padding: 12,
+            cornerRadius: 10,
+            boxPadding: 5,
+            titleFont: { size: 12, weight: '600', family: 'inherit' },
+            bodyFont: { size: 12, family: 'inherit' },
+            callbacks: {
+                labelColor(ctx) {
+                    return {
+                        borderColor: ctx.dataset.borderColor,
+                        backgroundColor: ctx.dataset.borderColor,
+                        borderRadius: 3
+                    };
+                }
+            }
+        }
+    },
+    scales: {
+        x: {
+            grid: {
+                display: false
+            },
+            ticks: {
+                color: '#9ca3af',
+                font: { size: 11, family: 'inherit' },
+                maxRotation: 30
+            },
+            border: { display: false }
+        },
+        y: {
+            grid: {
+                color: 'rgba(0,0,0,0.05)',
+                lineWidth: 1
+            },
+            ticks: {
+                color: '#9ca3af',
+                font: { size: 11, family: 'inherit' },
+                padding: 8
+            },
+            border: { display: false, dash: [4, 4] }
+        }
+    },
+    elements: {
+        line: {
+            tension: 0.4,
+            borderWidth: 2.5,
+            borderCapStyle: 'round',
+            borderJoinStyle: 'round'
+        },
+        point: {
+            radius: 0,
+            hitRadius: 20,
+            hoverRadius: 5,
+            hoverBorderWidth: 2,
+            hoverBackgroundColor: '#fff'
+        },
+        bar: {
+            borderRadius: 6,
+            borderSkipped: 'bottom'
+        }
+    }
+};
 function renderAllCharts(realData) {
     if (!realData || realData.length === 0) return;
     const labels = [...new Set(realData.map(d => d.time_label))];
@@ -106,16 +176,21 @@ function renderAllCharts(realData) {
     updateChartVisibility(selectedKeys);
     if (selectedKeys.includes('WS')) {
         const wsSensor = sensors.find(s => s.key === 'WS');
-        const wsDatasets = distinctLevels.map((lvl, idx) => ({
-            label: `${lvl}`,
-            data: labels.map(t => {
-                const row = realData.find(d => d.time_label === t && d.level_name === lvl);
-                return row ? row.WS : null;
-            }),
-            borderColor: getLevelColor(idx, wsSensor.color),
-            backgroundColor: 'transparent',
-            tension: 0.4
-        }));
+        const wsDatasets = distinctLevels.map((lvl, idx) => {
+            const color = getLevelColor(idx, wsSensor.color);
+            return {
+                label: `${lvl}`,
+                data: labels.map(t => {
+                    const row = realData.find(d => d.time_label === t && d.level_name === lvl);
+                    return row ? row.WS : null;
+                }),
+                borderColor: color,
+                backgroundColor: hexToRgba(color, 0.08),
+                tension: 0.4,
+                fill: idx === 0,
+                spanGaps: true
+            };
+        });
         renderChart('lineChart', 'line', labels, wsDatasets);
         renderHistogram('barChart', wsSensor, realData, distinctLevels);
     }
@@ -127,16 +202,22 @@ function renderAllCharts(realData) {
         let weatherDatasets = [];
         weatherKeys.forEach(k => {
             const s = sensors.find(x => x.key === k);
-            const ds = distinctLevels.map((lvl, idx) => ({
-                label: `${langData[s.lang] || s.name} (${lvl})`,
-                data: labels.map(t => {
-                    const row = realData.find(d => d.time_label === t && d.level_name === lvl);
-                    return row ? row[k] : null;
-                }),
-                borderColor: getLevelColor(idx, s.color),
-                borderDash: idx > 0 ? [5, 5] : [],
-                tension: 0.3
-            }));
+            const ds = distinctLevels.map((lvl, idx) => {
+                const color = getLevelColor(idx, s.color);
+                return {
+                    label: `${langData[s.lang] || s.name} (${lvl})`,
+                    data: labels.map(t => {
+                        const row = realData.find(d => d.time_label === t && d.level_name === lvl);
+                        return row ? row[k] : null;
+                    }),
+                    borderColor: color,
+                    backgroundColor: hexToRgba(color, 0.07),
+                    borderDash: idx > 0 ? [5, 5] : [],
+                    tension: 0.4,
+                    fill: idx === 0,
+                    spanGaps: true
+                };
+            });
             weatherDatasets = weatherDatasets.concat(ds);
         });
         renderChart('weatherChart', 'line', labels, weatherDatasets);
@@ -146,40 +227,52 @@ function renderAllCharts(realData) {
         let airDatasets = [];
         airKeys.forEach(k => {
             const s = sensors.find(x => x.key === k);
-            const ds = distinctLevels.map((lvl, idx) => ({
-                label: `${langData[s.lang] || s.name} (${lvl})`,
-                data: labels.map(t => {
-                    const row = realData.find(d => d.time_label === t && d.level_name === lvl);
-                    return row ? row[k] : null;
-                }),
-                borderColor: getLevelColor(idx, s.color),
-                tension: 0.3
-            }));
+            const ds = distinctLevels.map((lvl, idx) => {
+                const color = getLevelColor(idx, s.color);
+                return {
+                    label: `${langData[s.lang] || s.name} (${lvl})`,
+                    data: labels.map(t => {
+                        const row = realData.find(d => d.time_label === t && d.level_name === lvl);
+                        return row ? row[k] : null;
+                    }),
+                    borderColor: color,
+                    backgroundColor: hexToRgba(color, 0.07),
+                    tension: 0.4,
+                    fill: idx === 0,
+                    spanGaps: true
+                };
+            });
             airDatasets = airDatasets.concat(ds);
         });
         renderChart('airChart', 'line', labels, airDatasets);
     }
     if (selectedKeys.includes('SP')) {
-        const spSensor = sensors.find(s => s.key === 'SP') || { name: 'Surface Pressure', color: '#ff9f40' }; 
-        const spDatasets = distinctLevels.map((lvl, idx) => ({
-            label: `${lvl}`,
-            data: labels.map(t => {
-                const row = realData.find(d => d.time_label === t && d.level_name === lvl);
-                return row ? row.SP : null;
-            }),
-            borderColor: getLevelColor(idx, spSensor.color),
-            backgroundColor: 'transparent',
-            borderDash: idx > 0 ? [5, 5] : [],
-            tension: 0.3,
-            fill: false
-        }));
+        const spSensor = sensors.find(s => s.key === 'SP') || { name: 'Surface Pressure', color: '#ff9f40' };
+        const spDatasets = distinctLevels.map((lvl, idx) => {
+            const color = getLevelColor(idx, spSensor.color);
+            return {
+                label: `${lvl}`,
+                data: labels.map(t => {
+                    const row = realData.find(d => d.time_label === t && d.level_name === lvl);
+                    return row ? row.SP : null;
+                }),
+                borderColor: color,
+                backgroundColor: hexToRgba(color, 0.07),
+                borderDash: idx > 0 ? [5, 5] : [],
+                tension: 0.4,
+                fill: idx === 0,
+                spanGaps: true
+            };
+        });
         renderChart('pressureChart', 'line', labels, spDatasets, {
             scales: {
                 y: {
                     beginAtZero: false,
                     title: {
                         display: true,
-                        text: 'Pressure (hPa)'
+                        text: 'Pressure (hPa)',
+                        color: '#9ca3af',
+                        font: { size: 11 }
                     }
                 }
             }
@@ -188,8 +281,8 @@ function renderAllCharts(realData) {
 }
 function renderWindRose16(canvasId, realData, distinctLevels) {
     const directions = [
-        "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-        "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"
+        "N","NNE","NE","ENE","E","ESE","SE","SSE",
+        "S","SSW","SW","WSW","W","WNW","NW","NNW"
     ];
     const datasets = distinctLevels.map((lvl, idx) => {
         const counts = new Array(16).fill(0);
@@ -199,47 +292,53 @@ function renderWindRose16(canvasId, realData, distinctLevels) {
             const speed = parseFloat(row.WS_MAX || 0);
             if (isNaN(deg)) return;
             let dIdx;
-            if (deg >= 350 || deg < 10) dIdx = 0; 
-            else if (deg >= 10 && deg < 35) dIdx = 1;
-            else if (deg >= 35 && deg < 55) dIdx = 2;
-            else if (deg >= 55 && deg < 80) dIdx = 3;
-            else if (deg >= 80 && deg < 100) dIdx = 4;
-            else if (deg >= 100 && deg < 125) dIdx = 5;
-            else if (deg >= 125 && deg < 145) dIdx = 6;
-            else if (deg >= 145 && deg < 170) dIdx = 7;
-            else if (deg >= 170 && deg < 190) dIdx = 8;
-            else if (deg >= 190 && deg < 215) dIdx = 9;
-            else if (deg >= 215 && deg < 235) dIdx = 10;
-            else if (deg >= 235 && deg < 260) dIdx = 11;
-            else if (deg >= 260 && deg < 280) dIdx = 12;
-            else if (deg >= 280 && deg < 305) dIdx = 13;
-            else if (deg >= 305 && deg < 325) dIdx = 14;
-            else if (deg >= 325 && deg < 350) dIdx = 15;
+            if (deg >= 350 || deg < 10) dIdx = 0;
+            else if (deg < 35) dIdx = 1;
+            else if (deg < 55) dIdx = 2;
+            else if (deg < 80) dIdx = 3;
+            else if (deg < 100) dIdx = 4;
+            else if (deg < 125) dIdx = 5;
+            else if (deg < 145) dIdx = 6;
+            else if (deg < 170) dIdx = 7;
+            else if (deg < 190) dIdx = 8;
+            else if (deg < 215) dIdx = 9;
+            else if (deg < 235) dIdx = 10;
+            else if (deg < 260) dIdx = 11;
+            else if (deg < 280) dIdx = 12;
+            else if (deg < 305) dIdx = 13;
+            else if (deg < 325) dIdx = 14;
+            else dIdx = 15;
             counts[dIdx] += speed;
         });
         const color = getLevelColor(idx, 'rgb(54, 162, 235)');
         return {
             label: `${lvl}`,
             data: counts,
-            backgroundColor: color.replace('rgb', 'rgba').replace(')', ', 0.2)'),
+            backgroundColor: hexToRgba(color, 0.2),
             borderColor: color,
-            fill: true
+            borderWidth: 2,
+            fill: true,
+            pointRadius: 3,
+            pointHoverRadius: 5
         };
     });
     renderChart(canvasId, 'radar', directions, datasets, {
         scales: {
             r: {
-                angleLines: { display: true },
+                angleLines: { display: true, color: 'rgba(0,0,0,0.06)' },
+                grid: { color: 'rgba(0,0,0,0.06)' },
+                pointLabels: {
+                    font: { size: 11 },
+                    color: '#9ca3af'
+                },
                 suggestedMin: 0,
-                ticks: {
-                    display: false 
-                }
+                ticks: { display: false }
             }
         }
     });
 }
 function renderHistogram(canvasId, sensor, realData, distinctLevels) {
-    const bins = ['0-2', '2-4', '4-6', '6-8', '8-10', '10+'];
+    const bins = ['0–2', '2–4', '4–6', '6–8', '8–10', '10+'];
     const datasets = distinctLevels.map((lvl, idx) => {
         const counts = new Array(6).fill(0);
         const levelData = realData.filter(d => d.level_name === lvl);
@@ -256,10 +355,11 @@ function renderHistogram(canvasId, sensor, realData, distinctLevels) {
         return {
             label: `${lvl}`,
             data: counts,
-            backgroundColor: color.replace('rgb', 'rgba').replace(')', ', 0.7)'),
+            backgroundColor: hexToRgba(color, 0.65),
             borderColor: color,
-            borderWidth: 1,
-            borderRadius: 4
+            borderWidth: 1.5,
+            borderRadius: 6,
+            borderSkipped: 'bottom'
         };
     });
     renderChart(canvasId, 'bar', bins, datasets, {
@@ -268,20 +368,18 @@ function renderHistogram(canvasId, sensor, realData, distinctLevels) {
                 beginAtZero: true,
                 title: {
                     display: true,
-                    text: 'Frequency (Count)'
+                    text: 'Frequency (count)',
+                    color: '#9ca3af',
+                    font: { size: 11 }
                 }
             },
             x: {
                 title: {
                     display: true,
-                    text: 'Wind Speed Range (m/s)'
+                    text: 'Wind speed range (m/s)',
+                    color: '#9ca3af',
+                    font: { size: 11 }
                 }
-            }
-        },
-        plugins: {
-            legend: {
-                position: 'top',
-                labels: { usePointStyle: true }
             }
         }
     });
@@ -290,11 +388,60 @@ function renderChart(canvasId, type, labels, datasets, extraOptions = {}) {
     const ctx = document.getElementById(canvasId);
     if (!ctx) return;
     if (charts[canvasId]) charts[canvasId].destroy();
+    const mergedOptions = deepMerge(chartDefaultOptions, extraOptions);
     charts[canvasId] = new Chart(ctx, {
-        type: type,
+        type,
         data: { labels, datasets },
-        options: { ...chartDefaultOptions, ...extraOptions }
+        options: mergedOptions
     });
+    renderCustomLegend(canvasId, datasets);
+}
+function renderCustomLegend(canvasId, datasets) {
+    const legendId = canvasId + '-legend';
+    let legendEl = document.getElementById(legendId);
+    if (!legendEl) {
+        legendEl = document.createElement('div');
+        legendEl.id = legendId;
+        legendEl.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:center;gap:8px 16px;margin-bottom:8px;font-size:8px;color:#6b7280;font-family:inherit;';
+        const canvas = document.getElementById(canvasId);
+        canvas.parentNode.insertBefore(legendEl, canvas);
+    }
+    legendEl.innerHTML = datasets.map(ds => {
+        const color = ds.borderColor || ds.backgroundColor || '#888';
+        return `<span style="display:flex;align-items:center;gap:5px;"><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${color};flex-shrink:0;"></span>${ds.label}</span>`;
+    }).join('');
+}
+function deepMerge(base, override) {
+    const result = { ...base };
+    for (const key of Object.keys(override)) {
+        if (
+            override[key] !== null &&
+            typeof override[key] === 'object' &&
+            !Array.isArray(override[key]) &&
+            typeof base[key] === 'object' &&
+            base[key] !== null
+        ) {
+            result[key] = deepMerge(base[key], override[key]);
+        } else {
+            result[key] = override[key];
+        }
+    }
+    return result;
+}
+function hexToRgba(color, alpha) {
+    if (!color) return `rgba(100,100,100,${alpha})`;
+    if (color.startsWith('rgba')) {
+        return color.replace(/[\d.]+\)$/, `${alpha})`);
+    }
+    if (color.startsWith('rgb(')) {
+        return color.replace('rgb(', 'rgba(').replace(')', `, ${alpha})`);
+    }
+    let hex = color.replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
 }
 function getLevelColor(index, baseColor) {
     if (index === 0) return baseColor;
@@ -303,15 +450,15 @@ function getLevelColor(index, baseColor) {
 }
 function createStatCard(container, sensor, value) {
     const col = document.createElement('div');
-    col.className = 'stat-card-rect'; 
+    col.className = 'stat-card-rect';
     col.innerHTML = `
-        <div class="stat-card" style="padding:12px; background:${sensor.color}; border-radius:10px; color:white; position:relative; min-height:90px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <i class="${sensor.icon}" style="position:absolute; right:10px; top:10px; opacity:0.3; font-size:1.4rem;"></i>
-            <h6 style="font-size:0.75rem; margin-bottom:5px; opacity:0.9; height: 24px;" data-i18n="${sensor.lang}" title="${sensor.name}">
+        <div class="stat-card" style="padding:12px; background:${sensor.color}; border-radius:12px; color:white; position:relative; min-height:90px; box-shadow: 0 2px 12px ${hexToRgba(sensor.color, 0.35)};">
+            <i class="${sensor.icon}" style="position:absolute; right:10px; top:10px; opacity:0.25; font-size:1.4rem; animation: iconFloat 3.5s ease-in-out infinite;"></i>
+            <h6 style="font-size:0.75rem; margin-bottom:5px; opacity:0.85; height:24px;" data-i18n="${sensor.lang}" title="${sensor.name}">
                 ${sensor.name}
             </h6>
-            <div style="font-size:1.3rem; font-weight:bold;">
-                ${value} <small style="font-size:0.6em; font-weight:400; opacity:0.8;">${sensor.unit}</small>
+            <div style="font-size:1.3rem; font-weight:600; letter-spacing:-0.5px;">
+                ${value} <small style="font-size:0.6em; font-weight:400; opacity:0.75;">${sensor.unit}</small>
             </div>
         </div>
     `;
@@ -328,15 +475,9 @@ function updateChartVisibility(keys) {
         show('wind-speed-hist');
     }
     if (keys.includes('WD')) show('wind-direction');
-    if (keys.includes('RH') || keys.includes('TE')) {
-        show('weather');
-    }
-    if (keys.includes('AD') || keys.includes('TU')) {
-        show('air');
-    }
-    if (keys.includes('SP')) {
-        show('surface-pressure');
-    }
+    if (keys.includes('RH') || keys.includes('TE')) show('weather');
+    if (keys.includes('AD') || keys.includes('TU')) show('air');
+    if (keys.includes('SP')) show('surface-pressure');
 }
 function show(name) {
     const el = document.querySelector(`[data-chart="${name}"]`);
@@ -344,7 +485,7 @@ function show(name) {
 }
 function toggleLoading(show) {
     const loader = document.getElementById('statsContainer');
-    if (show) loader.innerHTML = '<div class="text-center w-100 p-5"><div class="spinner-border text-primary"></div><p data-i18n="loading"></p></div>';
+    if (show) loader.innerHTML = '<div class="text-center w-100 p-5"><div class="spinner-border text-blue"></div><p data-i18n="loading"></p></div>';
 }
 async function updateHeaderInfo() {
     try {

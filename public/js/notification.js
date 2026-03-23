@@ -61,7 +61,7 @@ async function loadNotificationItem() {
             return;
         }
         const items = res.data.data ?? [];
-        handleNotificationItem(items);
+        handleNotificationItem(items, res.data.total);
         notifyPage++;
     } catch (err) {
         console.error('Notification load error:', err);
@@ -70,90 +70,72 @@ async function loadNotificationItem() {
         notifyLoading = false;
     }
 }
-function handleNotificationItem(items) {
+const NOTIF_ICON = {
+    document: { cls: 'notif-icon-doc',  fallback: 'fa-solid fa-file-lines' },
+    project: { cls: 'notif-icon-proj', fallback: 'fa-solid fa-diagram-project' },
+    news: { cls: 'notif-icon-news', fallback: 'fa-solid fa-bell' },
+};
+function getNotifIconCls(target) {
+    return NOTIF_ICON[target] || NOTIF_ICON['news'];
+}
+function handleNotificationItem(items, total) {
     const $list = $('.notification-list');
-    if (notifyPage === 1) {
-        $list.empty();
-    }
+    if (notifyPage === 1) $list.empty();
     if (!items || items.length === 0) {
         if (notifyPage === 1) {
-            const emptyHtml = `
-                <li class="text-center py-4 text-muted">
-                    <div class="d-flex flex-column align-items-center">
-                        <i class="fa-solid fa-bell-slash fs-2 mb-2"></i>
-                        <div>${langData['no_notification'] || 'No notification'}</div>
-                    </div>
-                </li>`;
-            $list.append(emptyHtml);
+            $list.append(`
+                <li class="notif-empty">
+                    <i class="fa-solid fa-bell-slash"></i>
+                    <div class="notif-empty-text">${langData['no_notification'] || 'No notifications'}</div>
+                </li>
+            `);
         }
         notifyFinished = true;
         return;
     }
-    items.forEach(item => {
-        const isUnread = !item.read_at ? 'unread' : '';
-        let title = '';
-        switch(currentLang) {
-            case 'en':
-                title = item.title_en;
-                break;
-            case 'lo':
-                title = item.title_lo || item.title_en;
-                break;
-            case 'th':
-                title = item.title_th || item.title_en;
-                break;
-        }
-        let icon = '';
-        let bg = '';
-        let color = '';
-        if(item.notifications_target === 'document') {
-            icon = getFileIconClass(item.icon);
-            bg = 'bg-dark';
-        } else {
-            if(item.notifications_target == 'project') {
-                icon = 'fa-solid fa-diagram-project';
-                bg = 'bg-primary';
-                color = 'text-primary';
-            } else {
-                icon = 'fa-solid fa-bell';
-                bg = 'bg-warning';
-                color = 'text-warning';
-            }
-        }
-        const html = `
-            <li class="notification-item" data-redirect="${item.redirect}" style="cursor: pointer;">
-                <div class="dropdown-item py-3 border-bottom" style="font-size: 12px !important;">
-                    <div class="d-flex align-items-start">
-                        <div class="flex-shrink-0 me-3">
-                            <div class="${bg} bg-opacity-10 rounded-circle p-2">
-                                <i class="${icon} ${color}" style="font-size: 1rem;"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1" style="min-width: 0;">
-                            <div class="mb-1 fw-semibold line-clamp-2">${title}</div>
-                            <p class="mb-1 small text-muted">${langData[item.notifications_target] || item.notifications_target} ${(item.notifications_target === 'document') ? `<i class="fa-solid fa-hard-drive me-1"></i>${formatFileSize(item.item_size)}` : ``}</p> 
-                            <small class="text-muted">
-                                <i class="fa-solid fa-clock me-1"></i>${item.notification_at}
-                            </small>
-                        </div>
-                        ${(item.notifications_target === 'document') ? `
-                            <div class="ms-2">
-                                <button class="btn btn-sm btn-outline-primary download-btn w-100 w-md-auto" data-id="${item.notifications_item}" data-path="${item.path}" data-file-name="${item.item_name}"><i class="fa-solid fa-download"></i></button>
-                            </div>
-                        ` : `
-                             <div class="ms-2">
-                                <button class="btn btn-sm btn-outline-primary download-btn w-100 w-md-auto open-content" data-slug="${item.content_slug}"><i class="fa-solid fa-folder-open"></i></button>
-                            </div>
-                        `}
-                        ${!item.read_at ? `<span class="badge bg-danger rounded-pill ms-2">${langData['new'] || 'New'}</span>` : ''}
-                    </div>
-                </div>
-            </li>
+    function getTitle(item) {
+        if (currentLang === 'en') return item.title_en;
+        if (currentLang === 'lo') return item.title_lo || item.title_en;
+        return item.title_th || item.title_en;
+    }
+    const baseDelay = notifyPage === 1 ? 0.04 : 0;
+    items.forEach((item, idx) => {
+        const isDoc    = item.notifications_target === 'document';
+        const isUnread = !item.read_at;
+        const cfg      = getNotifIconCls(item.notifications_target);
+        const iconClass = isDoc ? (typeof getFileIconClass === 'function' ? getFileIconClass(item.icon) : 'fa-solid fa-file-lines') : cfg.fallback;
+        const subLine = `
+            <i class="${_targetIcon(item.notifications_target)}" style="font-size:10px;"></i>
+            ${langData[item.notifications_target] || item.notifications_target}
+            ${isDoc ? `<i class="fa-solid fa-hard-drive" style="font-size:10px;margin-left:4px;"></i>${formatFileSize(item.item_size)}` : ''}
         `;
+        const actionBtn = isDoc ? `<button class="notif-action download-btn" data-id="${item.notifications_item}" data-path="${item.path}" data-file-name="${item.item_name}" title="Download"><i class="fa-solid fa-download"></i></button>` : `<button class="notif-action open-content" data-slug="${item.content_slug}" title="Open"><i class="fa-solid fa-arrow-up-right-from-square"></i></button>`;
+        const rightMeta = isUnread ? `<div class="notif-right"><span class="notif-new">${langData['new'] || 'New'}</span>${actionBtn}</div>` : actionBtn;
+        const divider = (notifyPage === 1 && idx === 0) ? '' : '<li class="notif-divider"></li>';
+        const delay = baseDelay + idx * 0.06;
+        const html = `
+            ${divider}
+            <li class="notif-item ${isUnread ? 'unread' : ''}" style="animation-delay:${delay}s;" data-redirect="${item.redirect}">
+                <div class="notif-icon ${cfg.cls}"><i class="${iconClass}" style="font-size:16px;"></i></div>
+                <div class="notif-body">
+                    <div class="notif-name">${getTitle(item)}</div>
+                    <div class="notif-sub">${subLine}</div>
+                    <div class="notif-time"><i class="fa-regular fa-clock"></i>${item.notification_at}</div>
+                </div>
+                ${rightMeta}
+            </li>`;
         $list.append(html);
     });
 }
-$(document).on('click', '.notification-item', function () {
+function _targetIcon(target) {
+    const map = {
+        document: 'fa-regular fa-folder-open',
+        project: 'fa-solid fa-folder-tree',
+        news: 'fa-regular fa-newspaper',
+    };
+    return map[target] || 'fa-solid fa-bell';
+}
+$(document).on('click', '.notif-item', function () {
     const redirect = $(this).data('redirect');
     window.location = `${BASE_URL}/${redirect}`;
 });

@@ -130,11 +130,11 @@
                         <div class="d-flex gap-3 mt-1">
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="polygon_visibility" id="maskOpen" value="open">
-                                <label class="form-check-label" for="maskOpen">Open</label>
+                                <label class="form-check-label" for="maskOpen" data-i18n="open">Open</label>
                             </div>
                             <div class="form-check">
                                 <input class="form-check-input" type="radio" name="polygon_visibility" id="maskClose" value="close" checked>
-                                <label class="form-check-label" for="maskClose">Close</label>
+                                <label class="form-check-label" for="maskClose" data-i18n="close">Close</label>
                             </div>
                         </div>
                     </div>

@@ -10,14 +10,14 @@ function renderReport(poles_id, type) {
         }
     });
     const sensors = [];
-    $('.sensor-checkbox input:checked').each(function () {
+    $('.fm-sensor-item input:checked').each(function () {
         sensors.push($(this).attr('id').replace('sensor', ''));
     });
     if (sensors.length === 0) {
-        $('.sensor-checkbox').addClass('border-danger');
+        $('.fm-sensor-item').addClass('border-danger');
         errors.push('sensors');
     } else {
-        $('.sensor-checkbox').removeClass('border-danger');
+        $('.fm-sensor-item').removeClass('border-danger');
     }
     const levels = [];
     $('.level-checkbox:checked').each(function() {
@@ -60,307 +60,253 @@ function renderReport(poles_id, type) {
 async function openFilterModal(poles_id, startDate = '', endDate = '', height_id = '', sensors_data = [], levels_data = [], type = '_blank') {
     const myModal = new bootstrap.Modal(document.getElementById('poleDetailModal'));
     myModal.show();
-    $('#poleModalBody').html('<div class="text-center p-5"><div class="spinner-border text-primary"></div></div>');
+    $('#poleModalBody').html(`
+        <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+            <div class="fm-skel" style="height:110px;border-radius:16px;"></div>
+            <div class="fm-skel" style="height:180px;border-radius:16px;"></div>
+            <div class="fm-skel" style="height:140px;border-radius:16px;"></div>
+        </div>
+    `);
     try {
         const response = await fetch(`${BASE_URL}/api/poles.info`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                id: poles_id,
-                start: startDate,
-                end: endDate,
-                height: height_id,
-            })
+            body: JSON.stringify({ id: poles_id, start: startDate, end: endDate, height: height_id })
         });
         const data = await response.json();
+        const chip = (iconClass, color, labelKey, value) => `
+            <div class="fm-chip">
+                <div class="fm-chip-icon" style="color:${color};">
+                    <i class="${iconClass}"></i>
+                </div>
+                <div>
+                    <div class="fm-chip-label" data-i18n="${labelKey}"></div>
+                    <div class="fm-chip-value">${value}</div>
+                </div>
+            </div>`;
+        const sensor = (id, iconClass, color, labelKey, unit) => `
+            <div class="col-md-6 col-lg-6">
+                <label class="fm-sensor-item" for="sensor${id}">
+                    <input type="checkbox" class="fm-sensor-check" id="sensor${id}" autocomplete="off">
+                    <div class="fm-sensor-icon" style="background:${color}18;border-color:${color}30;">
+                        <i class="${iconClass}" style="color:${color};font-size:15px;"></i>
+                    </div>
+                    <div class="fm-sensor-text">
+                        <span data-i18n="${labelKey}"></span>
+                        <span class="fm-sensor-unit">${unit}</span>
+                    </div>
+                    <div class="fm-sensor-check-indicator">
+                        <i class="fa-solid fa-check" style="font-size:10px;"></i>
+                    </div>
+                </label>
+            </div>`;
         const html = `
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="card-body p-3 p-lg-3">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary shadow-sm d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
-                                <i class="fas fa-broadcast-tower fs-4"></i>
-                            </div>
-                            <div>
-                                <h5 class="fw-bold mb-1 text-dark">
-                                    <span>${data.installations_name}</span>
-                                    <small class="text-muted fw-light ms-1">#${data.poles_code}</small>
-                                </h5>
-                                <div class="d-inline-flex align-items-center bg-light border border-light-subtle rounded-pill px-3 py-1 shadow-sm">
-                                    <i class="fa-solid fa-circle me-2 small" style="color: ${data.project_status_color || "#CCCCCC"}"></i>
-                                    <span class="fw-bold opacity-75">${data.project_status_name || "-"}</span>
-                                </div>
-                            </div>
-                        </div>
+        <div class="fm-wrap">
+            <div class="fm-info-card">
+                <div class="fm-info-header">
+                    <div class="poles-avatar">
+                        <i class="fas fa-broadcast-tower"></i>
                     </div>
-                    <hr class="text-muted opacity-25 mb-4">
-                    <div class="row g-3">
-                        <div class="col-12 col-lg-6">
-                            <div class="d-flex align-items-start gap-3 p-2 rounded-3 hover-bg-light transition">
-                                <div class="text-primary opacity-50"><i class="fa-solid fa-diagram-project fs-4"></i></div>
-                                <div>
-                                    <label class="d-block text-muted small fw-bold text-uppercase mb-1" data-i18n="project"></label>
-                                    <span class="text-dark fw-semibold">${data.project_name}</span> 
-                                </div>
-                            </div>
+                    <div>
+                        <div class="poles-name">
+                            ${data.installations_name}
+                            <span class="poles-code">#${data.poles_code}</span>
                         </div>
-                        <div class="col-12 col-lg-6">
-                            <div class="d-flex align-items-start gap-3 p-2 rounded-3 hover-bg-light transition">
-                                <div class="text-info opacity-50"><i class="fas fa-arrows-alt-v fs-4"></i></div>
-                                <div>
-                                    <label class="d-block text-muted small fw-bold text-uppercase mb-1" data-i18n="level"></label>
-                                    <span class="text-dark fw-semibold">${data.height_name}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-lg-6">
-                            <div class="d-flex align-items-start gap-3 p-2 rounded-3 hover-bg-light transition">
-                                <div class="text-success opacity-50"><i class="fas fa-map-marker-alt fs-4"></i></div>
-                                <div>
-                                    <label class="d-block text-muted small fw-bold text-uppercase mb-1" data-i18n="location"></label>
-                                    <span class="text-dark fw-semibold d-block text-truncate" style="max-width: 180px;">${data.poles_lat}, ${data.poles_lng}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-lg-6">
-                            <div class="d-flex align-items-start gap-3 p-2 rounded-3 hover-bg-light transition">
-                                <div class="text-warning opacity-50"><i class="fa-regular fa-calendar fs-4"></i></div>
-                                <div>
-                                    <label class="d-block text-muted small fw-bold text-uppercase mb-1" data-i18n="monitoring_period"></label>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span class="text-dark fw-semibold small">${data.start_date} - ${data.end_date}</span>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="poles-status-pill">
+                            <span class="poles-status-dot" style="background:${data.project_status_color || '#ccc'};"></span>
+                            <span>${data.project_status_name || '—'}</span>
                         </div>
                     </div>
                 </div>
-                <div class="bg-dark bg-opacity-10 px-4 py-2 border-top border-light-subtle">
-                    <div class="d-flex align-items-center text-secondary small">
-                        <i class="fa-solid fa-circle-info me-2"></i>
-                        <span class="fw-bold me-1" data-i18n="report_remark"></span>
+                <div class="fm-chips">
+                    ${chip('fa-solid fa-diagram-project', '#2d7fc1', 'project',           data.project_name)}
+                    ${chip('fa-solid fa-arrows-alt-v',    '#0891b2', 'level',             data.height_name)}
+                    ${chip('fa-solid fa-map-marker-alt',  '#059669', 'location',          `${data.poles_lat}, ${data.poles_lng}`)}
+                    ${chip('fa-regular fa-calendar',      '#d97706', 'monitoring_period', `${data.start_date} – ${data.end_date}`)}
+                </div>
+                <div class="fm-remark">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span data-i18n="report_remark"></span>
+                </div>
+            </div>
+            <div class="fm-filter-card" id="filterCard">
+                <div class="fm-section-title">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span data-i18n="filter"></span>
+                </div>
+                <div class="row g-3 mb-0" id="filterContent">
+                    <div class="col-md-4">
+                        <label class="fm-label">
+                            <i class="fas fa-calendar-day"></i>
+                            <span data-i18n="startDate"></span>
+                        </label>
+                        <input type="text" class="fm-input obj-required" id="startDate" value="${data.min_datetime}" autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="fm-label">
+                            <i class="fas fa-calendar-day"></i>
+                            <span data-i18n="endDate"></span>
+                        </label>
+                        <input type="text" class="fm-input obj-required" id="endDate" value="${data.max_datetime}" autocomplete="off">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="fm-label">
+                            <i class="fa-solid fa-signal"></i>
+                            <span data-i18n="level"></span>
+                        </label>
+                        <select class="fm-select obj-required" id="heightSelect"></select>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="fm-label mb-2">
+                        <i class="fa-solid fa-up-down"></i>
+                        <span data-i18n="height_level"></span>
+                    </label>
+                    <div class="fm-limit-warn mb-2">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size:12px;"></i>
+                        <span data-i18n="max_selection_reached"></span>
+                        <strong class="height_limit"></strong>
+                        <span data-i18n="height_level"></span>
+                    </div>
+                    <div class="levelBody fm-level-body"></div>
+                </div>
+                <div class="mt-4">
+                    <label class="fm-label mb-3">
+                        <i class="fas fa-satellite-dish"></i>
+                        <span data-i18n="sensor"></span>
+                    </label>
+                    <div class="row g-2">
+                        ${sensor(1, 'fa-solid fa-wind',             '#00b8d9', 'wind_speed',          '(m/s)')}
+                        ${sensor(2, 'fa-solid fa-compass',          '#54a0ff', 'wind_direction',      '(°)')}
+                        ${sensor(3, 'fa-solid fa-smog',             '#8395a7', 'air_density',         '(kg/m³)')}
+                        ${sensor(4, 'fa-solid fa-gauge-high',       '#a29bfe', 'surface_pressure',    '(hPa)')}
+                        ${sensor(5, 'fa-solid fa-droplet',          '#48dbfb', 'relative_humidity',   '(%)')}
+                        ${sensor(6, 'fa-solid fa-temperature-half', '#ff6b6b', 'temperature',         '(°C)')}
+                        ${sensor(7, 'fa-solid fa-tornado',          '#ee5253', 'turbulence_intensity', '(%)')}
                     </div>
                 </div>
             </div>
-            <div class="filter-card mt-3" id="filterCard">
-                <div class="filter-content" id="filterContent">
-                    <div class="row">
-                        <div class="col-md-4 col-lg-4 mb-3">
-                            <label class="form-label required">
-                                <i class="fas fa-calendar-day me-2"></i><span data-i18n="startDate"></span>
-                            </label>
-                            <input type="text" class="form-control obj-required" id="startDate" value="${data.min_datetime}" autocomplete="off">
-                        </div>
-                        <div class="col-md-4 col-lg-4 mb-3">
-                            <label class="form-label required">
-                                <i class="fas fa-calendar-day me-2"></i><span data-i18n="endDate"></span>
-                            </label>
-                            <input type="text" class="form-control obj-required" id="endDate" value="${data.max_datetime}" autocomplete="off">
-                        </div>
-                        <div class="col-md-4 col-lg-4 mb-3">
-                            <label class="form-label required">
-                                <i class="fa-solid fa-signal me-2"></i><span data-i18n="level"></span>
-                            </label>
-                            <select class="form-select obj-required" id="heightSelect"></select>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <label class="form-label required">
-                                <i class="fa-solid fa-up-down me-2"></i><span data-i18n="height_level"></span>
-                            </label>
-                            <div class="mb-3 text-warning"><span data-i18n="max_selection_reached"></span> <span class="height_limit"></span> <span data-i18n="height_level"></span></div>
-                            <div class="levelBody bg-white border rounded-3 p-2 shadow-sm gap-2"></div>
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <label class="form-label required">
-                                <i class="fas fa-sensor me-2"></i><span data-i18n="sensor"></span>
-                            </label>
-                        </div>
-                        <div class="col-md-6 col-lg-6">
-                            <div class="sensor-checkbox d-flex align-items-start p-2">
-                                <input type="checkbox" class="form-check-input mt-1 me-2" id="sensor1" checked>
-                                <label class="form-check-label" for="sensor1" style="cursor: pointer;">
-                                    <i class="fa-solid fa-wind me-2" style="color: #00d2d3;"></i><span data-i18n="wind_speed"></span> (m/s)
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-6">
-                            <div class="sensor-checkbox d-flex align-items-start p-2">
-                                <input type="checkbox" class="form-check-input mt-1 me-2" id="sensor2" checked>
-                                <label class="form-check-label" for="sensor2" style="cursor: pointer;">
-                                    <i class="fa-solid fa-compass me-2" style="color: #54a0ff;"></i><span data-i18n="wind_direction"></span> (<span data-i18n="degree"></span>)
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-6">
-                            <div class="sensor-checkbox d-flex align-items-start p-2">
-                                <input type="checkbox" class="form-check-input mt-1 me-2" id="sensor3">
-                                <label class="form-check-label" for="sensor3" style="cursor: pointer;">
-                                    <i class="fa-solid fa-smog me-2" style="color: #8395a7;"></i><span data-i18n="air_density"></span> (kg/m³)
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-6">
-                            <div class="sensor-checkbox d-flex align-items-start p-2">
-                                <input type="checkbox" class="form-check-input mt-1 me-2" id="sensor4">
-                                <label class="form-check-label" for="sensor4" style="cursor: pointer;">
-                                    <i class="fa-solid fa-gauge-high me-2" style="color: #a29bfe;"></i><span data-i18n="surface_pressure"></span> (hPa)
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-6">
-                            <div class="sensor-checkbox d-flex align-items-start p-2">
-                                <input type="checkbox" class="form-check-input mt-1 me-2" id="sensor5">
-                                <label class="form-check-label" for="sensor5" style="cursor: pointer;">
-                                    <i class="fa-solid fa-droplet me-2" style="color: #48dbfb;"></i><span data-i18n="relative_humidity"></span> (%)
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-6">
-                            <div class="sensor-checkbox d-flex align-items-start p-2">
-                                <input type="checkbox" class="form-check-input mt-1 me-2" id="sensor6">
-                                <label class="form-check-label" for="sensor6" style="cursor: pointer;">
-                                    <i class="fa-solid fa-temperature-half text-danger me-2" style="color: #ff6b6b;"></i><span data-i18n="temperature"></span> (degC)
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-md-6 col-lg-6">
-                            <div class="sensor-checkbox d-flex align-items-start p-2">
-                                <input type="checkbox" class="form-check-input mt-1 me-2" id="sensor7">
-                                <label class="form-check-label" for="sensor7" style="cursor: pointer;">
-                                    <i class="fa-solid fa-tornado me-2" style="color: #ee5253;"></i><span data-i18n="turbulence_intensity"></span> (°C)
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+        </div>`;
         $('#poleModalBody').html(html);
         if (sensors_data && sensors_data.length > 0) {
             $('input[id^="sensor"]').prop('checked', false);
-            sensors_data.forEach(sId => {
-                $(`#sensor${sId}`).prop('checked', true);
-            });
+            sensors_data.forEach(sId => $(`#sensor${sId}`).prop('checked', true));
         } else {
             $('#sensor1, #sensor2').prop('checked', true);
         }
+        $('input[id^="sensor"]').each(function () { syncSensorItem(this); });
+        $(document).on('change', 'input[id^="sensor"]', function () { syncSensorItem(this); });
         $('#poleModalLabel').text(data.installations_name);
         let minVal = data.min_datetime_val ? new Date(data.min_datetime_val) : null;
         let maxVal = data.max_datetime_val ? new Date(data.max_datetime_val) : null;
         initDatePicker('#startDate', minVal, maxVal);
         initDatePicker('#endDate', minVal, maxVal);
-        $('#startDate, #endDate').on('blur', function() {
+        $('#startDate, #endDate').on('blur', function () {
             const $input = $(this);
             let val = $input.val();
             if (!val) return;
             let parts = val.split('/');
             let selectedDate = new Date(parts[2], parts[1] - 1, parts[0]);
-            if (isNaN(selectedDate.getTime()) || parts.length !== 3) {
-                $input.val(''); 
-                return;
-            }
-            if (minVal && selectedDate < minVal) {
-                selectedDate = new Date(minVal);
-            } else if (maxVal && selectedDate > maxVal) {
-                selectedDate = new Date(maxVal);
-            }
-            const startVal = $('#startDate').val().split('/');
-            const endVal = $('#endDate').val().split('/');
-            let startDate = new Date(startVal[2], startVal[1] - 1, startVal[0]);
-            let endDate = new Date(endVal[2], endVal[1] - 1, endVal[0]);
-            if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
-                if (startDate > endDate) {
-                    selectedDate = ($input.attr('id') === 'startDate') ? endDate : startDate;
-                }
+            if (isNaN(selectedDate.getTime()) || parts.length !== 3) { $input.val(''); return; }
+            if (minVal && selectedDate < minVal) selectedDate = new Date(minVal);
+            else if (maxVal && selectedDate > maxVal) selectedDate = new Date(maxVal);
+            const sv = $('#startDate').val().split('/');
+            const ev = $('#endDate').val().split('/');
+            let sd = new Date(sv[2], sv[1]-1, sv[0]);
+            let ed = new Date(ev[2], ev[1]-1, ev[0]);
+            if (!isNaN(sd.getTime()) && !isNaN(ed.getTime()) && sd > ed) {
+                selectedDate = ($input.attr('id') === 'startDate') ? ed : sd;
             }
             $input.val(formatThaiDate(selectedDate));
         });
         function formatThaiDate(date) {
-            let day = ("0" + date.getDate()).slice(-2);
-            let month = ("0" + (date.getMonth() + 1)).slice(-2);
-            let year = date.getFullYear();
-            return day + '/' + month + '/' + year;
+            return ('0'+date.getDate()).slice(-2)+'/'+('0'+(date.getMonth()+1)).slice(-2)+'/'+date.getFullYear();
         }
         initSelect2Remote('#heightSelect', `${BASE_URL}/api/level.get`, { poles_id: poles_id });
         $('#poleDetailModal .modal-footer').html(`
-            <button class="btn btn-primary me-2" onclick="renderReport(${poles_id}, '${type}')" data-i18n="generate_report">${langData['generate_report'] || 'Generate Report'}</button>
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" data-i18n="close">${langData['close'] || 'Close'}</button>
+            <button class="poles-btn-primary" onclick="renderReport(${poles_id}, '${type}')" data-i18n="generate_report">
+                ${langData['generate_report'] || 'Generate Report'}
+            </button>
+            <button type="button" class="poles-btn-ghost" data-bs-dismiss="modal" data-i18n="close">
+                ${langData['close'] || 'Close'}
+            </button>
         `);
         if (data.height_name && data.height_id) {
             const newOption = new Option(data.height_name, data.height_id, true, true);
             $('#heightSelect').append(newOption).trigger('change');
         }
         await renderLevel($('#heightSelect').val(), levels_data);
-        $('#heightSelect').on('change', function() {
-            renderLevel($(this).val(), []);
-        });
+        $('#heightSelect').on('change', function () { renderLevel($(this).val(), []); });
+        if (typeof updateText === 'function') updateText($('#poleModalBody')[0]);
     } catch (err) {
-        $('#poleModalBody').html(langData['cannot_load'] || 'Failed to load data. Please try again later.');
+        $('#poleModalBody').html(`
+            <div style="padding:24px;">
+                <div class="fm-error">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    ${langData['cannot_load'] || 'Failed to load data. Please try again later.'}
+                </div>
+            </div>`);
     }
 }
-let currentLimit = 3; 
+function syncSensorItem(input) {
+    const $label = $(input).closest('.fm-sensor-item');
+    if ($(input).is(':checked')) {
+        $label.addClass('is-checked');
+    } else {
+        $label.removeClass('is-checked');
+    }
+}
+let currentLimit = 3;
 async function renderLevel(height_id, levelsToCheck = []) {
-    const $container = $(".levelBody");
+    const $container = $('.levelBody');
     if (!height_id) {
-        $container.html(`<div class="alert alert-danger" role="alert">${langData['please_choose_height'] || 'Please select height'}</div>`);
+        $container.html(`<div class="fm-alert-warn">${langData['please_choose_height'] || 'Please select height'}</div>`);
         return;
     }
     $container.html(`
-        <div class="py-2 text-primary small">
-            <div class="spinner-border spinner-border-sm me-2"></div>
+        <div class="fm-loading">
+            <div class="spinner-border spinner-border-sm" style="color:#2d7fc1;"></div>
             <span data-i18n="loading">${langData['loading'] || 'Loading...'}</span>
-        </div>
-    `);
+        </div>`);
     try {
         const response = await fetch(`${BASE_URL}/api/heght.level`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ height_id: height_id })
+            body: JSON.stringify({ height_id })
         });
-        if (!response.ok) throw new Error('Network response was not ok');
+        if (!response.ok) throw new Error('Network error');
         const result = await response.json();
-        let html = '';
         const levels = result.levels || [];
         currentLimit = parseInt(result.height_limit) || 3;
-        if (levels && levels.length > 0) {
-            levels.forEach((item, index) => {
-                let isChecked = '';
-                if (levelsToCheck && levelsToCheck.length > 0) {
-                    isChecked = levelsToCheck.some(lv => String(lv) === String(item.levels_id)) ? 'checked' : '';
-                } else {
-                    isChecked = index < currentLimit ? 'checked' : '';
-                }
-                html += `
-                    <div class="level-item">
-                        <input class="btn-check level-checkbox" type="checkbox" name="levels[]" value="${item.levels_id}" id="level_${item.levels_id}" ${isChecked} autocomplete="off">
-                        <label class="small btn btn-outline-primary btn-sm rounded-pill px-2 py-1 mb-2 me-2 shadow-sm fw-medium transition-all"  for="level_${item.levels_id}">
-                            <i class="fa-solid fa-layer-group me-1 small"></i> ${item.height_levels} m.
-                        </label>
-                    </div>
-                `;
-            });
-            html = `<div class="d-flex flex-wrap align-items-center">${html}</div>`;
-        } else {
-            html = `<div class="alert alert-danger" role="alert">${langData['no_data_found'] || 'No levels found for this mast.'}</div>`;
+        $('.height_limit, .current_limit_display').text(currentLimit);
+        if (!levels.length) {
+            $container.html(`<div class="fm-alert-warn">${langData['no_data_found'] || 'No levels found.'}</div>`);
+            return;
         }
-        $(".height_limit").html(currentLimit); 
-        $(".current_limit_display").html(currentLimit);
-        $container.html(html);
-    } catch (error) {
-        $container.html(`<div class="alert alert-danger" role="alert">${langData['cannot_load'] || 'Connection error.'}</div>`);
+        const items = levels.map((item, index) => {
+            let isChecked = levelsToCheck.length > 0
+                ? levelsToCheck.some(lv => String(lv) === String(item.levels_id))
+                : index < currentLimit;
+            return `
+                <div class="fm-level-item">
+                    <input class="btn-check level-checkbox" type="checkbox" name="levels[]" value="${item.levels_id}" id="level_${item.levels_id}" ${isChecked ? 'checked' : ''} autocomplete="off">
+                    <label class="fm-level-btn" for="level_${item.levels_id}">
+                        <i class="fa-solid fa-layer-group" style="font-size:11px;"></i>
+                        ${item.height_levels} m
+                    </label>
+                </div>`;
+        }).join('');
+        $container.html(`<div class="fm-level-grid">${items}</div>`);
+    } catch (err) {
+        $container.html(`<div class="fm-alert-danger">${langData['cannot_load'] || 'Connection error.'}</div>`);
     }
 }
-$(document).on('change', '.level-checkbox', function() {
-    let selectedCount = $('.level-checkbox:checked').length;
-    if (selectedCount > currentLimit) {
+$(document).on('change', '.level-checkbox', function () {
+    const selected = $('.level-checkbox:checked').length;
+    if (selected > currentLimit) {
         $(this).prop('checked', false);
-        let warningMsg = (langData['max_selection_reached'] || 'You can select a maximum of {count} height levels') + " " + currentLimit;
-        warningMsg = warningMsg.replace('{count}', currentLimit);
-        showError(warningMsg);
+        const msg = (langData['max_selection_reached'] || 'Max {count} levels').replace('{count}', currentLimit) + ' ' + currentLimit;
+        showWarning(msg);
     }
 });
 function showReportPWA(data) {
@@ -381,7 +327,12 @@ function showReportPWA(data) {
     modalBody.html(`
         <div class="container-fluid mt-3 mb-3">
             <div class="report-section">
-                <h6 class="report-title"><i class="fa-solid fa-cloud-meatball me-2"></i><span data-i18n="weather_overview"></span></h6>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary shadow-sm d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; animation: iconFloat 3.5s ease-in-out infinite;">
+                        <i class="fa-solid fa-cloud-meatball fs-4"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1 text-dark" data-i18n="weather_overview"></h4>
+                </div>
                 <div class="row g-2 mt-2" id="weatherContainer"></div>
             </div>
         </div>
@@ -390,7 +341,7 @@ function showReportPWA(data) {
                 <div class="card-body p-3 p-lg-3">
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
                         <div class="d-flex align-items-center gap-3">
-                            <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary shadow-sm d-flex align-items-center justify-content-center" style="width: 56px; height: 56px;">
+                            <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary shadow-sm d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; animation: iconFloat 3.5s ease-in-out infinite;">
                                 <i class="fas fa-broadcast-tower fs-4"></i>
                             </div>
                             <div>
@@ -460,43 +411,53 @@ function showReportPWA(data) {
         </div>
         <div class="container-fluid mt-3 mb-3">
             <div class="report-section mb-4">
-                <h6 class="report-title"><i class="fas fa-chart-bar me-2"></i><span data-i18n="average_summary"></span></h6>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary shadow-sm d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; animation: iconFloat 3.5s ease-in-out infinite;">
+                        <i class="fas fa-chart-bar fs-4"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1 text-dark" data-i18n="average_summary"></h4>
+                </div>
                 <div class="row g-2 mt-2" id="statsContainer"></div>
             </div>
             <div class="report-section">
-                <h6 class="report-title"><i class="fas fa-chart-line me-2"></i><span data-i18n="visualization"></span></h6>
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary shadow-sm d-flex align-items-center justify-content-center" style="width: 56px; height: 56px; animation: iconFloat 3.5s ease-in-out infinite;">
+                        <i class="fas fa-chart-line fs-4"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1 text-dark" data-i18n="visualization"></h4>
+                </div>
                 <div class="row" id="chartRow">
-                    <div class="col-lg-4 mb-4 chart-box" data-chart="wind-speed">
+                    <div class="col-lg-4 mb-4 chart-box p-3" data-chart="wind-speed">
                         <h6 class="text-center" data-i18n="wind_speed"></h6>
                         <div class="chart-container">
                             <canvas id="lineChart"></canvas>
                         </div>
                     </div>
-                    <div class="col-lg-4 mb-4 chart-box" data-chart="wind-speed-hist">
+                    <div class="col-lg-4 mb-4 chart-box p-3" data-chart="wind-speed-hist">
                         <h6 class="text-center" data-i18n="wind_speed_distribution"></h6>
                         <div class="chart-container">
                             <canvas id="barChart"></canvas>
                         </div>
                     </div>
-                    <div class="col-lg-4 mb-4 chart-box" data-chart="wind-direction">
+                    <div class="col-lg-4 mb-4 chart-box p-3" data-chart="wind-direction">
                         <h6 class="text-center" data-i18n="wind_rose"></h6>
                         <div class="chart-container">
                             <canvas id="radarChart"></canvas>
                         </div>
                     </div>
-                    <div class="col-lg-4 mb-4 chart-box" data-chart="weather">
+                    <div class="col-lg-4 mb-4 chart-box p-3" data-chart="weather">
                         <h6 class="text-center" data-i18n="weather_overview"></h6>
                         <div class="chart-container">
                             <canvas id="weatherChart"></canvas>
                         </div>
                     </div>
-                    <div class="col-lg-4 mb-4 chart-box" data-chart="air">
+                    <div class="col-lg-4 mb-4 chart-box p-3" data-chart="air">
                         <h6 class="text-center" data-i18n="air_density_turbulence"></h6>
                         <div class="chart-container">
                             <canvas id="airChart"></canvas>
                         </div>
                     </div>
-                    <div class="col-lg-4 mb-4 chart-box" data-chart="surface-pressure">
+                    <div class="col-lg-4 mb-4 chart-box p-3" data-chart="surface-pressure">
                         <h6 class="text-center" data-i18n="surface_pressure"></h6>
                         <div class="chart-container">
                             <canvas id="pressureChart"></canvas>

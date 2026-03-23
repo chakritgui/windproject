@@ -128,7 +128,7 @@ function renderView(data, isNewSearch) {
                         <i class="fa-solid fa-file-pdf me-1"></i>${langData['document'] || 'Document'}
                     </span>`;
             if (parseInt(item.count_image) > 0) 
-                badgeHtml += `<span class="badge rounded-pill bg-primary-subtle text-primary me-1">
+                badgeHtml += `<span class="badge rounded-pill bg-primary-subtle text-blue me-1">
                         <i class="fa-solid fa-images me-1"></i>${langData['image'] || 'Image'}
                     </span>`;
             if (parseInt(item.count_image360) > 0) 
@@ -141,7 +141,7 @@ function renderView(data, isNewSearch) {
         const iconHtml = isContent
             ? (item.cover 
                 ? `<img src="${BASE_URL}/${item.cover}" class="rounded-2" style="width:100%;height:100%;object-fit:cover;" loading="lazy">`
-                : `<i class="fa-regular fa-newspaper text-primary fa-3x"></i>`)
+                : `<i class="fa-regular fa-newspaper text-blue fa-3x"></i>`)
             : `<i class="fa-solid fa-folder-open fa-3x"></i>`;
         let typeHtml = '';
         if(item.sub_type === 'news') {

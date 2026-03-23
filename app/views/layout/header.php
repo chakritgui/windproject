@@ -34,6 +34,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link href="<?=BASE_URL?>/public/css/style.css?v=<?= time(); ?>" rel="stylesheet">
+<link href="<?=BASE_URL?>/public/css/notification.css?v=<?= time(); ?>" rel="stylesheet">
 <?php if (file_exists($manifestFile)) { ?>
     <link rel="manifest" href="/public/manifest.json?v=1.0.0">
     <link rel="apple-touch-icon" href="/public/icons/icon-ios.png">
@@ -85,7 +86,7 @@
 <script src="<?=BASE_URL?>/public/js/notification.js?v=<?=time();?>" defer></script>
 <script src="<?=BASE_URL?>/public/js/menu.js?v=<?=time();?>" defer></script>
 <script src="<?=BASE_URL?>/public/js/view.js?v=<?=time();?>" defer></script>
-<button type="button" id="btn-back-to-top" class="btn btn-sm btn-primary rounded-circle shadow-lg transition-all" title="Back to Top">
+<button type="button" id="btn-back-to-top" class="btn btn-sm btn-back-to-top rounded-circle shadow-lg transition-all" title="Back to Top">
     <i class="fa-solid fa-angle-up"></i>
 </button>
 <div id="pageLoader" class="position-fixed top-0 start-0 w-100 h-100 d-none" style="z-index: 1055; background: rgba(255,255,255,.7);">
@@ -128,18 +129,23 @@
                             <span id="notificationCount">0</span>
                         </span>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow custom-notification-menu" data-bs-auto-close="outside">
-                        <li class="dropdown-header d-flex justify-content-between align-items-center border-bottom pb-2">
-                            <span class="fw-bold"><i class="fa-solid fa-bell me-2"></i><span data-i18n="notification"></span></span>
-                            <button class="btn btn-sm btn-light border-0 btn-close-dropdown">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
-                        </li>
-                        <li><div class="notification-list"></div></li>
-                        <li class="dropdown-footer text-center border-top pt-2 pb-0">
-                            <div class="d-flex flex-column">
-                                <a href="<?=BASE_URL?>/news" class="btn btn-light btn-sm border-0 w-100 py-2 fw-bold text-primary" data-i18n="view_all" style="border-radius: 0 0 5px 5px;"></a>
+                    <ul class="dropdown-menu dropdown-menu-end notif-dropdown" data-bs-auto-close="outside">
+                        <li class="notif-header">
+                            <div class="notif-header-left">
+                                <div class="notif-bell-wrap">
+                                    <i class="fa-solid fa-bell"></i>
+                                </div>
+                                <span class="notif-title" data-i18n="notification"></span>
                             </div>
+                            <button class="notif-close btn-close-dropdown" type="button"><i class="fa-solid fa-xmark"></i></button>
+                        </li>
+                        <li>
+                            <div class="notification-list"></div>
+                        </li>
+                        <li class="notif-footer">
+                            <a href="<?=BASE_URL?>/news">
+                                <span data-i18n="view_all"></span> <i class="fa-solid fa-arrow-right"></i>
+                            </a>
                         </li>
                     </ul>
                 </div>
@@ -154,7 +160,7 @@
                         <i class="fa-regular fa-user"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="<?=BASE_URL?>/account"><i class="fa-solid fa-gear me-2"></i> <span data-i18n="account_settings"></span></a></li>
+                        <li><a class="dropdown-item" href="<?=BASE_URL?>/account"><i class="fa-solid fa-address-book me-2"></i> <span data-i18n="member_profile"></span></a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item text-danger" href="<?=BASE_URL?>/logout"><i class="fa-solid fa-right-from-bracket me-2"></i> <span data-i18n="logout"></span></a></li>
                     </ul>

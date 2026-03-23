@@ -11,14 +11,20 @@
     background: #fff;
     border: 1px solid #e0e0e0 !important;
     border-radius: 16px !important;
-    transition: var(--transition);
+    transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation-delay: 0.05s;
     position: relative;
     overflow: hidden;
+    animation: cardReveal 0.5s ease both;
+}
+@keyframes cardReveal {
+    from { opacity: 0; transform: translateX(-20px); }
+    to   { opacity: 1; transform: translateX(0); }
 }
 .doc-item:hover {
-    transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(0,0,0,0.08) !important;
     border-color: var(--content-color) !important;
+    transform: translateX(6px) translateY(-2px);
 }
 .doc-item::before {
     content: "";
@@ -70,12 +76,6 @@
     color: var(--content-color);
     transform: translateX(3px);
 }
-.breadcrumb-wrapper {
-    background-color: #f8f9fa;
-    padding: 0.75rem 1.25rem;
-    border-radius: 12px;
-    border: 1px solid #e9ecef;
-}
 .breadcrumb-item {
     display: flex;
     align-items: center;
@@ -95,7 +95,7 @@
     vertical-align: middle;
 }
 .breadcrumb-item a:hover {
-    color: #0d6efd !important;
+    color: #5bb8f5 !important;
     text-decoration: underline !important;
 }
 .breadcrumb-item.dropdown .dropdown-toggle::after {
@@ -118,5 +118,42 @@
     }
     .breadcrumb {
         flex-wrap: nowrap;
+    }
+}
+.breadcrumb-area {
+    min-height: 45px;
+}
+.breadcrumb-wrapper {
+    flex: 1;
+}
+.breadcrumb {
+    background: rgba(255, 255, 255, 0.5);
+    padding: 8px 16px;
+    border-radius: 12px;
+    display: inline-flex;
+}
+.header-stats .btn-white {
+    background: #fff;
+    border: 1px solid rgba(45, 127, 193, 0.2) !important;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    color: var(--wind-dark);
+}
+.header-stats .btn-white:hover {
+    background: #f0f7ff;
+    border-color: var(--wind-accent) !important;
+}
+@media (max-width: 768px) {
+    .breadcrumb-area {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 15px;
+    }
+    .breadcrumb-wrapper, .header-stats {
+        width: 100%;
+    }
+    .header-stats .btn {
+        justify-content: center;
     }
 }

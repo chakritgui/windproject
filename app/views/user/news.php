@@ -1,47 +1,56 @@
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/news.css?v=<?=time();?>">
-<div class="container py-5 mt-5">  
-    <div class="header-section mb-3">
-        <div class="header-top">
-            <div class="header-title-wrapper">
-                <div class="header-icon">
-                    <i class="fa-regular fa-newspaper"></i>
+<link href="<?=BASE_URL?>/public/css/page.css?v=<?=time();?>" rel="stylesheet">
+<link href="<?=BASE_URL?>/public/css/news.css?v=<?=time();?>" rel="stylesheet">
+<div class="sky-wrap" id="skyWrap"></div>
+<div class="container">  
+    <div class="page">
+        <div class="hero">
+            <div class="wind-particles">
+                <div class="particle pp-1"></div>
+                <div class="particle pp-2"></div>
+                <div class="particle pp-3"></div>
+                <div class="particle pp-4"></div>
+                <div class="particle pp-5"></div>
+            </div>
+            <div class="deco-cluster cluster-tl">
+                <i class="fa-solid fa-paper-plane deco-1"></i>
+                <i class="fa-solid fa-bullhorn deco-2"></i>
+            </div>
+            <div class="deco-cluster cluster-br">
+                <i class="fa-solid fa-envelope-open-text deco-3"></i>
+                <i class="fa-solid fa-rss deco-4"></i>
+                <i class="fa-solid fa-bolt-lightning deco-5"></i>
+            </div>
+            <div class="hero-content">
+                <div class="hero-icon">
+                    <i class="fa-solid fa-newspaper text-white"></i>
                 </div>
-                <div class="header-text">
-                    <h2 class="header-title-main" data-i18n="news"></h2>
-                    <p class="header-subtitle" data-i18n="header-news-subtitle"></p>
+                <div class="hero-text">
+                    <h1 data-i18n="news_updates"></h1>
+                    <p data-i18n="header-news-subtitle"></p>
+                    <div class="hero-accent"></div>
                 </div>
             </div>
-            <div class="header-stats d-flex align-items-center gap-3">
-                <span class="badge-total shadow-sm">
-                    <i class="fa-solid fa-layer-group me-1"></i> 
-                    <span id="docTotal">0</span> <span data-i18n="items"></span>
-                </span>
+        </div>
+        <div class="toolbar">
+            <div class="d-flex align-items-center gap-2">
                 <div class="dropdown">
-                    <button class="btn btn-white border shadow-sm dropdown-toggle d-flex align-items-center" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fa-solid fa-sort me-2 text-secondary"></i> 
-                        <span id="selectedSortLabel" data-i18n="newest" class="fw-medium"></span>
+                    <button class="toolbar-btn" id="sortBtn" onclick="toggleSort()">
+                        <i class="fa-solid fa-sort"></i>
+                        <span id="sortLabel" data-i18n="newest"></span>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" aria-labelledby="sortDropdown">
-                        <li>
-                            <a class="dropdown-item sort-option py-2" href="javascript:void(0)" data-sort="desc" data-label="newest">
-                                <i class="fa-solid fa-arrow-down-9-1 me-2 text-muted"></i><span data-i18n="newest"></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item sort-option py-2" href="javascript:void(0)" data-sort="asc" data-label="oldest">
-                                <i class="fa-solid fa-arrow-up-1-9 me-2 text-muted"></i><span data-i18n="oldest"></span>
-                            </a>
-                        </li>
-                    </ul>
                 </div>
             </div>
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <span class="total-badge">
+                    <i class="fa-solid fa-layer-group me-1"></i>
+                    <strong id="docTotal">0</strong>
+                    <span data-i18n="items"></span>
+                </span>
+            </div>
         </div>
-        <div class="header-divider">
-            <div class="divider-line"></div>
-            <div class="divider-dot"></div>
-        </div>
+        <div id="listView"></div>
+        <div id="scrollEnd"></div>
     </div>
-    <div id="listView"></div>
 </div>
-<div id="scrollEnd"></div>
-<script src="<?=BASE_URL?>/public/js/user/news.js?v=<?=time();?>" defer></script>
+<script src="<?=BASE_URL?>/public/js/user/sky.js?v=<?=time();?>"></script>
+<script src="<?=BASE_URL?>/public/js/user/news.js?v=<?=time();?>"></script>
