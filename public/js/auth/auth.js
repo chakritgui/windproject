@@ -21,17 +21,12 @@ function doLogin() {
     if (!username) { showLoginWarning('username'); return; }
     if (!password) { showLoginWarning('password'); return; }
     showPageLoader();
-    const payload = {
+    $.post(`${BASE_URL}/api/auth`, {
         username: username,
         password: password,
         timezone: tz,
-        keepLoggedIn: keepLoggedIn,
-        visitorId: typeof visitorId !== 'undefined' ? visitorId : '',
-        lat: (window.userLocation && window.userLocation.lat) ? window.userLocation.lat : null,
-        lng: (window.userLocation && window.userLocation.lng) ? window.userLocation.lng : null,
-        locStatus: (window.userLocation && window.userLocation.status) ? window.userLocation.status : 'unknown'
-    };
-    $.post(`${BASE_URL}/api/auth`, payload, function(res) {
+        keepLoggedIn: keepLoggedIn
+    }, function(res){
         if (res.status === 'success') {
             window.location.href = `${BASE_URL}/${res.location}`;
         } else {
@@ -39,7 +34,7 @@ function doLogin() {
         }
     }, 'json').fail(function() {
         showError(langData['error']);
-    }).always(function() {
+    }).always(function(){
         hidePageLoader();
     });
 }
@@ -182,45 +177,16 @@ let visitorId = '';
 async function initAuthApp() {
     try {
         const fpPromise = import('https://openfpcdn.io/fingerprintjs/v4').then(FingerprintJS => FingerprintJS.load());
-        const locationPromise = getGeolocation();
-        const [fp, location] = await Promise.all([fpPromise, locationPromise]);
+        const fp = await fpPromise;
         const result = await fp.get();
         visitorId = result.visitorId;
-        window.userLocation = location; 
     } catch (error) {
-        console.warn("InitAuthApp warning:", error);
-        visitorId = visitorId || getFallbackId();
-        window.userLocation = window.userLocation || { lat: null, lng: null, error: "Access denied" };
+        console.warn("FingerprintJS failed, using fallback...");
+        visitorId = getFallbackId();
     }
     await loadAuthSetting();
     await loadAuthRquest();
     applyAuthBackground();
-}
-function getGeolocation() {
-    return new Promise((resolve) => {
-        if (!navigator.geolocation) {
-            resolve({ lat: null, lng: null, status: "not_supported" });
-            return;
-        }
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                resolve({
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude,
-                    status: "success"
-                });
-            },
-            (error) => {
-                console.warn("Geolocation error:", error.message);
-                resolve({ lat: null, lng: null, status: "denied" });
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 5000,
-                maximumAge: 0
-            }
-        );
-    });
 }
 function getFallbackId() {
     let tempId = localStorage.getItem('fallback_visitor_id');

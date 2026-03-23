@@ -26,27 +26,16 @@
             $sendResult = $mailHelper->sendMail($email, $lang, $token);
             return $sendResult ? 'success' : 'mail_error';
         }
-        public function updateLogin($member_id, $timezone, $session_id, $lat, $lng) {
+        public function updateLogin($member_id, $timezone, $session_id) {
             $stmt = $this->db->prepare('UPDATE wp_members SET last_login_at = NOW() WHERE member_id = ?');
             $stmt->execute([$member_id]);
             $stmt = $this->db->prepare("UPDATE wp_login_logs SET logout_at = NOW(), log_type = 'kick' WHERE member_id = ? AND logout_at IS NULL");
             $stmt->execute([$member_id]);
-            $login_location = (!empty($lat) && !empty($lng)) ? "$lat,$lng" : null;
-            $sql = 'INSERT INTO wp_login_logs 
-                    (member_id, login_at, ip_address, login_device, timezone, session_id, login_location) 
-                    VALUES (?, NOW(), ?, ?, ?, ?, ?)';
-            $stmt = $this->db->prepare($sql);
+            $stmt = $this->db->prepare('INSERT INTO wp_login_logs (member_id, login_at, ip_address, login_device, timezone, session_id) VALUES (?, NOW(), ?, ?, ?, ?)');
             $ip_address = getClientIp();
             if ($ip_address === '::1') $ip_address = '127.0.0.1';
             $login_device = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
-            $stmt->execute([
-                $member_id, 
-                $ip_address, 
-                $login_device, 
-                $timezone, 
-                $session_id, 
-                $login_location
-            ]);
+            $stmt->execute([$member_id, $ip_address, $login_device, $timezone, $session_id]);
         }
         public function setRememberToken($member_id, $selector, $validator_hash, $expires_at) {
             $stmt = $this->db->prepare('UPDATE wp_members SET remember_selector = ?, remember_validator_hash = ?, remember_expires_at = ? WHERE member_id = ?');
@@ -94,18 +83,24 @@
                 return 'process_failed';
             }
         }
-        public function updateTimeZone($timezone) {
+        public function updateTimeZone($timezone, $lat = null, $lng = null) {
             $member_id = $_SESSION['user']['id'];
             $_SESSION['timezone'] = $timezone;
+            $login_location = null;
+            if ($lat !== null && $lng !== null) {
+                $login_location = $lat . ',' . $lng;
+            }
             $sql = "UPDATE wp_login_logs 
-                    SET timezone = :timezone 
+                    SET timezone = :timezone,
+                        login_location = :login_location
                     WHERE member_id = :member_id 
                     ORDER BY logs_id DESC 
                     LIMIT 1";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
-                ':timezone'  => $timezone,
-                ':member_id' => $member_id
+                ':timezone'       => $timezone,
+                ':login_location' => $login_location,
+                ':member_id'      => $member_id
             ]);
             return 'success';
         }

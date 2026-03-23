@@ -38,16 +38,52 @@ async function initApp() {
         showError(langData['process_failed']);
     }
 }
+function getGeolocation() {
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            resolve({ lat: null, lng: null, status: "not_supported" });
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                resolve({
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                    status: "success"
+                });
+            },
+            (error) => {
+                console.warn("Geolocation error:", error.message);
+                resolve({ lat: null, lng: null, status: "denied" });
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            }
+        );
+    });
+}
 async function syncTimezone() {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const geo = await getGeolocation();
     try {
-        await fetch(`${BASE_URL}/api/timezone.update`, {
+        const response = await fetch(`${BASE_URL}/api/timezone.update`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ timezone: tz })
+            body: JSON.stringify({ 
+                timezone: tz,
+                lat: geo.lat, 
+                lng: geo.lng,
+                geo_status: geo.status
+            })
         });
+        
+        const res = await response.json();
+        console.log("Sync Status:", res.status ? "Success" : "Failed");
+
     } catch (e) {
-        console.warn("Timezone sync failed", e);
+        console.warn("Timezone and Location sync failed", e);
     }
 }
 async function handlePWANotifications(force = false) {

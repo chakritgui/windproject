@@ -12,8 +12,6 @@ class AuthController extends Controller {
         $username     = $_POST['username'] ?? null;
         $pass         = $_POST['password'] ?? null;
         $timezone     = $_POST['timezone'] ?? null;
-        $lat     = $_POST['lat'] ?? null;
-        $lng     = $_POST['lng'] ?? null;
         $keepLoggedIn = filter_var($_POST['keepLoggedIn'] ?? false, FILTER_VALIDATE_BOOLEAN);
         if (!$username || !$pass) {
             echo json_encode(['status' => 'error', 'message' => 'missing_parameters']);
@@ -35,7 +33,7 @@ class AuthController extends Controller {
         }
         session_regenerate_id(true); 
         $session_id = session_id();  
-        $m->updateLogin($user['member_id'], $timezone, $session_id, $lat, $lng);
+        $m->updateLogin($user['member_id'], $timezone, $session_id);
         $_SESSION['session_id'] = $session_id;
         $_SESSION['user'] = [
             'id'   => $user['member_id'],
@@ -177,6 +175,8 @@ class AuthController extends Controller {
         $json = file_get_contents('php://input');
         $data = json_decode($json, true);
         $timezone = $data['timezone'] ?? null;
+        $lat      = $data['lat'] ?? null;
+        $lng      = $data['lng'] ?? null;
         if (!$timezone) {
             echo json_encode([
                 'status'  => 'error',
@@ -185,11 +185,11 @@ class AuthController extends Controller {
             exit;
         }
         $m = new Auth();
-        $result = $m->updateTimeZone($timezone);
+        $result = $m->updateTimeZone($timezone, $lat, $lng);
         if ($result === 'success') {
             echo json_encode([
                 'status'  => 'success',
-                'message' => 'timezone_updated_success'
+                'message' => 'timezone_and_location_updated_success'
             ]);
         } else {
             echo json_encode([
