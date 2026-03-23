@@ -147,7 +147,7 @@ function loadLoginHistory() {
                     <td><small>${row.usage ?? '-'}</small></td>
                     <td><code class="small">${row.ip_address}</code></td>
                     <td class="small text-muted text-truncate" style="max-width:150px"><i class="fa-solid ${icon} fa-lg ${color} me-2"></i> ${row.device_os} ${row.device_browser}</td>
-                    <td><code class="small">${row.login_location || '-'}</code></td>
+                    <td><span class="small">${row.login_location || '-'}</span></td>
                     <td><span class="badge ${badge} rounded-pill">${row.log_type.toUpperCase()}</span></td>
                 </tr>`;
         });
