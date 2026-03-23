@@ -307,63 +307,71 @@ function loadUsageHistory() {
             if (res.status && res.data.length > 0) {
                 let html = '';
                 res.data.forEach((log, index) => {
-                    const dateTimeParts = log.formatted_at.split(' ');
-                    const displayDate = dateTimeParts[0];
-                    const displayTime = dateTimeParts[1].substring(0, 5);
-                    let icon = 'fa-laptop';
-                    let color = 'text-secondary';
-                    if(log.device_os === 'Windows') {
-                        icon = 'fa-brands fa-windows';
-                        color = 'text-primary';
-                    } else if(log.device_os === 'Android') {
-                        icon = 'fa-brands fa-android';
-                        color = 'text-success';
-                    } else if(log.device_os === 'iPhone (iOS)') {
-                        icon = 'fa-mobile-screen-button';
-                        color = 'text-dark';
-                    } else if(log.device_os === 'iPad (iOS)') {
-                        icon = 'fa-tablet-screen-button';
-                        color = 'text-dark';
-                    } else if(log.device_os === 'Mac OS') {
-                        icon = 'fa-brands fa-apple';
-                        color = 'text-dark';
+                    const loginParts = log.formatted_at.split(' ');
+                    const displayDate = loginParts[0];
+                    const loginTime = loginParts[1].substring(0, 5);
+                    let logoutTime = '-';
+                    if (log.logout_at) {
+                        const logoutParts = log.logout_at.split(' ');
+                        logoutTime = logoutParts[1] ? logoutParts[1].substring(0, 5) : '-';
                     }
+                    let icon = 'fa-laptop', color = 'text-secondary';
+                    if(log.device_os === 'Windows') { icon = 'fa-brands fa-windows'; color = 'text-primary'; }
+                    else if(log.device_os === 'Android') { icon = 'fa-brands fa-android'; color = 'text-success'; }
+                    else if(log.device_os === 'iPhone (iOS)' || log.device_os === 'iOS') { icon = 'fa-mobile-screen-button'; color = 'text-dark'; }
+                    else if(log.device_os === 'Mac OS') { icon = 'fa-brands fa-apple'; color = 'text-dark'; }
                     html += `
                     <div class="activity-timeline-item">
                         <div class="activity-line"></div>
                         <div class="activity-dot ${historyOffset === 0 && index === 0 ? 'active' : ''}"></div>
-                        <div class="activity-card">
-                            <div class="activity-header d-flex justify-content-between align-items-start">
-                                <div>
-                                    <div class="activity-time-text">
-                                        <i class="fa-regular fa-calendar-check me-1"></i> ${displayDate} 
-                                        <i class="fa-regular fa-clock ms-2 me-1"></i> ${displayTime}
-                                    </div>
+                        <div class="activity-card premium-card">
+                            <div class="activity-header d-flex justify-content-between align-items-center">
+                                <div class="date-badge">
+                                    <i class="fa-regular fa-calendar me-1"></i> ${displayDate}
                                 </div>
-                                ${historyOffset === 0 && index === 0 ? `<span class="status-badge latest" data-i18n="latest"></span>` : ``}
+                                ${historyOffset === 0 && index === 0 ? `<span class="status-badge latest" data-i18n="latest">ล่าสุด</span>` : ``}
                             </div>
                             <div class="activity-body mt-3">
-                                <div class="device-info-box">
-                                    <div class="row align-items-center">
-                                        <div class="col-7 border-end">
-                                            <div class="d-flex align-items-center">
-                                                <i class="fa-solid ${icon} fa-lg ${color} me-2"></i>
-                                                <div style="overflow: hidden;">
-                                                    <small class="text-muted d-block" style="font-size: 0.7rem;" data-i18n="device"></small>
-                                                    <span class="device-text" title="${log.device_browser}">${log.device_os} ${log.device_browser}</span>
-                                                </div>
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="device-icon-wrapper ${color} shadow-sm">
+                                        <i class="fa-solid ${icon}"></i>
+                                    </div>
+                                    <div class="ms-3 flex-grow-1">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <span class="device-text-main d-block">${log.device_os}</span>
+                                                <small class="text-muted">${log.device_browser}</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <small class="text-muted d-block font-monospace" style="font-size: 0.7rem;">${log.ip_address}</small>
+                                                ${log.login_location ? `
+                                                    <i class="fa-solid fa-location-dot text-blue me-1"></i>${log.login_location}
+                                                ` : ''}
                                             </div>
                                         </div>
-                                        <div class="col-5 ps-3">
-                                            <small class="text-muted d-block" style="font-size: 0.7rem;">IP Address</small>
-                                            <span class="ip-text font-monospace">${log.ip_address}</span>
-                                        </div>
+                                    </div>
+                                </div>
+                                <div class="time-summary-box d-flex justify-content-around">
+                                    <div class="time-item">
+                                        <small data-i18n="login"></small>
+                                        <span>${loginTime}</span>
+                                    </div>
+                                    <div class="time-divider"></div>
+                                    <div class="time-item">
+                                        <small data-i18n="logout"></small>
+                                        <span>${logoutTime}</span>
+                                    </div>
+                                    <div class="time-divider"></div>
+                                    <div class="time-item">
+                                        <small data-i18n="usage"></small>
+                                        <span class="${log.duration !== '-' ? 'text-blue' : ''}">${log.duration || '-'}</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>`;
                 });
+
                 if (historyOffset === 0) $('#activityHistory').empty();
                 $('#activityHistory').append(html);
                 historyOffset += 10;
@@ -376,6 +384,7 @@ function loadUsageHistory() {
         complete: function() {
             isHistoryLoading = false;
             $('#scrollEnd').empty();
+            if (typeof updatei18n === 'function') updatei18n();
         }
     });
 }

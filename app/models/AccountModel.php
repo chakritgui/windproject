@@ -85,6 +85,19 @@ class AccountModel {
             $ua_info = $userAgent->parse_user_agent($row['login_device']);
             $row['device_os'] = $ua_info['os'];
             $row['device_browser'] = $ua_info['browser'];
+            $row['duration'] = '-'; 
+            if (!empty($row['logout_at'])) {
+                $login_time = new DateTime($row['login_at']);
+                $logout_time = new DateTime($row['logout_at']);
+                $interval = $login_time->diff($logout_time);
+                $hours = ($interval->days * 24) + $interval->h;
+                $row['duration'] = sprintf(
+                    '%02d:%02d:%02d',
+                    $hours,
+                    $interval->i,
+                    $interval->s
+                );
+            }
         }
         return $rows;
     }
