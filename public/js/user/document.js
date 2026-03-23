@@ -100,7 +100,7 @@ function renderListView(items) {
                 <div class="doc-actions">
                     <button class="dl-btn download-btn" data-id="${item.document_id}" data-path="${escapeHtml(item.document_path)}" data-file-name="${escapeHtml(item.document_file_name || '')}">
                         <i class="fa-solid fa-download"></i>
-                        <span data-i18n="download"></span>
+                        <span data-i18n="download">${langData['download'] || 'Download'}</span>
                     </button>
                 </div>
             </div>`;
@@ -126,7 +126,7 @@ function renderGridView(items) {
                 </div>
                 <button class="dl-btn download-btn" data-id="${item.document_id}" data-path="${escapeHtml(item.document_path)}" data-file-name="${escapeHtml(item.document_file_name || '')}">
                     <i class="fa-solid fa-download"></i>
-                    <span data-i18n="download"></span>
+                    <span data-i18n="download">${langData['download'] || 'Download'}</span>
                 </button>
          </div>`;
     }).join('');
