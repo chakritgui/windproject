@@ -51,12 +51,25 @@ class DashboardModel {
         return $chartData;
     }
     public function loginHistory() {
-        $sql = "SELECT l.logs_id, CONCAT(m.first_name, ' ', m.last_name) AS member_name, l.login_at, l.logout_at, l.log_type, l.ip_address, l.login_device FROM wp_login_logs l LEFT JOIN wp_members m ON l.member_id = m.member_id ORDER BY l.login_at DESC LIMIT 20";
+        $sql = "SELECT l.logs_id, CONCAT(m.first_name, ' ', m.last_name) AS member_name, l.login_at, l.logout_at, l.log_type, l.ip_address, l.login_device, l.login_location FROM wp_login_logs l LEFT JOIN wp_members m ON l.member_id = m.member_id ORDER BY l.login_at DESC LIMIT 20";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $history = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $userAgent = new AgentHelper($this->db);
         foreach ($history as &$entry) {
+            $usage = '-';
+            if (!empty($entry['login_at']) && !empty($entry['logout_at'])) {
+                try {
+                    $startTime = new DateTime($entry['login_at']);
+                    $endTime   = new DateTime($entry['logout_at']);
+                    $interval = $startTime->diff($endTime);
+                    $totalHours = ($interval->days * 24) + $interval->h;
+                    $usage = sprintf('%02d:%02d:%02d', $totalHours, $interval->i, $interval->s);
+                } catch (Exception $e) {
+                    $usage = '-';
+                }
+            }
+            $entry['usage'] = $usage;
             $entry['login_at'] = convertTimeZone($entry['login_at'], 'd/m/Y H:i:s');
             $entry['logout_at'] = $entry['logout_at'] ? convertTimeZone($entry['logout_at'], 'd/m/Y H:i:s') : null;
             $ua_info = $userAgent->parse_user_agent($entry['login_device']);

@@ -143,9 +143,11 @@ function loadLoginHistory() {
                 <tr>
                     <td><div class="fw-bold">${row.member_name}</div></td>
                     <td><small>${row.login_at}</small></td>
-                    <td class="hide-mobile"><small>${row.logout_at ?? '-'}</small></td>
+                    <td><small>${row.logout_at ?? '-'}</small></td>
+                    <td><small>${row.usage ?? '-'}</small></td>
                     <td><code class="small">${row.ip_address}</code></td>
-                    <td class="hide-mobile small text-muted text-truncate" style="max-width:150px"><i class="fa-solid ${icon} fa-lg ${color} me-2"></i> ${row.device_os} ${row.device_browser}</td>
+                    <td class="small text-muted text-truncate" style="max-width:150px"><i class="fa-solid ${icon} fa-lg ${color} me-2"></i> ${row.device_os} ${row.device_browser}</td>
+                    <td><code class="small">${row.login_location || '-'}</code></td>
                     <td><span class="badge ${badge} rounded-pill">${row.log_type.toUpperCase()}</span></td>
                 </tr>`;
         });
