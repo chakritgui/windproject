@@ -129,7 +129,6 @@
     border-radius: var(--radius);
     padding: 16px 18px;
     display: flex;
-    align-items: center;
     gap: 20px;
     transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
     box-shadow: 0 2px 12px rgba(45, 127, 193, 0.06);
