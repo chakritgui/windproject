@@ -337,15 +337,19 @@ function loadUsageHistory() {
                                         <i class="fa-solid ${icon}"></i>
                                     </div>
                                     <div class="ms-3 flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <span class="device-text-main d-block">${log.device_os}</span>
+                                        <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-start align-items-sm-center">
+                                            <div class="mb-1 mb-sm-0">
+                                                <span class="device-text-main d-block fw-bold">${log.device_os}</span>
                                                 <small class="text-muted">${log.device_browser}</small>
                                             </div>
-                                            <div class="text-end">
-                                                <small class="text-muted d-block font-monospace" style="font-size: 0.7rem;">${log.ip_address}</small>
+                                            <div class="text-start text-sm-end">
+                                                <small class="text-muted d-block font-monospace" style="font-size: 0.7rem;">
+                                                    ${log.ip_address}
+                                                </small>
                                                 ${log.login_location ? `
-                                                    <i class="fa-solid fa-location-dot text-blue me-1"></i>${log.login_location}
+                                                    <span class="location-link" style="font-size: 0.75rem; color: #377dff;">
+                                                        <i class="fa-solid fa-location-dot me-1"></i>${log.login_location}
+                                                    </span>
                                                 ` : ''}
                                             </div>
                                         </div>
