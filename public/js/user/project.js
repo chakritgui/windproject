@@ -186,7 +186,10 @@ function renderView(data, isNewSearch) {
                 ${isContent ? `<div onclick="openContent('${item.content_slug}', 'view')">` : ''}
                     <div class="grid-thumb ${card_class}">${thumb}</div>
                     <div class="grid-body">
-                        <div class="grid-title">${title} ${badge}</div>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="grid-title" style="flex: 1;">${title}</div>
+                            <div class="grid-badge-top" style="margin-left: 10px;">${badge}</div>
+                        </div>
                         ${isContent ? `
                             <div class="small text-muted mt-1">
                                 <i class="fa-regular fa-calendar"></i> ${item.created_at}
@@ -210,7 +213,7 @@ function renderView(data, isNewSearch) {
                 <div class="d-flex align-items-center">
                     <div class="folder-icon-box me-3 flex-shrink-0">${thumb}</div>
                     <div class="flex-grow-1 overflow-hidden">
-                        <div class="doc-title">${title} ${badge}</div>
+                        <div class="doc-title">${title}</div>
                         ${isContent ? `
                             <div class="row g-2 mt-2">
                                 <div class="col-12 col-sm-6">
@@ -230,7 +233,7 @@ function renderView(data, isNewSearch) {
                         `}
                     </div>
                     <div class="ms-2">
-                        ${isContent ? '' : '<i class="fa-solid fa-chevron-right text-muted"></i>'}
+                        ${isContent ? '' : badge}
                     </div>
                 </div>
             </div>
