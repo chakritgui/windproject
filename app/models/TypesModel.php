@@ -123,8 +123,7 @@ class TypesModel {
         $type_id = $data['type_id'] ?? null;
         $type_name = $data['type_name'] ?? '';
         $type_name_display = $data['type_name_display'] ?? '';
-        $type_icon = $data['type_icon'] ?? '';
-        $ex_type_icon = $data['ex_type_icon'] ?? '';
+        $ex_cover = $data['ex_cover'] ?? '';
         if ($this->isDuplicateContractName($type_name, $type_id)) {
             return [
                 'status'  => false,
@@ -158,11 +157,11 @@ class TypesModel {
         $stmt->bindValue(':status', $status);
         $result = $stmt->execute();
         if (!$type_id) $type_id = $pdo->lastInsertId();
-        if(!$ex_type_icon) {
+        if(!$ex_cover) {
             $this->handleFileDelete($type_id);
         }
-        if (isset($_FILES['type_icon']) && $_FILES['type_icon']['error'] === UPLOAD_ERR_OK) {
-            $this->handleFileUpload($type_id, $_FILES['type_icon']);
+        if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
+            $this->handleFileUpload($type_id, $_FILES['cover']);
         }
         return $result;
     }

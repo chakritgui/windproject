@@ -7,11 +7,14 @@ class ProjectModel {
     public function get($start = 0, $length = 20, $filters = [], $search = '', $order = 'desc') {
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
         $sql = "SELECT 
-                f.id, f.name as folder_name, f.slug, f.level, f.parent_id, f.created_at, f.type, f.content_id, 
-                c.cover, c.content_slug, 
+                f.id, f.name as folder_name, f.slug, f.level, f.parent_id, f.created_at, f.type, f.content_id, c.content_slug, 
                 iEn.status as en_status, iLo.status as lo_status, iTh.status as th_status,
                 iEn.content_subject as en_subject, iLo.content_subject as lo_subject, iTh.content_subject as th_subject,
-                f.status, f.sub_type
+                f.status, f.sub_type,
+                CASE
+                    WHEN f.type = 'folder' THEN f.cover
+                    ELSE c.cover
+                END as cover
             FROM wp_folder f 
             LEFT JOIN wp_content c on c.content_id = f.content_id
             LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang='en'
@@ -65,27 +68,44 @@ class ProjectModel {
     public function save($data){
         $parentId = (!empty($data['parent_id']) && $data['parent_id'] > 0) ? $data['parent_id'] : null;
         if ($data['folder_id'] > 0) {
-            $slug = $this->generateUniqueSlug($data['folder_name'], $parentId, $data['folder_id']);
-            $sql = "UPDATE wp_folder SET name = :name, slug = :slug, status = :status, updated_at = NOW() WHERE id = :id";
+            $folderId = $data['folder_id'];
+            $slug = $this->generateUniqueSlug($data['folder_name'], $parentId, $folderId);
+            $sql = "UPDATE wp_folder 
+                    SET name = :name, slug = :slug, status = :status, updated_at = NOW() 
+                    WHERE id = :id";
             $stmt = $this->db->prepare($sql);
-            return $stmt->execute([
+            $success = $stmt->execute([
                 ':name' => $data['folder_name'],
                 ':slug' => $slug,
                 ':status' => $data['status'],
-                ':id'   => $data['folder_id']
+                ':id'   => $folderId
             ]);
         } else {
-            $slug = $this->generateUniqueSlug($data['folder_name'],$parentId);
-            $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, created_at, updated_at) VALUES (:name, :slug, :parent_id, :level, :status, 'folder', NOW(), NOW())";
+            $slug = $this->generateUniqueSlug($data['folder_name'], $parentId);
+            $sql = "INSERT INTO wp_folder 
+                    (name, slug, parent_id, level, status, type, created_at, updated_at) 
+                    VALUES (:name, :slug, :parent_id, :level, :status, 'folder', NOW(), NOW())";
             $stmt = $this->db->prepare($sql);
-            return $stmt->execute([
+            $success = $stmt->execute([
                 ':name'      => $data['folder_name'],
                 ':slug'      => $slug,
                 ':parent_id' => $parentId,
                 ':level'     => $data['level'],
-                ':status'     => $data['status']
+                ':status'    => $data['status']
             ]);
+            $folderId = $this->db->lastInsertId();
         }
+        if (!$success) {
+            return false;
+        }
+        $ex_cover = $data['ex_cover'] ?? '';
+        if (!$ex_cover && empty($_FILES['cover']['name'])) {
+            $this->handleFileDelete($folderId);
+        }
+        if (!empty($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
+            $this->handleFileUpload($folderId, $_FILES['cover']);
+        }
+        return true;
     }
     private function generateSlug($text){
         $text = trim($text);
@@ -119,11 +139,43 @@ class ProjectModel {
         return $slug;
     }
     public function data($data) {
-        $folder_id = intval($data['folder_id']);
-        $sql = "SELECT id, name as folder_name, parent_id, level, status FROM wp_folder WHERE id = :id AND status <> 'deleted' LIMIT 1";
+        $folder_id = intval($data['folder_id'] ?? 0);
+        if ($folder_id <= 0) {
+            return [
+                'id' => null,
+                'folder_name' => '',
+                'parent_id' => null,
+                'level' => 1,
+                'status' => 'active',
+                'cover' => null
+            ];
+        }
+        $sql = "SELECT 
+                    id, 
+                    name as folder_name, 
+                    parent_id, 
+                    level, 
+                    status, 
+                    cover 
+                FROM wp_folder 
+                WHERE id = :id 
+                AND status <> 'deleted' 
+                LIMIT 1";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':id' => $folder_id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$result) {
+            return [
+                'id' => null,
+                'folder_name' => '',
+                'parent_id' => null,
+                'level' => 1,
+                'status' => 'active',
+                'cover' => null
+            ];
+        }
+
+        return $result;
     }
     public function delete($data) {
         $sql = "UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE id = :id";
@@ -131,12 +183,6 @@ class ProjectModel {
         return $stmt->execute([
             ':id'   => $data['folder_id']
         ]);
-    }
-    private function formatRow($row) {
-        if (!empty($row['created_at'])) {
-            $row['created_at'] = convertTimeZone($row['created_at'], 'd/m/Y H:i:s');
-        }
-        return $row;
     }
     private function buildListWhere($filters) {
         $where  = " WHERE  
@@ -439,6 +485,87 @@ class ProjectModel {
                 'status' => false,
                 'message' => $e->getMessage()
             ];
+        }
+    }
+    private function handleFileUpload($folder_id, $file) {
+        $this->handleFileDelete($folder_id);  
+        $dir = "uploads/folder/";
+        $baseDir = dirname(__DIR__, 2) . '/' . $dir;
+        if (!is_dir($baseDir)) mkdir($baseDir, 0755, true);
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $image = false;
+        switch ($ext) {
+            case 'jpeg':
+            case 'jpg':  $image = @imagecreatefromjpeg($file['tmp_name']); break;
+            case 'png':   $image = @imagecreatefrompng($file['tmp_name']);  break;
+            case 'gif':   $image = @imagecreatefromgif($file['tmp_name']);  break;
+            case 'webp':  $image = @imagecreatefromwebp($file['tmp_name']); break;
+        }
+        if ($image) {
+            $newName = $folder_id . "_" . time() . ".webp";
+            $targetFull = $baseDir . $newName;
+            $dbPath = $dir . $newName;
+            $quality = 85;
+            do {
+                ob_start();
+                imagewebp($image, null, $quality);
+                $imageData = ob_get_contents();
+                ob_end_clean();
+                if (strlen($imageData) <= 1048576 || $quality <= 20) {
+                    break;
+                }
+                $quality -= 10;
+            } while ($quality > 10);
+            if (file_put_contents($targetFull, $imageData)) {
+                $this->db->prepare("UPDATE wp_folder SET cover=? WHERE id =?")->execute([$dbPath, $folder_id]);
+            }
+            imagedestroy($image);
+
+        } else {
+            $newName = $folder_id . "_" . time() . "." . $ext;
+            $targetFull = $baseDir . $newName;
+            $dbPath = $dir . $newName;
+            if (move_uploaded_file($file['tmp_name'], $targetFull)) {
+                $this->db->prepare("UPDATE wp_folder SET cover=? WHERE id =?")->execute([$dbPath, $folder_id]);
+            }
+        }
+    }
+    private function handleFileDelete($folder_id){
+        $stmt = $this->db->prepare("SELECT cover FROM wp_folder WHERE id = ?");
+        $stmt->execute([$folder_id]);
+        $old = $stmt->fetchColumn();
+        if (!$old) {
+            return;
+        }
+        $basePath = realpath(dirname(__DIR__, 2));
+        if ($basePath === false) {
+            error_log("Base path not found");
+            return;
+        }
+        $old = ltrim($old, '/');
+        if (strpos($old, '..') !== false) {
+            error_log("Invalid file path: " . $old);
+            return;
+        }
+        $oldPath = $basePath . '/' . $old;
+        if (!file_exists($oldPath)) {
+            error_log("File not found: " . $oldPath);
+            return;
+        }
+        if (!is_file($oldPath)) {
+            error_log("Not a file: " . $oldPath);
+            return;
+        }
+        $this->db->beginTransaction();
+        try {
+            if (!unlink($oldPath)) {
+                throw new Exception("Cannot delete file: " . $oldPath);
+            }
+            $this->db->prepare("UPDATE wp_folder SET cover = NULL WHERE id = ?")->execute([$folder_id]);
+            $this->db->commit();
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log($e->getMessage());
         }
     }
 }

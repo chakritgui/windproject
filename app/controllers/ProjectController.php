@@ -30,6 +30,8 @@ class ProjectController extends BaseController {
             'parent_id'   => intval($_POST['parent_id'] ?? 0),
             'level'       => intval($_POST['level'] ?? 1),
             'status'       => $_POST['status'] ?? 'active',
+            'cover' => $_FILES['cover'] ?? null,
+            'ex_cover' => $_POST['ex_cover'] ?? null,
         ];
         $this->json(['status' => $this->model->save($data)]);
     }
@@ -38,7 +40,6 @@ class ProjectController extends BaseController {
             'folder_id' => intval($_POST['folder_id'] ?? 0)
         ];
         $result = $this->model->data($data);
-        
         if ($result) {
             $this->json(['status' => 'success', 'data' => $result]);
         } else {

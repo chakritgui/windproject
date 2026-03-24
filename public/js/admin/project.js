@@ -106,7 +106,7 @@ function renderTable(data, isNewSearch) {
             </div>`;
         const globalIndex = cachedData.length - data.length + index;
         let icon = 'fa-folder-open text-warning';
-        if (item.type === 'content') icon = 'fa-regular fa-newspaper text-primary';
+        if (item.type === 'content') icon = (item.sub_type == 'news') ? 'fa-regular fa-newspaper text-primary' : 'fa-solid fa-diagram-project text-warning';
         const badge = item.child_count > 0 ? `<span class="badge rounded-pill bg-light text-dark border ms-2" style="font-size: 0.7rem;">${item.child_count}</span>` : '';
         let folder_name = '-';
         if (item.type === 'content') {
@@ -129,14 +129,10 @@ function renderTable(data, isNewSearch) {
                 </td>
                 <td class="text-center" style="width: 80px;">
                     <div style="width: 50px; height: 50px; line-height: 50px; overflow: hidden; margin: 0 auto; border-radius: 4px; border: 1px solid #eee;">
-                    ${(item.type === 'content') ? `
-                        ${item.cover ? 
-                            `<img src="${BASE_URL}/${item.cover}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';" loading="lazy">` : 
-                            `<i class="fa-solid ${icon} fa-3x"></i>`
-                        }
-                    ` : `
-                        <i class="fa-solid ${icon} fa-3x"></i>    
-                    `}
+                    ${item.cover ? 
+                        `<img src="${BASE_URL}/${item.cover}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';" loading="lazy">` : 
+                        `<i class="fa-solid ${icon} fa-3x"></i>`
+                    }
                     </div>
                 </td>
                 <td>
@@ -369,37 +365,16 @@ function manageFolder(folder_id = '') {
         <button type="button" class="btn btn-primary me-2 save-folder">${langData['save'] || 'Save'}</button>
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || 'Close'}</button>
     `);
-    modalEl.find(".modal-body").html(`
-        <input type="hidden" name="folder_id" id="folder_id" value="${folder_id ?? ''}">
-        <div class="mb-3">
-            <label class="mb-2 required">${langData['name'] || 'Name'}</label>
-            <input type="text" class="form-control obj-required" id="folder_name" maxlength="255">
-        </div>
-        <div class="row g-3">
-            <div class="col-md-4">
-                <label class="mb-2 mt-3 required">${langData['status'] || 'Status'}</label>
-                <select id="status" class="form-select obj-required"></select>
-            </div>
-        </div>
-    `);
-    initSelect2Remote('#status', `${BASE_URL}/api/project.filter`, { type: 'status' });
-    if(folder_id) {
+    if (folder_id) {
         $.ajax({
             url: `${BASE_URL}/api/project.info`,
             method: 'POST',
-            data: { folder_id: folder_id },
+            data: { folder_id },
             dataType: 'json',
             success: function(res){
                 if (res.status === 'success') {
-                    $('#folder_name').val(res.data.folder_name);
-                    $('#folder_id').val(res.data.id);
-                    $('#windModal').find(".modal-title").text(langData['edit_folder'] || 'Edit Folder');
-                    let status = (res.data.status) ? res.data.status : 'active';
-                    if (status) {
-                        let statusName = status.charAt(0).toUpperCase() + status.slice(1);
-                        var newOptionStatus = new Option(statusName, status, true, true);
-                        $('#status').append(newOptionStatus).trigger('change');
-                    }
+                    renderForm(res.data);
+                    modalEl.find(".modal-title").text(langData['edit_folder'] || 'Edit Folder');
                 } else {
                     showError(langData['cannot_load']);
                 }
@@ -409,12 +384,34 @@ function manageFolder(folder_id = '') {
             }
         });
     } else {
-        let status = 'active';
-        if (status) {
-            let statusName = status.charAt(0).toUpperCase() + status.slice(1);
-            var newOptionStatus = new Option(statusName, status, true, true);
-            $('#status').append(newOptionStatus).trigger('change');
-        }
+        renderForm({
+            id: '',
+            folder_name: '',
+            status: 'active',
+            cover: ''
+        });
+    }
+    function renderForm(data) {
+        modalEl.find(".modal-body").html(`
+            <input type="hidden" id="folder_id" value="${data.id || ''}">
+            ${renderCover(data || '', 'folder')}
+            <div class="mb-3">
+                <label class="mb-2 required">${langData['name'] || 'Name'}</label>
+                <input type="text" class="form-control obj-required" id="folder_name" maxlength="255" value="${data.folder_name || ''}">
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="mb-2 mt-3 required">${langData['status'] || 'Status'}</label>
+                    <select id="status" class="form-select obj-required"></select>
+                </div>
+            </div>
+        `);
+        initSelect2Remote('#status', `${BASE_URL}/api/project.filter`, { type: 'status' });
+        let status = data.status || 'active';
+        let statusName = status.charAt(0).toUpperCase() + status.slice(1);
+        let option = new Option(statusName, status, true, true);
+        $('#status').append(option).trigger('change');
+        initCoverUpload();
     }
 }
 $(document).on('click', '.save-folder', function () {
@@ -444,6 +441,11 @@ function saveFolder() {
     formData.append("status", $("#status").val() || "active");
     formData.append("parent_id", currentFolderId || 0);
     formData.append("level", currentLevel || 1);
+    formData.append("ex_cover", $("#ex_cover").val());
+    const cover = $("#cover")[0].files[0] || null;
+    if (cover) {
+        formData.append("cover", cover);
+    }
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `
@@ -461,6 +463,7 @@ function saveFolder() {
         data: formData,
         contentType: false,
         processData: false,
+        dataType: "json",
         xhr: function () {
             let xhr = new window.XMLHttpRequest();
             xhr.upload.addEventListener("progress", function (e) {

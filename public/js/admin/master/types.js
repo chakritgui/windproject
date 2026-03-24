@@ -161,7 +161,7 @@ $(document).on('click', '.manage-type', function() {
                 modalEl.find(".modal-body").html(`
                     <input type="hidden" name="type_id" id="type_id" value="${type_id ?? ''}">
                     ${renderCover(typeData, 'poles')}
-                    <input type="hidden" id="ex_type_icon" value="${typeData.type_icon ? typeData.type_icon : ''}">
+                    <input type="hidden" id="ex_cover" value="${typeData.type_icon ? typeData.type_icon : ''}">
                     <div class="mb-3">
                         <label class="mb-2 required">${langData['type_name'] || 'Type Name'}</label>
                         <input type="text" class="form-control obj-required" id="type_name" maxlength="255">
@@ -197,61 +197,6 @@ $(document).on('click', '.manage-type', function() {
         }
     });
 });
-function initCoverUpload() {
-    const dropArea = document.getElementById("coverDropArea");
-    const input = document.getElementById("type_icon");
-    const preview = document.getElementById("coverPreview");
-    const label = document.getElementById("coverDropLabel");
-    const btnRemove = document.getElementById("btnRemoveCover");
-    const exIcon = document.getElementById("ex_type_icon");
-    dropArea.addEventListener("click", () => input.click());
-    ["dragenter", "dragover"].forEach(ev =>
-        dropArea.addEventListener(ev, e => {
-            e.preventDefault();
-            dropArea.classList.add("border-primary");
-        })
-    );
-    ["dragleave", "drop"].forEach(ev =>
-        dropArea.addEventListener(ev, e => {
-            e.preventDefault();
-            dropArea.classList.remove("border-primary");
-        })
-    );
-    dropArea.addEventListener("drop", e => {
-        const file = e.dataTransfer.files[0];
-        if (file) showPreview(file);
-    });
-    input.addEventListener("change", e => {
-        const file = e.target.files[0];
-        if (file) showPreview(file);
-    });
-    btnRemove.addEventListener("click", e => {
-        e.stopPropagation();
-        input.value = "";
-        preview.src = "";
-        preview.classList.add("d-none");
-        label.classList.remove("d-none");
-        btnRemove.classList.add("d-none");
-        exIcon.value = "";
-    });
-    function showPreview(file) {
-        const validExt = ["jpg","jpeg","png","gif","webp"];
-        const ext = file.name.split(".").pop().toLowerCase();
-        if (!file.type.startsWith("image/") && !validExt.includes(ext)) {
-            showWarning(langData['allow_images_only'] || 'Allow images only (jpg, jpeg, png, gif, webp)');
-            input.value = "";
-            return;
-        } 
-        const reader = new FileReader();
-        reader.onload = e => {
-            preview.src = e.target.result;
-            preview.classList.remove("d-none");
-            label.classList.add("d-none");
-            btnRemove.classList.remove("d-none");
-        };
-        reader.readAsDataURL(file);
-    }
-}
 $(document).on('click', '.save-type', function () {
     let errors = [];
     $('.obj-required').each(function () {
@@ -278,10 +223,10 @@ function saveType() {
     formData.append("type_name", $("#type_name").val() || "");
     formData.append("type_name_display", $("#type_name_display").val() || "");
     formData.append("status", $("#status").val());
-    formData.append("ex_type_icon", $("#ex_type_icon").val());
-    const type_icon = $("#cover")[0].files[0] || null;
-    if (type_icon) {
-        formData.append("type_icon", type_icon);
+    formData.append("ex_cover", $("#ex_cover").val());
+    const cover = $("#cover")[0].files[0] || null;
+    if (cover) {
+        formData.append("cover", cover);
     }
     Swal.fire({
         title: langData['saving'] || 'Saving...',

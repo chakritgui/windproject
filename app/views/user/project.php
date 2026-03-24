@@ -36,10 +36,17 @@
         <div class="header-section toolbar">
             <div class="breadcrumb-area w-100 d-flex align-items-center justify-content-between flex-wrap">
                 <nav aria-label="breadcrumb" class="breadcrumb-wrapper">
-                    <ol class="breadcrumb mb-0" id="breadcrumb">
-                        </ol>
+                    <ol class="breadcrumb mb-0" id="breadcrumb"></ol>
                 </nav>
                 <div class="header-stats">
+                    <div class="view-group">
+                        <button class="view-btn active" id="vList" onclick="setView('list')" title="List View">
+                            <i class="fa-solid fa-list"></i> <span data-i18n="list"></span>
+                        </button>
+                        <button class="view-btn" id="vGrid" onclick="setView('grid')" title="Grid View">
+                            <i class="fa-solid fa-th-large"></i> <span data-i18n="grid"></span>
+                        </button>
+                    </div>
                     <button class="toolbar-btn" id="sortBtn" onclick="toggleSort()">
                         <i class="fa-solid fa-sort"></i>
                         <span id="sortLabel" data-i18n="newest"></span>

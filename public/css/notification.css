@@ -282,6 +282,6 @@
     .notif-dropdown { 
         width: calc(100vw - 16px); 
         border-radius: 16px !important;
-        right: -110px !important;
+        right: -112px !important;
     }
 }

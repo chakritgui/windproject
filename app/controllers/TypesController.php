@@ -51,8 +51,8 @@ class TypesController extends BaseController {
             'type_id' => intval($_POST['type_id'] ?? 0),
             'type_name' => $_POST['type_name'] ?? '',
             'type_name_display' => $_POST['type_name_display'] ?? '',
-            'type_icon' => $_FILES['type_icon'] ?? null,
-            'ex_type_icon' => $_FILES['ex_type_icon'] ?? null,
+            'cover' => $_FILES['cover'] ?? null,
+            'ex_cover' => $_POST['ex_cover'] ?? null,
             'status' => $_POST['status'] ?? ''
         ];
         $result = $this->model->save($data);
