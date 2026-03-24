@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 02, 2026 at 04:39 AM
+-- Generation Time: Mar 24, 2026 at 05:46 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -254,6 +254,37 @@ CREATE TABLE `wp_contract` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `wp_disclaimers`
+--
+
+CREATE TABLE `wp_disclaimers` (
+  `id` int(11) NOT NULL,
+  `version` int(11) NOT NULL DEFAULT '1',
+  `is_active` tinyint(1) DEFAULT '0',
+  `require_accept` tinyint(1) DEFAULT '1',
+  `show_mode` enum('once','every_login','version_change') NOT NULL DEFAULT 'version_change',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wp_disclaimer_translations`
+--
+
+CREATE TABLE `wp_disclaimer_translations` (
+  `id` int(11) NOT NULL,
+  `disclaimer_id` int(11) NOT NULL,
+  `lang_code` enum('th','en','lo') NOT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `content` longtext
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `wp_documents`
 --
 
@@ -320,6 +351,7 @@ CREATE TABLE `wp_folder` (
   `parent_id` bigint(20) DEFAULT NULL,
   `content_id` bigint(20) DEFAULT NULL,
   `folder_order` bigint(20) DEFAULT NULL,
+  `cover` longtext,
   `status` enum('active','inactive','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
@@ -403,7 +435,8 @@ CREATE TABLE `wp_login_logs` (
   `logout_at` datetime DEFAULT NULL,
   `login_device` longtext,
   `timezone` longtext,
-  `session_id` longtext
+  `session_id` longtext,
+  `login_location` longtext
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -460,6 +493,7 @@ CREATE TABLE `wp_members` (
   `email` varchar(200) DEFAULT NULL,
   `phone` varchar(20) DEFAULT NULL,
   `role` enum('user','administrator','admin') DEFAULT 'user',
+  `privileges_id` bigint(20) DEFAULT NULL,
   `status` enum('active','inactive','banned','deleted') DEFAULT 'active',
   `last_login_at` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -479,6 +513,20 @@ CREATE TABLE `wp_members_language` (
   `id` bigint(20) NOT NULL,
   `member_id` bigint(20) NOT NULL,
   `language` enum('en','lo','th') NOT NULL DEFAULT 'en',
+  `updated_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wp_members_privileges`
+--
+
+CREATE TABLE `wp_members_privileges` (
+  `privileges_id` bigint(20) NOT NULL,
+  `privileges_name` varchar(255) NOT NULL,
+  `status` enum('active','inactive','deleted') NOT NULL DEFAULT 'active',
+  `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -702,6 +750,20 @@ CREATE TABLE `wp_type` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `wp_user_disclaimer_accepts`
+--
+
+CREATE TABLE `wp_user_disclaimer_accepts` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `disclaimer_id` int(11) NOT NULL,
+  `version` int(11) NOT NULL,
+  `accepted_at` datetime DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `wp_winds`
 --
 
@@ -817,6 +879,21 @@ ALTER TABLE `wp_contract`
   ADD UNIQUE KEY `uq_contract_name` (`contract_name`);
 
 --
+-- Indexes for table `wp_disclaimers`
+--
+ALTER TABLE `wp_disclaimers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_active` (`is_active`);
+
+--
+-- Indexes for table `wp_disclaimer_translations`
+--
+ALTER TABLE `wp_disclaimer_translations`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_lang` (`disclaimer_id`,`lang_code`),
+  ADD KEY `idx_disclaimer` (`disclaimer_id`);
+
+--
 -- Indexes for table `wp_documents`
 --
 ALTER TABLE `wp_documents`
@@ -914,6 +991,12 @@ ALTER TABLE `wp_members_language`
   ADD UNIQUE KEY `member_id` (`member_id`);
 
 --
+-- Indexes for table `wp_members_privileges`
+--
+ALTER TABLE `wp_members_privileges`
+  ADD PRIMARY KEY (`privileges_id`);
+
+--
 -- Indexes for table `wp_menus`
 --
 ALTER TABLE `wp_menus`
@@ -1009,6 +1092,14 @@ ALTER TABLE `wp_type`
   ADD KEY `idx_type_status` (`status`,`type_id`);
 
 --
+-- Indexes for table `wp_user_disclaimer_accepts`
+--
+ALTER TABLE `wp_user_disclaimer_accepts`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_user_version` (`user_id`,`disclaimer_id`,`version`),
+  ADD KEY `idx_user` (`user_id`);
+
+--
 -- Indexes for table `wp_winds`
 --
 ALTER TABLE `wp_winds`
@@ -1095,6 +1186,18 @@ ALTER TABLE `wp_contract`
   MODIFY `contract_id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `wp_disclaimers`
+--
+ALTER TABLE `wp_disclaimers`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `wp_disclaimer_translations`
+--
+ALTER TABLE `wp_disclaimer_translations`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `wp_documents`
 --
 ALTER TABLE `wp_documents`
@@ -1173,6 +1276,12 @@ ALTER TABLE `wp_members_language`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `wp_members_privileges`
+--
+ALTER TABLE `wp_members_privileges`
+  MODIFY `privileges_id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `wp_menus`
 --
 ALTER TABLE `wp_menus`
@@ -1249,6 +1358,12 @@ ALTER TABLE `wp_setting`
 --
 ALTER TABLE `wp_type`
   MODIFY `type_id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `wp_user_disclaimer_accepts`
+--
+ALTER TABLE `wp_user_disclaimer_accepts`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `wp_winds`

@@ -43,12 +43,17 @@ function initSummernote() {
         dialogsInBody: true,
         height: 450,
         dropdownParent: document.body,
+        container: 'body',
         toolbar: [
-            ['style', ['bold', 'italic', 'underline']],
-            ['para', ['ul', 'ol']],
-            ['insert', ['picture', 'link']],
-            ['custom', ['img25', 'img50', 'img100']],
-            ['view', ['codeview']]
+            ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
+            ['font', ['strikethrough', 'superscript', 'subscript']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']],
+            ['insert', ['picture', 'link', 'video', 'table', 'hr']],
+            ['custom', ['img25', 'img50', 'img75', 'img100']],
+            ['view', ['fullscreen', 'codeview', 'help']] 
         ],
         buttons: {
             img25: function () {
@@ -66,6 +71,15 @@ function initSummernote() {
                     tooltip: 'Image 50%',
                     click: function () {
                         resizeImage('50%');
+                    }
+                }).render();
+            },
+            img75: function () {
+                return $.summernote.ui.button({
+                    contents: '75%',
+                    tooltip: 'Image 75%',
+                    click: function () {
+                        resizeImage('75%');
                     }
                 }).render();
             },
@@ -92,6 +106,34 @@ function initSummernote() {
             onChange: function(contents) {
                 handleRemovedImages(this, contents);
             }
+        }
+    });
+    $(document).on('click', '.note-btn.dropdown-toggle', function (e) {
+        e.preventDefault();
+        const $dropdown = $(this).next('.note-dropdown-menu');
+        const isOpen = $dropdown.hasClass('show');
+        $('.note-dropdown-menu').removeClass('show');
+        if (!isOpen) {
+            $dropdown.addClass('show');
+            $dropdown.css({
+                'display': 'block',
+                'z-index': '9999',
+                'position': 'absolute'
+            });
+        } else {
+            $dropdown.removeClass('show').css('display', 'none');
+        }
+        e.stopPropagation();
+    });
+    $(document).on('click', '.note-dropdown-menu .dropdown-item, .note-color-btn, .note-dropdown-menu button', function () {
+        const $dropdown = $(this).closest('.note-dropdown-menu');
+        setTimeout(function() {
+            $dropdown.removeClass('show').hide();
+        }, 150); 
+    });
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest('.note-btn-group').length) {
+            $('.note-dropdown-menu').removeClass('show').css('display', 'none');
         }
     });
 }
@@ -135,9 +177,19 @@ function handleRemovedImages(editor, contents) {
     oldImages = currentImgs;
 }
 function resizeImage(width) {
-    let img = document.getSelection()?.anchorNode?.parentElement;
+    let $summernote = $('.summernote'); 
+    let img = $summernote.summernote('restoreTarget'); 
+    if (!img || img.tagName !== 'IMG') {
+        img = $('.note-editable').find('img.note-selected')[0];
+    }
     if (img && img.tagName === 'IMG') {
-        img.style.width = width;
+        $(img).css({
+            'width': width,
+            'height': 'auto'
+        });
+        $summernote.summernote('layoutInfo').editable.trigger('keyup');
+    } else {
+        console.warn("Please select an image first!");
     }
 }
 $(document).on('click', '.note-modal .close', function () {
