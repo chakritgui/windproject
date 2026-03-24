@@ -22,22 +22,27 @@
     <ul class="nav nav-pills mb-4" id="mainTabs" role="tablist">
          <li class="nav-item" role="presentation">
             <button class="nav-link active" id="member-tab" data-bs-toggle="pill" data-bs-target="#member_management" data-page="member" type="button">
-                <i class="fa-solid fa-users"></i> <span data-i18n="member"></span>
+                <i class="fa-solid fa-users me-2"></i><span data-i18n="member"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="history-tab" data-bs-toggle="pill" data-bs-target="#login_history" data-page="history" type="button">
-                <i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="usage_history"></span>
+                <i class="fa-solid fa-clock-rotate-left me-2"></i><span data-i18n="usage_history"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="request-tab" data-bs-toggle="pill" data-bs-target="#change_request" data-page="request" type="button">
-                <i class="fa-solid fa-user-lock"></i> <span data-i18n="password_change_request"></span>
+                <i class="fa-solid fa-user-lock me-2"></i><span data-i18n="password_change_request"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="setting-tab" data-bs-toggle="pill" data-bs-target="#setting" data-page="setting" type="button">
-                <i class="fa-solid fa-list-check"></i> <span data-i18n="permission_edit_data"></span>
+                <i class="fa-solid fa-list-check me-2"></i><span data-i18n="permission_edit_data"></span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="user-privileges-tab" data-bs-toggle="pill" data-bs-target="#privileges_tab" data-page="privileges" type="button">
+                <i class="fa-solid fa-user-shield me-2"></i><span data-i18n="user_privileges"></span>
             </button>
         </li>
     </ul>
@@ -49,6 +54,10 @@
                         <div class="col-sm-2">
                             <p><i class="fa-solid fa-user-gear"></i> <span data-i18n="role"></span></p>
                             <select id="filter_role" class="form-select filter"></select>
+                        </div>
+                        <div class="col-sm-2">
+                            <p><i class="fa-solid fa-user-shield me-2"></i> <span data-i18n="user_privileges"></span></p>
+                            <select id="filter_privileges" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2">
                             <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
@@ -66,6 +75,7 @@
                             <th data-i18n="email"></th>
                             <th data-i18n="mobile"></th>
                             <th data-i18n="role"></th>
+                            <th data-i18n="user_privileges"></th>
                             <th data-i18n="create_at"></th>
                             <th data-i18n="last_login"></th>
                             <th data-i18n="status"></th>
@@ -245,6 +255,21 @@
                         </div>
                     </form>
                 </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="privileges_tab" role="tabpanel">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="tb_privileges">
+                    <thead>
+                        <tr>
+                            <th data-i18n="user_privileges"></th>
+                            <th data-i18n="create_at"></th>
+                            <th data-i18n="status"></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
     </div>

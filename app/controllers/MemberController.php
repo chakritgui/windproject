@@ -10,6 +10,7 @@ class MemberController extends BaseController {
         $length= intval($_POST['length'] ?? 10);
         $filters = [
             'role'=> $_POST['role'] ?? '',
+            'privileges'=> $_POST['privileges'] ?? '',
             'status'=> $_POST['status'] ?? '',
         ];
         $search = $_POST['search']['value'] ?? '';
@@ -65,6 +66,29 @@ class MemberController extends BaseController {
             "data" => $res['data']
         ]);
     }
+    public function listPrivileges(){
+        $start = intval($_POST['start'] ?? 0);
+        $length= intval($_POST['length'] ?? 10);
+        $search = $_POST['search']['value'] ?? '';
+        $orderDir    = 'asc';
+        if (!empty($_POST['order'][0])) {
+            $colIndex   = intval($_POST['order'][0]['column']);
+            $orderDir   = $_POST['order'][0]['dir'] === 'desc' ? 'desc' : 'asc';
+        }
+        $res = $this->model->listPrivileges(
+            $start,
+            $length,
+            $search,
+            $colIndex,
+            $orderDir
+        );
+        $this->json([
+            "draw" => intval($_POST['draw'] ?? 1),
+            "recordsTotal" => $res['total'],
+            "recordsFiltered" => $res['total'],
+            "data" => $res['data']
+        ]);
+    }
     public function request(){
         $start = intval($_POST['start'] ?? 0);
         $length= intval($_POST['length'] ?? 10);
@@ -103,6 +127,40 @@ class MemberController extends BaseController {
         $id = intval($_POST['id'] ?? 0);
         $this->json(['status'=>$this->model->delete($id)]);
     }
+    public function deletePrivileges() {
+        $id = intval($_POST['id'] ?? 0);
+        $this->json(['status'=>$this->model->deletePrivileges($id)]);
+    }
+    public function getPrivileges() {
+        $id = intval($_POST['id'] ?? 0);
+        $data = $this->model->getPrivileges($id);
+        $this->json([
+            'status' => $data ? true : false,
+            'data'   => $data
+        ]);
+    }
+    public function savePrivileges() {
+        $groupName = trim($_POST['privileges_name'] ?? '');
+        if (empty($groupName)) {
+            return $this->json(['status' => false, 'message' => 'name_required']);
+        }
+        $data = [
+            'privileges_id'   => intval($_POST['privileges_id'] ?? 0),
+            'status'     => $_POST['status'] ?? 'active',
+            'privileges_name' => $groupName
+        ];
+        $result = $this->model->savePrivileges($data);
+        if ($result === true) {
+            $this->json(['status' => true]);
+        } elseif (is_array($result)) {
+            $this->json($result); 
+        } else {
+            $this->json([
+                'status'  => false,
+                'message' => 'cannot_save'
+            ]);
+        }
+    }
     public function reject() {
         $id = intval($_POST['id'] ?? 0);
         $note = $_POST['note'] ?? null;
@@ -124,6 +182,7 @@ class MemberController extends BaseController {
             'email' => $_POST['email'] ?? '',
             'phone' => $_POST['phone'] ?? '',
             'role' => $_POST['role'] ?? '',
+            'privileges' => $_POST['privileges'] ?? '',
             'status' => $_POST['status'] ?? '',
             'password' => $_POST['password'] ?? ''
         ];

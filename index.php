@@ -93,6 +93,10 @@
             $router->post('/api/request.list', 'MemberController@request');
             $router->post('/api/member.reject', 'MemberController@reject');
             $router->post('/api/member.approved', 'MemberController@approved');
+            $router->post('/api/privileges.list', 'MemberController@listPrivileges');
+            $router->post('/api/privileges.delete', 'MemberController@deletePrivileges');
+            $router->post('/api/privileges.get', 'MemberController@getPrivileges');
+            $router->post('/api/privileges.save', 'MemberController@savePrivileges');
             $router->post('/api/member.update_permissions', 'MemberController@update_permissions');
             $router->post('/api/document.list', 'DocumentController@list');
             $router->post('/api/document.info', 'DocumentController@get');

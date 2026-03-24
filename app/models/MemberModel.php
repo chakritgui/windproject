@@ -13,45 +13,52 @@ class MemberModel {
             $params[':status'] = $filters['status'];
         }
         if (!empty($filters['role'])) {
-            $where .= " AND role = :role ";
+            $where .= " AND m.role = :role ";
             $params[':role'] = $filters['role'];
         }
+        if (!empty($filters['privileges'])) {
+            $where .= " AND m.privileges_id = :privileges ";
+            $params[':privileges'] = $filters['privileges'];
+        }
         if(!empty($search)) {
-            $where .= " AND (username LIKE :search OR first_name LIKE :search OR last_name LIKE :search OR email LIKE :search OR phone LIKE :search) ";
+            $where .= " AND (m.username LIKE :search OR m.first_name LIKE :search OR m.last_name LIKE :search OR m.email LIKE :search OR m.phone LIKE :search) ";
             $params[':search'] = '%' . $search . '%';
         }
-        $sqlTotal = "SELECT COUNT(*) FROM wp_members " . $where . "and status != 'deleted'";
+        $sqlTotal = "SELECT COUNT(*) FROM wp_members m " . $where . "and m.status != 'deleted'";
         $stmtTotal = $pdo->prepare($sqlTotal);
         $stmtTotal->execute($params);
         $total = $stmtTotal->fetchColumn();
-        $order = 'created_at';
+        $order = 'm.created_at';
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
-            1 => "COALESCE(first_name, last_name)",
-            2 => "email",
-            3 => "phone",
-            4 => "role",
-            5 => "created_at",
-            6 => "last_login_at",
-            7 => "status"
+            1 => "COALESCE(m.first_name, m.last_name)",
+            2 => "m.email",
+            3 => "m.phone",
+            4 => "m.role",
+            5 => "m.privileges_id",
+            6 => "m.created_at",
+            7 => "m.last_login_at",
+            8 => "m.status"
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
         }
         $sql = "SELECT 
-            member_id,
-            username,
-            first_name,
-            last_name,
-            email,
-            phone,
-            role,
-            status,
-            last_login_at,
-            created_at,
-            password_hash
-        FROM wp_members
-        $where and status != 'deleted'
+            m.member_id,
+            m.username,
+            m.first_name,
+            m.last_name,
+            m.email,
+            m.phone,
+            m.role,
+            m.status,
+            m.last_login_at,
+            m.created_at,
+            m.password_hash,
+            p.privileges_name
+        FROM wp_members m
+        LEFT JOIN wp_members_privileges p on p.privileges_id = m.privileges_id
+        $where and m.status != 'deleted'
         ORDER BY {$order} {$orderDir}";
         if ($length != -1) {
             $sql .= " LIMIT :start, :length";
@@ -193,6 +200,45 @@ class MemberModel {
         }
         return ["total" => (int)$total, "data" => $rows];
     }
+    public function listPrivileges($start = 0, $length = 10, $search = '', $colIndex = 2, $orderDir = 'desc') {
+        $pdo = $this->db;
+        $where = " WHERE 1=1 ";
+        $params = [];
+        if(!empty($search)) {
+            $where .= " AND privileges_name LIKE :search ";
+            $params[':search'] = '%' . $search . '%';
+        }
+        $sqlTotal = "SELECT COUNT(*) FROM wp_members_privileges WHERE status <> 'deleted'";
+        $stmtTotal = $pdo->prepare($sqlTotal);
+        $stmtTotal->execute($params);
+        $total = $stmtTotal->fetchColumn();
+        $orderMap = [
+            0 => "privileges_name",
+            1 => "status",
+            2 => "created_at",
+        ];
+        $order = $orderMap[$colIndex] ?? 'created_at';
+        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
+        $sql = "SELECT * FROM wp_members_privileges WHERE status <> 'deleted' ORDER BY {$order} {$orderDir}";
+        if ($length != -1) {
+            $sql .= " LIMIT :start, :length";
+        }
+        $stmt = $pdo->prepare($sql);
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val);
+        }
+        if ($length != -1) {
+            $stmt->bindValue(':start', (int)$start, PDO::PARAM_INT);
+            $stmt->bindValue(':length', (int)$length, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $userAgent = new AgentHelper($pdo);
+        foreach ($rows as &$r) {
+            $r['created_at'] = !empty($r['created_at']) ? convertTimeZone($r['created_at'], 'd/m/Y H:i:s') : '-';
+        }
+        return ["total" => (int)$total, "data" => $rows];
+    }
     public function request($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 6, $orderDir = 'desc') {
         $pdo = $this->db;
         $where = " WHERE 1=1 ";
@@ -273,7 +319,7 @@ class MemberModel {
     public function get($id) {
         if($id) {
             $pdo = $this->db;
-            $sql = "SELECT member_id,username,first_name,last_name,email,phone,role,status,username,password_hash FROM wp_members WHERE member_id = :id LIMIT 1";
+            $sql = "SELECT m.member_id,m.username,m.first_name,m.last_name,m.email,m.phone,m.role,m.status,m.username,m.password_hash,p.privileges_id,p.privileges_name FROM wp_members m LEFT JOIN wp_members_privileges p on p.privileges_id = m.privileges_id WHERE member_id = :id LIMIT 1";
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
             $stmt->execute();
@@ -292,7 +338,9 @@ class MemberModel {
                 'phone' => '',
                 'role' => 'user',
                 'status' => 'active',
-                'username' => ''
+                'username' => '',
+                'privileges_id' => '',
+                'privileges_name' => '',
             ];
         }
     }
@@ -305,6 +353,58 @@ class MemberModel {
             return $stmt->execute();
         }
         return false;
+    }
+    public function deletePrivileges($id) {
+        if($id) {
+            $pdo = $this->db;
+            $sql = "UPDATE wp_members_privileges set status = 'deleted', updated_at = NOW() WHERE privileges_id = :id";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+            return $stmt->execute();
+        }
+        return false;
+    }
+    public function getPrivileges($id) {
+        if (!$id) {
+            return ['privileges_id' => '', 'privileges_name' => '', 'status' => 'active'];
+        }
+        $sql = "SELECT * FROM wp_members_privileges WHERE privileges_id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([(int)$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: [];
+    }
+    public function savePrivileges($data) {
+        $id = $data['privileges_id'] ?? null;
+        $name = trim($data['privileges_name'] ?? '');
+        $status = $data['status'] ?? 'active';
+        if ($this->isDuplicateName($name, $id)) {
+            return ['status' => false, 'message' => 'already_exists'];
+        }
+        if ($id) {
+            $sql = "UPDATE wp_members_privileges SET privileges_name = :name, status = :status, updated_at = NOW() WHERE privileges_id = :id";
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+        } else {
+            $sql = "INSERT INTO wp_members_privileges (privileges_name, status, created_at, updated_at) 
+                    VALUES (:name, :status, NOW(), NOW())";
+            $stmt = $this->db->prepare($sql);
+        }
+        $stmt->bindValue(':name', $name);
+        $stmt->bindValue(':status', $status);
+        return $stmt->execute();
+    }
+    private function isDuplicateName($name, $id = null) {
+        $sql = "SELECT COUNT(*) FROM wp_members_privileges WHERE privileges_name = :name AND status <> 'deleted'";
+        if ($id) {
+            $sql .= " AND privileges_id <> :id";
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':name', $name);
+        if ($id) {
+            $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        return (int)$stmt->fetchColumn() > 0;
     }
     public function reject($id, $note) {
         if($id) {
@@ -358,6 +458,7 @@ class MemberModel {
         $email = $data['email'] ?? '';
         $phone = $data['phone'] ?? '';
         $role = $data['role'] ?? '';
+        $privileges = $data['privileges'] ?? '';
         $status = $data['status'] ?? 'inactive';
         $username  = $data['username'] ?? '';
         $password  = $data['password'] ?? '';
@@ -377,17 +478,18 @@ class MemberModel {
                             status = :status, 
                             updated_at = NOW(), 
                             username = :username, 
-                            password_hash = :password_hash 
+                            password_hash = :password_hash, 
+                            privileges_id = :privileges
                         WHERE member_id = :member_id";
                 $stmt = $pdo->prepare($sql);
                 $stmt->bindValue(':member_id', (int)$member_id, PDO::PARAM_INT);
             } else {
                 $sql = "INSERT INTO wp_members (
                             first_name, last_name, email, phone, role, status, 
-                            created_at, updated_at, username, password_hash
+                            created_at, updated_at, username, password_hash, privileges_id
                         ) VALUES (
                             :first_name, :last_name, :email, :phone, :role, :status, 
-                            NOW(), NOW(), :username, :password_hash
+                            NOW(), NOW(), :username, :password_hash, :privileges
                         )";
                 $stmt = $pdo->prepare($sql);
             }
@@ -399,6 +501,7 @@ class MemberModel {
             $stmt->bindValue(':status', $status);
             $stmt->bindValue(':username', $username);
             $stmt->bindValue(':password_hash', $password_hash);
+            $stmt->bindValue(':privileges', $privileges);
             if ($stmt->execute()) {
                 return [
                     'status' => true,
@@ -497,8 +600,26 @@ class MemberModel {
                 $stmtTotal = $pdo->prepare($sqlTotal);
                 $stmtTotal->execute($params);
                 $totalCount = $stmtTotal->fetchColumn();
-                $sql = "SELECT member_id as id, CONCAT(first_name, ' ', last_name) as text 
-                        FROM wp_members" . $where . " LIMIT :offset, :limit";
+                $sql = "SELECT member_id as id, CONCAT(first_name, ' ', last_name) as text FROM wp_members" . $where . " LIMIT :offset, :limit";
+                $stmt = $pdo->prepare($sql);
+                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+                foreach ($params as $key => $val) $stmt->bindValue($key, $val);
+                $stmt->execute();
+                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                break;
+            case 'privileges':
+                $where = " WHERE status != 'deleted' ";
+                $params = [];
+                if (!empty($searchTerm)) {
+                    $where .= " AND privileges_name LIKE :search ";
+                    $params[':search'] = '%' . $searchTerm . '%';
+                }
+                $sqlTotal = "SELECT COUNT(*) FROM wp_members_privileges" . $where;
+                $stmtTotal = $pdo->prepare($sqlTotal);
+                $stmtTotal->execute($params);
+                $totalCount = $stmtTotal->fetchColumn();
+                $sql = "SELECT privileges_id as id, privileges_name as text FROM wp_members_privileges" . $where . " LIMIT :offset, :limit";
                 $stmt = $pdo->prepare($sql);
                 $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
                 $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);

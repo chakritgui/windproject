@@ -14,12 +14,13 @@ function initMemberTable() {
         processing: true,
         serverSide: true,
         responsive: true, 
-        order: [[5, 'desc']],
+        order: [[6, 'desc']],
         ajax: { 
             url: `${BASE_URL}/api/member.list`,
             type: "POST",
             data: function(d){
                 d.role = $('#filter_role').val();
+                d.privileges = $('#filter_privileges').val();
                 d.status = $('#filter_status').val();
             }
         },
@@ -49,7 +50,7 @@ function initMemberTable() {
             render: function(row){
                 return `${row.first_name} ${row.last_name}`;
             } 
-        },{ 
+        }, { 
             data: "email",
             orderable: true,
         },{ 
@@ -62,6 +63,12 @@ function initMemberTable() {
                 return `<div class="d-flex flex-column" data-i18n="${row.role}">${row.role}</div>`;
             }
         },{ 
+            data: null,
+            orderable: true,
+            render: function(row){
+                return `${row.privileges_name || ""}`;
+            } 
+        }, { 
             data: "created_at",
             orderable: true,
         },{ 
@@ -141,10 +148,23 @@ $(document).ready(function () {
         initTable();
     });
 });
+$('#filter_role').on('change', function () {
+    const isUserOrAll = $(this).val() === 'user' || $(this).val() === '' || !$(this).val();
+    const $privileges = $('#filter_privileges');
+    if (isUserOrAll) {
+        $privileges.prop("disabled", false);
+        $privileges.closest('.form-group, .col-md-3').css('opacity', '1');
+    } else {
+        $privileges.prop("disabled", true);
+        $privileges.val(null).trigger('change');
+        $privileges.closest('.form-group, .col-md-3').css('opacity', '0.6');
+    }
+});
 function initTable() {
     switch(pages) {
         case 'member':
             initSelect2Remote('#filter_role', `${BASE_URL}/api/member.filter`, { type: 'role' });
+            initSelect2Remote('#filter_privileges', `${BASE_URL}/api/member.filter`, { type: 'privileges' });
             initSelect2Remote('#filter_status', `${BASE_URL}/api/member.filter`, { type: 'status' });
             initMemberTable();
             break;
@@ -165,6 +185,9 @@ function initTable() {
             break;
         case 'setting':
             initPermissionSetting();
+            break;
+        case 'privileges':
+            initPrivilegesTable();
             break;
     }
 }
@@ -231,6 +254,12 @@ $(document).on('click', '.manage-member', function() {
                             <label class="mb-2 required">${langData['role'] || "Role"}</label>
                             <select class="form-select obj-required" id="role"></select>
                         </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="mb-2 required">${langData['user_privileges'] || "User Privileges"}</label>
+                            <select class="form-select obj-required" id="privileges"></select>
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required">${langData['status'] || "Status"}</label>
                             <select class="form-select obj-required" id="status"></select>
@@ -314,6 +343,7 @@ $(document).on('click', '.manage-member', function() {
                     }
                 });
                 initSelect2Remote('#role', `${BASE_URL}/api/member.filter`, { type: 'role' });
+                initSelect2Remote('#privileges', `${BASE_URL}/api/member.filter`, { type: 'privileges' });
                 initSelect2Remote('#status', `${BASE_URL}/api/member.filter`, { type: 'status' });
                 let member = res.data;
                 $('#member_id').val(member_id || '');
@@ -325,10 +355,32 @@ $(document).on('click', '.manage-member', function() {
                 $('#status').val(member && member.status || '');
                 $('#password_').val(member && member.password_hash || '');
                 $('#username_').val(member && member.username || '');
+                $('#role').on('change', function() {
+                    const isUser = $(this).val() === 'user';
+                    const $privileges = $('#privileges');
+                    const $label = $privileges.closest('.mb-3').find('label'); 
+                    if (isUser) {
+                        $privileges.prop("disabled", false);
+                        $privileges.addClass('obj-required');
+                        $label.addClass('required');
+                    } else {
+                        $privileges.prop("disabled", true);
+                        $privileges.val(null).trigger('change');
+                        $privileges.removeClass('obj-required');
+                        $label.removeClass('required');
+                        $privileges.removeClass('is-invalid'); 
+                    }
+                });
                 if (member && member.role) {
                     let roleName = member.role.charAt(0).toUpperCase() + member.role.slice(1);
-                    var newOptionStatus = new Option(roleName, member.role, true, true);
-                    $('#role').append(newOptionStatus).trigger('change');
+                    var newOptionRole = new Option(roleName, member.role, true, true);
+                    $('#role').append(newOptionRole).trigger('change');
+                } else {
+                    $('#role').trigger('change');
+                }
+                if (member && member.privileges_id && member.role === 'user') {
+                    var newOptionPrivileges = new Option(member.privileges_name, member.privileges_id, true, true);
+                    $('#privileges').append(newOptionPrivileges).trigger('change');
                 }
                 if (member && member.status) {
                     let statusName = member.status.charAt(0).toUpperCase() + member.status.slice(1);
@@ -483,6 +535,7 @@ function saveMember() {
             first_name: $("#first_name").val().trim(), 
             last_name: $("#last_name").val().trim(), 
             role: $("#role").val(), 
+            privileges: $("#privileges").val(), 
             status: $("#status").val(),
             email: $("#email").val().trim(),
             phone: $("#phone").val().trim(),
@@ -990,3 +1043,236 @@ $(document).on('click', '.save-permission', function() {
         }
     });
 });
+let tb_privileges;
+function initPrivilegesTable() {
+    let oldPage = 0;
+    if ($.fn.DataTable.isDataTable('#tb_privileges')) {
+        oldPage = $('#tb_privileges').DataTable().page();
+        $('#tb_privileges').DataTable().destroy();
+    }
+    tb_privileges = $('#tb_privileges').DataTable({
+        processing: true,
+        serverSide: true,
+        order: [[2, 'desc']],
+        ajax: { 
+            url: `${BASE_URL}/api/privileges.list`, 
+            type: "POST",
+        },
+        columns: [{ 
+            data: "privileges_name",
+        },{ 
+            data: "status",
+            orderable: true,
+            render: function (status, type, row) {
+                let badge = '';
+                switch(status) {
+                    case "active":
+                        badge = "success";
+                        break;
+                    case "banned":
+                        badge = "danger";
+                        break;
+                    default:
+                        badge = "warning";
+                }
+                return `
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
+                    </div>
+                `;
+            }
+        },{ 
+            data: "created_at",
+            className: 'align-middle text-nowrap',
+            render: function(data) {
+                return `<small class="text-muted"><i class="fa-regular fa-calendar me-1"></i>${data}</small>`;
+            }
+        },{
+            data: null,
+            className: 'align-middle text-end',
+            orderable: false,
+            render: function(row) {
+                return `
+                    <div class="btn-group border rounded-3 bg-white">
+                        <button class="btn btn-link text-warning py-1 manage-privileges" data-id="${row.privileges_id}">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn btn-link text-danger py-1 border-start delete-privileges" data-id="${row.privileges_id}">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </div>`;
+            }
+        }],
+        pageLength: pageLength,
+        lengthMenu: lengthMenu,
+        language: getTableLang(),
+        initComplete: function() {
+            let self = this.api();
+            let $filter = $('#tb_privileges_filter');
+            if ($filter.find('.manage-disclaimer').length === 0) {
+                $filter.append(`
+                    <button class="btn btn-primary btn-sm manage-privileges ms-2" data-id="0">
+                        <i class="fa-solid fa-plus"></i> <span>${langData['privileges'] || 'Privileges'}</span>
+                    </button>
+                `);
+            }
+            let $input = $filter.find('input').unbind();
+            $input.bind('keypress', function(e) {
+                if (e.keyCode == 13) { self.search(this.value).draw(); }
+            });
+        }
+    });
+}
+$(document).on('click', '.delete-privileges', function() {
+    let privileges_id = $(this).data("id");
+    showConfirm(langData['confirm'], langData['confirm_delete'], function(){
+        $.ajax({
+            url: `${BASE_URL}/api/privileges.delete`,
+            method: 'POST',
+            data: { id: privileges_id },
+            dataType: 'json',
+            success: function(res) {
+                if(res.status === true){
+                    showSuccess(langData['deleted_successfully']);
+                    initPrivilegesTable();
+                } else {
+                    showError(langData['cannot_delete']);
+                }   
+            },
+            error: function(){
+                showError(langData['cannot_delete']);
+            }
+        });
+    });
+});
+$(document).on('click', '.manage-privileges', function() {
+    let privileges_id = $(this).data("id");
+    $.ajax({
+        url: `${BASE_URL}/api/privileges.get`,
+        method: 'POST',
+        data: { id: privileges_id },
+        dataType: 'json',
+        success: function(res) {
+            if(res.status === true){
+                let privilegesData = res.data;
+                let modalEl = $('#windModal');
+                let modal = new bootstrap.Modal(modalEl[0]);
+                modal.show();
+                modalEl.find(".modal-header").html(`
+                    <h5 class="modal-title">${langData['user_privileges'] || 'User Privileges'}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                `);
+                modalEl.find(".modal-footer").html(`
+                    <button type="submit" class="btn btn-primary me-2 save-privileges">${langData['save'] || "Save"}</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
+                `);
+                modalEl.find(".modal-body").html(`
+                    <input type="hidden" name="privileges_id" id="privileges_id" value="${privileges_id ?? ''}">
+                    <div class="mb-3">
+                        <label class="mb-2 required">${langData['user_privileges'] || 'User Privileges'}</label>
+                        <input type="text" class="form-control obj-required" id="privileges_name" maxlength="255">
+                    </div>
+                    <div class="mb-3">
+                        <label class="mb-2 required">${langData['status'] || 'Status'}</label>
+                        <select id="status" class="form-select obj-required"></select>
+                    </div>
+                `);
+                if (privilegesData) {
+                    $("#privileges_id").val(privilegesData.privileges_id);
+                    $("#privileges_name").val(privilegesData.privileges_name);
+                    if (privilegesData.status) {
+                        let statusName = privilegesData.status.charAt(0).toUpperCase() + privilegesData.status.slice(1);
+                        var newOptionStatus = new Option(statusName, privilegesData.status, true, true);
+                        $('#status').append(newOptionStatus).trigger('change');
+                    }
+                }
+            } else {
+                showError(langData['cannot_load']);
+            }
+        },
+        error: function(){
+            showError(langData['cannot_load']);
+        }
+    });
+});
+$(document).on('click', '.save-privileges', function () {
+    let errors = [];
+    $('.obj-required').each(function () {
+        let value = $(this).val()?.trim() || '';
+        if (!value) {
+            $(this).addClass('is-invalid');
+            errors.push(this.name || this.id);
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+    if (errors.length) {
+        showWarning(langData['required_star_message'] || 'Please fill all fields marked with *');
+        $('.is-invalid').first().focus();
+        return;
+    }
+    savePrivileges();
+});
+function savePrivileges() {
+    const btn = $(".save-privileges");
+    btn.prop("disabled", true);
+    const formData = new FormData();
+    formData.append("privileges_id", $("#privileges_id").val() || "");
+    formData.append("status", $("#status").val() || "active");
+    formData.append("privileges_name", $("#privileges_name").val());
+    Swal.fire({
+        title: langData['saving'] || 'Saving...',
+        html: `
+            <p>${langData['do_not_close'] || 'Please do not close this window.'}</p>
+            <div class="progress mt-2">
+                <div id="swal-progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%">0%</div>
+            </div>
+        `,
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+    $.ajax({
+        url: `${BASE_URL}/api/privileges.save`,
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+        dataType: "json",
+        xhr: function () {
+            let xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function (e) {
+                if (e.lengthComputable) {
+                    let percent = Math.round((e.loaded / e.total) * 100);
+                    let bar = document.getElementById("swal-progress");
+                    if (bar) {
+                        bar.style.width = percent + "%";
+                        bar.innerText = percent + "%";
+                    }
+                }
+            });
+            return xhr;
+        },
+        success: function (res) {
+            Swal.close();
+            if (res.status === true) {
+                showSuccess(langData['saved_successfully']);
+                if (typeof initPrivilegesTable === "function") initPrivilegesTable();
+                $('#windModal').modal('hide');
+            } else {
+                showError((langData['cannot_save'] || 'Error: ') + ' ' + (langData[res.message] || 'Unknown error'));
+            }
+        },
+        error: function (xhr, status, error) {
+            Swal.close();
+            let msg = langData['cannot_save'];
+            try {
+                let res = JSON.parse(xhr.responseText);
+                if (res.message) msg += ": " + res.message;
+            } catch (e) {}
+            showError(msg);
+        },
+        complete: function() {
+            btn.prop("disabled", false);
+        }
+    });
+}

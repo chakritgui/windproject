@@ -634,5 +634,6 @@
     "show_mode": "Show Mode",
     "require_user_acceptance": "Require User Acceptance",
     "enable_disclaimer": "Enable Disclaimer",
-    "en_is_primary": "English version is required for activation."
+    "en_is_primary": "English version is required for activation.",
+    "user_privileges": "User Privileges"
 }
