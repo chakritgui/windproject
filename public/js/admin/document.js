@@ -183,7 +183,6 @@ function initTable() {
 $(document).on('click', '.manage-document', function () {
     const document_id = $(this).data("id");
     const isEdit = !!document_id;
-
     $.ajax({
         url: `${BASE_URL}/api/document.info`,
         method: 'POST',
@@ -194,19 +193,11 @@ $(document).on('click', '.manage-document', function () {
                 showError(langData['cannot_load']);
                 return;
             }
-
             const docData = res.data;
             const modalEl = $('#windModal');
             const modal = new bootstrap.Modal(modalEl[0]);
-
-            // 1. Render UI Components
             renderModalContent(modalEl, document_id, isEdit);
-            
-            // 2. Initialize Plugins
             initPlugins();
-
-            // 3. Logic: ซ่อน/แสดง Notification ตาม Status
-            // สร้าง function จัดการการแสดงผล
             const toggleNotification = () => {
                 const currentStatus = $('#status').val();
                 if (currentStatus === 'public') {
@@ -215,38 +206,25 @@ $(document).on('click', '.manage-document', function () {
                     $('#notification_section').slideUp();
                 }
             };
-
-            // ดักจับการเปลี่ยนแปลง (เลือก Status)
             $(document).off('change', '#status').on('change', '#status', toggleNotification);
-
-            // 4. Fill Data (ถ้าเป็นการแก้ไข)
             if (docData) {
                 fillDocumentData(docData);
-                // เช็กครั้งแรกหลัง Load ข้อมูล
                 toggleNotification();
             }
-
             modal.show();
         },
         error: () => showError(langData['cannot_load'])
     });
 });
-
-/**
- * ฟังก์ชันสำหรับ Render HTML ภายใน Modal
- */
 function renderModalContent(modalEl, document_id, isEdit) {
     modalEl.find(".modal-header").html(`
         <h5 class="modal-title">${langData['manageDocument'] || 'Manage Document'}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     `);
-
     modalEl.find(".modal-footer").html(`
         <button type="submit" class="btn btn-primary me-2 save-document">${langData['save'] || "Save"}</button>
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
     `);
-
-    // ส่วนของ Body (ตัดมาเฉพาะส่วนสำคัญเพื่อความกระชับ)
     modalEl.find(".modal-body").html(`
         <input type="hidden" id="mode" value="${document_id ? 'edit' : 'new'}">
         <input type="hidden" name="document_id" id="document_id" value="${document_id ?? ''}">

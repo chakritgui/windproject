@@ -186,9 +186,9 @@ class ProjectModel {
     }
     private function buildListWhere($filters) {
         $where  = " WHERE  
-            ((f.sub_type = 'news' AND c.status = 'published' AND c.folder_show_admin = 'yes')
+            ((f.sub_type = 'news' AND c.status <> 'deleted' AND c.folder_show_admin = 'yes')
             OR
-            (f.sub_type = 'project') ) AND f.status = 'active'
+            (f.sub_type = 'project')) AND f.status <> 'deleted'
         ";
         $params = [];
         if (!empty($filters['level'])) {

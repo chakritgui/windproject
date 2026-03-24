@@ -679,3 +679,302 @@ $(document).on('click', '.btn-delete-row', function() {
         });
     });
 });
+$(document).on('click', '.disclaimer-tab', function() {
+    initDisclaimerTable();
+});
+let tb_disclaimer;
+function initDisclaimerTable() {
+    let oldPage = 0;
+    if ($.fn.DataTable.isDataTable('#tb_disclaimer')) {
+        oldPage = $('#tb_disclaimer').DataTable().page();
+        $('#tb_disclaimer').DataTable().destroy();
+    }
+    tb_disclaimer = $('#tb_disclaimer').DataTable({
+        processing: true,
+        serverSide: true,
+        order: [[1, 'desc']],
+        ajax: { 
+            url: `${BASE_URL}/api/disclaimer.list`, 
+            type: "POST",
+        },
+        columns: [{ 
+            data: "version",
+            className: 'align-middle text-center',
+            render: function (data) {
+                return `<span class="fw-bold"><span>${langData['version'] || 'Version'}</span> ${data}</span>`;
+            }
+        },{ 
+            data: "is_active",
+            className: 'align-middle text-center',
+            render: function (data) {
+                const badge = data == 1 ? { color: 'success', text: 'Enabled', icon: 'fa-check-circle', key: 'enabled' } : { color: 'secondary', text: 'Disabled', icon: 'fa-times-circle', key: 'disabled' };
+                return `<span class="badge rounded-pill bg-${badge.color}-subtle text-${badge.color} px-3"><i class="fa-solid ${badge.icon} me-1"></i>${langData[badge.key] || badge.text}</span>`;
+            }
+        },{ 
+            data: "require_accept",
+            className: 'align-middle text-center',
+            render: function (data) {
+                return data == 1 ? `<i class="fa-solid fa-user-check text-primary" title="Required"></i>` : `<i class="fa-solid fa-minus text-muted"></i>`;
+            }
+        },{ 
+            data: "show_mode",
+            className: 'align-middle',
+            render: function (data, type, row) {
+                return `
+                    <div class="d-flex flex-column">
+                        <span class="text-dark fw-medium">${row.title_en || '-'}</span>
+                        <small class="text-muted"><i class="fa-solid fa-eye me-1"></i>${langData[data] || data.replace('_', ' ')}</small>
+                    </div>`;
+            }
+        },{ 
+            data: "created_at",
+            className: 'align-middle text-nowrap',
+            render: function(data) {
+                return `<small class="text-muted"><i class="fa-regular fa-calendar me-1"></i>${data}</small>`;
+            }
+        },{
+            data: null,
+            className: 'align-middle text-end',
+            orderable: false,
+            render: function(row) {
+                return `
+                    <div class="btn-group border rounded-3 bg-white">
+                        <button class="btn btn-link text-warning py-1 manage-disclaimer" data-id="${row.id}">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                        <button class="btn btn-link text-danger py-1 border-start delete-disclaimer" data-id="${row.id}">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </div>`;
+            }
+        }],
+        pageLength: pageLength,
+        lengthMenu: lengthMenu,
+        language: getTableLang(),
+        initComplete: function() {
+            let self = this.api();
+            let $filter = $('#tb_disclaimer_filter');
+            if ($filter.find('.manage-disclaimer').length === 0) {
+                $filter.append(`
+                    <button class="btn btn-primary btn-sm manage-disclaimer ms-2" data-id="0">
+                        <i class="fa-solid fa-plus"></i> <span>${langData['version'] || 'Version'}</span>
+                    </button>
+                `);
+            }
+            let $input = $filter.find('input').unbind();
+            $input.bind('keypress', function(e) {
+                if (e.keyCode == 13) { self.search(this.value).draw(); }
+            });
+        }
+    });
+}
+$(document).on('click', '.delete-disclaimer', function() {
+    let disclaimer_id = $(this).data("id");
+    showConfirm(langData['confirm'], langData['confirm_delete'], function(){
+        $.ajax({
+            url: `${BASE_URL}/api/disclaimer.delete`,
+            method: 'POST',
+            data: { id: disclaimer_id },
+            dataType: 'json',
+            success: function(res) {
+                if(res.status === 'success'){
+                    showSuccess(langData['deleted_successfully'] || 'Deleted successfully');
+                    if ($.fn.DataTable.isDataTable('#tb_disclaimer')) {
+                        $('#tb_disclaimer').DataTable().ajax.reload(null, false);
+                    } else {
+                        initDisclaimerTable();
+                    }
+                } else {
+                    showError(langData['cannot_delete'] || 'Cannot delete');
+                }   
+            },
+            error: function(){
+                showError(langData['cannot_delete']);
+            }
+        });
+    });
+});
+$(document).on('click', '.manage-disclaimer', function () {
+    const disclaimer_id = $(this).data("id");
+    const isEdit = !!disclaimer_id;
+    $.ajax({
+        url: `${BASE_URL}/api/disclaimer.info`,
+        method: 'POST',
+        data: { id: disclaimer_id },
+        dataType: 'json',
+        success: function (res) {
+            if (res.status !== 'success') {
+                showError(langData['cannot_load']);
+                return;
+            }
+            const data = res.data;
+            const modalEl = $('#windModal');
+            const modal = new bootstrap.Modal(modalEl[0]);
+            renderDisclaimerModalContent(modalEl, disclaimer_id, isEdit);
+            if (data) {
+                $('#disclaimer_id').val(data.id);
+                $('#version').val(data.version);
+                $('#is_active').prop('checked', data.is_active == 1);
+                $('#require_accept').prop('checked', data.require_accept == 1);
+                $('#show_mode').val(data.show_mode);
+                if (data.translations) {
+                    const languages = ['en', 'th', 'lo'];
+                    languages.forEach(lang => {
+                        const trans = data.translations[lang] || {};
+                        $(`#title_${lang}`).val(trans.title || '');
+                        const $content = $(`#content_${lang}`);
+                        const contentHtml = trans.content || '';
+                        if ($content.data('summernote')) {
+                            $content.summernote('code', contentHtml);
+                        } else {
+                            $content.val(contentHtml);
+                        }
+                    });
+                }
+            } else {
+                const rows = tb_disclaimer.rows().data().toArray();
+                const lastVer = rows.length > 0 ? Math.max(...rows.map(r => parseInt(r.version))) : 0;
+                $('#version').val(lastVer + 1);
+            }
+            modal.show();
+        },
+        error: () => showError(langData['cannot_load'])
+    });
+});
+function renderDisclaimerModalContent(modalEl, id, isEdit) {
+    modalEl.find(".modal-header").html(`
+        <h5 class="modal-title"><i class="fa-solid fa-file-contract me-2 text-primary"></i>${langData['disclaimer'] || "Disclaimer"}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    `);
+    modalEl.find(".modal-footer").html(`
+        <button type="submit" class="btn btn-primary me-2 save-disclaimer">${langData['save'] || "Save"}</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
+    `);
+    modalEl.find(".modal-body").html(`
+        <input type="hidden" id="disclaimer_id" value="${id ?? ''}">
+        <div class="row mb-4">
+            <div class="col-md-4 mb-3">
+                <label class="form-label fw-bold">${langData['version']}</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light text-primary fw-bold">v</span>
+                    <input type="number" class="form-control fw-bold" id="version" ${isEdit ? 'readonly' : ''}>
+                </div>
+            </div>
+            <div class="col-md-8 mb-3">
+                <label class="form-label fw-bold">${langData['show_mode']}</label>
+                <select class="form-select" id="show_mode">
+                    <option value="version_change">${langData['when_version_changes'] || 'Show when version changes'}</option>
+                    <option value="every_login">${langData['every_login'] || 'Every login'}</option>
+                    <option value="once">${langData['show_once'] || 'Show once (Forever)'}</option>
+                </select>
+            </div>
+        </div>
+        <div class="row mb-4">
+            <div class="col-sm-6 col-12">
+                <div class="form-check form-switch p-3 border rounded bg-light shadow-sm">
+                    <input class="form-check-input ms-0 me-3" type="checkbox" id="is_active">
+                    <label class="form-check-label fw-bold" for="is_active">${langData['enable_disclaimer']}</label>
+                </div>
+            </div>
+            <div class="col-sm-6 col-12">
+                <div class="form-check form-switch p-3 border rounded bg-light shadow-sm">
+                    <input class="form-check-input ms-0 me-3" type="checkbox" id="require_accept" checked>
+                    <label class="form-check-label fw-bold" for="require_accept">${langData['require_user_acceptance']}</label>
+                </div>
+            </div>
+        </div>
+        <h6 class="fw-bold mb-3 mt-4 text-secondary-emphasis border-bottom pb-2">
+            <i class="fa-solid fa-language me-2"></i>${langData['content_multi_language'] || 'Content (Multi-language)'}
+        </h6>
+        <ul class="nav nav-pills mb-3 bg-light p-1 rounded" id="disclaimerLangTab">
+            <li class="nav-item flex-fill"><button class="nav-link active w-100 fw-bold" data-bs-toggle="tab" data-bs-target="#dis-en">English</button></li>
+            <li class="nav-item flex-fill"><button class="nav-link w-100 fw-bold" data-bs-toggle="tab" data-bs-target="#dis-th">ไทย</button></li>
+            <li class="nav-item flex-fill"><button class="nav-link w-100 fw-bold" data-bs-toggle="tab" data-bs-target="#dis-lo">ລາວ</button></li>
+        </ul>
+        <div class="tab-content border p-3 rounded shadow-sm">
+            <div class="tab-pane fade show active" id="dis-en">
+                <div class="mb-3">
+                    <label class="form-label required small fw-bold">Title (EN)</label>
+                    <input type="text" class="form-control" id="title_en" placeholder="Enter English title">
+                </div>
+                <div class="mb-0">
+                    <label class="form-label required small fw-bold">Content (EN)</label>
+                    <textarea class="form-control summernote" rows="8" id="content_en" placeholder="Enter disclaimer content..."></textarea>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="dis-th">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">หัวข้อ (TH)</label>
+                    <input type="text" class="form-control" id="title_th" placeholder="ระบุหัวข้อภาษาไทย">
+                </div>
+                <div class="mb-0">
+                    <label class="form-label small fw-bold">เนื้อหา (TH)</label>
+                    <textarea class="form-control summernote" rows="8" id="content_th" placeholder="ระบุเนื้อหาข้อตกลง..."></textarea>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="dis-lo">
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">หัวข้อ (LO)</label>
+                    <input type="text" class="form-control" id="title_lo" placeholder="ລະບຸຫົວຂໍ້ພາສາລາວ">
+                </div>
+                <div class="mb-0">
+                    <label class="form-label small fw-bold">เนื้อหา (LO)</label>
+                    <textarea class="form-control summernote" rows="8" id="content_lo" placeholder="ລະບຸເນື້ອຫາ..."></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="alert alert-info mt-3 py-2 small border-0">
+            <i class="fa-solid fa-circle-info me-2"></i> ${langData['en_is_primary'] || 'English version is required for activation.'}
+        </div>
+    `);
+    initSummernote();
+}
+$(document).on('click', '.save-disclaimer', function(e) {
+    e.preventDefault();
+    const fd = new FormData();
+    const isForceNew = $('#forceNewVersion').is(':checked');
+    const disclaimerId = $('#disclaimer_id').val() || 0;
+    fd.append('id', isForceNew ? 0 : disclaimerId);
+    fd.append('enable', $('#is_active').is(':checked') ? 1 : 0);
+    fd.append('require_accept', $('#require_accept').is(':checked') ? 1 : 0);
+    fd.append('show_mode', $('#show_mode').val());
+    fd.append('version', $('#version').val());
+    ['en', 'lo', 'th'].forEach(lang => {
+        const $editor = $(`#content_${lang}`);
+        const $title = $(`#title_${lang}`);
+        if ($editor.length) {
+            let htmlContent = $editor.summernote('code').trim();
+            const hasText = htmlContent.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim().length > 0;
+            const hasImage = htmlContent.includes('<img');
+            if (hasText || hasImage) {
+                fd.append(`content_${lang}`, htmlContent);
+            } else {
+                fd.append(`content_${lang}`, ''); 
+            }
+        }
+        if ($title.length) {
+            fd.append(`title_${lang}`, $title.val().trim());
+        }
+    });
+    if ($('#is_active').is(':checked')) {
+        if (!$('#title_en').val().trim() || !$('#content_en').val().trim()) {
+            showError(langData['en_is_primary'] || 'English version is required for activation.');
+            $('[data-bs-target="#dis-en"]').tab('show'); 
+            return;
+        }
+    }
+    uploadWithProgress(`/api/disclaimer.save`, fd, '.save-disclaimer').done(res => {
+        if (res.status === true || res.status === 'success') {
+            showSuccess(langData['saved_successfully'] || 'Saved successfully');
+            $('#windModal').modal('hide');
+            if (typeof tb_disclaimer !== 'undefined') {
+                initDisclaimerTable();
+            }
+        } else {
+            showError(res.message || langData['cannot_save']);
+        }
+    }).fail((xhr) => {
+        console.error(xhr.responseText);
+        showError(langData['cannot_save']);
+    });
+});

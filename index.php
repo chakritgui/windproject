@@ -117,6 +117,11 @@
             $router->post('/api/settings.config', 'SettingController@saveConfig');
             $router->post('/api/settings.notification', 'SettingController@saveNotification');
             $router->post('/api/settings.password', 'SettingController@savePassword');
+            $router->post('/api/settings.disclaimer', 'SettingController@saveDisclaimerSetting');
+            $router->post('/api/disclaimer.list', 'SettingController@listDisclaimer');
+            $router->post('/api/disclaimer.info', 'SettingController@infoDisclaimer');
+            $router->post('/api/disclaimer.save', 'SettingController@saveDisclaimer');
+            $router->post('/api/disclaimer.delete', 'SettingController@deleteDisclaimer');
             $router->post('/api/map.save', 'MapSettingController@save');
             $router->get('/api/map.load', 'MapSettingController@load');
             $router->post('/api/settings.menu', 'SettingController@menu');

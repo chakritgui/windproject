@@ -496,13 +496,6 @@ function executeSave() {
     if (typeof currentFolderId !== 'undefined') {
         formData.append("parent_id", currentFolderId);
     }
-    const getCleanContent = (lang) => {
-        const $el = $(`#content_${lang}`);
-        if (!$el.length) return '';
-        const content = $el.summernote('code').trim();
-        const plainText = content.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim();
-        return plainText === '' ? '' : content;
-    };
     ['en', 'lo', 'th'].forEach(lang => {
         const $editor = $(`#content_${lang}`);
         const $title = $(`#title_${lang}`);

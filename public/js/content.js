@@ -37,6 +37,7 @@ function langTab(lang, d, isDefault = false) {
         </div>
     `;
 }
+let oldImages = [];
 function initSummernote() {
     $('.summernote').summernote({
         dialogsInBody: true,
@@ -79,6 +80,12 @@ function initSummernote() {
             }
         },
         callbacks: {
+            onInit: function() {
+                const currentContent = $(this).summernote('code');
+                let div = document.createElement('div');
+                div.innerHTML = currentContent;
+                oldImages = [...div.querySelectorAll('img')].map(i => i.src);
+            },
             onImageUpload: function(files) {
                 uploadImage(files[0], this);
             },
@@ -108,19 +115,24 @@ function uploadImage(file, editor) {
         }
     });
 }
-let oldImages = [];
 function handleRemovedImages(editor, contents) {
     let div = document.createElement('div');
     div.innerHTML = contents;
-    let imgs = [...div.querySelectorAll('img')].map(i => i.src);
-    let removed = oldImages.filter(src => !imgs.includes(src));
-    removed.forEach(src => {
-        $.post(
-            BASE_URL + '/public/uploads/delete_content_image.php',
-            JSON.stringify({ url: src })
-        );
-    });
-    oldImages = imgs;
+    let currentImgs = [...div.querySelectorAll('img')].map(i => i.src);
+    let removed = oldImages.filter(src => !currentImgs.includes(src));
+    if (removed.length > 0) {
+        removed.forEach(src => {
+            if (src.startsWith('http')) { 
+                $.post(
+                    BASE_URL + '/public/uploads/delete_content_image.php',
+                    JSON.stringify({ url: src })
+                ).done(function() {
+                    console.log('Deleted:', src);
+                });
+            }
+        });
+    }
+    oldImages = currentImgs;
 }
 function resizeImage(width) {
     let img = document.getSelection()?.anchorNode?.parentElement;

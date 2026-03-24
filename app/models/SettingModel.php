@@ -544,4 +544,159 @@ class SettingModel {
             return false;
         }
     }
+    public function listDisclaimer($start = 0, $length = 10, $search = '', $colIndex = 1, $orderDir = 'desc') {
+        $sqlTotal = "SELECT COUNT(*) FROM wp_disclaimers WHERE deleted_at IS NULL";
+        $total = (int)$this->db->query($sqlTotal)->fetchColumn();
+        $searchQuery = "";
+        $params = [];
+        if (!empty($search)) {
+            $searchQuery = " AND (t.title LIKE :search OR d.version LIKE :search)";
+            $params[':search'] = "%$search%";
+        }
+        $orderMap = [
+            0 => "d.version",
+            1 => "d.is_active",
+            2 => "t.title",
+            3 => "d.show_mode",
+            4 => "d.created_at"
+        ];
+        $order = $orderMap[$colIndex] ?? 'd.version';
+        $orderDir = strtoupper($orderDir) === 'ASC' ? 'ASC' : 'DESC';
+        $sql = "SELECT 
+                    d.*, 
+                    t.title as title_en
+                FROM wp_disclaimers d
+                LEFT JOIN wp_disclaimer_translations t ON t.disclaimer_id = d.id AND t.lang_code = 'en'
+                WHERE d.deleted_at IS NULL {$searchQuery}
+                ORDER BY {$order} {$orderDir}";
+        if ($length != -1) {
+            $sql .= " LIMIT :start, :length";
+        }
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
+        if ($length != -1) {
+            $stmt->bindValue(':start', (int)$start, PDO::PARAM_INT);
+            $stmt->bindValue(':length', (int)$length, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as &$row) {
+            $row['is_active'] = (int)$row['is_active'];
+            $row['require_accept'] = (int)$row['require_accept'];
+            $this->formatDocumentRow($row); 
+        }
+        return [
+            'total' => $total,
+            'data'  => $rows
+        ];
+    }
+    private function formatDocumentRow(&$row) {
+        if (!empty($row['created_at'])) {
+            $row['created_at'] = convertTimeZone($row['created_at'], 'd/m/Y H:i:s');
+        }
+    }
+    public function deleteDisclaimer($id) {
+        $sql = "UPDATE wp_disclaimers SET deleted_at = NOW(), is_active = 0 WHERE id = ?"; 
+        $stmt = $this->db->prepare($sql);
+        $result = $stmt->execute([(int)$id]);
+        return $result;
+    }
+    public function getDisclaimerDetail($id) {
+        if (!$id) {
+            $sql_max = "SELECT MAX(version) as max_v FROM wp_disclaimers WHERE deleted_at IS NULL";
+            $stmt_max = $this->db->query($sql_max);
+            $max_row = $stmt_max->fetch(PDO::FETCH_ASSOC);
+            $next_version = ($max_row['max_v'] ?? 0) + 1;
+            return [
+                'id'             => '',
+                'version'        => $next_version,
+                'is_active'      => 0,
+                'require_accept' => 1,
+                'show_mode'      => 'version_change',
+                'translations'   => [
+                    'en' => ['title' => '', 'content' => ''],
+                    'th' => ['title' => '', 'content' => ''],
+                    'lo' => ['title' => '', 'content' => '']
+                ]
+            ];
+        } else {
+            $sql = "SELECT * FROM wp_disclaimers WHERE id = ? AND deleted_at IS NULL";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([(int)$id]);
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                $sql_trans = "SELECT lang_code, title, content FROM wp_disclaimer_translations WHERE disclaimer_id = ?";
+                $stmt_trans = $this->db->prepare($sql_trans);
+                $stmt_trans->execute([(int)$id]);
+                $translations = $stmt_trans->fetchAll(PDO::FETCH_ASSOC);
+                $row['translations'] = [
+                    'en' => ['title' => '', 'content' => ''],
+                    'th' => ['title' => '', 'content' => ''],
+                    'lo' => ['title' => '', 'content' => '']
+                ];
+                foreach ($translations as $t) {
+                    if (isset($row['translations'][$t['lang_code']])) {
+                        $row['translations'][$t['lang_code']] = [
+                            'title'   => $t['title'],
+                            'content' => $t['content']
+                        ];
+                    }
+                }
+                if (!empty($row['created_at'])) {
+                    $row['created_at_formatted'] = convertTimeZone($row['created_at'], 'Y-m-d H:i');
+                }
+                return $row;
+            }
+            return null;
+        }
+    }
+    public function saveDisclaimer($data) {
+        try {
+            $this->db->beginTransaction();
+            $id = $data['id'];
+            $disclaimerData = [
+                'version'        => $data['version'],
+                'is_active'      => $data['enable'],
+                'require_accept' => $data['require_accept'],
+                'show_mode'      => $data['show_mode'],
+                'updated_at'     => date('Y-m-d H:i:s')
+            ];
+            if ($id > 0) {
+                $sql = "UPDATE wp_disclaimers SET version = :version, is_active = :is_active, require_accept = :require_accept, show_mode = :show_mode, updated_at = :updated_at WHERE id = :id";
+                $disclaimerData['id'] = $id;
+            } else {
+                $disclaimerData['created_at'] = date('Y-m-d H:i:s');
+                $sql = "INSERT INTO wp_disclaimers (version, is_active, require_accept, show_mode, created_at, updated_at) VALUES (:version, :is_active, :require_accept, :show_mode, :created_at, :updated_at)";
+            }
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($disclaimerData);
+            if ($id <= 0) {
+                $id = $this->db->lastInsertId();
+            }
+            if ($data['enable'] == 1) {
+                $this->db->prepare("UPDATE wp_disclaimers SET is_active = 0 WHERE id != ?")->execute([$id]);
+            }
+            $this->db->prepare("DELETE FROM wp_disclaimer_translations WHERE disclaimer_id = ?")->execute([$id]);
+            $sqlTrans = "INSERT INTO wp_disclaimer_translations (disclaimer_id, lang_code, title, content) VALUES (:disclaimer_id, :lang_code, :title, :content)";
+            $stmtTrans = $this->db->prepare($sqlTrans);
+            foreach ($data['translations'] as $lang => $content) {
+                if (!empty($content['title']) || !empty($content['content'])) {
+                    $stmtTrans->execute([
+                        ':disclaimer_id' => $id,
+                        ':lang_code'     => $lang,
+                        ':title'         => $content['title'],
+                        ':content'       => $content['content']
+                    ]);
+                }
+            }
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log($e->getMessage());
+            return false;
+        }
+    }
 }

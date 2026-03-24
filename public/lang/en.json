@@ -538,6 +538,7 @@
     "send_update": "Send notification again for this update?",
     "send_publishing": "Send notification to users upon publishing?",
     "if_enabled": "If enabled, the system will send a push notification when Save is pressed.",
+    "enabled": "Enabled",
     "notification_settings": "Notification Settings",
     "send_notification": "Send Notification?",
     "success_record": "The system will send a notification to the user as soon as the record is successful",
@@ -621,5 +622,17 @@
     "notifications_disabled": "Notifications Disabled",
     "you_will_no_longer": "You will no longer receive push notifications.",
     "select_all": "Select All",
-    "pstg_project": "PSTG Project"
+    "pstg_project": "PSTG Project",
+    "disclaimer": "Disclaimer",
+    "save_disclaimer": "Save Disclaimer",
+    "content_multi_language": "Content (Multi-language)",
+    "new_version": "New Version",
+    "version": "Version",
+    "version_changes": "When version changes",
+    "every_login": "Every login",
+    "show_once": "Show once",
+    "show_mode": "Show Mode",
+    "require_user_acceptance": "Require User Acceptance",
+    "enable_disclaimer": "Enable Disclaimer",
+    "en_is_primary": "English version is required for activation."
 }

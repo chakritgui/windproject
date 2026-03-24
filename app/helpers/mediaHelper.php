@@ -119,11 +119,7 @@ class MediaHelper {
             }
             if (!$dbPath) continue;
             try {
-                $stmt = $this->db->prepare("
-                    INSERT INTO wp_content_media
-                    (content_id,file_path,file_name,file_type,file_size,created_at,updated_at)
-                    VALUES (?,?,?,?,?,NOW(),NOW())
-                ");
+                $stmt = $this->db->prepare("INSERT INTO wp_content_media (content_id,file_path,file_name,file_type,file_size,created_at,updated_at) VALUES (?,?,?,?,?,NOW(),NOW())");
                 $stmt->execute([$content_id,$dbPath,$originalName,$type,$finalSize]);
             } catch (Exception $e) {
                 if (file_exists($target)) unlink($target);
@@ -148,9 +144,7 @@ class MediaHelper {
             $target  = $uploadPath . $newName;
             if ($this->convertToOptimizedWebp($file['tmp_name'], $target, 1600, 1024)) {
                 $dbPath = $dir . $newName;
-                $this->db->prepare("
-                    UPDATE $table SET $column=? WHERE content_id=?
-                ")->execute([$dbPath,$content_id]);
+                $this->db->prepare("UPDATE $table SET $column=? WHERE content_id=?")->execute([$dbPath,$content_id]);
                 return $dbPath;
             }
         }

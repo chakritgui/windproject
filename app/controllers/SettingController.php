@@ -206,4 +206,82 @@ class SettingController extends BaseController {
             'message' => $result ? 'Settings saved successfully' : 'Failed to save settings'
         ]);
     }
+    public function listDisclaimer() {
+        $start = intval($_POST['start'] ?? 0);
+        $length= intval($_POST['length'] ?? 10);
+        $search = $_POST['search']['value'] ?? '';
+        $orderDir    = 'asc';
+        if (!empty($_POST['order'][0])) {
+            $colIndex   = intval($_POST['order'][0]['column']);
+            $orderDir   = $_POST['order'][0]['dir'] === 'desc' ? 'desc' : 'asc';
+        }
+        $res = $this->model->listDisclaimer(
+            $start,
+            $length,
+            $search,
+            $colIndex,
+            $orderDir
+        );
+        $this->json([
+            "draw" => intval($_POST['draw'] ?? 1),
+            "recordsTotal" => $res['total'],
+            "recordsFiltered" => $res['total'],
+            "data" => $res['data']
+        ]);
+    }
+    public function infoDisclaimer() {
+        $id = intval($_POST['id'] ?? 0);
+        $data = $this->model->getDisclaimerDetail($id);
+        header('Content-Type: application/json; charset=utf-8');
+        if ($data) {
+            echo json_encode([
+                'status' => 'success', 
+                'data' => $data
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'error', 
+                'message' => 'Data not found'
+            ]);
+        }
+        exit;
+    }
+    public function deleteDisclaimer() {
+        $id = intval($_POST['id'] ?? 0);
+        $data = $this->model->deleteDisclaimer($id);
+        header('Content-Type: application/json; charset=utf-8');
+        if ($data) {
+            echo json_encode([
+                'status' => 'success'
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'error', 
+            ]);
+        }
+        exit;
+    }
+    public function saveDisclaimer() {
+        $id = intval($_POST['id'] ?? 0);   
+        $data = [
+            'id'             => $id,
+            'enable'         => intval($_POST['enable'] ?? 0),
+            'require_accept' => intval($_POST['require_accept'] ?? 0),
+            'show_mode'      => $_POST['show_mode'] ?? 'version_change',
+            'version'        => $_POST['version'] ?? '1.0',
+            'translations'   => [
+                'en' => ['title' => $_POST['title_en'] ?? '', 'content' => $_POST['content_en'] ?? ''],
+                'lo' => ['title' => $_POST['title_lo'] ?? '', 'content' => $_POST['content_lo'] ?? ''],
+                'th' => ['title' => $_POST['title_th'] ?? '', 'content' => $_POST['content_th'] ?? ''],
+            ]
+        ];
+        $result = $this->model->saveDisclaimer($data);
+        header('Content-Type: application/json');
+        if ($result) {
+            echo json_encode(['status' => true, 'message' => 'Success']);
+        } else {
+            echo json_encode(['status' => false, 'message' => 'Failed to save data']);
+        }
+        exit;
+    }
 }

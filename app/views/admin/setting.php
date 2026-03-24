@@ -43,6 +43,12 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link get-menus" data-bs-toggle="pill" data-bs-target="#menus" type="button"><i class="fa-solid fa-bars me-2"></i><span data-i18n="menu"></span></button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link disclaimer-tab" data-bs-toggle="pill" data-bs-target="#disclaimer" type="button">
+                <i class="fa-solid fa-file-contract me-2"></i>
+                <span data-i18n="disclaimer"></span>
+            </button>
+        </li>
     </ul>
     <div class="tab-content">
         <div class="tab-pane fade show active" id="general">
@@ -528,6 +534,26 @@
                         </thead>
                         <tbody class="menu-sortable" data-group="admin"></tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="disclaimer">
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="tb_disclaimer" style="width:100%">
+                            <thead class="table-light">
+                                <tr>
+                                    <th data-i18n="version"></th>
+                                    <th data-i18n="enable_disclaimer"></th>
+                                    <th data-i18n="require_user_acceptance"></th>
+                                    <th data-i18n="show_mode"></th>
+                                    <th data-i18n="create_at"></th>
+                                    <th class="text-end"></th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
