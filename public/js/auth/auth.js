@@ -351,7 +351,7 @@ function renderForgotOptions(data) {
             if (allItems.length > 3) {
                 adminHtml += `
                     <button type="button" class="btn btn-outline-primary btn-sm mt-2 w-100 rounded-3" data-bs-toggle="modal" data-bs-target="#adminContactModal">
-                        <i class="fa-solid fa-ellipsis-h me-1"></i> <span data-i18n="more_channels"></span>
+                        <i class="fas fa-ellipsis-v me-1"></i><span data-i18n="more_channels">${langData['more_channels'] || 'More Channels'}</span>
                     </button>`;
                 $('#adminContactModal .modal-body').html('<div class="list-group list-group-flush">' + allItems.join('') + '</div>');
             }
@@ -368,7 +368,7 @@ function renderForgotOptions(data) {
         $(`#content_${methods[0].id}`).addClass('show active').show();
         $('#dynamic_tab_nav').hide();
     } else {
-        let navHtml = '<ul class="nav nav-pills nav-justified mb-4 bg-light p-1 rounded-pill" id="forgotTabs" role="tablist">';
+        let navHtml = '<ul class="nav nav-pills nav-justified mb-1 bg-light p-1 rounded-pill" id="forgotTabs" role="tablist">';
         methods.forEach((m, index) => {
             const activeClass = index === 0 ? 'active' : '';
             navHtml += `
@@ -417,228 +417,96 @@ function parseAuthSetting(item) {
             break;
     }
 }
-function applyAuthBackground() {
-    if (authState.bg) {
-        $('.auth-bg-img-pc').attr('src', authState.bg);
-    } else {
-        $('.auth-bg-img-pc').css('display', 'none');
-    }
-    if (authState.mobileBg) {
-        $('.auth-bg-img-mobile').attr('src', authState.mobileBg);
-    } else {
-        $('.auth-bg-img-mobile').css('display', 'none');
-    }
-}
-function renderInfography(path) {
-    const ext = path.split('.').pop().toLowerCase();
-    const videoExts = ['mp4', 'webm', 'ogg', 'mov'];
-    let html = '';
-    const mediaStyle = `
-        width: 100%; 
-        height: 100%; 
-        object-fit: cover; 
-        display: block;
-    `;
-    if (videoExts.includes(ext)) {
-        html = `
-            <video autoplay muted loop playsinline style="${mediaStyle}">
-                <source src="${path}" type="video/${ext === 'mov' ? 'quicktime' : ext}">
-                Your browser does not support the video tag.
-            </video>`;
-    } else {
-        html = `<img src="${path}" alt="Infography" style="${mediaStyle}">`;
-    }
-    $('.infography').css({
-        'width': '100%',
-        'height': '100%',
-        'overflow': 'hidden',
-        'display': 'block'
-    }).html(html);
-}
 function renderDefaultInfography() {
     const container = document.getElementById('infographyContainer');
     if (!container) return;
-    const html = `
-        <div class="esg-wrapper w-100 h-100 d-flex align-items-center">
-            <style>
-                .esg-wrapper {
-                    --accent-color: #00d2ff;
-                    --main-gradient: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); /* นำสายตาด้วย Gradient ทันสมัย */
-                    --glass: rgba(255, 255, 255, 0.1);
-                }
-                .esg-banner {
-                    position: relative;
-                    width: 100%;
-                    height: 100%;
-                    min-height: 500px;
-                    background: #0f172a; /* พื้นหลังเข้มขับให้ Content เด่น */
-                    border-radius: 0;
-                    overflow: hidden;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: white;
-                    padding: 1rem;
-                }
-                .esg-bg-circles {
-                    position: absolute;
-                    inset: 0;
-                    overflow: hidden;
-                    z-index: 1;
-                }
-                .circle {
-                    position: absolute;
-                    filter: blur(80px);
-                    border-radius: 50%;
-                    opacity: 0.4;
-                    animation: move 20s infinite alternate;
-                }
-                .c1 { width: 300px; height: 300px; background: #2e86c1; top: -10%; left: -10%; }
-                .c2 { width: 400px; height: 400px; background: #a8d8ef; bottom: -20%; right: -10%; animation-delay: -5s; }
-                @keyframes move {
-                    from { transform: translate(0, 0) scale(1); }
-                    to { transform: translate(50px, 100px) scale(1.1); }
-                }
-                .esg-content {
-                    position: relative;
-                    z-index: 2;
-                    text-align: center;
-                    width: 100%;
-                }
-                .esg-badge {
-                    display: inline-block;
-                    padding: 6px 16px;
-                    background: rgba(255, 255, 255, 0.1);
-                    border: 1px solid rgba(255, 255, 255, 0.2);
-                    backdrop-filter: blur(10px);
-                    border-radius: 100px;
-                    font-size: 0.7rem;
-                    text-transform: uppercase;
-                    letter-spacing: 2px;
-                    margin-bottom: 1.5rem;
-                    color: var(--accent-color);
-                }
-                .esg-title {
-                    font-size: 2.5rem;
-                    font-weight: 800;
-                    line-height: 1.2;
-                    margin-bottom: 1rem;
-                    background: linear-gradient(to bottom, #fff 0%, #cbd5e1 100%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                }
-                .esg-title span {
-                    color: var(--accent-color);
-                    -webkit-text-fill-color: initial;
-                    font-style: italic;
-                }
-                .esg-grid {
-                    display: flex;
-                    flex-wrap: wrap;
-                    justify-content: center;
-                    gap: 12px;
-                    margin-top: 2.5rem;
-                }
-                .esg-card {
-                    background: rgba(255, 255, 255, 0.05);
-                    border: 1px solid rgba(255, 255, 255, 0.1);
-                    padding: 15px 10px;
-                    border-radius: 18px;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                    backdrop-filter: blur(5px);
-                    flex: 0 1 calc(20% - 12px); 
-                    min-width: 90px;
-                }
-                .esg-card:hover {
-                    background: rgba(255, 255, 255, 0.12);
-                    transform: translateY(-8px);
-                    border-color: var(--accent-color);
-                    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
-                }
-                .card-icon {
-                    font-size: 1.8rem;
-                    margin-bottom: 8px;
-                    display: block;
-                }
-                .card-text {
-                    font-size: 0.7rem;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                    opacity: 0.9;
-                }
-                @media (max-width: 768px) {
-                    .esg-grid {
-                        gap: 10px;
-                    }
-                    .esg-card {
-                        flex: 0 1 calc(33.33% - 10px);
-                        min-width: 80px;
-                        padding: 12px 8px;
-                    }
-                    .esg-title {
-                        font-size: 1.6rem;
-                    }
-                }
-                @media (max-width: 400px) {
-                    .esg-card {
-                        flex: 0 1 calc(50% - 10px);
-                    }
-                }
-                .reveal {
-                    opacity: 0;
-                    transform: translateY(30px);
-                    animation: revealUp 0.8s ease forwards;
-                }
-                .reveal-1 { animation-delay: 0.2s; }
-                .reveal-2 { animation-delay: 0.4s; }
-                .reveal-3 { animation-delay: 0.6s; }
-                @keyframes revealUp {
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                @media (max-width: 992px) {
-                    .esg-grid { grid-template-columns: repeat(3, 1fr); }
-                    .esg-title { font-size: 1.8rem; }
-                }
-            </style>
-            <div class="esg-banner shadow-lg">
-                <div class="esg-bg-circles">
-                    <div class="circle c1"></div>
-                    <div class="circle c2"></div>
+    container.innerHTML = `
+        <div class="esg-banner">
+            <div class="esg-orb esg-orb-1"></div>
+            <div class="esg-orb esg-orb-2"></div>
+            <div class="esg-orb esg-orb-3"></div>
+            <div class="esg-wind-container" id="esgWindLines"></div>
+            <div class="esg-content">
+                <div class="esg-badge">
+                    <i class="fa-solid fa-wind" style="font-size:11px;"></i>
+                    IEC 61400-12-1 Compliance
                 </div>
-                <div class="esg-content">
-                    <div class="esg-badge reveal reveal-1">
-                        IEC 61400-12-1 Compliance
-                    </div> 
-                    <h1 class="esg-title reveal reveal-2">
-                        Sustainable <br> <span>Wind Farm</span> Solutions
-                    </h1>
-                    <p class="text-white-50 small reveal reveal-2" data-i18n="subtitle"></p>
-                    <div class="esg-grid reveal reveal-3">
-                        <div class="esg-card">
-                            <span class="card-icon">🌬️</span>
-                            <span class="card-text" data-i18n="wind_energy"></span>
-                        </div>
-                        <div class="esg-card">
-                            <span class="card-icon">☀️</span>
-                            <span class="card-text" data-i18n="solar_cell"></span>
-                        </div>
-                        <div class="esg-card">
-                            <span class="card-icon">🌿</span>
-                            <span class="card-text" data-i18n="biomass"></span>
-                        </div>
-                        <div class="esg-card">
-                            <span class="card-icon">♻️</span>
-                            <span class="card-text" data-i18n="renewable"></span>
-                        </div>
-                        <div class="esg-card">
-                            <span class="card-icon">🔋</span>
-                            <span class="card-text" data-i18n="battery"></span>
-                        </div>
+                <h1 class="esg-title">
+                    Sustainable<br><em>Wind Farm</em> Solutions
+                </h1>
+                <p class="esg-sub" data-i18n="subtitle"></p>
+                <div class="esg-grid">
+                    <div class="esg-card">
+                        <span class="esg-card-icon">🌬️</span>
+                        <span class="esg-card-text" data-i18n="wind_energy">${langData['wind_energy'] || 'Wind Energy'}</span>
+                    </div>
+                    <div class="esg-card">
+                        <span class="esg-card-icon">☀️</span>
+                        <span class="esg-card-text" data-i18n="solar_cell">${langData['solar_cell'] || 'Solar Cell'}</span>
+                    </div>
+                    <div class="esg-card">
+                        <span class="esg-card-icon">🌿</span>
+                        <span class="esg-card-text" data-i18n="biomass">${langData['biomass'] || 'Biomass'}</span>
+                    </div>
+                    <div class="esg-card">
+                        <span class="esg-card-icon">♻️</span>
+                        <span class="esg-card-text" data-i18n="renewable">${langData['renewable'] || 'Renewable'}</span>
+                    </div>
+                    <div class="esg-card">
+                        <span class="esg-card-icon">🔋</span>
+                        <span class="esg-card-text" data-i18n="battery">${langData['battery'] || 'Battery'}</span>
                     </div>
                 </div>
             </div>
         </div>
     `;
-    container.innerHTML = html;
+    const wc = document.getElementById('esgWindLines');
+    if (wc) {
+        for (let i = 0; i < 8; i++) {
+            const el = document.createElement('div');
+            el.className = 'esg-wind-line';
+            el.style.cssText = `
+                top:${10 + Math.random() * 80}%;
+                width:${60 + Math.random() * 140}px;
+                animation-duration:${2.5 + Math.random() * 4}s;
+                animation-delay:${Math.random() * -6}s;
+                left:0;
+            `;
+            wc.appendChild(el);
+        }
+    }
+    if (typeof updateText === 'function') updateText(container);
 }
+function renderInfography(path) {
+    const ext = path.split('.').pop().toLowerCase();
+    const videoExts = ['mp4', 'webm', 'ogg', 'mov'];
+    const mediaStyle = 'width:100%;height:100%;object-fit:cover;display:block;';
+    let html = '';
+    if (videoExts.includes(ext)) {
+        html = `<video autoplay muted loop playsinline style="${mediaStyle}">
+                    <source src="${path}" type="video/${ext === 'mov' ? 'quicktime' : ext}">
+                </video>`;
+    } else {
+        html = `<img src="${path}" alt="Infography" style="${mediaStyle}" loading="lazy">`;
+    }
+    const el = document.querySelector('.infography');
+    if (el) {
+        el.style.cssText = 'width:100%;height:100%;overflow:hidden;display:block;';
+        el.innerHTML = html;
+    }
+}
+function applyAuthBackground() {
+    const page = document.getElementById('authPage');
+    if (authState.bg) {
+        document.querySelector('.auth-bg-img-pc')?.setAttribute('src', authState.bg);
+        page?.classList.add('has-bg');
+    } else {
+        document.querySelector('.auth-bg-img-pc')?.remove();
+    }
+    if (authState.mobileBg) {
+        document.querySelector('.auth-bg-img-mobile')?.setAttribute('src', authState.mobileBg);
+    } else {
+        document.querySelector('.auth-bg-img-mobile')?.remove();
+    }
+}
+ 

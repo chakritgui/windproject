@@ -1,10 +1,7 @@
 </div>
 <div class="footer">
     <div class="footer-container">
-        <img src="<?=BASE_URL?>/public/images/iwind.png" alt="wind" class="footer-logo">
-        <span class="footer-text">
-            Wind Data Website © <?=date('Y')?> All rights reserved.
-        </span>
+        <span class="footer-text"></span>
     </div>
 </div>
 <div class="modal fade" id="windModal" tabindex="-1" aria-hidden="true">

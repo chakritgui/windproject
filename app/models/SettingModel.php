@@ -259,9 +259,7 @@ class SettingModel {
     }
     private function updateSettings(array $settings) {
         foreach ($settings as $type => $value) {
-            if ($value !== null && $value !== '') {
-                $this->updateSetting($type, $value);
-            }
+            $this->updateSetting($type, $value);
         }
     }
     private function updateSetting($type, $value) {
@@ -276,22 +274,25 @@ class SettingModel {
         $file = $_FILES[$inputName];
         $mimeType = mime_content_type($file['tmp_name']);
         $dir = dirname(__DIR__, 2) . "/uploads/website/";
+        
         if (!is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
+        $timeSuffix = time(); 
         if (str_contains($mimeType, 'video/')) {
-            if ($file['size'] > 10 * 1024 * 1024) return; 
             $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-            $filename = $settingType . "." . $extension;
+            $filename = $settingType . "_" . $timeSuffix . "." . $extension;
             $target = $dir . $filename;
-            array_map('unlink', glob($dir . $settingType . ".*"));
+            array_map('unlink', glob($dir . $settingType . "_*.*")); 
             if (move_uploaded_file($file['tmp_name'], $target)) {
                 $this->updateSetting($settingType, "uploads/website/" . $filename);
             }
         } else if (str_contains($mimeType, 'image/')) {
-            $filename = $settingType . ".webp";
+            $filename = $settingType . "_" . $timeSuffix . ".webp";
             $target = $dir . $filename;
             $image = null;
+            array_map('unlink', glob($dir . $settingType . "_*.webp"));
+            array_map('unlink', glob($dir . $settingType . ".*"));
             switch ($mimeType) {
                 case 'image/jpeg': $image = imagecreatefromjpeg($file['tmp_name']); break;
                 case 'image/png': 
@@ -319,12 +320,16 @@ class SettingModel {
                     imagedestroy($image);
                     $image = $newImg;
                 }
-                imagealphablending($image, true);
+                imagealphablending($image, false);
                 imagesavealpha($image, true);
                 $quality = 80; 
-                imagewebp($image, $target, $quality);
-                imagedestroy($image);
-                $this->updateSetting($settingType, "uploads/website/" . $filename);
+                if (imagewebp($image, $target, $quality)) {
+                    imagedestroy($image);
+                    // 3. อัปเดต Path ใหม่ลง Database
+                    $this->updateSetting($settingType, "uploads/website/" . $filename);
+                } else {
+                    imagedestroy($image);
+                }
             }
         }
     }

@@ -637,17 +637,18 @@ function handleSettingItem(item) {
     switch (item.setting_type) {
         case 'logo':
             logo = `${BASE_URL}/${val || 'public/images/logo.png'}?v=${Date.now()}`;
-            $('img.logo-full, img.logo').attr('src', logo);
+            $('img.logo-full').attr('src', logo);
             break;
         case 'icon':
             icon = `${BASE_URL}/${val || 'public/images/icon.png'}?v=${Date.now()}`;
             $('link[rel="icon"]').attr('href', icon);
+            $('img.logo').attr('src', icon);
             break;
         case 'website_en': website.en = val; break;
         case 'website_lo': website.lo = val; break;
         case 'website_th': website.th = val; break;
         case 'footer':
-            footer = val || 'Copyright © iWind Corporation Limited';
+            footer = val || `Copyright © <img src="${BASE_URL}/public/images/iwind.png" alt="wind" class="footer-logo"> Corporation Limited`;
             $('.footer-text').html(footer);
             break;
        case 'language':
