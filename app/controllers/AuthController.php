@@ -35,7 +35,7 @@ class AuthController extends Controller {
         $session_id = session_id();  
         $m->updateLogin($user['member_id'], $timezone, $session_id);
         $allowedPaths = [];
-        if (!empty($user['privileges_id']) && $user['role'] === 'user') {
+        if ($user['role'] === 'user') {
             $allowedPaths = $m->getMemberMenus($user['privileges_id']);
         }
         $_SESSION['session_id'] = $session_id;
