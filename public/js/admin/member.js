@@ -1094,7 +1094,10 @@ function initPrivilegesTable() {
             render: function(row) {
                 return `
                     <div class="btn-group border rounded-3 bg-white">
-                        <button class="btn btn-link text-warning py-1 manage-privileges" data-id="${row.privileges_id}">
+                        <button class="btn btn-link text-info py-1 config-privilegest" data-id="${row.privileges_id}">
+                            <i class="fa-solid fa-list-check"></i>
+                        </button>
+                        <button class="btn btn-link text-warning py-1 border-start manage-privileges" data-id="${row.privileges_id}">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
                         <button class="btn btn-link text-danger py-1 border-start delete-privileges" data-id="${row.privileges_id}">
@@ -1123,6 +1126,126 @@ function initPrivilegesTable() {
         }
     });
 }
+const apiPost = (url, data, options = {}) => {
+    const isFormData = data instanceof FormData;
+    return $.ajax({
+        url: `${BASE_URL}${url}`,
+        type: 'POST',
+        data: data,
+        dataType: options.dataType || 'json',
+        contentType: options.contentType !== undefined ? options.contentType : (isFormData ? false : 'application/x-www-form-urlencoded; charset=UTF-8'),
+        processData: options.processData !== undefined ? options.processData : (isFormData ? false : true),
+        xhr: options.xhr
+    });
+};
+$(document).on('click', '.config-privilegest', function() {
+    const privileges_id = $(this).data("id");
+    const modalEl = $('#windModal');
+    modalEl.find(".modal-header").html(`
+        <h5 class="modal-title"><i class="bi bi-shield-lock me-2"></i>${langData['user_privileges'] || 'User Privileges'}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    `);
+    modalEl.find(".modal-body").html(`
+        <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <span class="fw-bold text-secondary">${langData['menu'] || 'Menu'}</span>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="selectAllMenus">
+                <label class="form-check-label small" for="selectAllMenus">${langData['select_all'] || 'Select All'}</label>
+            </div>
+        </div>
+        <div id="menu-list-container" style="max-height: 400px; overflow-y: auto; overflow-x: hidden;">
+            <div class="text-center p-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <div class="mt-2 text-muted">${langData['loading'] || "Loading..."}</div>
+            </div>
+        </div>
+    `);
+    modalEl.find(".modal-footer").html(`
+        <button type="button" class="btn btn-primary save-config" data-privilege-id="${privileges_id}">
+            ${langData['save'] || "Save"}
+        </button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
+    `);
+    let modal = new bootstrap.Modal(modalEl[0], { focus: false });
+    modal.show();
+    let rightsMenu = [];
+    apiPost(`/api/config.menu`, { privileges_id: privileges_id }).done(res => {
+        if (res.status) {
+            rightsMenu = res.data.map(item => item.menu_id.toString());
+        }
+        apiPost(`/api/settings.menu`, { privileges_id: privileges_id }).done(res => {
+            if (res.status) {
+                const userMenus = res.data.filter(item => item.target_group === 'user');
+                renderMenuList(userMenus, rightsMenu);
+            } else {
+                $('#menu-list-container').html(`<div class="alert alert-danger">${res.message}</div>`);
+            }
+        });
+    });
+});
+function renderMenuList(menus, selectedIds = []) {
+    let html = '';
+    if (menus.length === 0) {
+        html = `<div class="text-center text-muted p-4">${langData['no_data_found'] || "No data available"}</div>`;
+    } else {
+        menus.forEach(menu => {
+            const isChecked = (selectedIds.length === 0) || selectedIds.includes(menu.id.toString()) ? 'checked' : '';
+            html += `
+            <div class="form-check mb-1 p-2 border-bottom-dashed hover-bg-light">
+                <input class="form-check-input ms-0 me-3" type="checkbox" value="${menu.id}" id="menu_${menu.id}" name="menu_access[]" ${isChecked}>
+                <label class="form-check-label d-flex align-items-center cursor-pointer" for="menu_${menu.id}">
+                    <i class="bi ${menu.icon || 'bi-circle'} fs-5 me-3 text-primary"></i> 
+                    <div>
+                        <div class="fw-bold">${menu.th || (menu.translations && menu.translations.th)}</div>
+                        <div class="small text-muted" style="font-size: 0.75rem;">${menu.en || (menu.translations && menu.translations.en)}</div>
+                    </div>
+                </label>
+            </div>`;
+        });
+    }
+    $('#menu-list-container').html(html);
+}
+$(document).on('change', '#selectAllMenus', function() {
+    const isChecked = $(this).is(':checked');
+    $('.form-check-input[name="menu_access[]"]').prop('checked', isChecked);
+});
+$(document).on('click', '.save-config', function() {
+    const $btn = $(this);
+    const privId = $btn.data('privilege-id');
+    let selectedMenus = [];
+    $('.form-check-input[name="menu_access[]"]:checked').each(function() {
+        selectedMenus.push($(this).val());
+    });
+    $btn.prop('disabled', true).html(`<span class="spinner-border spinner-border-sm me-1"></span> ${langData['saving'] || "Saving..."}`);
+    $.ajax({
+        url: `${BASE_URL}/api/privileges.config`,
+        method: 'POST',
+        data: {
+            privileges_id: privId,
+            menu_ids: selectedMenus 
+        },
+        dataType: 'json',
+        success: function(res) {
+            if (res.status) {
+                showSuccess(langData['saved_successfully'] || 'Saved successfully');
+                const modalElement = document.getElementById('windModal');
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            } else {
+                showError((langData['cannot_save'] || 'Error: ') + ' ' + (langData[res.message] || res.message || 'Unknown error'));
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error(xhr.responseText);
+            showError('Server Error: ' + status);
+        },
+        complete: function() {
+            $btn.prop('disabled', false).html('<i class="bi bi-save me-1"></i> ' + (langData['save'] || "บันทึก"));
+        }
+    });
+});
 $(document).on('click', '.delete-privileges', function() {
     let privileges_id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){

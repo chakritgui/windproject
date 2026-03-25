@@ -648,9 +648,7 @@ class MemberModel {
                 $stmtTotal = $pdo->prepare($sqlTotal);
                 $stmtTotal->execute($params);
                 $totalCount = $stmtTotal->fetchColumn();
-                $sql = "SELECT DISTINCT timezone as id, timezone as text 
-                        FROM wp_login_logs " . $where . " 
-                        ORDER BY timezone ASC LIMIT :offset, :limit";
+                $sql = "SELECT DISTINCT timezone as id, timezone as text FROM wp_login_logs " . $where . " ORDER BY timezone ASC LIMIT :offset, :limit";
                 $stmt = $pdo->prepare($sql);
                 $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
                 $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
@@ -684,6 +682,17 @@ class MemberModel {
             return [];
         }
     }
+    public function menuPrivileges($privileges_id) {
+        try {
+            $sql = "SELECT menu_id FROM wp_members_privileges_config WHERE privileges_id = :priv_id and status = 'active'";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(['priv_id' => $privileges_id]);   
+            return $stmt->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            return [];
+        }
+    }
     public function saveAllPermissions($permissions) {
         try {
             $this->db->beginTransaction();
@@ -704,6 +713,34 @@ class MemberModel {
         } catch (PDOException $e) {
             $this->db->rollBack();
             error_log("Database Error: " . $e->getMessage());
+            return false;
+        }
+    }
+    public function configPrivileges($privileges_id, $menu_ids) {
+        try {
+            $this->db->beginTransaction();
+            $sql_clear = "UPDATE wp_members_privileges_config SET status = 'inactive', updated_at = NOW() WHERE privileges_id = :priv_id";
+            $stmt_clear = $this->db->prepare($sql_clear);
+            $stmt_clear->execute([':priv_id' => $privileges_id]);
+            $sql = "INSERT INTO wp_members_privileges_config (privileges_id, menu_id, status, created_at, updated_at) 
+                    VALUES (:priv_id, :menu_id, 'active', NOW(), NOW())
+                    ON DUPLICATE KEY UPDATE 
+                    status = 'active', 
+                    updated_at = NOW()";
+            $stmt = $this->db->prepare($sql);
+            foreach ($menu_ids as $m_id) {
+                $stmt->execute([
+                    ':priv_id' => $privileges_id,
+                    ':menu_id' => intval($m_id)
+                ]);
+            }
+            $this->db->commit();
+            return true;
+        } catch (PDOException $e) {
+            if ($this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+            error_log("Privilege Config Error: " . $e->getMessage());
             return false;
         }
     }

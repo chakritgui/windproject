@@ -26,6 +26,11 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="user-privileges-tab" data-bs-toggle="pill" data-bs-target="#privileges_tab" data-page="privileges" type="button">
+                <i class="fa-solid fa-user-shield me-2"></i><span data-i18n="user_privileges"></span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="history-tab" data-bs-toggle="pill" data-bs-target="#login_history" data-page="history" type="button">
                 <i class="fa-solid fa-clock-rotate-left me-2"></i><span data-i18n="usage_history"></span>
             </button>
@@ -38,11 +43,6 @@
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="setting-tab" data-bs-toggle="pill" data-bs-target="#setting" data-page="setting" type="button">
                 <i class="fa-solid fa-list-check me-2"></i><span data-i18n="permission_edit_data"></span>
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="user-privileges-tab" data-bs-toggle="pill" data-bs-target="#privileges_tab" data-page="privileges" type="button">
-                <i class="fa-solid fa-user-shield me-2"></i><span data-i18n="user_privileges"></span>
             </button>
         </li>
     </ul>

@@ -37,7 +37,8 @@ class AuthController extends Controller {
         $_SESSION['session_id'] = $session_id;
         $_SESSION['user'] = [
             'id'   => $user['member_id'],
-            'role' => $user['role']
+            'role' => $user['role'],
+            'privileges' => $user['privileges_id'],
         ];
         if ($timezone) {
             $_SESSION['timezone'] = $timezone;

@@ -139,6 +139,14 @@ class MemberController extends BaseController {
             'data'   => $data
         ]);
     }
+    public function menuPrivileges() {
+        $privileges_id = intval($_POST['privileges_id'] ?? 0);
+        $data = $this->model->menuPrivileges($privileges_id);
+        $this->json([
+            'status' => $data ? true : false,
+            'data'   => $data
+        ]);
+    }
     public function savePrivileges() {
         $groupName = trim($_POST['privileges_name'] ?? '');
         if (empty($groupName)) {
@@ -172,6 +180,12 @@ class MemberController extends BaseController {
         $password = $_POST['password'] ?? null;
         $send_notification = $_POST['send_notification'] ?? 'no';
         $this->json(['status'=>$this->model->approved($id, $member_id, $password, $send_notification)]);
+    }
+    public function configPrivileges() {
+        $privileges_id = intval($_POST['privileges_id'] ?? 0);
+        $menu_ids = $_POST['menu_ids'] ?? []; 
+        $result = $this->model->configPrivileges($privileges_id, $menu_ids);
+        $this->json(['status' => $result]);
     }
     public function save() {
         $data = [
