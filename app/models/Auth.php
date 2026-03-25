@@ -10,7 +10,7 @@
             return $stmt->fetch();
         }
         public function getMemberMenus($privileges_id) {
-            if (empty($privileges_id)) {
+            if (empty($privileges_id) || $privileges_id === '') {
                 $sql = "SELECT path FROM wp_menus 
                         WHERE target_group = 'user' 
                         AND is_active = 1 
