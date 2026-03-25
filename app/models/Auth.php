@@ -13,7 +13,7 @@
             if (empty(trim((string)$privileges_id))) {
                 $sql = "SELECT path FROM wp_menus 
                         WHERE target_group = 'user' 
-                        AND is_active = 1 
+                        AND is_active = 1 AND status = 'active'
                         ORDER BY id ASC";
                 $stmt = $this->db->prepare($sql);
                 $stmt->execute();
