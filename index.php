@@ -5,7 +5,7 @@
     }
     ini_set('session.cookie_samesite', 'Lax');
     session_start();
-    print_r($_SESSION);
+    print_r($_SESSION); exit;
     require_once __DIR__ . '/vendor/autoload.php';
     $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
     $dotenv->load();
