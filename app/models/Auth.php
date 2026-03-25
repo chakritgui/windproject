@@ -9,6 +9,27 @@
             $stmt->execute([$username, $username]);
             return $stmt->fetch();
         }
+        public function getMemberMenus($privileges_id) {
+            if (empty($privileges_id)) {
+                $sql = "SELECT path FROM wp_menus 
+                        WHERE target_group = 'user' 
+                        AND is_active = 1 
+                        ORDER BY id ASC";
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute();
+            } else {
+                $sql = "SELECT m.path 
+                        FROM wp_menus m
+                        INNER JOIN wp_members_privileges_config c ON m.id = c.menu_id
+                        WHERE c.privileges_id = ? 
+                        AND c.status = 'active' 
+                        AND m.is_active = 1
+                        ORDER BY m.id ASC";
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute([$privileges_id]);
+            }
+            return $stmt->fetchAll(PDO::FETCH_COLUMN);
+        }
         public function findByEmail($email, $lang) {
             $stmt = $this->db->prepare('SELECT member_id FROM wp_members WHERE email = ? LIMIT 1');
             $stmt->execute([$email]);

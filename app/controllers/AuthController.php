@@ -34,11 +34,16 @@ class AuthController extends Controller {
         session_regenerate_id(true); 
         $session_id = session_id();  
         $m->updateLogin($user['member_id'], $timezone, $session_id);
+        $allowedPaths = [];
+        if (!empty($user['privileges_id']) && $user['role'] === 'user') {
+            $allowedPaths = $m->getMemberMenus($user['privileges_id']);
+        }
         $_SESSION['session_id'] = $session_id;
         $_SESSION['user'] = [
             'id'   => $user['member_id'],
             'role' => $user['role'],
             'privileges' => $user['privileges_id'],
+            'allowedPaths' => $allowedPaths,
         ];
         if ($timezone) {
             $_SESSION['timezone'] = $timezone;

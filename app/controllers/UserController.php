@@ -10,10 +10,12 @@ class UserController extends Controller {
     }
     public function user() {
         ensure_login();
+        $this->checkPermission('home');
         $this->view('user/map');
     }
     public function project($path = null){
         ensure_login();
+        $this->checkPermission('pstg');
         $folderIds = [];
         if ($path) {
             $segments = explode('/', trim($path, '/'));
@@ -29,18 +31,22 @@ class UserController extends Controller {
     }
     public function document() {
         ensure_login();
+        $this->checkPermission('document');
         $this->view('user/document');
     }
     public function download() {
         ensure_login();
+        $this->checkPermission('download');
         $this->view('user/download');
     }
     public function news() {
         ensure_login();
+        $this->checkPermission('news');
         $this->view('user/news');
     }
     public function pole($data = null){
         ensure_login();
+        $this->checkPermission('home');
         $filters = [];
         if (!empty($data)) {
             $json = base64_decode($data, true);
@@ -92,6 +98,19 @@ class UserController extends Controller {
             'sensors'   => $sensors,
             'levels'   => $levels,
         ]);
+    }
+    private function checkPermission($path) {
+        ensure_login();
+        $allowed = $_SESSION['user']['allowedPaths'] ?? [];
+        if (empty($allowed)) {
+            header('Location: account'); 
+            exit;
+        }
+        if (in_array($path, $allowed)) {
+            return true;
+        }
+        header('Location: ' . $allowed[0]);
+        exit;
     }
     public function documentList() {
         $input = json_decode(file_get_contents("php://input"), true);
