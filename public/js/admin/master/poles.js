@@ -421,6 +421,7 @@ function manageContent(poles_id, content_id) {
         initCoverUpload();
         initAttachmentsUpload(d.attachments || []);
         initImagesUpload(d.images || []);
+        initPresentationUpload(d.presentation || []);
         init360ImagesUpload(d.images360 || []);
         initSummernote();
         modal.show();
@@ -435,6 +436,7 @@ function getContentForm(d, poles_id, content_id) {
                     ${renderCover(d)}
                     ${renderLangTabs(d)}
                 </div>
+                ${renderPresentation()}
                 ${renderGallery()}
                 ${render360()}
                 ${renderFiles()}
@@ -489,6 +491,14 @@ function executeSave() {
             formData.append('new_images360[]', img.file);
         } else {
             formData.append('existing_images360[]', img.id);
+        }
+    });
+    const presentation = window.getPresentationData ? window.getPresentationData() : [];
+    presentation.forEach((img) => {
+        if (img.type === 'new') {
+            formData.append('new_presentation[]', img.file);
+        } else {
+            formData.append('existing_presentation[]', img.id);
         }
     });
     formData.append("poles_id", $("#poles_id").val() || "");

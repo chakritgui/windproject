@@ -373,6 +373,7 @@ class PolesModel {
                 "attachments" => [],
                 "images" => [],
                 "images360" => [],
+                "presentation" => [],
                 "settings" => $settings,
                 "translates" => $translates,
                 "cover_display" => 'no'
@@ -404,6 +405,7 @@ class PolesModel {
         $attachments = [];
         $images = [];
         $images360 = [];
+        $presentation = [];
         foreach ($media as $m) {
             $item = [
                 "id" => $m['id'],
@@ -417,6 +419,8 @@ class PolesModel {
                 $images[] = $item;
             } elseif ($m['file_type'] === 'image360') {
                 $images360[] = $item;
+            } elseif ($m['file_type'] === 'presentation') {
+                $presentation[] = $item;
             }
         }
         return [
@@ -433,6 +437,7 @@ class PolesModel {
             "attachments" => $attachments,
             "images" => $images,
             "images360" => $images360,
+            "presentation" => $presentation,
             "settings" => $settings,
             "translates" => $translates
         ];
@@ -471,9 +476,11 @@ class PolesModel {
             $mediaHelper->syncMedia($content_id, 'attachment', $data['existing_attachments'] ?? []);
             $mediaHelper->syncMedia($content_id, 'image', $data['existing_images'] ?? []);
             $mediaHelper->syncMedia($content_id, 'image360', $data['existing_images360'] ?? []);
+            $mediaHelper->syncMedia($content_id, 'presentation', $data['existing_presentation'] ?? []);
             $mediaHelper->handleMultiUpload($content_id, 'attachment', 'new_attachments');
             $mediaHelper->handleMultiUpload($content_id, 'image', 'new_images');
             $mediaHelper->handleMultiUpload($content_id, 'image360', 'new_images360');
+            $mediaHelper->handleMultiUpload($content_id, 'presentation', 'new_presentation');
             $stmtFolder = $pdo->prepare("UPDATE wp_poles SET content_id = :content_id WHERE poles_id = :id");
             $stmtFolder->execute([':content_id' => $content_id, ':id' => $data['poles_id']]);
             if($auto_translate == 'yes') {

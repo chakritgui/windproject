@@ -54,6 +54,7 @@ class NewsModel {
                     SUM(CASE WHEN m.file_type = 'attachment' THEN 1 ELSE 0 END) as count_attachment,
                     SUM(CASE WHEN m.file_type = 'image' THEN 1 ELSE 0 END) as count_image,
                     SUM(CASE WHEN m.file_type = 'image360' THEN 1 ELSE 0 END) as count_image360,
+                    SUM(CASE WHEN m.file_type = 'presentation' THEN 1 ELSE 0 END) as count_presentation,
                     n.content_slug, (SELECT GROUP_CONCAT(folder_id) FROM wp_content_folder WHERE content_id = n.content_id AND status = 'active') as all_folder_ids, n.folder_show_admin, n.folder_show_user, n.type,
                     f.parent_id as dynamic_parent_id 
                 FROM wp_content n
@@ -78,6 +79,7 @@ class NewsModel {
             $r['count_attachment'] = (int)$r['count_attachment'];
             $r['count_image'] = (int)$r['count_image'];
             $r['count_image360'] = (int)$r['count_image360'];
+            $r['count_presentation'] = (int)$r['count_presentation'];
             if($r['type'] === 'project' && !empty($r['dynamic_parent_id'])) {
                 $r['folder_id'] = $r['dynamic_parent_id'];
             }
@@ -163,6 +165,7 @@ class NewsModel {
                 "attachments" => [],
                 "images" => [],
                 "images360" => [],
+                "presentation" => [],
                 "title" => ["th"=>"","lo"=>"","en"=>""],
                 "content" => ["th"=>"","lo"=>"","en"=>""],
                 "status_translate" => ["th"=>"","lo"=>"","en"=>""],
@@ -208,6 +211,7 @@ class NewsModel {
         $attachments = [];
         $images = [];
         $images360 = [];
+        $presentation = [];
         foreach ($media as $m) {
             $item = [
                 "id" => $m['id'],
@@ -221,6 +225,8 @@ class NewsModel {
                 $images[] = $item;
             } elseif ($m['file_type'] === 'image360') {
                 $images360[] = $item;
+            } elseif ($m['file_type'] === 'presentation') {
+                $presentation[] = $item;
             }
         }
         return [
@@ -242,6 +248,7 @@ class NewsModel {
             "attachments" => $attachments,
             "images" => $images,
             "images360" => $images360,
+            "presentation" => $presentation,
             "settings" => $settings,
             "translates" => $translates,
             "folders" => $folders
@@ -373,9 +380,11 @@ class NewsModel {
             $mediaHelper->syncMedia($content_id, 'attachment', $data['existing_attachments']);
             $mediaHelper->syncMedia($content_id, 'image', $data['existing_images']);
             $mediaHelper->syncMedia($content_id, 'image360', $data['existing_images360']);
+            $mediaHelper->syncMedia($content_id, 'presentation', $data['existing_presentation']);
             $mediaHelper->handleMultiUpload($content_id, 'attachment', 'new_attachments');
             $mediaHelper->handleMultiUpload($content_id, 'image', 'new_images');
             $mediaHelper->handleMultiUpload($content_id, 'image360', 'new_images360');
+            $mediaHelper->handleMultiUpload($content_id, 'presentation', 'new_presentation');
             if ($data['auto_translate'] === 'yes') {
                 $mediaHelper->autoTranslate($content_id);
             }

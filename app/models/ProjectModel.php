@@ -217,6 +217,7 @@ class ProjectModel {
                 "attachments" => [],
                 "images" => [],
                 "images360" => [],
+                "presentation" => [],
                 "title" => ["th" => "", "lo" => "", "en" => ""],
                 "content" => ["th" => "", "lo" => "", "en" => ""],
                 "status_translate" => ["th" => "", "lo" => "", "en" => ""],
@@ -255,6 +256,7 @@ class ProjectModel {
         $attachments = [];
         $images = [];
         $images360 = [];
+        $presentation = [];
         foreach ($media as $m) {
             $item = [
                 "id" => $m['id'],
@@ -268,6 +270,8 @@ class ProjectModel {
                 $images[] = $item;
             } elseif ($m['file_type'] === 'image360') {
                 $images360[] = $item;
+            } elseif ($m['file_type'] === 'presentation') {
+                $presentation[] = $item;
             }
         }
         return [
@@ -285,6 +289,7 @@ class ProjectModel {
             "attachments" => $attachments,
             "images" => $images,
             "images360" => $images360,
+            "presentation" => $presentation,
             "settings" => $settings,
             "translates" => $translates
         ];
@@ -402,9 +407,11 @@ class ProjectModel {
             $mediaHelper->syncMedia($content_id, 'attachment', $data['existing_attachments'] ?? []);
             $mediaHelper->syncMedia($content_id, 'image', $data['existing_images'] ?? []);
             $mediaHelper->syncMedia($content_id, 'image360', $data['existing_images360'] ?? []);
+            $mediaHelper->syncMedia($content_id, 'presentation', $data['existing_presentation'] ?? []);
             $mediaHelper->handleMultiUpload($content_id, 'attachment', 'new_attachments');
             $mediaHelper->handleMultiUpload($content_id, 'image', 'new_images');
             $mediaHelper->handleMultiUpload($content_id, 'image360', 'new_images360');
+            $mediaHelper->handleMultiUpload($content_id, 'presentation', 'new_presentation');
             $status = '';
             if($send_notification == 'yes') {
                 $status = 'published';

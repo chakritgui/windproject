@@ -347,6 +347,108 @@ function initAttachmentsUpload(existingAttachments = []) {
         return attachmentsData;
     };
 }
+function initPresentationUpload(existingPresentation = []) {
+    const dropArea = document.getElementById("presentationDropArea");
+    const input = document.getElementById("presentation");
+    const list = document.getElementById("presentationList");
+    let presentationData = [];
+    existingPresentation.forEach(img => {
+        presentationData.push({
+            type: 'existing',
+            id: img.id,
+            url: img.url,
+            name: img.name || 'image'
+        });
+    });
+    renderPresentation();
+    dropArea.addEventListener("click", () => input.click());
+    ["dragenter", "dragover"].forEach(ev =>
+        dropArea.addEventListener(ev, e => {
+            e.preventDefault();
+            dropArea.classList.add("border-primary", "bg-light");
+        })
+    );
+    ["dragleave", "drop"].forEach(ev =>
+        dropArea.addEventListener(ev, e => {
+            e.preventDefault();
+            dropArea.classList.remove("border-primary", "bg-light");
+        })
+    );
+    dropArea.addEventListener("drop", e => {
+        const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.webp|\.mp4)$/i;
+        const files = Array.from(e.dataTransfer.files).filter(f => {
+            return f.type.startsWith('image/') && allowedExtensions.test(f.name);
+        });
+        addFiles(files);
+    });
+    input.addEventListener("change", e => {
+        const files = Array.from(e.target.files);
+        addFiles(files);
+        input.value = "";
+    });
+    function addFiles(files) {
+        const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif|\.webp|\.mp4)$/i;
+        let hasInvalidFile = false;
+        files.forEach(file => {
+            if (!allowedExtensions.test(file.name)) {
+                hasInvalidFile = true;
+                return; 
+            }
+            const reader = new FileReader();
+            reader.onload = e => {
+                presentationData.push({
+                    type: 'new',
+                    file: file,
+                    preview: e.target.result,
+                    name: file.name
+                });
+                renderPresentation();
+            };
+            reader.readAsDataURL(file);
+        });
+        if (hasInvalidFile) {
+            showError(langData['only_allowed_file_types'] || 'Only allowed file types will be accepted; others will be automatically discarded.');
+        }
+    }
+    function renderPresentation() {
+        if (presentationData.length === 0) {
+            list.innerHTML = '';
+            return;
+        }
+        list.innerHTML = presentationData.map((file, index) => {
+            const isVideo = 
+                file.type?.startsWith('video/') || 
+                file.url?.match(/\.(mp4|webm|ogg|mov)$/i) || 
+                file.preview?.startsWith('data:video/');
+            const mediaTag = isVideo 
+                ? `<video src="${file.preview || file.url}" class="card-img-top" style="height: 100px; object-fit: cover;" muted></video>`
+                : `<img src="${file.preview || file.url}" class="card-img-top" style="height: 100px; object-fit: contain;" loading="lazy">`;
+            return `
+                <div class="col-4 col-md-3 col-lg-2" data-index="${index}">
+                    <div class="card">
+                        <div class="position-relative">
+                            ${mediaTag}
+                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" onclick="removePresentation(${index})">
+                                <i class="fa-solid fa-x"></i>
+                            </button>
+                            ${isVideo ? '<div class="position-absolute bottom-0 start-0 m-1"><i class="fa-solid fa-video text-white shadow-sm"></i></div>' : ''}
+                        </div>
+                        <div class="card-body p-2">
+                            <small class="text-muted text-truncate d-block">${file.name}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    window.removePresentation = function(index) {
+        presentationData.splice(index, 1);
+        renderPresentation();
+    };
+    window.getPresentationData = function() {
+        return presentationData;
+    };
+}
 function initImagesUpload(existingImages = []) {
     const dropArea = document.getElementById("imagesDropArea");
     const input = document.getElementById("images");
@@ -546,6 +648,11 @@ function renderTabs() {
                 </button>
             </li>
             <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-presentation" type="button">
+                    <i class="fa-solid fa-photo-film me-2"></i><span>${langData['presentation'] || 'Presentation'}</span>
+                </button>
+            </li>
+            <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-gallery" type="button">
                     <i class="fa-solid fa-images me-2"></i><span>${langData['gallery'] || 'Gallery'}</span>
                 </button>
@@ -561,6 +668,40 @@ function renderTabs() {
                 </button>
             </li>
         </ul>
+    `;
+}
+function renderPresentation() {
+    return `
+        <div class="tab-pane fade" id="tab-presentation">
+            <div class="mb-4">
+                <label class="form-label fw-bold">${langData['upload2'] || 'Images'}</label>
+                <div class="border border-2 border-dashed rounded-3 p-4 text-center" id="presentationDropArea" style="cursor: pointer; min-height: 120px;">
+                    <input type="file" id="presentation" name="presentation[]" class="d-none" accept=".jpg,.jpeg,.png,.gif,.webp,.mp4" multiple>
+                    <div id="presentationDropLabel">
+                        <i class="fa-solid fa-image fs-1 text-muted"></i>
+                        <p class="mb-0 mt-2 text-muted">${langData['drop_here'] || 'Drop here or click to browse'}</p>
+                        <small class="text-muted">${langData['multiple_upload'] || 'Multiple upload supported'}</small>
+                    </div>
+                </div>
+                <div class="mt-3 px-2">
+                    <div class="d-flex align-items-start justify-content-center text-center">
+                        <i class="fa-solid fa-circle-info text-warning me-2 mt-1"></i>
+                        <div class="small text-muted">
+                            <div>${langData['only_allowed_file_types'] || 'Only allowed file types will be accepted; others will be automatically discarded.'}</div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-2">
+                        <span class="badge rounded-pill bg-light text-dark border">.jpg</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.jpeg</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.png</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.gif</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.webp</span>
+                        <span class="badge rounded-pill bg-light text-dark border">.mp4</span>
+                    </div>
+                </div>
+                <div id="presentationList" class="mt-3 row g-2"></div>
+            </div>
+        </div>
     `;
 }
 function renderGallery() {

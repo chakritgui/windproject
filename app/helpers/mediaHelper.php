@@ -83,6 +83,7 @@ class MediaHelper {
             return;
         }
         $allowedImageExt = ['jpg','jpeg','png','gif','webp'];
+        $allowedPresentationExt = ['jpg','jpeg','png','gif','webp','mp4'];
         $allowedFileExt  = ['ppt','pptx','pdf','doc','docx','xls','xlsx','txt','zip','rar','jpg','jpeg','png','gif','webp'];
         $files = $_FILES[$inputKey];
         $baseDir = "uploads/content/media/";
@@ -96,6 +97,8 @@ class MediaHelper {
             $ext  = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
             if (in_array($type, ['image','image360'])) {
                 if (!in_array($ext, $allowedImageExt)) continue;
+            } else if (in_array($type, ['presentation'])) {
+                if (!in_array($ext, $allowedPresentationExt)) continue;
             } else {
                 if (!in_array($ext, $allowedFileExt)) continue;
             }

@@ -564,6 +564,7 @@ function manageContent(id) {
         initCoverUpload();
         initAttachmentsUpload(d.attachments || []);
         initImagesUpload(d.images || []);
+        initPresentationUpload(d.presentation || []);
         init360ImagesUpload(d.images360 || []);
         initSummernote();
         modal.show();
@@ -628,6 +629,7 @@ function getContentForm(d) {
                     </div>
                 </div>
                 ${renderGallery()}
+                ${renderPresentation()}
                 ${render360()}
                 ${renderFiles()}
             </div>
@@ -687,6 +689,7 @@ function executeSave() {
     appendFiles(window.getAttachmentsData, 'attachments');
     appendFiles(window.getImagesData, 'images');
     appendFiles(window.get360ImagesData, 'images360');
+    appendFiles(window.getPresentationData, 'presentation');
     formData.append("parent_id", currentFolderId || 0);
     formData.append("level", currentLevel || 1);
     formData.append("content_id", $("#content_id").val() || "");

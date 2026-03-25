@@ -60,6 +60,10 @@ function initNewsTable() {
                     badges += `<span class="badge rounded-pill bg-success-subtle text-success me-1">
                         <i class="fa-solid fa-vr-cardboard me-1"></i>VR
                     </span>`;
+                if (parseInt(row.count_presentation) > 0)
+                    badges += `<span class="badge rounded-pill bg-success-subtle text-success me-1">
+                        <i class="fa-solid fa-photo-film me-1"></i>${langData['presentation'] || 'Presentation'}
+                    </span>`;
                 return `
                     <div class="fw-bold text-dark mb-1">${title}</div>
                     <div>${badges}</div>
@@ -241,6 +245,7 @@ function manageNews(id) {
         initCoverUpload();
         initAttachmentsUpload(d.attachments || []);
         initImagesUpload(d.images || []);
+        initPresentationUpload(d.presentation || []);
         init360ImagesUpload(d.images360 || []);
         initSummernote();
         togglePublishControls();
@@ -347,6 +352,7 @@ function getContentForm(d, publishTime) {
                     </div>
                 </div>
                 ${renderGallery()}
+                ${renderPresentation()}
                 ${render360()}
                 ${renderFiles()}
             </div>
@@ -491,6 +497,7 @@ function executeSave() {
     appendFiles(window.getAttachmentsData, 'attachments');
     appendFiles(window.getImagesData, 'images');
     appendFiles(window.get360ImagesData, 'images360');
+    appendFiles(window.getPresentationData, 'presentation');
     formData.append("publish_at", buildPublishAt());
     formData.append("send_notification",$("#send_notification").is(":checked") ? 'yes' : 'no');
     ['en', 'lo', 'th'].forEach(lang => {

@@ -89,6 +89,8 @@ class ProjectController extends BaseController {
             'new_images'           => $_FILES['new_images'] ?? null,
             'existing_images360'   => $_POST['existing_images360'] ?? [],
             'new_images360'        => $_FILES['new_images360'] ?? null,
+            'existing_presentation'   => $_POST['existing_presentation'] ?? [],
+            'new_presentation'        => $_FILES['new_presentation'] ?? null,
             'auto_translate' => $_POST['auto_translate'] ?? 'no',
             'cover_display' => $_POST['cover_display'] ?? 'no',
             'folder_show_admin'    => $_POST['folder_show_admin'] ?? 'no',
