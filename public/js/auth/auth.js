@@ -437,23 +437,23 @@ function renderDefaultInfography() {
                 <p class="esg-sub" data-i18n="subtitle"></p>
                 <div class="esg-grid">
                     <div class="esg-card">
-                        <span class="esg-card-icon">🌬️</span>
+                        <span class="esg-card-icon"><i class="fa-solid fa-wind"></i></span>
                         <span class="esg-card-text" data-i18n="wind_energy">${langData['wind_energy'] || 'Wind Energy'}</span>
                     </div>
                     <div class="esg-card">
-                        <span class="esg-card-icon">☀️</span>
+                        <span class="esg-card-icon"><i class="fa-solid fa-solar-panel"></i></span>
                         <span class="esg-card-text" data-i18n="solar_cell">${langData['solar_cell'] || 'Solar Cell'}</span>
                     </div>
                     <div class="esg-card">
-                        <span class="esg-card-icon">🌿</span>
+                        <span class="esg-card-icon"><i class="fa-solid fa-leaf"></i></span>
                         <span class="esg-card-text" data-i18n="biomass">${langData['biomass'] || 'Biomass'}</span>
                     </div>
                     <div class="esg-card">
-                        <span class="esg-card-icon">♻️</span>
+                        <span class="esg-card-icon"><i class="fa-solid fa-recycle"></i></span>
                         <span class="esg-card-text" data-i18n="renewable">${langData['renewable'] || 'Renewable'}</span>
                     </div>
                     <div class="esg-card">
-                        <span class="esg-card-icon">🔋</span>
+                        <span class="esg-card-icon"><i class="fa-solid fa-battery-three-quarters"></i></span>
                         <span class="esg-card-text" data-i18n="battery">${langData['battery'] || 'Battery'}</span>
                     </div>
                 </div>

@@ -113,7 +113,7 @@ function handleNotificationItem(items) {
         const delay = baseDelay + idx * 0.06;
         const html = `
             ${divider}
-            <li class="notif-item ${isUnread ? 'unread' : ''}" style="animation-delay:${delay}s;" data-redirect="${item.redirect}">
+            <li class="notif-item ${isUnread ? 'unread' : ''}" style="animation-delay:${delay}s;" data-redirect="${(item.redirect === 'document') ? 'wind-report' : item.redirect}">
                 <div class="notif-icon ${cfg.cls}"><i class="${iconClass}" style="font-size:16px;"></i></div>
                 <div class="notif-body">
                     <div class="notif-name">${getTitle(item)}</div>

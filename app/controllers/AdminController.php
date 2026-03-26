@@ -67,7 +67,7 @@
             }
             $this->view('admin/map');
         }
-        public function document() {
+        public function windreport() {
             ensure_login();
             if (!is_admin()) { 
                 $this->redirect('login');
@@ -95,7 +95,7 @@
             }
             $this->view('admin/setting');
         }
-        public function shortcut() {
+        public function installapp() {
             ensure_login();
             if (!is_admin()) { 
                 $this->redirect('login');

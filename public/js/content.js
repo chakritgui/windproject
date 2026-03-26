@@ -37,160 +37,183 @@ function langTab(lang, d, isDefault = false) {
         </div>
     `;
 }
-let oldImages = [];
 function initSummernote() {
-    $('.summernote').summernote({
-        dialogsInBody: true,
-        height: 450,
-        dropdownParent: document.body,
-        container: 'body',
-        toolbar: [
-            ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
-            ['font', ['strikethrough', 'superscript', 'subscript']],
-            ['fontsize', ['fontsize']],
-            ['color', ['color']],
-            ['para', ['ul', 'ol', 'paragraph']],
-            ['height', ['height']],
-            ['insert', ['picture', 'link', 'video', 'table', 'hr']],
-            ['custom', ['img25', 'img50', 'img75', 'img100']],
-            ['view', ['fullscreen', 'codeview', 'help']] 
-        ],
-        buttons: {
-            img25: function () {
-                return $.summernote.ui.button({
-                    contents: '25%',
-                    tooltip: 'Image 25%',
-                    click: function () {
-                        resizeImage('25%');
-                    }
-                }).render();
+    $('.summernote').each(function () {
+        const $this = $(this);
+        $this.summernote({
+            dialogsInBody: true,
+            height: 450,
+            dropdownParent: document.body,
+            container: 'body',
+            toolbar: [
+                ['style', ['style', 'bold', 'italic', 'underline', 'clear']],
+                ['font', ['strikethrough', 'superscript', 'subscript']],
+                ['fontsize', ['fontsize']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['height', ['height']],
+                ['insert', ['picture', 'link', 'video', 'table', 'hr']],
+                ['custom', ['img25', 'img50', 'img75', 'img100']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ],
+            buttons: {
+                img25: createResizeButton('25%'),
+                img50: createResizeButton('50%'),
+                img75: createResizeButton('75%'),
+                img100: createResizeButton('100%')
             },
-            img50: function () {
-                return $.summernote.ui.button({
-                    contents: '50%',
-                    tooltip: 'Image 50%',
-                    click: function () {
-                        resizeImage('50%');
-                    }
-                }).render();
-            },
-            img75: function () {
-                return $.summernote.ui.button({
-                    contents: '75%',
-                    tooltip: 'Image 75%',
-                    click: function () {
-                        resizeImage('75%');
-                    }
-                }).render();
-            },
-            img100: function () {
-                return $.summernote.ui.button({
-                    contents: 'Full',
-                    tooltip: 'Image 100%',
-                    click: function () {
-                        resizeImage('100%');
-                    }
-                }).render();
+            callbacks: {
+                onInit: function () {
+                    const $editor = $(this);
+                    const html = $editor.summernote('code');
+                    const imgs = extractImageSrcs(html);
+                    $editor.data('oldImages', imgs);
+                    $editor.data('deleteQueue', {});
+                },
+                onImageUpload: function (files) {
+                    uploadImage(files, this);
+                },
+                onChange: function (contents) {
+                    debounceHandleChange(this);
+                }
             }
-        },
-        callbacks: {
-            onInit: function() {
-                const currentContent = $(this).summernote('code');
-                let div = document.createElement('div');
-                div.innerHTML = currentContent;
-                oldImages = [...div.querySelectorAll('img')].map(i => i.src);
-            },
-            onImageUpload: function(files) {
-                uploadImage(files[0], this);
-            },
-            onChange: function(contents) {
-                handleRemovedImages(this, contents);
-            }
-        }
+        });
     });
-    $(document).on('click', '.note-btn.dropdown-toggle', function (e) {
-        e.preventDefault();
-        const $dropdown = $(this).next('.note-dropdown-menu');
-        const isOpen = $dropdown.hasClass('show');
-        $('.note-dropdown-menu').removeClass('show');
-        if (!isOpen) {
-            $dropdown.addClass('show');
-            $dropdown.css({
-                'display': 'block',
-                'z-index': '9999',
-                'position': 'absolute'
-            });
-        } else {
-            $dropdown.removeClass('show').css('display', 'none');
-        }
-        e.stopPropagation();
-    });
-    $(document).on('click', '.note-dropdown-menu .dropdown-item, .note-color-btn, .note-dropdown-menu button', function () {
-        const $dropdown = $(this).closest('.note-dropdown-menu');
-        setTimeout(function() {
-            $dropdown.removeClass('show').hide();
-        }, 150); 
-    });
-    $(document).on('click', function (e) {
-        if (!$(e.target).closest('.note-btn-group').length) {
-            $('.note-dropdown-menu').removeClass('show').css('display', 'none');
-        }
-    });
+    initDropdownFix();
 }
-function uploadImage(file, editor) {
-    let data = new FormData();
-    data.append('file', file);
-    $.ajax({
-        url: BASE_URL + '/public/uploads/upload_content_image.php',
-        type: 'POST',
-        data: data,
-        processData: false,
-        contentType: false,
-        success: function (res) {
-            let result = typeof res === 'string' ? JSON.parse(res) : res;
-            if (result.uploaded && result.url) {
-                $(editor).summernote('insertImage', BASE_URL + '/' +result.url);
+function createResizeButton(size) {
+    return function (context) { // รับ context ของ summernote เข้ามา
+        var ui = $.summernote.ui;
+        var button = ui.button({
+            contents: size === '100%' ? 'Full' : size,
+            tooltip: 'Resize to ' + size,
+            click: function () {
+                resizeImage(size, context);
             }
-        },
-        error: function () {
-            alert('Upload image failed');
-        }
-    });
+        });
+        return button.render();
+    };
 }
-function handleRemovedImages(editor, contents) {
+function extractImageSrcs(html) {
     let div = document.createElement('div');
-    div.innerHTML = contents;
-    let currentImgs = [...div.querySelectorAll('img')].map(i => i.src);
-    let removed = oldImages.filter(src => !currentImgs.includes(src));
+    div.innerHTML = html;
+    return [...div.querySelectorAll('img')].map(img => img.src);
+}
+async function uploadImage(files, editor) {
+    const $editor = $(editor);
+    for (const file of files) {
+        let data = new FormData();
+        data.append('file', file);
+        try {
+            const res = await $.ajax({
+                url: BASE_URL + '/public/uploads/upload_content_image.php',
+                type: 'POST',
+                data: data,
+                processData: false,
+                contentType: false
+            });
+            const result = typeof res === 'string' ? JSON.parse(res) : res;
+            if (result.uploaded && result.url) {
+                const fullUrl = BASE_URL + '/' + result.url;
+                $editor.summernote('insertImage', fullUrl);
+                setTimeout(() => {
+                    const imgs = extractImageSrcs($editor.summernote('code'));
+                    $editor.data('oldImages', imgs);
+                }, 100);
+            }
+        } catch (err) {
+            console.error('Upload error:', err);
+        }
+    }
+}
+function debounceHandleChange(editor) {
+    const $editor = $(editor);
+    let timer = $editor.data('changeTimer');
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => {
+        handleRemovedImages(editor);
+    }, 300);
+    $editor.data('changeTimer', timer);
+}
+function handleRemovedImages(editor) {
+    const $editor = $(editor);
+    const $editable = $editor.next('.note-editor').find('.note-editable');
+    const currentImgs = new Set(
+        $editable.find('img').map(function () {
+            return this.src;
+        }).get()
+    );
+    const oldImagesArr = $editor.data('oldImages') || [];
+    const oldImages = new Set(oldImagesArr);
+    const deleteQueue = $editor.data('deleteQueue') || {};
+    const removed = [];
+    oldImages.forEach(src => {
+        if (!currentImgs.has(src)) {
+            removed.push(src);
+        }
+    });
     if (removed.length > 0) {
         removed.forEach(src => {
-            if (src.startsWith('http')) { 
-                $.post(
-                    BASE_URL + '/public/uploads/delete_content_image.php',
-                    JSON.stringify({ url: src })
-                ).done(function() {
+            if (deleteQueue[src]) return;
+            deleteQueue[src] = true;
+            if (src.startsWith('http')) {
+                $.ajax({
+                    url: BASE_URL + '/public/uploads/delete_content_image.php',
+                    type: 'POST',
+                    data: JSON.stringify({ url: src }),
+                    contentType: 'application/json'
+                }).done(() => {
                     console.log('Deleted:', src);
                 });
             }
         });
     }
-    oldImages = currentImgs;
+    $editor.data('oldImages', Array.from(currentImgs));
+    $editor.data('deleteQueue', deleteQueue);
 }
-function resizeImage(width) {
-    let $summernote = $('.summernote'); 
-    let img = $summernote.summernote('restoreTarget'); 
-    if (!img || img.tagName !== 'IMG') {
-        img = $('.note-editable').find('img.note-selected')[0];
+function resizeImage(width, context) {
+    let img = context.layoutInfo.editable.data('target') || 
+              context.invoke('restoreTarget');
+    if (!img || $(img).prop("tagName") !== 'IMG') {
+        img = context.layoutInfo.editable.find('img.note-selected')[0];
+    }
+    if (!img) {
+        img = context.layoutInfo.editable.find('img:focus')[0];
     }
     if (img && img.tagName === 'IMG') {
         $(img).css({
             'width': width,
             'height': 'auto'
         });
-        $summernote.summernote('layoutInfo').editable.trigger('keyup');
-    } else {
-        console.warn("Please select an image first!");
-    }
+        context.layoutInfo.editable.trigger('keyup');
+        console.log("Resized to " + width);
+    } }
+function initDropdownFix() {
+    $(document).on('click', '.note-btn.dropdown-toggle', function (e) {
+        e.preventDefault();
+        const $dropdown = $(this).next('.note-dropdown-menu');
+        const isOpen = $dropdown.hasClass('show');
+        $('.note-dropdown-menu').removeClass('show').hide();
+        if (!isOpen) {
+            $dropdown.addClass('show').css({
+                display: 'block',
+                zIndex: 9999,
+                position: 'absolute'
+            });
+        }
+        e.stopPropagation();
+    });
+    $(document).on('click', '.note-dropdown-menu .dropdown-item, .note-color-btn, .note-dropdown-menu button', function () {
+        const $dropdown = $(this).closest('.note-dropdown-menu');
+        setTimeout(() => {
+            $dropdown.removeClass('show').hide();
+        }, 150);
+    });
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest('.note-btn-group').length) {
+            $('.note-dropdown-menu').removeClass('show').hide();
+        }
+    });
 }
 $(document).on('click', '.note-modal .close', function () {
     $(this).closest('.modal').modal('hide');

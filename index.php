@@ -28,17 +28,23 @@
     });
     if (!isset($_SESSION['user']) && isset($_COOKIE['remember_me'])) {
         $m = new Auth();
-        $user = $m->checkRememberMe();
-        if ($user) {
+        $authData = $m->checkRememberMe(); 
+        if ($authData) {
+            session_regenerate_id(true);
+            $user = $authData['user'];
             $session_id = session_id();
             $_SESSION['session_id'] = $session_id;
             $_SESSION['user'] = [
-                'id'   => $user['member_id'],
-                'role' => $user['role']
+                'id'           => $user['member_id'],
+                'role'         => $user['role'],
+                'privileges'   => $user['privileges_id'],
+                'allowedPaths' => $authData['allowedPaths']
             ];
             $m->updateLogin($user['member_id'], $_SESSION['timezone'] ?? null, $session_id);
-            header("Refresh:0");
+            header("Location: " . $_SERVER['REQUEST_URI']);
             exit;
+        } else {
+            setcookie('remember_me', '', time() - 3600, '/', '', true, true);
         }
     }
     $router = new Router();
@@ -72,11 +78,11 @@
             $router->get('/project/(.*)', 'AdminController@project');
             $router->get('/project', 'AdminController@project');
             $router->get('/map', 'AdminController@map');
-            $router->get('/document', 'AdminController@document');
             $router->get('/wind', 'AdminController@wind');
             $router->get('/news', 'AdminController@news');
             $router->get('/setting', 'AdminController@setting');
-            $router->get('/shortcut', 'AdminController@shortcut');
+            $router->get('/wind-report', 'AdminController@windreport');
+            $router->get('/install-app', 'AdminController@installapp');
             $router->get('/master', 'AdminController@master');
             $router->post('/api/dashboard.stats', 'DashboardController@getStats');
             $router->get('/api/dashboard.usage', 'DashboardController@loginHistory');
@@ -193,8 +199,8 @@
             $router->get('/news', 'UserController@news');
             $router->get('/pstg', 'UserController@project');
             $router->get('/pstg/(.*)', 'UserController@project');
-            $router->get('/document', 'UserController@document');
-            $router->get('/download', 'UserController@download');
+            $router->get('/wind-report', 'UserController@windreport');
+            $router->get('/install-app', 'UserController@installapp');
             $router->get('/pole/{slug}', 'UserController@pole');
             $router->post('/api/document.get', 'UserController@documentList');
             $router->post('/api/document.download', 'UserController@documentDownload');

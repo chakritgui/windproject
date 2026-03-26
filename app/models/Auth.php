@@ -69,10 +69,19 @@
             $stmt = $this->db->prepare('SELECT * FROM wp_members WHERE remember_selector = ? AND remember_expires_at > NOW() AND status = "active"');
             $stmt->execute([$selector]);
             $user = $stmt->fetch();
-            if ($user && hash_equals($user['remember_validator_hash'], hash('sha256', $validator))) {
-                return $user;
+            if (!$user) return false;
+            if (hash_equals($user['remember_validator_hash'], hash('sha256', $validator))) {
+                $allowedPaths = [];
+                if ($user['role'] === 'user') {
+                    $allowedPaths = $this->getMemberMenus($user['privileges_id']);
+                }
+                return [
+                    'user' => $user,
+                    'allowedPaths' => $allowedPaths
+                ];
+            } else {
+                return false;
             }
-            return false;
         }
         public function updateLogout($member_id) {
             $stmt = $this->db->prepare("UPDATE wp_login_logs SET logout_at = NOW(), log_type = 'logout' WHERE member_id = ? AND logout_at IS NULL ORDER BY login_at DESC LIMIT 1");

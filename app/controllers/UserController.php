@@ -29,14 +29,14 @@ class UserController extends Controller {
             'folderIds' => $folderIds
         ]);
     }
-    public function document() {
+    public function windreport() {
         ensure_login();
-        $this->checkPermission('document');
+        $this->checkPermission('wind-report');
         $this->view('user/document');
     }
-    public function download() {
+    public function installapp() {
         ensure_login();
-        $this->checkPermission('download');
+        $this->checkPermission('install-app');
         $this->view('user/download');
     }
     public function news() {
