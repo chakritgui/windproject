@@ -10,13 +10,20 @@ class ProjectModel {
                 f.id, f.name as folder_name, f.slug, f.level, f.parent_id, f.created_at, f.type, f.content_id, c.content_slug, 
                 iEn.status as en_status, iLo.status as lo_status, iTh.status as th_status,
                 iEn.content_subject as en_subject, iLo.content_subject as lo_subject, iTh.content_subject as th_subject,
-                f.status, f.sub_type,
+                f.sub_type,
                 CASE
                     WHEN f.type = 'folder' THEN f.cover
                     ELSE c.cover
-                END as cover
+                END as cover,
+                CASE
+                    WHEN f.type = 'folder' or f.type = 'content' and f.sub_type = 'project' THEN f.status
+                    WHEN f.type = 'content' and f.sub_type = 'news' then c.status
+                    WHEN f.type = 'document' and f.sub_type = 'document' then d.status
+                    ELSE ''
+                END as status
             FROM wp_folder f 
-            LEFT JOIN wp_content c on c.content_id = f.content_id
+            LEFT JOIN wp_content c on c.content_id = f.content_id and (f.sub_type = 'news' or f.sub_type = 'project')
+            LEFT JOIN wp_documents d on d.document_id = f.content_id and f.sub_type = 'document'
             LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang='en'
             LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang='lo'
             LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang='th'
@@ -53,10 +60,10 @@ class ProjectModel {
     private function countChildren($folderId, $currentLevel) {
         $nextLevel = (int)$currentLevel + 1; 
         $where = " AND (
-            (f.sub_type = 'news' AND c.status = 'published' AND c.folder_show_admin = 'yes')
+            (f.sub_type = 'news' AND c.status <> 'deleted' AND c.folder_show_admin = 'yes')
             OR
-            (f.sub_type = 'project' AND f.status = 'active')
-        ) AND f.status = 'active' ";
+            (f.sub_type = 'project' AND f.status <> 'deleted')
+        ) AND f.status <> 'deleted' ";
         $sql = "SELECT COUNT(DISTINCT f.id) FROM wp_folder f LEFT JOIN wp_content c ON c.content_id = f.content_id WHERE f.parent_id = :pid AND f.level = :lvl {$where}";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
@@ -70,9 +77,7 @@ class ProjectModel {
         if ($data['folder_id'] > 0) {
             $folderId = $data['folder_id'];
             $slug = $this->generateUniqueSlug($data['folder_name'], $parentId, $folderId);
-            $sql = "UPDATE wp_folder 
-                    SET name = :name, slug = :slug, status = :status, updated_at = NOW() 
-                    WHERE id = :id";
+            $sql = "UPDATE wp_folder SET name = :name, slug = :slug, status = :status, updated_at = NOW() WHERE id = :id";
             $stmt = $this->db->prepare($sql);
             $success = $stmt->execute([
                 ':name' => $data['folder_name'],
@@ -82,9 +87,7 @@ class ProjectModel {
             ]);
         } else {
             $slug = $this->generateUniqueSlug($data['folder_name'], $parentId);
-            $sql = "INSERT INTO wp_folder 
-                    (name, slug, parent_id, level, status, type, created_at, updated_at) 
-                    VALUES (:name, :slug, :parent_id, :level, :status, 'folder', NOW(), NOW())";
+            $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, created_at, updated_at) VALUES (:name, :slug, :parent_id, :level, :status, 'folder', NOW(), NOW())";
             $stmt = $this->db->prepare($sql);
             $success = $stmt->execute([
                 ':name'      => $data['folder_name'],

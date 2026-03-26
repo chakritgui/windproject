@@ -62,7 +62,7 @@ class NewsModel {
                 LEFT JOIN wp_content_item iLo ON iLo.content_id = n.content_id AND iLo.content_lang='lo'
                 LEFT JOIN wp_content_item iTh ON iTh.content_id = n.content_id AND iTh.content_lang='th'
                 LEFT JOIN wp_content_media m ON m.content_id = n.content_id AND m.status = 'active'
-                LEFT JOIN wp_folder f ON f.content_id = n.content_id 
+                LEFT JOIN wp_folder f ON f.content_id = n.content_id and f.sub_type = 'news'
                 $where
                 GROUP BY n.content_id
                 ORDER BY {$order} {$orderDir}
@@ -146,10 +146,7 @@ class NewsModel {
         ");
         $stmt->execute();
         $settings = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
-        $stmtTranslate = $pdo->prepare("SELECT setting_key, setting_value 
-            FROM system_settings 
-            WHERE setting_key IN ('ENABLE_TRANSLATE', 'GOOGLE_API_KEY')
-        ");
+        $stmtTranslate = $pdo->prepare("SELECT setting_key, setting_value FROM system_settings WHERE setting_key IN ('ENABLE_TRANSLATE', 'GOOGLE_API_KEY')");
         $stmtTranslate->execute();
         $translates = $stmtTranslate->fetchAll(PDO::FETCH_KEY_PAIR);
         if (!$id) {
@@ -237,9 +234,7 @@ class NewsModel {
             "folder_id" => $n['folder_id'],
             "folder_show_admin" => $n['folder_show_admin'] ?? 'no',
             "folder_show_user" => $n['folder_show_user'] ?? 'no',
-            "publish_at" => !empty($n['publish_at']) 
-                ? convertTimeZone($n['publish_at'], 'Y-m-d H:i') 
-                : "",
+            "publish_at" => !empty($n['publish_at']) ? convertTimeZone($n['publish_at'], 'Y-m-d H:i') : "",
             "title" => $title,
             "content" => $content,
             "status_translate" => $status_translate,
@@ -282,23 +277,10 @@ class NewsModel {
             $pdo->beginTransaction();
             $content_slug = $mediaHelper->generateSlug('news', $data["title_en"], $content_id);
             if ($content_id) {
-                $stmt = $pdo->prepare("UPDATE wp_content SET 
-                        status = :status, 
-                        cover_display = :cover_display, 
-                        content_slug = :content_slug, 
-                        publish_at = :publish_at, 
-                        folder_show_admin = :folder_show_admin,
-                        folder_show_user = :folder_show_user,
-                        updated_at = NOW() 
-                    WHERE content_id = :content_id
-                ");
+                $stmt = $pdo->prepare("UPDATE wp_content SET status = :status, cover_display = :cover_display, content_slug = :content_slug, publish_at = :publish_at, folder_show_admin = :folder_show_admin,folder_show_user = :folder_show_user, updated_at = NOW() WHERE content_id = :content_id");
                 $stmt->bindValue(':content_id', (int)$content_id, PDO::PARAM_INT);
             } else {
-                $stmt = $pdo->prepare("INSERT INTO wp_content 
-                    (status, cover_display, content_slug, publish_at, folder_show_admin, folder_show_user, created_at, updated_at) 
-                    VALUES 
-                    (:status, :cover_display, :content_slug, :publish_at, :folder_show_admin, :folder_show_user, NOW(), NOW())
-                ");
+                $stmt = $pdo->prepare("INSERT INTO wp_content (status, cover_display, content_slug, publish_at, folder_show_admin, folder_show_user, created_at, updated_at) VALUES (:status, :cover_display, :content_slug, :publish_at, :folder_show_admin, :folder_show_user, NOW(), NOW())");
             }
             $stmt->bindValue(':status', $status);
             $stmt->bindValue(':cover_display', $cover_display);
@@ -314,13 +296,9 @@ class NewsModel {
             $folder_status_base = ($status === 'draft') ? 'inactive' : 'active';
             if (!empty($folder_ids)) {
                 $placeholders = implode(',', array_fill(0, count($folder_ids), '?'));
-                $sql_soft_del_mapping = "UPDATE wp_content_folder 
-                                        SET status = 'deleted', updated_at = NOW() 
-                                        WHERE content_id = ? AND folder_id NOT IN ($placeholders)";
+                $sql_soft_del_mapping = "UPDATE wp_content_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = ? AND folder_id NOT IN ($placeholders)";
                 $pdo->prepare($sql_soft_del_mapping)->execute(array_merge([$content_id], $folder_ids));
-                $sql_soft_del_folder = "UPDATE wp_folder 
-                                        SET status = 'deleted', updated_at = NOW() 
-                                        WHERE content_id = ? AND parent_id NOT IN ($placeholders)";
+                $sql_soft_del_folder = "UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = ? AND parent_id NOT IN ($placeholders) and sub_type = 'news'";
                 $pdo->prepare($sql_soft_del_folder)->execute(array_merge([$content_id], $folder_ids));
                 foreach ($folder_ids as $f_id) {
                     $f_id = (int)$f_id;
@@ -328,18 +306,16 @@ class NewsModel {
                         $stmt_check = $pdo->prepare("SELECT id FROM wp_content_folder WHERE content_id = ? AND folder_id = ?");
                         $stmt_check->execute([$content_id, $f_id]);
                         if ($stmt_check->fetch()) {
-                            $pdo->prepare("UPDATE wp_content_folder SET status = 'active', updated_at = NOW() WHERE content_id = ? AND folder_id = ?")
-                                ->execute([$content_id, $f_id]);
+                            $pdo->prepare("UPDATE wp_content_folder SET status = 'active', updated_at = NOW() WHERE content_id = ? AND folder_id = ?")->execute([$content_id, $f_id]);
                         } else {
-                            $pdo->prepare("INSERT INTO wp_content_folder (content_id, folder_id, status, created_at, updated_at) VALUES (?, ?, 'active', NOW(), NOW())")
-                                ->execute([$content_id, $f_id]);
+                            $pdo->prepare("INSERT INTO wp_content_folder (content_id, folder_id, status, created_at, updated_at) VALUES (?, ?, 'active', NOW(), NOW())")->execute([$content_id, $f_id]);
                         }
                         $folder_name = !empty($data["title_en"]) ? $data["title_en"] : (!empty($data["title_th"]) ? $data["title_th"] : 'Untitled');
-                        $stmt = $pdo->prepare("SELECT id FROM wp_folder WHERE parent_id = ? AND content_id = ?");
+                        $stmt = $pdo->prepare("SELECT id FROM wp_folder WHERE parent_id = ? AND content_id = ? and sub_type = 'news'");
                         $stmt->execute([$f_id, $content_id]);
                         $existingFolder = $stmt->fetch(PDO::FETCH_ASSOC);
                         if ($existingFolder) {
-                            $sql = "UPDATE wp_folder SET name = :name, status = :status, updated_at = NOW() WHERE id = :id";
+                            $sql = "UPDATE wp_folder SET name = :name, status = :status, updated_at = NOW() WHERE id = :id and sub_type = 'news'";
                             $pdo->prepare($sql)->execute([
                                 ':name'   => $folder_name,
                                 ':status' => $folder_status_base,
@@ -351,8 +327,7 @@ class NewsModel {
                             $parentData = $stmt->fetch(PDO::FETCH_ASSOC);
                             $level = $parentData ? (int)$parentData['level'] + 1 : 1;
                             $slug = $this->generateUniqueSlug($folder_name, $f_id);
-                            $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, sub_type, created_at, updated_at, content_id) 
-                                    VALUES (:name, :slug, :parent_id, :level, :status, 'content', 'news', NOW(), NOW(), :content_id)";
+                            $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, sub_type, created_at, updated_at, content_id) VALUES (:name, :slug, :parent_id, :level, :status, 'content', 'news', NOW(), NOW(), :content_id)";
                             $pdo->prepare($sql)->execute([
                                 ':name'       => $folder_name,
                                 ':slug'       => $slug,
@@ -365,10 +340,8 @@ class NewsModel {
                     }
                 }
             } else {
-                $pdo->prepare("UPDATE wp_content_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = ?")
-                    ->execute([$content_id]);
-                $pdo->prepare("UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = ?")
-                    ->execute([$content_id]);
+                $pdo->prepare("UPDATE wp_content_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = ?")->execute([$content_id]);
+                $pdo->prepare("UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = ? and sub_type = 'news'")->execute([$content_id]);
             }
             $mediaHelper->handleContent($data, $content_id);
             if (empty($data['ex_cover'])) {
@@ -440,7 +413,7 @@ class NewsModel {
     public function delete($id) {
         $pdo = $this->db;
         $pdo->prepare("UPDATE wp_content SET status = 'deleted', updated_at = NOW() WHERE content_id = ?")->execute([(int)$id]);
-        $pdo->prepare("UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = ?")->execute([(int)$id]);
+        $pdo->prepare("UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = ? AND sub_type = 'news'")->execute([(int)$id]);
         return $pdo->prepare("UPDATE wp_notification_targets SET status = 'deleted', publish_at = NULL WHERE notifications_item = ? AND notifications_target = 'news'")->execute([(int)$id]);
     }
     public function unlink($id) {

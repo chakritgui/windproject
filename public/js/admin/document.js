@@ -37,6 +37,43 @@ function initDocumentTable() {
                     if (!text) return '';
                     return `<span class="badge ${colorClass} fw-normal d-inline-flex align-items-center me-1" style="font-size: 8px; padding: 3px 6px;"><i class="${icon} me-1"></i>${text}</span>`;
                 };
+                let allFoldersHtml = '';
+                let visibilityBadges = '';
+                const hasFolders = Array.isArray(row.folder_chains) && row.folder_chains.length > 0;
+                if (Array.isArray(row.folder_chains) && row.folder_chains.length > 0) {
+                    allFoldersHtml = row.folder_chains.map((chain) => {
+                        if (!Array.isArray(chain) || chain.length === 0) return '';
+                        const breadcrumb = chain.slice().reverse().map((f, index, arr) => {
+                            if (index === arr.length - 1) {
+                                return `<span class="fw-semibold text-dark">${f.name}</span>`;
+                            }
+                            return `<span class="text-muted">${f.name}</span>`;
+                        }).join(' <span class="text-secondary" style="font-size: 0.8em;">/</span> ');
+                        return `
+                            <div class="small mb-1 d-flex align-items-center">
+                                <i class="fa-solid fa-folder-open text-warning me-1"></i>
+                                <span>${breadcrumb}</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                if (hasFolders) {
+                    if (row.folder_show_admin === 'yes') {
+                        visibilityBadges += `
+                            <span class="small badge bg-danger-subtle text-danger me-1">
+                                <i class="fa-solid fa-user-shield me-1"></i><span data-i18n="admin"></span>
+                            </span>`;
+                    }
+                    if (row.folder_show_user === 'yes') {
+                        visibilityBadges += `
+                            <span class="small badge bg-info-subtle text-info me-1">
+                                <i class="fa-solid fa-user me-1"></i><span data-i18n="user"></span>
+                            </span>`;
+                    }
+                }
+                if (!allFoldersHtml) {
+                    allFoldersHtml = ``;
+                }
                 return `
                     <div class="d-flex align-items-start gap-3 py-1">
                         <div class="mt-1"><i class="${iconClass} fa-2x text-secondary-light"></i></div>
@@ -49,8 +86,13 @@ function initDocumentTable() {
                                 ${createBadge(row.installations_name, 'fa-solid fa-location-dot', 'bg-warning-subtle text-warning-emphasis')}
                                 ${createBadge(row.poles_code, 'fa-solid fa-tower-broadcast', 'bg-dark-subtle text-dark')}
                             </div>
+                            <div class="folder-visibility-container">
+                                ${allFoldersHtml}
+                                <div class="mt-1">${visibilityBadges}</div>
+                            </div>
                         </div>
-                    </div>`;
+                    </div>
+                    `;
             }
         },{ 
             data: null,
@@ -196,7 +238,7 @@ $(document).on('click', '.manage-document', function () {
             const docData = res.data;
             const modalEl = $('#windModal');
             const modal = new bootstrap.Modal(modalEl[0]);
-            renderModalContent(modalEl, document_id, isEdit);
+            renderModalContent(modalEl, document_id, isEdit, docData);
             initPlugins();
             const toggleNotification = () => {
                 const currentStatus = $('#status').val();
@@ -216,7 +258,7 @@ $(document).on('click', '.manage-document', function () {
         error: () => showError(langData['cannot_load'])
     });
 });
-function renderModalContent(modalEl, document_id, isEdit) {
+function renderModalContent(modalEl, document_id, isEdit, d) {
     modalEl.find(".modal-header").html(`
         <h5 class="modal-title">${langData['manageDocument'] || 'Manage Document'}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -228,7 +270,6 @@ function renderModalContent(modalEl, document_id, isEdit) {
     modalEl.find(".modal-body").html(`
         <input type="hidden" id="mode" value="${document_id ? 'edit' : 'new'}">
         <input type="hidden" name="document_id" id="document_id" value="${document_id ?? ''}">
-        
         <div class="mb-3">
             <label class="mb-2 required">${langData['uploadFile'] || 'Upload File'}</label>
             <div id="drop_zone" class="border rounded-3 p-4 text-center" style="cursor:pointer; border-style:dashed;">
@@ -282,6 +323,60 @@ function renderModalContent(modalEl, document_id, isEdit) {
                 <select id="status" class="form-select obj-required"></select>
             </div>
         </div>
+        <hr class="my-4">
+        <label class="mb-2 mt-3">
+            <i class="fa-solid fa-folder-tree me-2"></i>
+            ${langData['folder'] || 'Folder'}
+        </label>
+        <div class="mb-3 p-2">
+            <label class="fw-bold mb-2" data-i18n="save_to_a_folder"></label>
+            <div class="d-flex gap-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="use_folder_toggle" id="use_folder_no" value="no" 
+                        ${(!d.folder_id || (Array.isArray(d.folder_id) && d.folder_id.length === 0)) ? 'checked' : ''}>
+                    <label class="form-check-label" for="use_folder_no" data-i18n="use_folder_no"></label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="use_folder_toggle" id="use_folder_yes" value="yes" 
+                        ${(Array.isArray(d.folder_id) && d.folder_id.length > 0) ? 'checked' : ''}>
+                    <label class="form-check-label" for="use_folder_yes" data-i18n="use_folder_yes"></label>
+                </div>
+            </div>
+        </div>
+        <div id="folder_tree_wrapper" style="${!d.folder_id || (Array.isArray(d.folder_id) && d.folder_id.length === 0) ? 'display:none;' : ''}">
+            <div class="border rounded p-3 bg-white" style="max-height:300px; overflow:auto;">
+                ${renderFolderTree(d.folders, d.folder_id)}
+            </div>
+            <div class="row mt-3">
+                <div class="col-12 mb-2">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input switch-item" type="checkbox" id="folder_show_all" ${d.folder_show_admin == 'yes' && d.folder_show_user == 'yes' ? 'checked' : ''}>
+                        <label class="form-check-label fw-bold text-dark" for="folder_show_all">
+                            <i class="fa-solid fa-check-double me-2 text-dark"></i>
+                            ${langData['select_all'] || 'Select All'}
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input switch-item" type="checkbox" id="folder_show_admin" ${d.folder_show_admin == 'yes' ? 'checked' : ''}>
+                        <label class="form-check-label fw-bold" for="folder_show_admin">
+                            <i class="fa-solid fa-user-shield me-2 text-primary"></i>
+                            ${langData['show_project_admin'] || 'Show in Project (Admin)'}
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input switch-item" type="checkbox" id="folder_show_user" ${d.folder_show_user == 'yes' ? 'checked' : ''}>
+                        <label class="form-check-label fw-bold" for="folder_show_user">
+                            <i class="fa-solid fa-users me-2 text-success"></i>
+                            ${langData['show_project_user'] || 'Show in Project (User)'}
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div id="notification_section" style="display:none;">
             <hr class="my-4">
             <div class="card bg-light border-0">
@@ -298,6 +393,76 @@ function renderModalContent(modalEl, document_id, isEdit) {
             </div>
         </div>
     `);
+}
+$(document).on('change', '#folder_show_all', function() {
+    const isChecked = $(this).is(':checked');
+    $('#folder_show_admin, #folder_show_user').prop('checked', isChecked);
+});
+$(document).on('change', '#folder_show_admin, #folder_show_user', function() {
+    const isAdminChecked = $('#folder_show_admin').is(':checked');
+    const isUserChecked = $('#folder_show_user').is(':checked');
+    $('#folder_show_all').prop('checked', isAdminChecked && isUserChecked);
+});
+$(document).on('change', 'input[name="use_folder_toggle"]', function() {
+    const useFolder = $(this).val() === 'yes';
+    if (useFolder) {
+        $('#folder_tree_wrapper').slideDown(200);
+    } else {
+        $('#folder_tree_wrapper').slideUp(200);
+        $('input[name="folder_id"]').prop('checked', false);
+    }
+});
+function renderFolderTree(folders, selectedIds = [], level = 0) {
+    if (!folders || !folders.length) return '';
+    const selectedArray = Array.isArray(selectedIds) ? selectedIds : [selectedIds];
+    let html = '';
+    folders.forEach(f => {
+        const indent = level * 20;
+        const hasChildren = f.children && f.children.length > 0;
+        const isChildSelected = (items) => {
+            return items?.some(child => 
+                selectedArray.includes(child.id.toString()) || 
+                selectedArray.includes(Number(child.id)) || 
+                isChildSelected(child.children)
+            );
+        };
+        const isCurrentSelected = selectedArray.includes(f.id.toString()) || selectedArray.includes(Number(f.id));
+        const shouldExpand = (isCurrentSelected || isChildSelected(f.children));
+        html += `
+            <div class="folder-item-container">
+                <div class="form-check d-flex align-items-center" style="margin-left:${indent}px; min-height: 32px;">
+                    <span class="toggle-icon me-2" style="cursor:pointer; width: 20px; display: inline-block; text-align: center;" onclick="toggleFolder(this, 'child_container_${f.id}')">
+                        ${hasChildren ? `<i class="fa-solid ${shouldExpand ? 'fa-square-minus' : 'fa-square-plus'} text-secondary"></i>` : ''}
+                    </span>
+                    <input class="form-check-input me-2" type="checkbox" name="folder_id[]" value="${f.id}" id="folder_${f.id}" ${isCurrentSelected ? 'checked' : ''} style="margin-left: 0; cursor: pointer;">        
+                    <label class="form-check-label" for="folder_${f.id}" style="cursor: pointer;">
+                        ${level === 0 
+                            ? `<i class="fa-solid fa-folder-tree text-primary me-1"></i>` 
+                            : `<i class="fa-solid fa-folder text-warning me-1"></i>`}
+                        ${f.name}
+                    </label>
+                </div>
+                ${hasChildren ? `
+                    <div id="child_container_${f.id}" class="folder-children" style="display: ${shouldExpand ? 'block' : 'none'};">
+                        ${renderFolderTree(f.children, selectedArray, level + 1)}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+    return html;
+}
+function toggleFolder(element, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const isHidden = container.style.display === 'none';
+    container.style.display = isHidden ? 'block' : 'none';
+    const icon = element.querySelector('i');
+    if (isHidden) {
+        icon.classList.replace('fa-square-plus', 'fa-square-minus');
+    } else {
+        icon.classList.replace('fa-square-minus', 'fa-square-plus');
+    }
 }
 function initPlugins() {
     const filters = ['contract', 'project', 'type', 'installation', 'pole', 'status'];
@@ -502,6 +667,25 @@ function executeSave() {
         formData.append("document_file", file);
     }
     formData.append("send_notification", $("#send_notification").is(":checked") ? 'yes' : 'no');
+    const useFolder = $('input[name="use_folder_toggle"]:checked').val();
+    let folder_show_admin = 'no';
+    let folder_show_user = 'no';
+    if (useFolder === 'yes') {
+        const selectedFolders = $('input[name="folder_id[]"]:checked');  
+        if (selectedFolders.length > 0) {
+            selectedFolders.each(function() {
+                formData.append('folder_id[]', $(this).val());
+            });
+            folder_show_admin = $('#folder_show_admin').is(':checked') ? 'yes' : 'no';
+            folder_show_user  = $('#folder_show_user').is(':checked') ? 'yes' : 'no';
+        } else {
+            formData.append('folder_id[]', ''); 
+        }
+    } else {
+        formData.append('folder_id[]', '');
+    }
+    formData.append("folder_show_admin", folder_show_admin);
+    formData.append("folder_show_user", folder_show_user);
     Swal.fire({
         title: langData['uploading'] || 'Uploading...',
         html: `

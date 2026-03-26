@@ -109,7 +109,7 @@ function initNewsTable() {
                         return `
                             <div class="small mb-1 d-flex align-items-center">
                                 <i class="fa-solid fa-folder-open text-warning me-1"></i>
-                                <span class="text-truncate">${breadcrumb}</span>
+                                <span>${breadcrumb}</span>
                             </div>
                         `;
                     }).join('');

@@ -39,14 +39,19 @@ class DocumentModel {
                 c.contract_name,
                 p.project_name,
                 i.installations_name,
-                pl.poles_code
+                pl.poles_code,
+                (SELECT GROUP_CONCAT(folder_id) FROM wp_document_folder WHERE document_id = d.document_id AND status = 'active') as all_folder_ids,
+                d.folder_show_admin, d.folder_show_user,
+                f.parent_id as dynamic_parent_id 
             FROM wp_documents d
             LEFT JOIN wp_contract c on c.contract_id = d.contract_id
             LEFT JOIN wp_project p on p.project_id = d.project_id
             LEFT JOIN wp_type t on t.type_id = d.type_id
             LEFT JOIN wp_installations i on i.installations_id = d.installations_id
             LEFT JOIN wp_poles pl on pl.poles_id = d.poles_id
+            LEFT JOIN wp_folder f ON f.content_id = d.document_id and f.sub_type = 'document'
             {$where}
+            GROUP BY d.document_id
             ORDER BY {$order} {$orderDir}
         ";
         if ($length != -1) {
@@ -63,12 +68,46 @@ class DocumentModel {
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($rows as &$row) {
+            if(!empty($row['dynamic_parent_id'])) {
+                $row['folder_id'] = $row['dynamic_parent_id'];
+            }
+            $row['folder_chains'] = [];
+            if (!empty($row['all_folder_ids'])) {
+                $folder_ids = explode(',', $row['all_folder_ids']);
+                foreach ($folder_ids as $f_id) {
+                    $row['folder_chains'][] = $this->getParentFolders(trim($f_id));
+                }
+            }
             $this->formatDocumentRow($row);
         }
         return [
             'total' => $total,
             'data'  => $rows
         ];
+    }
+    private function getParentFolders($folderId){
+        $pdo = $this->db;
+        $stmt = $pdo->prepare("SELECT id, name, parent_id FROM wp_folder WHERE status = 'active'");
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $map = [];
+        foreach ($rows as $r) {
+            $map[$r['id']] = [
+                'id' => $r['id'],
+                'name' => $r['name'],
+                'parent_id' => $r['parent_id']
+            ];
+        }
+        $result = [];
+        $current = $folderId;
+        while (!empty($current) && isset($map[$current])) {
+            $result[] = [
+                'id' => $map[$current]['id'],
+                'name' => $map[$current]['name']
+            ];
+            $current = $map[$current]['parent_id'];
+        }
+        return $result;
     }
     public function downloadHistory($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 2, $orderDir = 'desc') {
         $where = " WHERE 1=1 ";
@@ -158,6 +197,24 @@ class DocumentModel {
         return ['total' => $total, 'data' => $rows];
     }
     public function get($id) {
+        $stmtFolder = $this->db->prepare("SELECT id, name, slug, type, level, parent_id FROM wp_folder WHERE status = 'active' AND type IN ('root','folder') ORDER BY level ASC, parent_id ASC, id ASC");
+        $stmtFolder->execute();
+        $foldersRaw = $stmtFolder->fetchAll(PDO::FETCH_ASSOC);
+        $folderMap = [];
+        $foldersTree = [];
+        foreach ($foldersRaw as $f) {
+            $f['children'] = [];
+            $folderMap[$f['id']] = $f;
+        }
+        foreach ($folderMap as $fid => &$folder) {
+            $parentId = $folder['parent_id'];
+            if (!empty($parentId) && isset($folderMap[$parentId])) {
+                $folderMap[$parentId]['children'][] = &$folder;
+            } else {
+                $foldersTree[] = &$folder;
+            }
+        }
+        unset($folder);
         if (!$id) {
             return [
                 'created_at' => '',
@@ -181,38 +238,47 @@ class DocumentModel {
                 'poles_id' => '',
                 'poles_code' => '',
                 'status' => 'public',
-                'updated_at' => ''
+                'updated_at' => '',
+                'folder_show_admin' => '',
+                'folder_show_user' => '',
+                "folder_id" => [],
+                'folders' => $foldersTree
             ];
         } else {
             $sql = "SELECT 
-                d.*,
-                t.type_id,
-                t.type_name,
-                c.contract_id,
-                c.contract_name,
-                p.project_id,
-                p.project_name,
-                i.installations_id,
-                i.installations_name,
-                pl.poles_code
-            FROM wp_documents d
-            LEFT JOIN wp_contract c on c.contract_id = d.contract_id
-            LEFT JOIN wp_project p on p.project_id = d.project_id
-            LEFT JOIN wp_type t on t.type_id = d.type_id
-            LEFT JOIN wp_installations i on i.installations_id = d.installations_id
-            LEFT JOIN wp_poles pl on pl.poles_id = d.poles_id
-            WHERE d.document_id = ?";
+                    d.*,
+                    t.type_id, t.type_name,
+                    c.contract_id, c.contract_name,
+                    p.project_id, p.project_name,
+                    i.installations_id, i.installations_name,
+                    pl.poles_code
+                FROM wp_documents d
+                LEFT JOIN wp_contract c ON c.contract_id = d.contract_id
+                LEFT JOIN wp_project p ON p.project_id = d.project_id
+                LEFT JOIN wp_type t ON t.type_id = d.type_id
+                LEFT JOIN wp_installations i ON i.installations_id = d.installations_id
+                LEFT JOIN wp_poles pl ON pl.poles_id = d.poles_id
+                WHERE d.document_id = ?";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([(int)$id]);
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($row) {
-                foreach (['document_start', 'document_end'] as $f) {
-                    if (!empty($row[$f])) {
-                        $row[$f] = convertTimeZone($row[$f], 'Y-m-d');
+                foreach (['document_start', 'document_end'] as $dateField) {
+                    if (!empty($row[$dateField])) {
+                        $row[$dateField] = convertTimeZone($row[$dateField], 'Y-m-d');
                     }
                 }
+                $stmtFolder = $this->db->prepare("SELECT folder_id FROM wp_document_folder WHERE document_id = ? AND status = 'active'");
+                $stmtFolder->execute([(int)$row['document_id']]);
+                $selectedFolders = $stmtFolder->fetchAll(PDO::FETCH_COLUMN);
+                $n['folder_id'] = array_filter($selectedFolders, function($f_id) use ($folderMap) {
+                    return isset($folderMap[$f_id]);
+                });
+                $row['folder_id'] = array_values($n['folder_id']);
+                $row['folders'] = $foldersTree;
+                return $row;
             }
-            return $row;
+            return null; 
         }
     }
     public function save($data) {
@@ -230,11 +296,66 @@ class DocumentModel {
             $endObj = !empty($data['document_end']) ? DateTime::createFromFormat('d/m/Y', trim($data['document_end'])) : null;
             $document_start = ($startObj) ? convertTimeZoneUTC($startObj->format('Y-m-d'), 'Y-m-d') : null;
             $document_end   = ($endObj) ? convertTimeZoneUTC($endObj->format('Y-m-d'), 'Y-m-d') : null;
+            $folder_show_admin = $data['folder_show_admin'];
+            $folder_show_user  = $data['folder_show_user'];
             $send_notification = $data['send_notification'] ?? 'no';
             if ($document_id) {
-                $this->updateDocument($document_id, $document_name, $document_start, $document_end, $status, $type_id, $contract_id, $project_id, $installations_id, $poles_id);
+                $this->updateDocument($document_id, $document_name, $document_start, $document_end, $status, $type_id, $contract_id, $project_id, $installations_id, $poles_id, $folder_show_admin, $folder_show_user);
             } else {
-                $document_id = $this->insertDocument($document_name, $document_start, $document_end, $status, $type_id, $contract_id, $project_id, $installations_id, $poles_id);
+                $document_id = $this->insertDocument($document_name, $document_start, $document_end, $status, $type_id, $contract_id, $project_id, $installations_id, $poles_id, $folder_show_admin, $folder_show_user);
+            }
+            if($document_id) {
+                $folder_ids = !empty($data['folder_id']) && is_array($data['folder_id']) ? $data['folder_id'] : [];
+                $folder_status_base = ($status === 'private') ? 'inactive' : 'active';
+                if (!empty($folder_ids)) {
+                    $placeholders = implode(',', array_fill(0, count($folder_ids), '?'));
+                    $sql_soft_del_mapping = "UPDATE wp_document_folder SET status = 'deleted', updated_at = NOW() WHERE document_id = ? AND folder_id NOT IN ($placeholders)";
+                    $this->db->prepare($sql_soft_del_mapping)->execute(array_merge([$document_id], $folder_ids));
+                    $sql_soft_del_folder = "UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = ? AND parent_id NOT IN ($placeholders) and sub_type = 'document'";
+                    $this->db->prepare($sql_soft_del_folder)->execute(array_merge([$document_id], $folder_ids));
+                    foreach ($folder_ids as $f_id) {
+                        $f_id = (int)$f_id;
+                        if($f_id > 0) {
+                            $stmt_check = $this->db->prepare("SELECT id FROM wp_document_folder WHERE document_id = ? AND folder_id = ?");
+                            $stmt_check->execute([$document_id, $f_id]);
+                            if ($stmt_check->fetch()) {
+                                $this->db->prepare("UPDATE wp_document_folder SET status = 'active', updated_at = NOW() WHERE document_id = ? AND folder_id = ?")->execute([$document_id, $f_id]);
+                            } else {
+                                $this->db->prepare("INSERT INTO wp_document_folder (document_id, folder_id, status, created_at, updated_at) VALUES (?, ?, 'active', NOW(), NOW())")->execute([$document_id, $f_id]);
+                            }
+                            $folder_name = $document_name;
+                            $stmt = $this->db->prepare("SELECT id FROM wp_folder WHERE parent_id = ? AND content_id = ? and sub_type = 'document'");
+                            $stmt->execute([$f_id, $document_id]);
+                            $existingFolder = $stmt->fetch(PDO::FETCH_ASSOC);
+                            if ($existingFolder) {
+                                $sql = "UPDATE wp_folder SET name = :name, status = :status, updated_at = NOW() WHERE id = :id";
+                                $this->db->prepare($sql)->execute([
+                                    ':name'   => $folder_name,
+                                    ':status' => $folder_status_base,
+                                    ':id'     => $existingFolder['id']
+                                ]);
+                            } else {
+                                $stmt = $this->db->prepare("SELECT level FROM wp_folder WHERE id = ?");
+                                $stmt->execute([$f_id]);
+                                $parentData = $stmt->fetch(PDO::FETCH_ASSOC);
+                                $level = $parentData ? (int)$parentData['level'] + 1 : 1;
+                                $slug = $this->generateUniqueSlug($folder_name, $f_id);
+                                $sql = "INSERT INTO wp_folder (name, slug, parent_id, level, status, type, sub_type, created_at, updated_at, content_id) VALUES (:name, :slug, :parent_id, :level, :status, 'document', 'document', NOW(), NOW(), :document_id)";
+                                $this->db->prepare($sql)->execute([
+                                    ':name'       => $folder_name,
+                                    ':slug'       => $slug,
+                                    ':parent_id'  => $f_id,
+                                    ':level'      => $level,
+                                    ':status'     => $folder_status_base,
+                                    ':document_id' => $document_id
+                                ]);
+                            }
+                        }
+                    }
+                } else {
+                    $this->db->prepare("UPDATE wp_document_folder SET status = 'deleted', updated_at = NOW() WHERE document_id = ?")->execute([$document_id]);
+                    $this->db->prepare("UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = ? and sub_type = 'document'")->execute([$document_id]);
+                }
             }
             if (isset($_FILES['document_file']) && $_FILES['document_file']['error'] === UPLOAD_ERR_OK) {
                 $this->handleFileUpload($document_id, $_FILES['document_file']);
@@ -258,7 +379,39 @@ class DocumentModel {
             ];
         }
     }
+     private function generateSlug($text){
+        $text = trim($text);
+        $text = mb_strtolower($text, 'UTF-8');
+        $text = preg_replace('/[^a-z0-9ก-๙]+/u', '-', $text);
+        $text = trim($text, '-');
+        return $text ?: 'folder';
+    }
+    private function generateUniqueSlug($name, $parentId, $excludeId = null){
+        $slug = $this->generateSlug($name);
+        $baseSlug = $slug;
+        $i = 1;
+        while (true) {
+            $sql = "SELECT id FROM wp_folder WHERE slug = :slug AND parent_id <=> :parent";
+            if ($excludeId) {
+                $sql .= " AND id != :exclude";
+            }
+            $stmt = $this->db->prepare($sql);
+            $params = [
+                ':slug' => $slug,
+                ':parent' => $parentId
+            ];
+            if ($excludeId) {
+                $params[':exclude'] = $excludeId;
+            }
+            $stmt->execute($params);
+            if (!$stmt->fetch()) break;
+            $slug = $baseSlug . '-' . $i;
+            $i++;
+        }
+        return $slug;
+    }
     public function delete($id) {
+        $this->db->prepare("UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = ? AND sub_type = 'document'")->execute([(int)$id]);
         return $this->updateStatus($id, 'deleted');
     }
     public function documentHistory($start, $length, $document_id, $search, $colIndex = 2, $orderDir = 'desc') {
@@ -291,14 +444,7 @@ class DocumentModel {
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
         }
-        $sql = "SELECT
-                    d.*,
-                    CONCAT(m.first_name, ' ', m.last_name) AS member_name
-                FROM wp_documents_download_logs d
-                LEFT JOIN wp_members m ON m.member_id = d.member_id
-                {$whereSql}
-                ORDER BY {$order} {$orderDir}
-                LIMIT :start, :length";
+        $sql = "SELECT d.*,CONCAT(m.first_name, ' ', m.last_name) AS member_name FROM wp_documents_download_logs d LEFT JOIN wp_members m ON m.member_id = d.member_id {$whereSql} ORDER BY {$order} {$orderDir} LIMIT :start, :length";
         $stmt = $this->db->prepare($sql);
         foreach ($params as $key => $val) {
             $stmt->bindValue($key, $val);
@@ -390,16 +536,16 @@ class DocumentModel {
             }
         }
     }
-    private function insertDocument($name, $start, $end, $status, $type, $contract_id, $project_id, $installations_id, $poles_id) {
-        $sql = "INSERT INTO wp_documents (document_name, document_start, document_end, status, created_at, updated_at, type_id, contract_id, project_id, installations_id, poles_id) VALUES (?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?)";
+    private function insertDocument($name, $start, $end, $status, $type, $contract_id, $project_id, $installations_id, $poles_id, $folder_show_admin, $folder_show_user) {
+        $sql = "INSERT INTO wp_documents (document_name, document_start, document_end, status, created_at, updated_at, type_id, contract_id, project_id, installations_id, poles_id, folder_show_admin, folder_show_user) VALUES (?, ?, ?, ?, NOW(), NOW(), ?, ?, ?, ?, ?, ?, ?)";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$name, $start, $end, $status, $type, $contract_id, $project_id, $installations_id, $poles_id]);
+        $stmt->execute([$name, $start, $end, $status, $type, $contract_id, $project_id, $installations_id, $poles_id, $folder_show_admin, $folder_show_user]);
         return $this->db->lastInsertId();
     }
-    private function updateDocument($id, $name, $start, $end, $status, $type, $contract_id, $project_id, $installations_id, $poles_id) {
-        $sql = "UPDATE wp_documents SET document_name=?, document_start=?, document_end=?, status=?, updated_at=NOW(), type_id=?, contract_id=?, project_id=?, installations_id=?, poles_id=? WHERE document_id=?";
+    private function updateDocument($id, $name, $start, $end, $status, $type, $contract_id, $project_id, $installations_id, $poles_id, $folder_show_admin, $folder_show_user) {
+        $sql = "UPDATE wp_documents SET document_name=?, document_start=?, document_end=?, status=?, updated_at=NOW(), type_id=?, contract_id=?, project_id=?, installations_id=?, poles_id=?, folder_show_admin=?,folder_show_user = ? WHERE document_id=?";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$name, $start, $end, $status, $type, $contract_id, $project_id, $installations_id, $poles_id, $id]);
+        $stmt->execute([$name, $start, $end, $status, $type, $contract_id, $project_id, $installations_id, $poles_id, $folder_show_admin, $folder_show_user, $id]);
     }
     private function updateStatus($id, $status) {
         if (!$id) return false;

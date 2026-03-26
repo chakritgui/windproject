@@ -86,6 +86,9 @@ class DocumentController extends BaseController {
             'poles_id' => $_POST['poles_id'] ?? '',
             'send_notification' => $_POST['send_notification'] ?? 'no',
             'document_file' => $_FILES['document_file'] ?? null,
+            'folder_id' => isset($_POST['folder_id']) && is_array($_POST['folder_id']) ? $_POST['folder_id'] : [],
+            'folder_show_admin'    => $_POST['folder_show_admin'] ?? 'no',
+            'folder_show_user'    => $_POST['folder_show_user'] ?? 'no',
         ];
         $this->json($this->model->save($data));
     }

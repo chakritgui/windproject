@@ -114,7 +114,7 @@ function renderTable(data, isNewSearch) {
         } else {
             folder_name = item.folder_name || '-';
         }
-        const bg = item.status === "active" ? "success" : "secondary";
+        const bg = (item.status === "active" || item.status === "published") ? "success" : "secondary";
         const statusBody = `<span class="badge rounded-pill bg-${bg}-subtle text-${bg}">${langData[item.status] || item.status}</span>`;
         let typeHtml = '';
         if(item.sub_type === 'news') {
