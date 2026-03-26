@@ -639,3 +639,43 @@
     cursor: pointer; transition: all 0.2s;
 }
 .poles-btn-ghost:hover { background: rgba(255,255,255,0.95); color: #1a4e7a; }
+.poles-name {
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: #1a2f45;
+    line-height: 1.3;
+    margin-bottom: 6px;
+}
+.poles-code {
+    font-weight: 400;
+    font-size: 0.82rem;
+    color: #5a7a96;
+    margin-left: 6px;
+}
+.poles-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 99px;
+    background: rgba(91,184,245,0.08);
+    border: 1px solid rgba(91,184,245,0.18);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #1a4e7a;
+}
+.poles-status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.poles-avatar {
+    width: 52px; height: 52px; flex-shrink: 0;
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(91,184,245,0.18), rgba(45,127,193,0.12));
+    border: 1px solid rgba(45,127,193,0.22);
+    display: flex; align-items: center; justify-content: center;
+    color: #2d7fc1; font-size: 22px;
+    box-shadow: 0 0 0 3px rgba(91,184,245,0.15);
+    animation: iconFloat 3.5s ease-in-out infinite;
+}

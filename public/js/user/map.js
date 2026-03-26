@@ -355,7 +355,7 @@ async function openPoles(poleId) {
     const $footer  = $modal.find('.modal-footer');
     $dialog.removeClass('modal-fullscreen');
     $header.html(`
-        <h5 class="modal-title" style="font-family:'Syne',sans-serif;font-weight:700;color:#1a4e7a;"></h5>
+        <h5 class="modal-title"></h5>
         <div class="ms-auto d-flex align-items-center gap-2">
             <button type="button" class="btn btn-sm poles-ctrl-btn" id="btn-fullscreen" title="Fullscreen">
                 <i class="fa-regular fa-window-maximize"></i>
@@ -415,10 +415,10 @@ async function openPoles(poleId) {
             /src="(?!(http|https|\/\/))/g,
             `src="${fullBase}/`
         );
-        const bg           = data.project_bg || {};
-        const projBg       = bg.project_background;
-        const opacityVal   = bg.project_opacity > 0 ? bg.project_opacity / 100 : 1;
-        const bgStyle      = projBg
+        const bg = data.project_bg || {};
+        const projBg = bg.project_background;
+        const opacityVal = bg.project_opacity > 0 ? bg.project_opacity / 100 : 1;
+        const bgStyle = projBg
             ? `background-image:linear-gradient(rgba(255,255,255,${1 - opacityVal}),rgba(255,255,255,${1 - opacityVal})),url('${fullBase}/${projBg}');background-size:cover;background-position:top center;background-repeat:no-repeat;`
             : '';
         const coverHtml = (hasContent && data.content?.cover && data.content?.cover_display === 'yes')
@@ -449,10 +449,6 @@ async function openPoles(poleId) {
                             ${data.installations_name}
                             <span class="poles-code">#${data.poles_code}</span>
                         </div>
-                        <div class="poles-status-pill">
-                            <span class="poles-status-dot" style="background:${data.project_status_color || '#ccc'};"></span>
-                            <span>${data.project_status_name || '—'}</span>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -464,6 +460,10 @@ async function openPoles(poleId) {
             <div class="poles-content-section" style="${bgStyle}">
                 ${data.content_id ? `
                     ${coverHtml}
+                    ${(data.content.presentation && data.content.presentation.length > 0) ? 
+                        renderPresentationShow(data.content.presentation) : 
+                        ``
+                    }
                     <article class="poles-article">
                         <h4 class="poles-article-title">${title}</h4>
                         <div class="poles-article-meta">
@@ -489,16 +489,21 @@ async function openPoles(poleId) {
             </div>
         </div>`;
         $body.html(html);
-        $header.find('.modal-title').text(data.poles_code);
+        $header.find('.modal-title').html(`
+            <span class="project-status">
+                <i class="fa-solid fa-circle-dot status-pulse me-2" style="color:${data.project_status_color || '#ccc'}; font-size: 0.8em;"></i>
+                <span class="fw-bold" style="font-size: 0.9rem; color: #444;">
+                    ${data.project_status_name || '—'}
+                </span>
+            </span>
+        `);
         if (typeof updateText === 'function') updateText($body[0]);
         $body.find('.article-content img').each(function () {
             const $img = $(this);
             const src  = $img.attr('src');
             if (!src) return;
             $img.removeAttr('width height');
-            let style = ($img.attr('style') || '')
-                .replace(/width\s*:\s*[^;]+;?/gi, '')
-                .replace(/height\s*:\s*[^;]+;?/gi, '');
+            let style = ($img.attr('style') || '').replace(/width\s*:\s*[^;]+;?/gi, '').replace(/height\s*:\s*[^;]+;?/gi, '');
             $img.attr('style', style.trim()).attr('loading', 'lazy');
             if (!$img.parent('a').length) {
                 $img.wrap(`<a href="${src}" data-fancybox="content-images" class="content-img-link"></a>`);

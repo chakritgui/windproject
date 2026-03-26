@@ -112,10 +112,6 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                             ${data.installations_name}
                             <span class="poles-code">#${data.poles_code}</span>
                         </div>
-                        <div class="poles-status-pill">
-                            <span class="poles-status-dot" style="background:${data.project_status_color || '#ccc'};"></span>
-                            <span>${data.project_status_name || '—'}</span>
-                        </div>
                     </div>
                 </div>
                 <div class="fm-chips">
@@ -196,7 +192,14 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
         }
         $('input[id^="sensor"]').each(function () { syncSensorItem(this); });
         $(document).on('change', 'input[id^="sensor"]', function () { syncSensorItem(this); });
-        $('#poleModalLabel').text(data.installations_name);
+        $('#poleModalLabel').html(`
+            <span class="project-status">
+                <i class="fa-solid fa-circle-dot status-pulse me-2" style="color:${data.project_status_color || '#ccc'}; font-size: 0.8em;"></i>
+                <span class="fw-bold" style="font-size: 0.9rem; color: #444;">
+                    ${data.project_status_name || '—'}
+                </span>
+            </span>
+        `);
         let minVal = data.min_datetime_val ? new Date(data.min_datetime_val) : null;
         let maxVal = data.max_datetime_val ? new Date(data.max_datetime_val) : null;
         initDatePicker('#startDate', minVal, maxVal);
@@ -349,8 +352,8 @@ function showReportPWA(data) {
                                     <span id="installations_name"></span>
                                     <small class="text-muted fw-light ms-1">#<span id="code"></span></small>
                                 </h4>
-                                <div class="d-inline-flex align-items-center bg-light border border-light-subtle rounded-pill px-3 py-1 shadow-sm">
-                                    <i class="fa-solid fa-circle me-2 status_color small"></i>
+                                <div class="d-inline-flex align-items-center py-1">
+                                    <i class="fa-solid fa-circle-dot me-2 status_color small" style="animation: status-ripple 2s infinite ease-out;"></i>
                                     <span id="status_name" class="fw-bold opacity-75"></span>
                                 </div>
                             </div>

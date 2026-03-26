@@ -49,8 +49,8 @@
                             <span id="installations_name"></span>
                             <small class="text-muted fw-light ms-1">#<span id="code"></span></small>
                         </h4>
-                        <div class="d-inline-flex align-items-center bg-light border border-light-subtle rounded-pill px-3 py-1 shadow-sm">
-                            <i class="fa-solid fa-circle me-2 status_color small"></i>
+                        <div class="d-inline-flex align-items-center py-1">
+                            <i class="fa-solid fa-circle-dot me-2 status_color small" style="animation: status-ripple 2s infinite ease-out;"></i>
                             <span id="status_name" class="fw-bold opacity-75"></span>
                         </div>
                     </div>

@@ -153,11 +153,12 @@ class MapModel{
                     $stM = $this->db->prepare("SELECT id, file_path as url, file_name as name, file_type FROM wp_content_media WHERE content_id = :id AND status = 'active'");
                     $stM->execute([':id' => $cId]);
                     $media = $stM->fetchAll(PDO::FETCH_ASSOC);
-                    $images = []; $images360 = []; $attachments = [];
+                    $images = []; $images360 = []; $attachments = []; $presentation = [];
                     foreach ($media as $m) {
                         if ($m['file_type'] === 'image') $images[] = $m;
                         elseif ($m['file_type'] === 'image360') $images360[] = $m;
                         elseif ($m['file_type'] === 'attachment') $attachments[] = $m;
+                        elseif ($m['file_type'] === 'presentation') $presentation[] = $m;
                     }
                     $poleInfo['content'] = [
                         "id" => $cId,
@@ -170,7 +171,8 @@ class MapModel{
                         "content" => $bodies,
                         "images" => $images,
                         "images360" => $images360,
-                        "attachments" => $attachments
+                        "attachments" => $attachments,
+                        "presentation" => $presentation
                     ];
                 }
             }

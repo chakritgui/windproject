@@ -31,6 +31,7 @@ function openContent(slugFromParam, modeFromParam) {
                 <span id="contentDate"></span>
             </div>
             <div class="cv-divider"></div>
+            <div class="presentationSlide"></div>
             <div class="cv-body article-content" id="contentBody"></div>
             <div id="multimediaArea"></div>
         </div>
@@ -101,6 +102,8 @@ function renderContent(data) {
             </div>
         `);
     }
+    let presentationSlide = renderPresentationShow(data.presentation);
+    $(".presentationSlide").html(presentationSlide);
     renderMultimediaSections(data);
     $('#viewLoader').hide();
     $('#contentArea').animate({ opacity: 1 }, 500);

@@ -900,3 +900,38 @@ function renderLangTabs(d) {
         </div>
     `;
 }
+function renderPresentationShow(presentation) {
+    if (!presentation || !Array.isArray(presentation) || presentation.length === 0) return '';
+    const carouselId = 'carousel-' + Math.random().toString(36).substr(2, 9); // สุ่ม ID ป้องกันซ้ำ
+    let indicators = '';
+    let items = '';
+    presentation.forEach((item, index) => {
+        const isActive = index === 0 ? 'active' : '';
+        const isVideo = item.url.match(/\.(mp4|webm|ogg)$/i);
+        const fullUrl = BASE_URL + '/' + item.url;
+        indicators += `
+            <button type="button" data-bs-target="#${carouselId}" data-bs-slide-to="${index}" class="${isActive}" aria-current="${isActive ? 'true' : 'false'}"></button>`;
+        items += `
+            <div class="carousel-item ${isActive}" data-bs-interval="${isVideo ? '10000' : '5000'}">
+                <div class="ratio ratio-16x9 bg-dark rounded overflow-hidden shadow-sm">
+                    ${isVideo ? `
+                        <video class="w-100 h-100 object-fit-cover" autoplay muted loop playsinline>
+                            <source src="${fullUrl}" type="video/mp4">
+                        </video>` : `
+                        <img src="${fullUrl}" class="d-block w-100 h-100 object-fit-cover" alt="Slide">
+                    `}
+                </div>
+            </div>`;
+    });
+    return `
+        <div id="${carouselId}" class="carousel slide carousel-fade rounded-4 mb-4" data-bs-ride="carousel">
+            <div class="carousel-indicators">${indicators}</div>
+            <div class="carousel-inner">${items}</div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </button>
+        </div>`;
+}

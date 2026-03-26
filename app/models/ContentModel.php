@@ -29,10 +29,12 @@ class ContentModel {
         $images = [];
         $images360 = [];
         $attachments = [];
+        $presentation = [];
         foreach ($media as $m) {
             if ($m['file_type'] === 'image') $images[] = $m;
             elseif ($m['file_type'] === 'image360') $images360[] = $m;
             elseif ($m['file_type'] === 'attachment') $attachments[] = $m;
+            elseif ($m['file_type'] === 'presentation') $presentation[] = $m;
         }
         if($mode === 'view') {
             $stmt = $pdo->prepare("UPDATE wp_content SET content_view = content_view + 1 WHERE content_id = ?");
@@ -49,7 +51,8 @@ class ContentModel {
             "content" => $body,
             "images" => $images,
             "images360" => $images360,
-            "attachments" => $attachments
+            "attachments" => $attachments,
+            "presentation" => $presentation
         ];
     }
 }
