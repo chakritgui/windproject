@@ -525,7 +525,7 @@ async function loadPoles() {
         if (!Array.isArray(poles)) return;
         poleLayerGroup.clearLayers();
         poleMarkers = {};
-        window._usedLabelPositions = [];
+        window._usedLabelBoxes = [];
         for (let i = 0; i < poles.length; i++) {
             const pole = poles[i];
             const lat  = parseFloat(pole.poles_lat);
@@ -568,7 +568,7 @@ async function loadPoles() {
             marker.on('click', () => openPoles(pole.poles_id));
             const windId  = `wind-auto-${pole.poles_id}`;
             const arrowId = `arrow-${pole.poles_id}`;
-            const off = getSmartOffset(lat, lng, window._usedLabelPositions);
+            const off = getSmartOffset(lat, lng, window._usedLabelBoxes, map);
             const anchorX = off.dx >= 0 ? 0 : Math.abs(off.dx);
             const anchorY = off.dy >= 0 ? 0 : Math.abs(off.dy);
             const { svgW, svgH, html } = buildWindLabelSVG({
@@ -600,47 +600,47 @@ async function loadPoles() {
         console.error("LoadPoles Error:", err);
     }
 }
-function getSmartOffset(lat, lng, usedPositions) {
+function getSmartOffset(lat, lng, usedBoxes, map) {
     const baseOffsets = [
         { dx:  70, dy: -50 },
         { dx: -70, dy: -50 },
         { dx:  70, dy:  40 },
         { dx: -70, dy:  40 },
-        { dx:   0, dy: -70 },
-        { dx: 110, dy:   0 },
-        { dx:-110, dy:   0 },
+        { dx:   0, dy: -80 },
+        { dx: 120, dy:   0 },
+        { dx:-120, dy:   0 },
     ];
-    const threshold = 0.0006;
-    for (let step = 0; step < 10; step++) {
+    const LABEL_W = 70;
+    const LABEL_H = 24;
+    const point = map.latLngToContainerPoint([lat, lng]);
+    for (let step = 0; step < 8; step++) {
         for (let i = 0; i < baseOffsets.length; i++) {
             const off = {
-                dx: baseOffsets[i].dx + (step * 60),
-                dy: baseOffsets[i].dy + (step * 40)
+                dx: baseOffsets[i].dx + (step * 40),
+                dy: baseOffsets[i].dy + (step * 30)
+            };
+            const box = {
+                left:   point.x + off.dx,
+                right:  point.x + off.dx + LABEL_W,
+                top:    point.y + off.dy - LABEL_H / 2,
+                bottom: point.y + off.dy + LABEL_H / 2
             };
             let collision = false;
-            for (let j = 0; j < usedPositions.length; j++) {
-                const u = usedPositions[j];
-                const distLat = Math.abs(lat - u.lat);
-                const distLng = Math.abs(lng - u.lng);
-                const distDx  = Math.abs(off.dx - u.dx);
-                const distDy  = Math.abs(off.dy - u.dy);
-                if (distLat < threshold && distLng < threshold &&
-                    distDx < 100 && distDy < 40) {
+            for (let j = 0; j < usedBoxes.length; j++) {
+                if (isOverlapping(box, usedBoxes[j])) {
                     collision = true;
                     break;
                 }
             }
             if (!collision) {
-                usedPositions.push({ lat, lng, dx: off.dx, dy: off.dy });
+                usedBoxes.push(box);
                 return off;
             }
         }
     }
-    const angle = Math.random() * Math.PI * 2;
-    const dist  = 80 + Math.random() * 60;
     return {
-        dx: Math.cos(angle) * dist,
-        dy: Math.sin(angle) * dist
+        dx: 100 + Math.random() * 50,
+        dy: (Math.random() - 0.5) * 100
     };
 }
 function isOverlapping(a, b) {
