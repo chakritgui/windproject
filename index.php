@@ -219,6 +219,7 @@
             $router->post('/api/poles.val', 'PoleController@poleval');
             $router->post('/api/heght.level', 'PoleController@level');
             $router->post('/api/poles.infos', 'PoleController@info');
+            $router->post('/api/project.poles', 'PoleController@polesList');
         }
     }
     $router->post('/api/menu.load', 'MenuController@load');

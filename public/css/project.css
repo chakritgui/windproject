@@ -280,3 +280,34 @@
     z-index: 1;
     transition: transform 0.3s ease;
 }
+.dl-btn {
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, #5bb8f5, #2d7fc1);
+    color: #fff;
+    border: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+}
+.dl-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.dl-btn:hover {
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 6px 20px rgba(45, 127, 193, 0.40);
+}
+.dl-btn:hover::before { opacity: 1; }
+.dl-btn:active { transform: scale(0.97); }
+.dl-btn i { font-size: 12px; }
+.dl-btn:hover i { animation: dlBounce 0.5s ease; }

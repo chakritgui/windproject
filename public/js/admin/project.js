@@ -114,24 +114,28 @@ function renderTable(data, isNewSearch) {
         } else {
             folder_name = item.folder_name || '-';
         }
-        const bg = (item.status === "active" || item.status === "published") ? "success" : "secondary";
+        const bg = (item.status === "active" || item.status === "published"  || item.status === "public") ? "success" : "secondary";
         const statusBody = `<span class="badge rounded-pill bg-${bg}-subtle text-${bg}">${langData[item.status] || item.status}</span>`;
         let typeHtml = '';
         if(item.sub_type === 'news') {
             typeHtml = `<span class="badge rounded-pill text-bg-primary"><i class="fa-regular fa-newspaper"></i> <span>${langData['news'] || 'News'}</span></span>`;
-        } else {
+        } else if(item.sub_type === 'project') {
             typeHtml = `<span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project"></i> <span>${langData['project'] || 'Project'}</span></span>`;
+        } else if(item.sub_type === 'document') {
+            typeHtml = `<span class="badge rounded-pill text-bg-danger"><i class="fa-solid fa-folder-open"></i> <span>${langData['document'] || 'Document'}</span></span>`;
         }
         html += `
-            <tr data-index="${globalIndex}" data-id="${item.id}" data-type="${item.type}" style="${item.type === 'content' ? 'cursor:default;' : 'cursor:pointer;'}">
+            <tr data-index="${globalIndex}" data-id="${item.id}" data-type="${item.type}" style="${item.type === 'content' || item.type === 'document' ? 'cursor:default;' : 'cursor:pointer;'}">
                 <td>
                     <i class="fa-solid fa-grip-vertical drag-handle text-muted me-2" style="cursor:grab;"></i>
                 </td>
                 <td class="text-center" style="width: 80px;">
                     <div style="width: 50px; height: 50px; line-height: 50px; overflow: hidden; margin: 0 auto; border-radius: 4px; border: 1px solid #eee;">
-                    ${item.cover ? 
+                    ${item.cover &&  item.type === 'content' ? 
                         `<img src="${BASE_URL}/${item.cover}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';" loading="lazy">` : 
-                        `<i class="fa-solid ${icon} fa-3x"></i>`
+                        `
+                            ${(item.type === 'document') ? `<i class="${getFileIconClass(item.cover)} fa-2x text-secondary-light"></i>` : `<i class="fa-solid ${icon} fa-3x"></i>`}
+                        `
                     }
                     </div>
                 </td>
@@ -142,7 +146,7 @@ function renderTable(data, isNewSearch) {
                     <div class="text-muted mt-2 small"><i class="fa-regular fa-calendar"></i> ${item.created_at}</div>
                 </td>
                 <td>
-                    ${(item.type === 'content') ? typeHtml : ``}
+                    ${(item.type === 'content' || item.type === 'document') ? typeHtml : ``}
                 </td>
                 <td>${item.created_at || '-'}</td>
                 <td>
@@ -155,6 +159,9 @@ function renderTable(data, isNewSearch) {
                     <div class="btn-group border rounded-3 bg-white">
                         ${(item.type === 'content') ? `
                             <a onclick="openContent('${item.content_slug}', 'preview')" class="btn btn-link text-info view-content"><i class="fa-solid fa-eye"></i></a> 
+                        ` : ``}
+                        ${(item.type === 'document') ? `
+                            <a href="${BASE_URL}/${item.slug}" class="btn btn-link text-primary" target="_blank"><i class="fa-solid fa-folder-open"></i></a> 
                         ` : ``}
                         ${item.sub_type === 'project' ? `
                             <button class="btn btn-link text-warning border-start manage-${(item.type === 'content') ? 'content' : 'project'}" data-id="${(item.type === 'content') ? item.content_id :item.id}"><i class="fa-solid fa-pen-to-square"></i></button>
@@ -178,7 +185,7 @@ function renderTable(data, isNewSearch) {
         const index = $(this).data('index');
         const rowData = cachedData[index];
         if (rowData) {
-            if (rowData.type === 'content') return;
+            if (rowData.type === 'content' || rowData.type === 'document') return;
             currentFolderId = rowData.id;
             currentLevel = parseInt(rowData.level) + 1;
             currentPath.push({

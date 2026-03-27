@@ -67,5 +67,34 @@
         </div>
     </div>
 </div>
+<div class="offcanvas offcanvas-end border-0 shadow" tabindex="-1" id="projectCanvas">
+    <div class="oc-header">
+        <div class="oc-header-left">
+            <div class="status-dot" id="pp-status-dot"></div>
+            <h5 class="oc-title" id="pp-name" data-i18n="project"></h5>
+        </div>
+        <button type="button" class="btn btn-sm btn-default" data-bs-dismiss="offcanvas" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="offcanvas-body p-0">
+        <div class="oc-status-bar">
+            <span data-i18n="status"></span>
+            <span class="status-pill" id="pp-status"></span>
+        </div>
+        <div class="oc-stats-row">
+            <div class="stat-cell">
+                <span class="stat-label" data-i18n="pole"></span>
+                <span class="stat-value" id="pp-count">0</span>
+            </div>
+            <div class="stat-cell">
+                <span class="stat-label" data-i18n="avg_wind"></span>
+                <span class="stat-value" id="pp-avg-wind">0 m/s</span>
+            </div>
+        </div>
+        <div class="oc-poles-section">
+            <div class="section-label" data-i18n="pole_list"></div>
+            <div id="pp-body"></div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

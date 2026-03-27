@@ -257,7 +257,7 @@ class UserModel {
     public function info($start = 0, $length = 20, $filters = [], $order = 'desc') {
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
         $sql = "SELECT 
-            f.id, f.name as folder_name, f.slug, f.level, f.parent_id, f.created_at, f.type, f.content_id, c.content_slug, f.sub_type,
+            f.id, f.name as folder_name, f.level, f.parent_id, f.created_at, f.type, f.content_id, c.content_slug, f.sub_type,
             iEn.status as en_status,
             iLo.status as lo_status,
             iTh.status as th_status,
@@ -270,10 +270,18 @@ class UserModel {
             COALESCE(m.count_image360, 0) AS count_image360,
             CASE
                 WHEN f.type = 'folder' THEN f.cover
+                WHEN f.type = 'content' and  f.sub_type = 'project' THEN c.cover
+                WHEN f.type = 'document' and  f.sub_type = 'document' THEN d.document_type
                 ELSE c.cover
-            END as cover
+            END as cover,
+            CASE
+                WHEN f.type = 'folder' or f.type = 'content' THEN f.slug
+                WHEN f.type = 'document' and f.sub_type = 'document' then d.document_path
+                ELSE ''
+            END as slug
         FROM wp_folder f 
-        LEFT JOIN wp_content c on c.content_id = f.content_id
+        LEFT JOIN wp_content c on c.content_id = f.content_id and f.type = 'content'
+        LEFT JOIN wp_documents d ON d.document_id = f.content_id and f.type = 'document'
         LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang = 'en' AND iEn.status IN ('ready','success')
         LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang = 'th' AND iTh.status IN ('ready','success')
         LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang = 'lo' AND iLo.status IN ('ready','success')
@@ -327,9 +335,14 @@ class UserModel {
         $where = " AND (
             (f.sub_type = 'news' AND c.status = 'published' AND c.folder_show_user = 'yes' and c.publish_at is not null and c.publish_at <> '' and c.publish_at <= NOW())
             OR
+            (f.sub_type = 'document' AND d.status = 'public' AND d.folder_show_admin = 'yes')
+            OR
             (f.sub_type = 'project' AND f.status = 'active')
         ) AND f.status = 'active' ";
-        $sql = "SELECT COUNT(DISTINCT f.id) FROM wp_folder f LEFT JOIN wp_content c ON c.content_id = f.content_id WHERE f.parent_id = :pid AND f.level = :lvl {$where}";
+        $sql = "SELECT COUNT(DISTINCT f.id) FROM wp_folder f 
+        LEFT JOIN wp_content c ON c.content_id = f.content_id and f.type = 'content'
+        LEFT JOIN wp_documents d ON d.document_id = f.content_id and f.type = 'document'
+        WHERE f.parent_id = :pid AND f.level = :lvl {$where}";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             ':pid' => $folderId, 
@@ -341,7 +354,9 @@ class UserModel {
         $where  = " WHERE  
             ((f.sub_type = 'news' AND c.status = 'published' AND c.folder_show_user = 'yes')
             OR
-            (f.sub_type = 'project' AND f.status = 'active') ) AND f.status = 'active'
+            (f.sub_type = 'project' AND f.status = 'active') 
+            OR (f.sub_type = 'document' AND d.status = 'public' AND d.folder_show_user = 'yes')
+            ) AND f.status = 'active'
         ";
         $params = [];
         if (!empty($filters['level'])) {

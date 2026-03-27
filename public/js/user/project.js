@@ -116,9 +116,7 @@ function renderView(data, isNewSearch) {
     const $container = $('#listView');
     if (isNewSearch) {
         $container.empty();
-        $container
-            .removeClass('list-view grid-view')
-            .addClass(state.viewMode === 'grid' ? 'grid-view' : 'list-view');
+        $container.removeClass('list-view grid-view').addClass(state.viewMode === 'grid' ? 'grid-view' : 'list-view');
     }
     if (isNewSearch && (!data || data.length === 0)) {
         $('#emptyState').removeClass('d-none');
@@ -168,17 +166,29 @@ function renderView(data, isNewSearch) {
                 </span>`;
             }
         }
-        const typeHtml = item.sub_type === 'news'
-            ? `<span class="badge rounded-pill text-bg-primary"><i class="fa-regular fa-newspaper"></i> ${langData['news'] || 'News'}</span>`
-            : `<span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project"></i> ${langData['project'] || 'Project'}</span>`;
-        const icon = item.sub_type === 'news' ? `<i class="fa-regular fa-newspaper fa-2x"></i>` : `<i class="fa-solid fa-diagram-project fa-2x"></i>`;
+        let typeHtml = ``;
+         if(item.sub_type === 'news') {
+            typeHtml = `<span class="badge rounded-pill text-bg-primary"><i class="fa-regular fa-newspaper"></i> ${langData['news'] || 'News'}</span>`;
+        } else if(item.sub_type === 'project') {
+            typeHtml = `<span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project"></i> ${langData['project'] || 'Project'}</span>`;
+        } else {
+            typeHtml = `<span class="badge rounded-pill text-bg-danger"><i class="fa-solid fa-folder-open"></i> ${langData['document'] || 'Document'}</span>`;
+        }
+        let icon = '';
+        if(item.sub_type === 'news') {
+            icon = `<i class="fa-regular fa-newspaper fa-2x"></i>`;
+        } else if(item.sub_type === 'project') {
+            icon = `<i class="fa-solid fa-diagram-project fa-2x"></i>`;
+        } else {
+            icon = `<i class="${getFileIconClass(item.cover)} fa-2x text-secondary-light"></i>`;
+        }
         const card_class = isContent ? (item.sub_type === 'news' ? `card-news` : `card-project`) : ``;
         const thumb = isContent
             ? (item.cover
-                ? `<img src="${BASE_URL}/${item.cover}" loading="lazy">`
+                ? (item.sub_type === 'document') ? icon : `<img src="${BASE_URL}/${item.cover}" loading="lazy">`
                 : icon)
             : (item.cover
-                ? `<img src="${BASE_URL}/${item.cover}" loading="lazy">`
+                ? (item.sub_type === 'document') ? icon : `<img src="${BASE_URL}/${item.cover}" loading="lazy">`
                 : `<i class="fa-solid fa-folder-open fa-2x text-warning"></i>`);
         if (state.viewMode === 'grid') {
             return `
@@ -190,12 +200,18 @@ function renderView(data, isNewSearch) {
                             <div class="grid-title" style="flex: 1;">${title}</div>
                             <div class="grid-badge-top" style="margin-left: 10px;">${badge}</div>
                         </div>
-                        ${isContent ? `
+                        ${isContent || item.sub_type === 'document' ? `
                             <div class="small text-muted mt-1">
                                 <i class="fa-regular fa-calendar"></i> ${item.created_at}
                             </div>
-                            <div class="mt-2">${typeHtml}</div>
+                            <div style="position: absolute; top: 10px; right: 10px;">${typeHtml}</div>
                             <div class="mt-2">${badgeHtml}</div>
+                            ${(item.sub_type === 'document') ? `
+                                <button class="dl-btn download-btn" data-id="${item.content_id}" data-path="${(item.slug)}" data-file-name="${(item.title || '')}">
+                                    <i class="fa-solid fa-download"></i>
+                                    <span data-i18n="download">${langData['download'] || 'Download'}</span>
+                                </button>    
+                            ` : ``}
                         ` : `
                             <div class="small text-muted mt-1">
                                 <i class="fa-regular fa-calendar"></i> ${item.created_at}
@@ -214,26 +230,27 @@ function renderView(data, isNewSearch) {
                     <div class="folder-icon-box me-3 flex-shrink-0">${thumb}</div>
                     <div class="flex-grow-1 overflow-hidden">
                         <div class="doc-title">${title}</div>
-                        ${isContent ? `
+                        ${isContent || item.sub_type === 'document' ? `
                             <div class="row g-2 mt-2">
-                                <div class="col-12 col-sm-6">
+                                <div class="col-12 col-sm-6 mb-2">
                                     ${typeHtml}
-                                    <span class="small ms-2 text-muted">
-                                        <i class="fa-regular fa-calendar"></i> ${item.created_at}
-                                    </span>
                                 </div>
                                 <div class="col-12 col-sm-6 text-sm-end">
                                     ${badgeHtml}
                                 </div>
                             </div>
-                        ` : `
-                            <div class="small text-muted mt-2">
-                                <i class="fa-regular fa-calendar"></i> ${item.created_at}
-                            </div>
-                        `}
+                        ` : ` `}
+                        <div class="small text-muted">
+                            <i class="fa-regular fa-calendar"></i> ${item.created_at}
+                        </div>
                     </div>
                     <div class="ms-2">
                         ${isContent ? '' : badge}
+                        ${(item.sub_type === 'document') ? `
+                            <button class="dl-btn download-btn" data-id="${item.content_id}" data-path="${(item.slug)}" data-file-name="${(item.title || '')}">
+                                <i class="fa-solid fa-download"></i>
+                            </button>    
+                        ` : ``}
                     </div>
                 </div>
             </div>

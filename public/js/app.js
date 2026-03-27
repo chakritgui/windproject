@@ -16,11 +16,10 @@ async function initApp() {
     try {
         await Promise.all([
             loadSetting(),
-            loadLang(currentLang),
-            loadNotification(),
-            syncTimezone(),
-            loadMenu()
         ]);
+        loadNotification();
+        syncTimezone();
+        loadMenu();
         bindSidebar();
         bindNotification();
         initAutoLanguageObserver();
@@ -66,25 +65,18 @@ function getGeolocation() {
 }
 async function syncTimezone() {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const geo = await getGeolocation();
-    try {
-        const response = await fetch(`${BASE_URL}/api/timezone.update`, {
+    getGeolocation().then(geo => {
+        fetch(`${BASE_URL}/api/timezone.update`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
-                timezone: tz,
-                lat: geo.lat, 
+                lat: geo.lat,
                 lng: geo.lng,
-                geo_status: geo.status
+                geo_status: geo.status,
+                timezone: tz
             })
         });
-        
-        const res = await response.json();
-        console.log("Sync Status:", res.status ? "Success" : "Failed");
-
-    } catch (e) {
-        console.warn("Timezone and Location sync failed", e);
-    }
+    });
 }
 async function handlePWANotifications(force = false) {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;

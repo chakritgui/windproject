@@ -25,13 +25,22 @@ class PoleController extends BaseController {
         $sensors = $this->parseInputArray($sensorsInput);
         if (empty($sensors)) return null;
         return [
-            'poles_id'  => (int)$input['poles_id'],
+            'poles_id' => (int)$input['poles_id'],
             'height_id' => (int)($input['height_id'] ?? 0),
-            'start'     => $input['start'] ?? $input['startDate'], 'Y-m-d' ?? null,
-            'end'       => $input['end'] ?? $input['endDate'], 'Y-m-d' ?? null,
-            'sensors'   => $sensors,
-            'levels'    => $this->parseInputArray($input['lv'] ?? $input['levels_data'] ?? [])
+            'start' => $input['start'] ?? $input['startDate'], 'Y-m-d' ?? null,
+            'end' => $input['end'] ?? $input['endDate'], 'Y-m-d' ?? null,
+            'sensors' => $sensors,
+            'levels' => $this->parseInputArray($input['lv'] ?? $input['levels_data'] ?? [])
         ];
+    }
+    public function polesList() {
+        $input = $this->getJsonInput();
+        $projectId = $input['project_id'] ?? null;
+        if (!$projectId) {
+            return $this->json(['error' => 'Invalid Project ID']);
+        }
+        $result = $this->model->polesList($projectId);
+        return $this->json($result ?: []);
     }
     public function polestats() {
         $input = $this->getJsonInput();

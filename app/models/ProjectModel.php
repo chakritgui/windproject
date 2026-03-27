@@ -7,12 +7,14 @@ class ProjectModel {
     public function get($start = 0, $length = 20, $filters = [], $search = '', $order = 'desc') {
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
         $sql = "SELECT 
-                f.id, f.name as folder_name, f.slug, f.level, f.parent_id, f.created_at, f.type, f.content_id, c.content_slug, 
+                f.id, f.name as folder_name, f.level, f.parent_id, f.created_at, f.type, f.content_id, c.content_slug, 
                 iEn.status as en_status, iLo.status as lo_status, iTh.status as th_status,
                 iEn.content_subject as en_subject, iLo.content_subject as lo_subject, iTh.content_subject as th_subject,
                 f.sub_type,
                 CASE
                     WHEN f.type = 'folder' THEN f.cover
+                    WHEN f.type = 'content' and  f.sub_type = 'project' THEN c.cover
+                    WHEN f.type = 'document' and  f.sub_type = 'document' THEN d.document_type
                     ELSE c.cover
                 END as cover,
                 CASE
@@ -20,7 +22,12 @@ class ProjectModel {
                     WHEN f.type = 'content' and f.sub_type = 'news' then c.status
                     WHEN f.type = 'document' and f.sub_type = 'document' then d.status
                     ELSE ''
-                END as status
+                END as status,
+                CASE
+                    WHEN f.type = 'folder' or f.type = 'content' THEN f.slug
+                    WHEN f.type = 'document' and f.sub_type = 'document' then d.document_path
+                    ELSE ''
+                END as slug
             FROM wp_folder f 
             LEFT JOIN wp_content c on c.content_id = f.content_id and (f.sub_type = 'news' or f.sub_type = 'project')
             LEFT JOIN wp_documents d on d.document_id = f.content_id and f.sub_type = 'document'
@@ -62,9 +69,14 @@ class ProjectModel {
         $where = " AND (
             (f.sub_type = 'news' AND c.status <> 'deleted' AND c.folder_show_admin = 'yes')
             OR
+            (f.sub_type = 'document' AND d.status <> 'deleted' AND d.folder_show_admin = 'yes')
+            OR
             (f.sub_type = 'project' AND f.status <> 'deleted')
         ) AND f.status <> 'deleted' ";
-        $sql = "SELECT COUNT(DISTINCT f.id) FROM wp_folder f LEFT JOIN wp_content c ON c.content_id = f.content_id WHERE f.parent_id = :pid AND f.level = :lvl {$where}";
+        $sql = "SELECT COUNT(DISTINCT f.id) FROM wp_folder f 
+        LEFT JOIN wp_content c ON c.content_id = f.content_id and f.type = 'content'
+        LEFT JOIN wp_documents d ON d.document_id = f.content_id and f.type = 'document'
+        WHERE f.parent_id = :pid AND f.level = :lvl {$where}";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             ':pid' => $folderId, 
@@ -191,7 +203,9 @@ class ProjectModel {
         $where  = " WHERE  
             ((f.sub_type = 'news' AND c.status <> 'deleted' AND c.folder_show_admin = 'yes')
             OR
-            (f.sub_type = 'project')) AND f.status <> 'deleted'
+            (f.sub_type = 'project')
+            OR (f.sub_type = 'document' AND d.status <> 'deleted' AND d.folder_show_admin = 'yes')
+            ) AND f.status <> 'deleted'
         ";
         $params = [];
         if (!empty($filters['level'])) {
@@ -447,7 +461,7 @@ class ProjectModel {
     }
     public function unlink($data) {
         try {
-            $sql_get_parent = "SELECT parent_id FROM wp_folder WHERE id = :folder_id LIMIT 1";
+            $sql_get_parent = "SELECT parent_id, sub_type FROM wp_folder WHERE id = :folder_id LIMIT 1";
             $stmt_parent = $this->db->prepare($sql_get_parent);
             $stmt_parent->execute([':folder_id' => $data['folder_id']]);
             $folder = $stmt_parent->fetch(PDO::FETCH_ASSOC);
@@ -455,15 +469,25 @@ class ProjectModel {
                 return false;
             }
             $parent_id = $folder['parent_id'];
+            $sub_type = $folder['sub_type'];
             $sql_folder = "UPDATE wp_folder SET status = 'deleted', updated_at = NOW() WHERE id = :id";
             $stmt_folder = $this->db->prepare($sql_folder);
             $res1 = $stmt_folder->execute([':id' => $data['folder_id']]);
-            $sql_content = "UPDATE wp_content_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = :content_id AND folder_id = :folder_id";
-            $stmt_content = $this->db->prepare($sql_content);
-            $res2 = $stmt_content->execute([
-                ':content_id' => $data['content_id'],
-                ':folder_id'  => $parent_id
-            ]);
+            if($sub_type === 'content') {
+                $sql_content = "UPDATE wp_content_folder SET status = 'deleted', updated_at = NOW() WHERE content_id = :content_id AND folder_id = :folder_id";
+                $stmt_content = $this->db->prepare($sql_content);
+                $res2 = $stmt_content->execute([
+                    ':content_id' => $data['content_id'],
+                    ':folder_id'  => $parent_id
+                ]);
+            } else {
+                $sql_content = "UPDATE wp_document_folder SET status = 'deleted', updated_at = NOW() WHERE document_id = :document_id AND folder_id = :folder_id";
+                $stmt_content = $this->db->prepare($sql_content);
+                $res2 = $stmt_content->execute([
+                    ':document_id' => $data['content_id'],
+                    ':folder_id'  => $parent_id
+                ]);
+            }
             return ($res1 && $res2);
         } catch (Exception $e) {
             return false;

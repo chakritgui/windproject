@@ -9,28 +9,22 @@ class MapModel{
         return $this->db->query($sql)->fetch(PDO::FETCH_ASSOC);
     }
     public function windarea() {
-        $sql = "SELECT area_name, geo_data, custom_style FROM wp_map_polygons WHERE status = 'active'";
+        $sql = "SELECT 
+            m.area_name, m.geo_data, m.custom_style, ifnull(s.project_status_color, '') as area_status_color, p.project_id 
+            FROM wp_map_polygons m 
+            LEFT JOIN wp_project p on p.project_id = m.project_id 
+            LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id 
+            WHERE m.status = 'active' group by m.poly_id";
         $polygons = $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
         return ['polygons' => $polygons];
     }
     public function poleslocation() {
-        $sql = "SELECT 
-                    p.*, 
-                    t.type_id, 
-                    t.type_name, 
-                    l.installations_name, 
-                    t.type_icon
-                FROM wp_poles p
-                INNER JOIN wp_type t ON t.type_id = p.type_id 
-                INNER JOIN wp_installations l ON l.installations_id = p.installations_id
-                WHERE p.status = 'online'";
+        $sql = "SELECT p.*, t.type_id, t.type_name, l.installations_name, t.type_icon FROM wp_poles p INNER JOIN wp_type t ON t.type_id = p.type_id INNER JOIN wp_installations l ON l.installations_id = p.installations_id WHERE p.status = 'online'";
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function project() {
-        $sql = "SELECT DISTINCT
-                    p.project_id,
-                    COALESCE(NULLIF(p.project_name_display, ''), p.project_name, '') AS project_name
+        $sql = "SELECT DISTINCT p.project_id, COALESCE(NULLIF(p.project_name_display, ''), p.project_name, '') AS project_name
                 FROM wp_project p
                 INNER JOIN wp_poles po ON po.project_id = p.project_id
                 WHERE p.status = 'active' AND po.status = 'online'
@@ -40,14 +34,10 @@ class MapModel{
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function type($project_id) {
-        $sql = "SELECT DISTINCT
-                    t.type_id,  
-                    COALESCE(NULLIF(t.type_name_display, ''), t.type_name, '') AS type_name
+        $sql = "SELECT DISTINCT t.type_id, COALESCE(NULLIF(t.type_name_display, ''), t.type_name, '') AS type_name
                 FROM wp_type t
                 INNER JOIN wp_poles po ON po.type_id = t.type_id 
-                WHERE t.status = 'active' 
-                  AND po.status = 'online' 
-                  AND po.project_id = :project_id
+                WHERE t.status = 'active' AND po.status = 'online' AND po.project_id = :project_id
                 ORDER BY t.type_id ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':project_id' => $project_id]);
@@ -62,12 +52,8 @@ class MapModel{
                     p.poles_id
                 FROM wp_installations l
                 INNER JOIN wp_poles p ON p.installations_id = l.installations_id
-                WHERE l.status = 'active' 
-                  AND p.status = 'online' 
-                  AND p.project_id = :project_id 
-                  AND p.type_id = :type_id
+                WHERE l.status = 'active' AND p.status = 'online' AND p.project_id = :project_id AND p.type_id = :type_id
                 ORDER BY l.installations_id ASC";
-
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             ':project_id' => $project_id,
@@ -88,8 +74,7 @@ class MapModel{
             $stmt1->execute([':poles_id' => $poles_id]);
             $poleInfo = $stmt1->fetch(PDO::FETCH_ASSOC);
             if (!$poleInfo) return false;
-            $sqlDate = "SELECT MAX(wind_datetime) as max_dt, MIN(wind_datetime) as min_dt 
-                        FROM wp_winds WHERE poles_id = :poles_id AND status = 'active'";
+            $sqlDate = "SELECT MAX(wind_datetime) as max_dt, MIN(wind_datetime) as min_dt FROM wp_winds WHERE poles_id = :poles_id AND status = 'active'";
             $stmt2 = $this->db->prepare($sqlDate);
             $stmt2->execute([':poles_id' => $poles_id]);
             $dateInfo = $stmt2->fetch(PDO::FETCH_ASSOC);
@@ -104,10 +89,7 @@ class MapModel{
             $height_id = null;
             $height_name = '';
             if ($height) {
-                $sqlH = "SELECT h.height_id, h.height_name
-                        FROM wp_height h 
-                        JOIN wp_height_levels l ON l.height_id = h.height_id 
-                        WHERE h.height_id = :h_id";
+                $sqlH = "SELECT h.height_id, h.height_name FROM wp_height h JOIN wp_height_levels l ON l.height_id = h.height_id WHERE h.height_id = :h_id";
                 $stH = $this->db->prepare($sqlH);
                 $stH->execute([':h_id' => $height]);
                 $resH = $stH->fetch(PDO::FETCH_ASSOC);
@@ -116,12 +98,7 @@ class MapModel{
                     $height_name = $resH['height_name'];
                 }
             } else {
-                $sqlF = "SELECT h.height_id, h.height_name 
-                        FROM wp_height h 
-                        JOIN wp_height_levels l ON l.height_id = h.height_id
-                        JOIN wp_winds w ON w.levels_id = l.levels_id
-                        WHERE w.poles_id = :p_id
-                        GROUP BY h.height_id ORDER BY h.height_id ASC LIMIT 1";
+                $sqlF = "SELECT h.height_id, h.height_name FROM wp_height h JOIN wp_height_levels l ON l.height_id = h.height_id JOIN wp_winds w ON w.levels_id = l.levels_id WHERE w.poles_id = :p_id GROUP BY h.height_id ORDER BY h.height_id ASC LIMIT 1";
                 $stF = $this->db->prepare($sqlF);
                 $stF->execute([':p_id' => $poles_id]);
                 $resF = $stF->fetch(PDO::FETCH_ASSOC);
@@ -201,18 +178,11 @@ class MapModel{
             $where .= " AND (h.height_name LIKE :search OR l.height_levels LIKE :search)";
             $params[':search'] = "%{$searchTerm}%";
         }
-        $join = "INNER JOIN wp_height_levels l ON l.height_id = h.height_id 
-                INNER JOIN wp_winds w ON w.levels_id = l.levels_id";
+        $join = "INNER JOIN wp_height_levels l ON l.height_id = h.height_id INNER JOIN wp_winds w ON w.levels_id = l.levels_id";
         $stmtCount = $this->db->prepare("SELECT COUNT(DISTINCT l.levels_id) as total FROM wp_height h {$join} {$where}");
         $stmtCount->execute($params);
         $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
-        $sql = "SELECT h.height_id AS id, h.height_name AS text 
-                FROM wp_height h 
-                {$join} 
-                {$where}
-                GROUP BY h.height_id
-                ORDER BY h.height_id ASC
-                LIMIT :limit OFFSET :offset";
+        $sql = "SELECT h.height_id AS id, h.height_name AS text FROM wp_height h {$join} {$where} GROUP BY h.height_id ORDER BY h.height_id ASC LIMIT :limit OFFSET :offset";
         $stmt = $this->db->prepare($sql);
         foreach ($params as $k => $v) {
             $stmt->bindValue($k, $v);

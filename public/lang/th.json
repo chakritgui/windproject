@@ -305,6 +305,7 @@
     "select_sensor_message": "กรุณาเลือกเซนเซอร์อย่างน้อยหนึ่งตัว",
     "select_level_message": "โปรดเลือกอย่างน้อยหนึ่งระดับ",
     "average_summary": "สรุปค่าเฉลี่ย",
+    "average": "ค่าเฉลี่ย",
     "visualization": "ภาพรวมข้อมูล",
     "wind_speed_area": "พื้นที่ความเร็วลม",
     "wind_speed_distribution": "การกระจายตัวของความเร็วลม",
@@ -636,5 +637,14 @@
     "enable_disclaimer": "เปิดใช้งานข้อความปฏิเสธความรับผิดชอบ",
     "en_is_primary": "ต้องใช้เวอร์ชันภาษาอังกฤษในการเปิดใช้งาน",
     "user_privileges": "สิทธิ์ของผู้ใช้",
-    "presentation": "การนำเสนอ"
+    "presentation": "การนำเสนอ",
+    "avg_wind": "ความเร็วลมเฉลี่ย",
+    "initializing": "กำลังเริ่มต้นระบบ",
+    "gusts": "ลมกระโชก",
+    "map_controls": "การควบคุมแผนที่",
+    "show_wind_values": "แสดงค่าลม",
+    "focus_mode": "โหมดโฟกัส",
+    "wind_intensity": "ความแรงของลม",
+    "max_wind": "ลมแรงสูงสุด",
+    "min_wind": "ลมแรงต่ำสุด"
 }

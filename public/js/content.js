@@ -74,7 +74,7 @@ function initSummernote() {
                     uploadImage(files, this);
                 },
                 onChange: function (contents) {
-                    debounceHandleChange(this);
+                    // debounceHandleChange(this);
                 }
             }
         });
@@ -82,7 +82,7 @@ function initSummernote() {
     initDropdownFix();
 }
 function createResizeButton(size) {
-    return function (context) { // รับ context ของ summernote เข้ามา
+    return function (context) {
         var ui = $.summernote.ui;
         var button = ui.button({
             contents: size === '100%' ? 'Full' : size,

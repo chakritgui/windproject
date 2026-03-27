@@ -37,10 +37,20 @@ class MapSettingModel {
                             updated_at = NOW()";
                 $stmtPoly = $this->db->prepare($sqlPoly);
                 foreach ($payload['polygons'] as $poly) {
-                    $stmtFind = $this->db->prepare("SELECT project_id FROM wp_project WHERE project_name = ? LIMIT 1");
-                    $stmtFind->execute([$poly['area_name']]);
-                    $project = $stmtFind->fetch(PDO::FETCH_ASSOC);
-                    $projectId = $project ? $project['project_id'] : null;
+                    if (!empty($poly['project_id'])) {
+                        $projectId = $poly['project_id'];
+                    } else {
+                        $projectId = null;
+                        if (!empty($poly['area_name'])) {
+                            $stmtFind = $this->db->prepare("SELECT project_id FROM wp_project WHERE project_name = ? LIMIT 1
+                            ");
+                            $stmtFind->execute([$poly['area_name']]);
+                            $project = $stmtFind->fetch(PDO::FETCH_ASSOC);
+                            if ($project) {
+                                $projectId = $project['project_id'];
+                            }
+                        }
+                    }
                     $styleData = is_string($poly['custom_style']) ? $poly['custom_style'] : json_encode($poly['custom_style']);
                     $geoData = is_string($poly['geo_data']) ? $poly['geo_data'] : json_encode($poly['geo_data']);
                     $stmtPoly->execute([
@@ -52,7 +62,6 @@ class MapSettingModel {
                     ]);
                 }
             }
-            
             $this->db->commit();
             return true;
         } catch (Exception $e) {
@@ -68,7 +77,7 @@ class MapSettingModel {
             $stmt->execute([$mapId]);
             $master = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$master) return null;
-            $stmt = $this->db->prepare("SELECT * FROM wp_map_polygons WHERE map_id = ? AND status = 'active'");
+            $stmt = $this->db->prepare("SELECT m.*, p.project_id, p.project_name FROM wp_map_polygons m LEFT JOIN wp_project p on p.project_id = m.project_id WHERE m.map_id = ? AND m.status = 'active' group by m.poly_id");
             $stmt->execute([$mapId]);
             $polygons = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return [

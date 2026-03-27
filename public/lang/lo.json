@@ -304,6 +304,7 @@
     "select_sensor_message": "ກະລຸນາເລືອກເຊັນເຊີຢ່າງໜ້ອຍໜຶ່ງຕົວ",
     "select_level_message": "ກະລຸນາເລືອກຢ່າງໜ້ອຍໜຶ່ງລະດັບ.",
     "average_summary": "ສະຫຼຸບຄ່າສະເລ່ຍ",
+    "average": "ຄ່າສະເລ່ຍ",
     "visualization": "ພາບລວມຂອງຂໍ້ມູນ",
     "wind_speed_area": "ພື້ນທີ່ຄວາມໄວລົມ",
     "wind_speed_distribution": "ການກະຈາຍຕົວຂອງຄວາມໄວລົມ",
@@ -636,5 +637,14 @@
     "enable_disclaimer": "ເປີດໃຊ້ງານຂໍ້ຄວາມປະຕິເສດຄວາມຮັບຜິດຊອບ",
     "en_is_primary": "ຕ້ອງມີສະບັບພາສາອັງກິດສຳລັບການເປີດໃຊ້ງານ.",
     "user_privileges": "ສິດທິພິເສດຂອງຜູ້ໃຊ້",
-    "presentation": "ການນຳສະເໜີ"
+    "presentation": "ການນຳສະເໜີ",
+    "avg_wind": "ຄວາມໄວລົມສະເລ່ຍ",
+    "initializing": "ກຳລັງເລີ່ມລະບົບ",
+    "gusts": "ລົມກະໂຊກ",
+    "map_controls": "ການຄວບຄຸມແຜນທີ່",
+    "show_wind_values": "ສະແດງຄ່າລົມ",
+    "focus_mode": "ໂໝດໂຟກັສ",
+    "wind_intensity": "ຄວາມແຮງຂອງລົມ",
+    "max_wind": "ລົມແຮງສູງສຸດ",
+    "min_wind": "ລົມຕໍ່າສຸດ"
 }

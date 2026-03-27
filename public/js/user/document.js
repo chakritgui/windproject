@@ -219,31 +219,6 @@ function resetAndLoad() {
     container.innerHTML = '';
     loadDocuments();
 }
-document.addEventListener('click', function (e) {
-    const btn = e.target.closest('.download-btn');
-    if (!btn) return;
-    const id       = btn.dataset.id;
-    const path     = btn.dataset.path;
-    const fileName = btn.dataset.fileName || '';
-    if (!id || !path) return;
-    const orig = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลด...';
-    btn.disabled  = true;
-    fetch(`${typeof BASE_URL !== 'undefined' ? BASE_URL : ''}/api/document.download`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ id }),
-    }).catch(() => {}).finally(() => {
-        triggerDownload(path, fileName);
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> สำเร็จ!';
-        btn.style.background = 'linear-gradient(135deg,#34d399,#059669)';
-        setTimeout(() => {
-            btn.innerHTML        = orig;
-            btn.style.background = '';
-            btn.disabled         = false;
-        }, 1800);
-    });
-});
 document.addEventListener('change', function (e) {
     if (e.target.classList.contains('filter')) {
         resetAndLoad();

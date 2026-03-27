@@ -38,12 +38,7 @@ class PoleModel {
             $levels = array_filter(array_map('intval', $levels));
             if (empty($levels)) $levels = [0];
             $placeholders = implode(',', array_fill(0, count($levels), '?'));
-            $sql = "SELECT " . implode(', ', $select) . " 
-                    FROM wp_winds 
-                    WHERE poles_id = ? 
-                    AND levels_id IN ($placeholders) 
-                    AND wind_datetime BETWEEN ? AND ? 
-                    AND status = 'active'";
+            $sql = "SELECT " . implode(', ', $select) . " FROM wp_winds WHERE poles_id = ? AND levels_id IN ($placeholders) AND wind_datetime BETWEEN ? AND ? AND status = 'active'";
             $stmt = $this->db->prepare($sql);
             $bindParams = array_merge([$params['poles_id']], $levels, [$start, $end]);
             $stmt->execute($bindParams);
@@ -135,16 +130,33 @@ class PoleModel {
         $stmtLimit = $this->db->prepare($sqlLimit);
         $stmtLimit->execute([$params['height_id']]);
         $heightLimit = $stmtLimit->fetchColumn() ?: 3; 
-        $sqlLevels = "SELECT levels_id, height_levels
-                    FROM wp_height_levels
-                    WHERE height_id = ? AND status <> 'deleted'
-                    ORDER BY ifnull(height_order, levels_id) ASC"; 
+        $sqlLevels = "SELECT levels_id, height_levels FROM wp_height_levels WHERE height_id = ? AND status <> 'deleted' ORDER BY ifnull(height_order, levels_id) ASC"; 
         $stmtLevels = $this->db->prepare($sqlLevels);
         $stmtLevels->execute([$params['height_id']]);
         $levels = $stmtLevels->fetchAll(PDO::FETCH_ASSOC);
         return [
             'height_limit' => (int)$heightLimit,
             'levels' => $levels
+        ];
+    }
+    public function polesList($project_id) {
+        $sql = "SELECT
+                    p.poles_id, p.poles_lat AS lat, p.poles_lng AS lng, pj.project_name, t.type_id, t.type_name, i.installations_name, s.project_status_name AS project_status, s.project_status_color
+                FROM wp_poles p
+                LEFT JOIN wp_project pj ON pj.project_id = p.project_id
+                LEFT JOIN wp_type t ON t.type_id = p.type_id
+                LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
+                LEFT JOIN wp_project_status s ON s.project_status_id = pj.project_status_id 
+                WHERE pj.project_id = :project_id AND p.status = 'online'";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['project_id' => $project_id]);
+        $poles = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if (empty($poles)) return [];
+        return [
+            'project_name'   => $poles[0]['project_name'],
+            'project_status' => strtolower($poles[0]['project_status']),
+            'status_color'   => $poles[0]['project_status_color'],
+            'poles'          => $poles
         ];
     }
 }

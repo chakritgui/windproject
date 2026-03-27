@@ -105,8 +105,7 @@ function loadMapDataFromServer() {
                         } catch(e) { console.error("Error parsing country data"); }
                     }
                     if (settings.default_style) {
-                        currentStyle = typeof settings.default_style === 'string' 
-                            ? JSON.parse(settings.default_style) : settings.default_style;
+                        currentStyle = typeof settings.default_style === 'string' ? JSON.parse(settings.default_style) : settings.default_style;
                         updateControlPanelUI();
                     }
                 }
@@ -115,7 +114,9 @@ function loadMapDataFromServer() {
                         poly_id: p.poly_id, 
                         name: p.area_name || `Area-${p.poly_id}`,
                         style: typeof p.custom_style === 'string' ? JSON.parse(p.custom_style) : p.custom_style,
-                        data: typeof p.geo_data === 'string' ? JSON.parse(p.geo_data) : p.geo_data
+                        data: typeof p.geo_data === 'string' ? JSON.parse(p.geo_data) : p.geo_data,
+                        project_id: p.project_id || null, 
+                        project_name: p.project_name || ''
                     }));
                     renderPolygons();
                 }
@@ -141,7 +142,9 @@ function onDrawCreated(e) {
         poly_id: poly_id,
         name: `Area-${poly_id.toString().slice(-4)}`,
         data: layer.toGeoJSON(),
-        style: { ...currentStyle } 
+        style: { ...currentStyle },
+        project_id: null,
+        project_name: null
     });
     renderPolygonList(); 
 }
@@ -186,12 +189,35 @@ function renderPolygonList() {
             <div id="item-${p.poly_id}" class="data-item d-flex justify-content-between align-items-center p-2 border-bottom">
                 <div class="d-flex align-items-center" style="cursor:pointer; flex-grow:1" onclick="handleItemClick(${p.poly_id})">
                     <span class="me-2" style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:${fill}; border:1px solid ${border};"></span>
-                    <div><div class="fw-bold small text-truncate" style="max-width: 130px;">${p.name}</div></div>
+                    <div>
+                        <div class="fw-bold small text-truncate" style="max-width:130px;">
+                            ${p.name}
+                        </div>
+                        <div class="mt-2" style="font-size:9px;">
+                            <span style="padding:2px 6px; border-radius:8px;
+                                ${p.project_name 
+                                    ? 'background:#eef3ff; color:#3b5bdb;' 
+                                    : 'background:#ffe3e3; color:#c92a2a;'
+                                }
+                            ">
+                                ${p.project_name 
+                                    ? '<i class="fa-solid fa-diagram-project me-1"></i>' + p.project_name 
+                                    : 'No Project'
+                                }
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <div class="btn-group border rounded-3 bg-white">
-                    <button class="btn btn-link text-info py-1" onclick="focusOnLayer(${p.poly_id})"><i class="fa-solid fa-eye"></i></button>
-                    <button class="btn btn-link text-warning py-1 border-start" onclick="openEditPopup(${p.poly_id})"><i class="fa-solid fa-pen-to-square"></i></button>
-                    <button class="btn btn-link text-danger py-1 border-start" onclick="deletePolygon(${p.poly_id})"><i class="fa-solid fa-trash-can"></i></button>
+                    <button class="btn btn-link text-info py-1" onclick="focusOnLayer(${p.poly_id})">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <button class="btn btn-link text-warning py-1 border-start" onclick="openEditPopup(${p.poly_id})">
+                        <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button class="btn btn-link text-danger py-1 border-start" onclick="deletePolygon(${p.poly_id})">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
                 </div>
             </div>
         `);
@@ -202,13 +228,17 @@ function openEditPopup(id) {
     if (!poly) return;
     const modalHtml = `
     <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-dialog modal-md modal-dialog-centered">
             <div class="modal-content shadow border-0">
                 <div class="modal-header bg-light py-2">
                     <h6 class="modal-title small fw-bold"><span data-i18n="edit"></span>: ${poly.name}</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-3">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Project</label>
+                        <select id="editProject" class="form-select form-select-sm"></select>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold mb-1" data-i18n="area_border_color"></label>
                         <div class="d-flex gap-2">
@@ -261,12 +291,20 @@ function openEditPopup(id) {
             fillOpacity: $('#editOpacity').val() / 100,
             weight: $('#editborderWeight').val(),
         };
+        const selected = $('#editProject').select2('data')[0];
+        poly.project_id = selected ? selected.id : null;
+        poly.project_name = selected ? selected.text : '';
         if (polygonLayers[id]) {
             polygonLayers[id].setStyle(poly.style);
         }
         renderPolygonList();
         myModal.hide();
     });
+    initSelect2Remote('#editProject', `${BASE_URL}/api/poles.filter`, { type: 'project' });
+    if (poly.project_name) {
+        var newOptionStatus = new Option(poly.project_name, poly.project_id, true, true);
+        $('#editProject').append(newOptionStatus).trigger('change');
+    }
 }
 function deletePolygon(id) {
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
@@ -288,7 +326,9 @@ function importMapJSON(json) {
                 poly_id: new_id,
                 name: name,
                 data: f,
-                style: { ...currentStyle }
+                style: { ...currentStyle },
+                project_id: null,
+                project_name: null
             });
         }
     });
@@ -365,6 +405,7 @@ function getMapFullConfigForSave() {
             return {
                 poly_id: p.poly_id, 
                 area_name: p.name,
+                project_id: p.project_id,
                 custom_style: JSON.stringify(p.style),
                 geo_data: JSON.stringify(latestGeo)
             };
