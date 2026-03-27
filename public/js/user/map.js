@@ -502,13 +502,7 @@ async function loadPoles() {
         if (!Array.isArray(poles)) return;
         poleLayerGroup.clearLayers();
         poleMarkers = {};
-        const offsets = [
-            { dx:  50, dy: -40 },
-            { dx: -50, dy: -40 },
-            { dx:  50, dy:  25 },
-            { dx: -50, dy:  25 },
-            { dx:   0, dy: -55 },
-        ];
+        window._usedLabelPositions = [];
         for (let i = 0; i < poles.length; i++) {
             const pole = poles[i];
             const lat  = parseFloat(pole.poles_lat);
@@ -551,9 +545,6 @@ async function loadPoles() {
             marker.on('click', () => openPoles(pole.poles_id));
             const windId  = `wind-auto-${pole.poles_id}`;
             const arrowId = `arrow-${pole.poles_id}`;
-            if (!window._usedLabelPositions) {
-                window._usedLabelPositions = [];
-            }
             const off = getSmartOffset(lat, lng, window._usedLabelPositions);
             const anchorX = off.dx >= 0 ? 0 : Math.abs(off.dx);
             const anchorY = off.dy >= 0 ? 0 : Math.abs(off.dy);
@@ -588,18 +579,20 @@ async function loadPoles() {
 }
 function getSmartOffset(lat, lng, usedPositions) {
     const baseOffsets = [
-        { dx:  50, dy: -40 },
-        { dx: -50, dy: -40 },
-        { dx:  50, dy:  25 },
-        { dx: -50, dy:  25 },
-        { dx:   0, dy: -55 },
+        { dx:  70, dy: -50 },
+        { dx: -70, dy: -50 },
+        { dx:  70, dy:  40 },
+        { dx: -70, dy:  40 },
+        { dx:   0, dy: -70 },
+        { dx: 110, dy:   0 },
+        { dx:-110, dy:   0 },
     ];
-    const threshold = 0.00015;
+    const threshold = 0.0006;
     for (let step = 0; step < 10; step++) {
         for (let i = 0; i < baseOffsets.length; i++) {
             const off = {
-                dx: baseOffsets[i].dx + (step * 15),
-                dy: baseOffsets[i].dy + (step * 10)
+                dx: baseOffsets[i].dx + (step * 60),
+                dy: baseOffsets[i].dy + (step * 40)
             };
             let collision = false;
             for (let j = 0; j < usedPositions.length; j++) {
@@ -609,7 +602,7 @@ function getSmartOffset(lat, lng, usedPositions) {
                 const distDx  = Math.abs(off.dx - u.dx);
                 const distDy  = Math.abs(off.dy - u.dy);
                 if (distLat < threshold && distLng < threshold &&
-                    distDx < 40 && distDy < 30) {
+                    distDx < 100 && distDy < 40) {
                     collision = true;
                     break;
                 }
@@ -620,7 +613,20 @@ function getSmartOffset(lat, lng, usedPositions) {
             }
         }
     }
-    return baseOffsets[Math.floor(Math.random() * baseOffsets.length)];
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = 80 + Math.random() * 60;
+    return {
+        dx: Math.cos(angle) * dist,
+        dy: Math.sin(angle) * dist
+    };
+}
+function isOverlapping(a, b) {
+    return !(
+        a.right  < b.left  ||
+        a.left   > b.right ||
+        a.bottom < b.top   ||
+        a.top    > b.bottom
+    );
 }
 function toggleWind(isOn) {
     windOn = isOn;
