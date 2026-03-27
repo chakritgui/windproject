@@ -1400,3 +1400,6 @@ header .nav-link:hover {
         display: flex;
     }
 }
+.leaflet-pane {
+    z-index: 1 !important;
+}

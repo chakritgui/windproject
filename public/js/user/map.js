@@ -157,7 +157,7 @@ async function renderWindAreas(map, picker, areaData, masterData) {
     featureGroup.bringToFront();
     if (featureGroup.getBounds().isValid()) {
         const bounds = featureGroup.getBounds();
-        const padded = bounds.pad(0.05);
+        const padded = bounds.pad(0.1);
         map.fitBounds(bounds, { padding: [20, 20] });
         map.options.minZoom = map.getBoundsZoom(bounds);
         map.setMaxBounds(padded);
@@ -244,7 +244,7 @@ async function openCustomPicker(latlng) {
     const lng = Number(latlng.lng ?? latlng.lon);
     if (isNaN(lat) || isNaN(lng)) return;
     const pickerIcon = L.divIcon({
-        className: '',
+        className: 'popupTop',
         iconSize:   [24, 60],
         iconAnchor: [4, 58],  
         html: `
@@ -288,17 +288,23 @@ async function updateCustomPickerPopup(lat, lng) {
     const windData = await fetchWindAtPoint(lat, lng);
     const content  = buildPickerPopupHTML(lat, lng, windData);
     if (!customPickerMarker) return;
+    if (!map.getPane('popupTop')) {
+        map.createPane('popupTop');
+        map.getPane('popupTop').style.zIndex = 1000;
+    }
     if (!customPickerMarker.getPopup()) {
         customPickerMarker.bindPopup(content, {
-            className: 'custom-wind-popup', 
+            pane: 'popupTop',
+            className: 'custom-wind-popup',
             offset: L.point(0, -52),
-            closeButton: false,  
+            closeButton: false,
             autoClose: false,
             closeOnClick: false,
             maxWidth: 280,
             minWidth: 210,
         });
         customPickerMarker.openPopup();
+        customPickerMarker.setZIndexOffset(10000);
         customPickerMarker.getPopup().on('remove', closeCustomPicker);
     } else {
         customPickerMarker.getPopup().setContent(content);
@@ -545,7 +551,10 @@ async function loadPoles() {
             marker.on('click', () => openPoles(pole.poles_id));
             const windId  = `wind-auto-${pole.poles_id}`;
             const arrowId = `arrow-${pole.poles_id}`;
-            const off     = offsets[i % offsets.length];
+            if (!window._usedLabelPositions) {
+                window._usedLabelPositions = [];
+            }
+            const off = getSmartOffset(lat, lng, window._usedLabelPositions);
             const anchorX = off.dx >= 0 ? 0 : Math.abs(off.dx);
             const anchorY = off.dy >= 0 ? 0 : Math.abs(off.dy);
             const { svgW, svgH, html } = buildWindLabelSVG({
@@ -563,7 +572,7 @@ async function loadPoles() {
             const labelMarker = L.marker([lat, lng], {
                 icon:         labelIcon,
                 interactive:  false,
-                zIndexOffset: -10
+                zIndexOffset: -10,
             }).addTo(poleLayerGroup);
             poleMarkers[pole.poles_id] = {
                 marker, labelMarker,
@@ -576,6 +585,42 @@ async function loadPoles() {
     } catch (err) {
         console.error("LoadPoles Error:", err);
     }
+}
+function getSmartOffset(lat, lng, usedPositions) {
+    const baseOffsets = [
+        { dx:  50, dy: -40 },
+        { dx: -50, dy: -40 },
+        { dx:  50, dy:  25 },
+        { dx: -50, dy:  25 },
+        { dx:   0, dy: -55 },
+    ];
+    const threshold = 0.00015;
+    for (let step = 0; step < 10; step++) {
+        for (let i = 0; i < baseOffsets.length; i++) {
+            const off = {
+                dx: baseOffsets[i].dx + (step * 15),
+                dy: baseOffsets[i].dy + (step * 10)
+            };
+            let collision = false;
+            for (let j = 0; j < usedPositions.length; j++) {
+                const u = usedPositions[j];
+                const distLat = Math.abs(lat - u.lat);
+                const distLng = Math.abs(lng - u.lng);
+                const distDx  = Math.abs(off.dx - u.dx);
+                const distDy  = Math.abs(off.dy - u.dy);
+                if (distLat < threshold && distLng < threshold &&
+                    distDx < 40 && distDy < 30) {
+                    collision = true;
+                    break;
+                }
+            }
+            if (!collision) {
+                usedPositions.push({ lat, lng, dx: off.dx, dy: off.dy });
+                return off;
+            }
+        }
+    }
+    return baseOffsets[Math.floor(Math.random() * baseOffsets.length)];
 }
 function toggleWind(isOn) {
     windOn = isOn;
