@@ -7,6 +7,8 @@ let menuState = {};
 let show_country_line = 'hide';
 let map_labels = 'yes';
 let country_layers_data = null;
+let maskLayer = null;
+let geoDataGlobal = null;
 const isMobile = () => window.innerWidth <= 768;
 function initMap() {
     windyInit(options, async api => {
@@ -31,7 +33,10 @@ function initMap() {
             map_labels = masterData?.map_labels;
             if (show_country_line === 'show' && country_layers_data) {
                 try {
-                    const geoData = typeof country_layers_data === 'string' ? JSON.parse(country_layers_data) : country_layers_data;
+                    const geoData = typeof country_layers_data === 'string'
+                        ? JSON.parse(country_layers_data)
+                        : country_layers_data;
+                    geoDataGlobal = geoData;
                     L.geoJSON(geoData, {
                         style: {
                             color: "#161616",
@@ -69,6 +74,33 @@ function initMap() {
         if (windSwitch) {
             windSwitch.addEventListener('change', e => toggleWind(e.target.checked));
         }
+    });
+}
+function createMaskLayer(geoData) {
+    if (!geoData) return null;
+    const worldBounds = [
+        [-90, -180],
+        [-90, 180],
+        [90, 180],
+        [90, -180]
+    ];
+    let holes = [];
+    geoData.features.forEach(f => {
+        const coords = f.geometry.coordinates;
+        if (f.geometry.type === 'Polygon') {
+            holes.push(coords[0].map(c => [c[1], c[0]]));
+        }
+        if (f.geometry.type === 'MultiPolygon') {
+            coords.forEach(poly => {
+                holes.push(poly[0].map(c => [c[1], c[0]]));
+            });
+        }
+    });
+    return L.polygon([worldBounds, ...holes], {
+        color: 'transparent',
+        fillColor: '#000',
+        fillOpacity: 0.5,
+        interactive: false
     });
 }
 function applyMasterSettings(map, master) {
@@ -643,6 +675,18 @@ function toggleWind(isOn) {
         windRefreshInterval = setInterval(refreshAllWindData, 60_000);
     }
 }
+function toggleFocus(isOn) {
+    focusOn = isOn;
+
+    if (maskLayer) {
+        map.removeLayer(maskLayer);
+        maskLayer = null;
+    }
+    if (isOn && geoDataGlobal) {
+        maskLayer = createMaskLayer(geoDataGlobal);
+        maskLayer.addTo(map);
+    }
+}
 async function fetchData(url, bodyData = {}) {
     try {
         const response = await fetch(url, {
@@ -1078,6 +1122,7 @@ $(document).ready(function() {
     const $overlay = $('#panelOverlay');
     const $toggleExpandBtn = $('#toggleExpandBtn');
     const $windSwitch = $('#toggle-wind-values');
+    const $focusSwitch = $('#toggle-focus');
     const $windIcon = $('#wind-status-icon');
     const toggleMobileMenu = (forceState = null) => {
         const isMenuOpen = (forceState !== null) ? forceState : !$panel.hasClass('active');
@@ -1116,10 +1161,19 @@ $(document).ready(function() {
             toggleWind(isOn);
         }
     };
+    const updateFocus = (isOn) => {
+        if (typeof toggleFocus === 'function') {
+            toggleFocus(isOn);
+        }
+    };
     $windSwitch.on('change', function() {
         updateWindStatus($(this).is(':checked'));
     });
+    $focusSwitch.on('change', function() {
+        updateFocus($(this).is(':checked'));
+    });
     setTimeout(() => updateWindStatus($windSwitch.is(':checked')), 500);
+    setTimeout(() => updateFocus($focusSwitch.is(':checked')), 500);
     $(window).on('resize', () => {
         if ($(window).width() > 768 && $panel.hasClass('active')) {
             toggleMobileMenu(false);
