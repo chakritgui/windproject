@@ -646,5 +646,6 @@
     "focus_mode": "โหมดโฟกัส",
     "wind_intensity": "ความแรงของลม",
     "max_wind": "ลมแรงสูงสุด",
-    "min_wind": "ลมแรงต่ำสุด"
+    "min_wind": "ลมแรงต่ำสุด",
+    "show_place_label": "แสดงป้ายสถานที่"
 }

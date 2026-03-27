@@ -9,6 +9,7 @@ let map_labels = 'yes';
 let country_layers_data = null;
 let maskLayer = null;
 let geoDataGlobal = null;
+let labelStyleEl = null;
 const isMobile = () => window.innerWidth <= 768;
 function initMap() {
     windyInit(options, async api => {
@@ -50,21 +51,11 @@ function initMap() {
                 }
             }
             if (map_labels === 'no') {
-                const style = document.createElement('style');
-                style.id = 'hide-labels-style'; 
-                style.innerHTML = `
-                    .leaflet-label-pane,
-                    .windy-layer-labels,
-                    .labels-layer {
-                        display: none !important;
-                        pointer-events: none !important;
-                    }
-                    canvas.vector-field-layer {
-                        display: block !important;
-                    }
-                `;
-                document.head.appendChild(style);
+                toggleLabel(false);
+            } else {
+                toggleLabel(true);
             }
+            $('#toggle-label').prop('checked', map_labels !== 'no');
         } catch (error) {
             console.error("Initialization Error:", error);
         } finally {
@@ -677,7 +668,6 @@ function toggleWind(isOn) {
 }
 function toggleFocus(isOn) {
     focusOn = isOn;
-
     if (maskLayer) {
         map.removeLayer(maskLayer);
         maskLayer = null;
@@ -685,6 +675,31 @@ function toggleFocus(isOn) {
     if (isOn && geoDataGlobal) {
         maskLayer = createMaskLayer(geoDataGlobal);
         maskLayer.addTo(map);
+    }
+}
+function toggleLabel(isOn) {
+    if (!labelStyleEl) {
+        labelStyleEl = document.getElementById('hide-labels-style');
+    }
+    if (!labelStyleEl) {
+        labelStyleEl = document.createElement('style');
+        labelStyleEl.id = 'hide-labels-style';
+        document.head.appendChild(labelStyleEl);
+    }
+    if (isOn) {
+        labelStyleEl.innerHTML = '';
+    } else {
+        labelStyleEl.innerHTML = `
+            .leaflet-label-pane,
+            .windy-layer-labels,
+            .labels-layer {
+                display: none !important;
+                pointer-events: none !important;
+            }
+            canvas.vector-field-layer {
+                display: block !important;
+            }
+        `;
     }
 }
 async function fetchData(url, bodyData = {}) {
@@ -1123,6 +1138,7 @@ $(document).ready(function() {
     const $toggleExpandBtn = $('#toggleExpandBtn');
     const $windSwitch = $('#toggle-wind-values');
     const $focusSwitch = $('#toggle-focus');
+    const $labelSwitch = $('#toggle-label');
     const $windIcon = $('#wind-status-icon');
     const toggleMobileMenu = (forceState = null) => {
         const isMenuOpen = (forceState !== null) ? forceState : !$panel.hasClass('active');
@@ -1166,14 +1182,23 @@ $(document).ready(function() {
             toggleFocus(isOn);
         }
     };
+    const updateLabel = (isOn) => {
+        if (typeof toggleLabel === 'function') {
+            toggleLabel(isOn);
+        }
+    };
     $windSwitch.on('change', function() {
         updateWindStatus($(this).is(':checked'));
     });
     $focusSwitch.on('change', function() {
         updateFocus($(this).is(':checked'));
     });
+    $labelSwitch.on('change', function() {
+        updateLabel($(this).is(':checked'));
+    });
     setTimeout(() => updateWindStatus($windSwitch.is(':checked')), 500);
     setTimeout(() => updateFocus($focusSwitch.is(':checked')), 500);
+    setTimeout(() => updateLabel($labelSwitch.is(':checked')), 500);
     $(window).on('resize', () => {
         if ($(window).width() > 768 && $panel.hasClass('active')) {
             toggleMobileMenu(false);

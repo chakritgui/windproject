@@ -297,6 +297,15 @@
                     <input class="form-check-input custom-switch" type="checkbox" id="toggle-focus">
                 </div>
             </div>
+            <div class="control-row">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="fa-solid fa-layer-group"></i>
+                    <span data-i18n="show_place_label"></span>
+                </div>
+                <div class="form-check form-switch">
+                    <input class="form-check-input custom-switch" type="checkbox" id="toggle-label">
+                </div>
+            </div>
         </div>
     </div>
     <div class="panel-expandable-content" id="expandableContent">
