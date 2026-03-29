@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 24, 2026 at 05:46 PM
+-- Generation Time: Mar 29, 2026 at 06:40 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -226,7 +226,7 @@ CREATE TABLE `wp_content_media` (
   `content_id` int(11) NOT NULL,
   `file_path` varchar(255) NOT NULL,
   `file_name` varchar(255) DEFAULT NULL,
-  `file_type` enum('attachment','image','image360') NOT NULL,
+  `file_type` enum('attachment','image','image360','presentation') NOT NULL,
   `file_size` int(11) DEFAULT NULL,
   `status` enum('active','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
@@ -301,6 +301,8 @@ CREATE TABLE `wp_documents` (
   `document_start` datetime DEFAULT NULL,
   `document_end` datetime DEFAULT NULL,
   `document_path` longtext,
+  `folder_show_admin` enum('yes','no') NOT NULL DEFAULT 'no',
+  `folder_show_user` enum('yes','no') NOT NULL DEFAULT 'no',
   `status` enum('public','private','deleted') NOT NULL,
   `document_file_name` varchar(255) DEFAULT NULL,
   `document_download` bigint(20) NOT NULL DEFAULT '0',
@@ -325,6 +327,21 @@ CREATE TABLE `wp_documents_download_logs` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `wp_document_folder`
+--
+
+CREATE TABLE `wp_document_folder` (
+  `id` bigint(20) NOT NULL,
+  `document_id` bigint(20) NOT NULL,
+  `folder_id` bigint(20) NOT NULL,
+  `status` enum('active','deleted') NOT NULL DEFAULT 'active',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `wp_edit_permissions`
 --
 
@@ -345,8 +362,8 @@ CREATE TABLE `wp_folder` (
   `id` bigint(20) NOT NULL,
   `name` varchar(255) DEFAULT NULL,
   `slug` varchar(255) NOT NULL,
-  `type` enum('folder','content') NOT NULL DEFAULT 'folder',
-  `sub_type` enum('news','project') NOT NULL DEFAULT 'project',
+  `type` enum('folder','content','document') NOT NULL DEFAULT 'folder',
+  `sub_type` enum('news','project','document') NOT NULL DEFAULT 'project',
   `level` bigint(20) DEFAULT NULL,
   `parent_id` bigint(20) DEFAULT NULL,
   `content_id` bigint(20) DEFAULT NULL,
@@ -500,7 +517,9 @@ CREATE TABLE `wp_members` (
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `remember_selector` char(12) DEFAULT NULL,
   `remember_validator_hash` char(64) DEFAULT NULL,
-  `remember_expires_at` datetime DEFAULT NULL
+  `remember_expires_at` datetime DEFAULT NULL,
+  `login_attempts` int(11) DEFAULT '0',
+  `lock_until` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -526,6 +545,21 @@ CREATE TABLE `wp_members_privileges` (
   `privileges_id` bigint(20) NOT NULL,
   `privileges_name` varchar(255) NOT NULL,
   `status` enum('active','inactive','deleted') NOT NULL DEFAULT 'active',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wp_members_privileges_config`
+--
+
+CREATE TABLE `wp_members_privileges_config` (
+  `config_id` bigint(20) NOT NULL,
+  `privileges_id` bigint(20) NOT NULL,
+  `menu_id` bigint(20) NOT NULL,
+  `status` enum('active','inactive') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -912,6 +946,12 @@ ALTER TABLE `wp_documents_download_logs`
   ADD KEY `download_date` (`download_date`);
 
 --
+-- Indexes for table `wp_document_folder`
+--
+ALTER TABLE `wp_document_folder`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `wp_edit_permissions`
 --
 ALTER TABLE `wp_edit_permissions`
@@ -995,6 +1035,13 @@ ALTER TABLE `wp_members_language`
 --
 ALTER TABLE `wp_members_privileges`
   ADD PRIMARY KEY (`privileges_id`);
+
+--
+-- Indexes for table `wp_members_privileges_config`
+--
+ALTER TABLE `wp_members_privileges_config`
+  ADD PRIMARY KEY (`config_id`),
+  ADD UNIQUE KEY `priv_menu_unique` (`privileges_id`,`menu_id`);
 
 --
 -- Indexes for table `wp_menus`
@@ -1210,6 +1257,12 @@ ALTER TABLE `wp_documents_download_logs`
   MODIFY `logs_id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `wp_document_folder`
+--
+ALTER TABLE `wp_document_folder`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `wp_edit_permissions`
 --
 ALTER TABLE `wp_edit_permissions`
@@ -1280,6 +1333,12 @@ ALTER TABLE `wp_members_language`
 --
 ALTER TABLE `wp_members_privileges`
   MODIFY `privileges_id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `wp_members_privileges_config`
+--
+ALTER TABLE `wp_members_privileges_config`
+  MODIFY `config_id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `wp_menus`

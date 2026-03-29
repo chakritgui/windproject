@@ -54,7 +54,7 @@
         <div class="tab-pane fade show active" id="general">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title mb-3"><i class="fa-solid fa-images text-primary me-2"></i><span data-i18n="logo"></span></h5>
+                    <h6 class="card-title mb-3"><i class="fa-solid fa-images text-primary me-2"></i><span data-i18n="logo"></span></h6>
                     <div class="row">
                         <div class="col-md-4">
                             <label class="form-label" data-i18n="logo"></label>
@@ -81,35 +81,104 @@
                             <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('iconInput').click()"><i class="fa-solid fa-upload me-2"></i><span data-i18n="choose"></span></button>
                         </div>
                     </div>
-                    <h5 class="card-title mt-4 mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="website_name"></span></h5>
+                    <h6 class="card-title mt-4 mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="website_name"></span></h6>
+                    <small class="text-muted d-block mb-2">
+                        <i class="fa-solid fa-lightbulb text-warning me-1"></i>
+                        <span data-i18n="tip_website_name"></span>
+                    </small>
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label class="form-label">
-                                <img src="<?=BASE_URL?>/public/flags/gb.png" alt="EN" height="25"> English
+                                <img src="<?=BASE_URL?>/public/flags/gb.png" alt="EN" height="20"> English
                             </label>
                             <input type="text" class="form-control" id="nameEn">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">
-                                <img src="<?=BASE_URL?>/public/flags/la.png" alt="LO" height="25"> ພາສາລາວ
+                                <img src="<?=BASE_URL?>/public/flags/la.png" alt="LO" height="20"> ພາສາລາວ
                             </label>
                             <input type="text" class="form-control" id="nameLo">
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">
-                                <img src="<?=BASE_URL?>/public/flags/th.png" alt="TH" height="25"> ภาษาไทย
+                                <img src="<?=BASE_URL?>/public/flags/th.png" alt="TH" height="20"> ภาษาไทย
                             </label>
                             <input type="text" class="form-control" id="nameTh">
                         </div>
                     </div>
-                    <div class="row g-3 mt-4">
+                    <h6 class="card-title mt-4 mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="scrolling_text"></span></h6>
+                    <small class="text-muted d-block mb-2">
+                        <i class="fa-solid fa-lightbulb text-warning me-1"></i>
+                        <span data-i18n="tip_scrolling_text"></span>
+                    </small>
+                    <div class="row g-3">
                         <div class="col-md-4">
-                            <h5 class="card-title mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="footer"></span></h5>
-                            <input type="text" class="form-control" id="footerText">
+                            <label class="form-label">
+                                <img src="<?=BASE_URL?>/public/flags/gb.png" alt="EN" height="20"> English
+                            </label>
+                            <div contenteditable="true" class="form-control" id="scrolling_en" style="height: 75px; border: 1px solid #ccc; padding: 10px; font-size: 12px;"></div>
                         </div>
                         <div class="col-md-4">
-                            <h5 class="card-title mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="site_assessment"></span></h5>
-                            <input type="text" class="form-control" id="site_assessment">
+                            <label class="form-label">
+                                <img src="<?=BASE_URL?>/public/flags/la.png" alt="LO" height="20"> ພາສາລາວ
+                            </label>
+                            <div contenteditable="true" class="form-control" id="scrolling_lo" style="height: 75px; border: 1px solid #ccc; padding: 10px; font-size: 12px;"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <img src="<?=BASE_URL?>/public/flags/th.png" alt="TH" height="20"> ภาษาไทย
+                            </label>
+                            <div contenteditable="true" class="form-control" id="scrolling_th" style="height: 75px; border: 1px solid #ccc; padding: 10px; font-size: 12px;"></div>
+                        </div>
+                    </div>
+                    <h6 class="card-title mt-4"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="footer"></span></h6>
+                    <small class="text-muted d-block mb-2">
+                        <i class="fa-solid fa-lightbulb text-warning me-1"></i>
+                        <span data-i18n="tip_footer"></span>
+                    </small>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <img src="<?=BASE_URL?>/public/flags/gb.png" alt="EN" height="20"> English
+                            </label>
+                            <div contenteditable="true" class="form-control" id="footer_en" style="height: 75px; border: 1px solid #ccc; padding: 10px; font-size: 12px;"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <img src="<?=BASE_URL?>/public/flags/la.png" alt="LO" height="20"> ພາສາລາວ
+                            </label>
+                            <div contenteditable="true" class="form-control" id="footer_lo" style="height: 75px; border: 1px solid #ccc; padding: 10px; font-size: 12px;"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <img src="<?=BASE_URL?>/public/flags/th.png" alt="TH" height="20"> ภาษาไทย
+                            </label>
+                            <div contenteditable="true" class="form-control" id="footer_th" style="height: 75px; border: 1px solid #ccc; padding: 10px; font-size: 12px;"></div>
+                        </div>
+                    </div>
+                    <h6 class="card-title mt-4"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="site_assessment"></span></h6>
+                    <small class="text-muted d-block mb-2">
+                        <i class="fa-solid fa-lightbulb text-warning me-1"></i>
+                        <span data-i18n="tip_site_assessment"></span>
+                    </small>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <img src="<?=BASE_URL?>/public/flags/gb.png" alt="EN" height="20"> English
+                            </label>
+                            <div contenteditable="true" class="form-control" id="site_assessment_en" style="height: 75px; border: 1px solid #ccc; padding: 10px; font-size: 12px;"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <img src="<?=BASE_URL?>/public/flags/la.png" alt="LO" height="20"> ພາສາລາວ
+                            </label>
+                            <div contenteditable="true" class="form-control" id="site_assessment_lo" style="height: 75px; border: 1px solid #ccc; padding: 10px; font-size: 12px;"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">
+                                <img src="<?=BASE_URL?>/public/flags/th.png" alt="TH" height="20"> ภาษาไทย
+                            </label>
+                            <div contenteditable="true" class="form-control" id="site_assessment_th" style="height: 75px; border: 1px solid #ccc; padding: 10px; font-size: 12px;"></div>
                         </div>
                     </div>
                 </div>
@@ -124,7 +193,7 @@
         <div class="tab-pane fade" id="languages">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title mb-3"><i class="fa-solid fa-globe text-primary me-2"></i><span data-i18n="language-switch"></span></h5>
+                    <h6 class="card-title mb-3"><i class="fa-solid fa-globe text-primary me-2"></i><span data-i18n="language-switch"></span></h6>
                     <p class="text-muted" data-i18n="choose_language_display"></p>
                     <div class="row g-3 mt-3">
                         <div class="col-md-4">
@@ -165,7 +234,7 @@
                         </div>
                     </div>
                     <hr class="my-4">
-                    <h5 class="card-title mb-3"><i class="fa-solid fa-gears text-primary me-2"></i><span data-i18n="system_default_settings"></span></h5>
+                    <h6 class="card-title mb-3"><i class="fa-solid fa-gears text-primary me-2"></i><span data-i18n="system_default_settings"></span></h6>
                     <div class="table-responsive">
                         <table class="table table-hover align-middle border">
                             <thead class="table-light">
@@ -374,10 +443,10 @@
         <div class="tab-pane fade" id="notifications">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">
+                    <h6 class="card-title mb-4">
                         <i class="fa-solid fa-bell text-primary me-2"></i>
                         <span data-i18n="notification"></span>
-                    </h5>
+                    </h6>
                     <form id="notificationSettingForm">
                         <div class="row g-4">
                             <div class="col-md-6">
@@ -422,10 +491,10 @@
         <div class="tab-pane fade" id="password_reset">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">
+                    <h6 class="card-title mb-4">
                         <i class="fa-solid fa-user-lock text-primary me-2"></i>
                         <span data-i18n="password_reset"></span>
-                    </h5>
+                    </h6>
                     <form id="passwordResetForm">
                         <div class="mb-4 pb-3 border-bottom">
                             <div class="d-flex justify-content-between align-items-center mb-2">

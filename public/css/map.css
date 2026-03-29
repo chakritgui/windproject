@@ -44,7 +44,11 @@
     background: rgba(0, 0, 0, 0.4);
     box-shadow: none !important;
 }
-.footer-text {
+.footer-text, 
+.footer-text span {
+    color: #ffffff !important;
+}
+.scrolling-text, .scrolling-text span {
     color: #ffffff !important;
 }
 header {
@@ -1394,8 +1398,8 @@ header .nav-link:hover {
 }
 .mobile-fab {
     position: fixed;
-    bottom: 50px;
-    right: 20px;
+    bottom: 80px;
+    right: 15px;
     width: 50px;
     height: 50px;
     border-radius: 50%;

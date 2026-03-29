@@ -30,6 +30,7 @@ body.loaded {
     right: 0;
     overflow-y: auto;
     min-width: 375px !important;
+    padding-bottom: 35px;
 }
 .main-container.blue-frame {
     background: linear-gradient(135deg, #7eb9e8 0%, #5a9fd4 100%);
@@ -65,7 +66,6 @@ header h1 {
     box-shadow: 0 -3px 8px rgba(0,0,0,0.05);
     z-index: 1000;
     min-width: 375px !important;
-    height: 35px;
     line-height: 35px;
 }
 .footer-container {
@@ -74,6 +74,42 @@ header h1 {
     justify-content: center;
     gap: 12px;
     flex-wrap: wrap;
+}
+.scrolling {
+    display: block !important;
+    color: #555;
+    position: fixed;
+    bottom: 35px;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    height: 35px;
+    line-height: 35px;
+    overflow: hidden;
+}
+.scrolling-container {
+    display: inline-block;
+    white-space: nowrap; 
+    padding-left: 100%;
+    animation: marquee 25s linear infinite;
+}
+.scrolling-text {
+    font-size: 11px; 
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.scrolling-text img {
+    height: 20px; 
+    width: auto;
+    vertical-align: middle;
+}
+@keyframes marquee {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(-100%, 0); }
+}
+.scrolling:hover .scrolling-container {
+    animation-play-state: paused;
 }
 .footer-logo {
     height: 25px;
@@ -801,7 +837,6 @@ img {
     background: #ccc;
     border-radius: 10px;
 }
-/* คุมขนาด Slide ให้ดูพรีเมียม */
 .carousel {
     max-height: 300px;
 }

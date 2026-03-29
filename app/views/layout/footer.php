@@ -1,4 +1,9 @@
 </div>
+<div class="scrolling d-none">
+    <div class="scrolling-container">
+        <span class="scrolling-text"></span>
+    </div>
+</div>
 <div class="footer">
     <div class="footer-container">
         <span class="footer-text"></span>

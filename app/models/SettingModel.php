@@ -11,8 +11,15 @@ class SettingModel {
                 'website_en' => $data['nameEn'] ?? null,
                 'website_lo' => $data['nameLo'] ?? null,
                 'website_th' => $data['nameTh'] ?? null,
-                'footer' => $data['footerText'] ?? null,
-                'site_assessment' => $data['site_assessment'] ?? null
+                'footer_en' => $data['footer_en'] ?? null,
+                'footer_lo' => $data['footer_lo'] ?? null,
+                'footer_th' => $data['footer_th'] ?? null,
+                'scrolling_en' => $data['scrolling_en'] ?? null,
+                'scrolling_lo' => $data['scrolling_lo'] ?? null,
+                'scrolling_th' => $data['scrolling_th'] ?? null,
+                'site_assessment_en' => $data['site_assessment_en'] ?? null,
+                'site_assessment_lo' => $data['site_assessment_lo'] ?? null,
+                'site_assessment_th' => $data['site_assessment_th'] ?? null
             ));
             $this->uploadAndSave('logoInput', 'logo');
             $this->uploadAndSave('iconInput', 'icon');

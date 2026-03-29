@@ -131,8 +131,15 @@ const settingHandlers = {
     website_en: v => $('#nameEn').val(v),
     website_lo: v => $('#nameLo').val(v),
     website_th: v => $('#nameTh').val(v),
-    footer: v => $('#footerText').val(v),
-    site_assessment: v => $('#site_assessment').val(v),
+    footer_en: v => $('#footer_en').html(v),
+    footer_lo: v => $('#footer_lo').html(v),
+    footer_th: v => $('#footer_th').html(v),
+    scrolling_en: v => $('#scrolling_en').html(v),
+    scrolling_lo: v => $('#scrolling_lo').html(v),
+    scrolling_th: v => $('#scrolling_th').html(v),
+    site_assessment_en: v => $('#site_assessment_en').html(v),
+    site_assessment_lo: v => $('#site_assessment_lo').html(v),
+    site_assessment_th: v => $('#site_assessment_th').html(v),
     language: v => setLanguagesFromDB(v),
     language_default: v => setLanguagesDefaultFromDB(v),
     language_content: v => setLanguagesContentFromDB(v)
@@ -312,8 +319,15 @@ $(document).on('click', '.save-information', function () {
     fd.append('nameEn', $('#nameEn').val());
     fd.append('nameLo', $('#nameLo').val());
     fd.append('nameTh', $('#nameTh').val());
-    fd.append('footerText', $('#footerText').val());
-    fd.append('site_assessment', $('#site_assessment').val());
+    fd.append('footer_en', $('#footer_en').html());
+    fd.append('footer_lo', $('#footer_lo').html());
+    fd.append('footer_th', $('#footer_th').html());
+    fd.append('scrolling_en', $('#scrolling_en').html());
+    fd.append('scrolling_lo', $('#scrolling_lo').html());
+    fd.append('scrolling_th', $('#scrolling_th').html());
+    fd.append('site_assessment_en', $('#site_assessment_en').html());
+    fd.append('site_assessment_lo', $('#site_assessment_lo').html());
+    fd.append('site_assessment_th', $('#site_assessment_th').html());
     fd.append('logoInput', $('#logoInput')[0].files[0] || null);
     fd.append('iconInput', $('#iconInput')[0].files[0] || null);
     uploadWithProgress(`/api/settings.info`, fd, '.save-information').done(res => {

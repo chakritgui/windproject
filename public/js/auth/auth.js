@@ -414,11 +414,6 @@ function parseAuthSetting(item) {
             authState.mobileBg = fullPath;
             if (fullPath) $('.auth-bg-img-mobile').attr('src', fullPath);
             break;
-        case 'site_assessment':
-            if (item.setting_value) {
-                $('.project-info').html(item.setting_value);
-            }
-            break;
         case 'infography':
             if (fullPath) {
                 renderInfography(fullPath);
