@@ -647,5 +647,7 @@
     "wind_intensity": "Wind Intensity",
     "max_wind": "Max Wind",
     "min_wind": "Min Wind",
-    "show_place_label": "Show location sign"
+    "show_place_label": "Show location sign",
+    "reset_view": "Reset View",
+    "wind_unit": "Wind Unit"
 }

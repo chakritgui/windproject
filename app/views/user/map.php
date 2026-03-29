@@ -299,34 +299,73 @@
             </div>
             <div class="control-row">
                 <div class="d-flex align-items-center gap-2">
-                    <i class="fa-solid fa-layer-group"></i>
-                    <span data-i18n="show_place_label"></span>
+                    <i class="fa-solid fa-expand"></i>
+                    <span data-i18n="reset_view"></span>
                 </div>
-                <div class="form-check form-switch">
-                    <input class="form-check-input custom-switch" type="checkbox" id="toggle-label">
-                </div>
+                <button class="btn-reset-view" onclick="resetView()" title="Reset View">
+                    <i class="fa-solid fa-arrow-rotate-left"></i>
+                </button>
             </div>
         </div>
     </div>
     <div class="panel-expandable-content" id="expandableContent">
         <div class="panel-section">
-            <h6 class="section-title"><i class="fa-solid fa-wind me-2"></i><span data-i18n="wind_intensity"></span> (m/s)</h6>
-            <div class="legend-container">
-                <div class="legend-bar"></div>
-                <div class="legend-labels">
-                    <span>0</span><span>5</span><span>10</span><span>15</span><span>20+</span>
+            <div class="control-grid-wrapper">
+                <div class="control-row">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-layer-group"></i>
+                        <span data-i18n="show_place_label"></span>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input custom-switch" type="checkbox" id="toggle-label">
+                    </div>
                 </div>
+                <div class="control-row">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-gauge"></i>
+                        <span data-i18n="wind_unit"></span>
+                    </div>
+                    <button class="btn-unit-toggle" onclick="cycleWindUnit()" id="btn-wind-unit">m/s</button>
+                </div>
+            </div>
+        </div>
+        <div class="panel-section">
+            <h6 class="section-title">
+                <i class="fa-solid fa-wind me-2"></i>
+                <span data-i18n="wind_intensity"></span>
+                (<span id="legend-unit-label">m/s</span>)
+            </h6>
+            <div class="legend-bar"></div>
+            <div class="legend-labels">
+                <span id="legend-0">0</span>
+                <span id="legend-5">5</span>
+                <span id="legend-10">10</span>
+                <span id="legend-15">15</span>
+                <span id="legend-20">20+</span>
             </div>
         </div>
         <div class="panel-section border-0">
             <div class="mini-card-grid-3">
                 <div class="mini-card">
                     <div class="mini-card-label" data-i18n="max_wind"></div>
-                    <div class="mini-card-value text-warning" id="stat-max-wind"><span class="stat-max-wind-val">0.0</span> <small>m/s</small></div>
+                    <div class="mini-card-value text-warning" id="stat-max-wind">
+                        <span class="stat-max-wind-val">0.0</span>
+                        <small class="stat-unit-label">m/s</small>
+                    </div>
+                </div>
+                <div class="mini-card">
+                    <div class="mini-card-label" data-i18n="avg_wind"></div>
+                    <div class="mini-card-value text-success" id="stat-avg-wind">
+                        <span class="stat-avg-wind-val">0.0</span>
+                        <small class="stat-unit-label">m/s</small>
+                    </div>
                 </div>
                 <div class="mini-card">
                     <div class="mini-card-label" data-i18n="min_wind"></div>
-                    <div class="mini-card-value text-info" id="stat-min-wind"><span class="stat-min-wind-val">0.0</span> <small>m/s</small></div>
+                    <div class="mini-card-value text-info" id="stat-min-wind">
+                        <span class="stat-min-wind-val">0.0</span>
+                        <small class="stat-unit-label">m/s</small>
+                    </div>
                 </div>
             </div>
         </div>

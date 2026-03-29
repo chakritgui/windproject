@@ -2,9 +2,9 @@
 const OPEN_METEO   = 'https://api.open-meteo.com/v1/forecast';
 const WIND_REFRESH = 60_000;
 const MENU_LEVELS = {
-    1: { title: 'PROJECT',                   lang: 'project',      endpoint: `${BASE_URL}/api/project.get`,       key: 'project_id',       label: 'project_name'       },
-    2: { title: 'WIND MEASUREMENT EQUIPMENT', lang: 'pole_types',   endpoint: `${BASE_URL}/api/type.get`,          key: 'type_id',          label: 'type_name'          },
-    3: { title: 'INSTALLATION',              lang: 'installation', endpoint: `${BASE_URL}/api/installations.get`, key: 'installations_id', label: 'installations_name', isLast: true }
+    1: { title: 'PROJECT', lang: 'project', endpoint: `${BASE_URL}/api/project.get`, key: 'project_id', label: 'project_name'},
+    2: { title: 'WIND MEASUREMENT EQUIPMENT', lang: 'pole_types', endpoint: `${BASE_URL}/api/type.get`, key: 'type_id', label: 'type_name'},
+    3: { title: 'INSTALLATION', lang: 'installation', endpoint: `${BASE_URL}/api/installations.get`, key: 'installations_id', label: 'installations_name', isLast: true}
 };
 const COMPASS_DIRS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
 let map, windyAPI;
@@ -26,6 +26,8 @@ let isRefreshing       = false;
 let windSummary = { max: 0, min: 0 };
 let show_country_line  = 'hide';
 let country_layers_data = null;
+let initialBounds = null;
+let initialPadding = { padding: [20, 20] };
 const isMobile = () => window.innerWidth <= 768;
 const clamp = (val, min, max) => Math.max(min, Math.min(max, val));
 function degToCompass(deg) {
@@ -76,6 +78,7 @@ function initMap() {
         windOn = winds;
         $('#toggle-wind-values').prop('checked', winds);
         await loadPoles();
+        initWindUnit();
         const labelsRaw = localStorage.getItem('labels');
         const labels    = labelsRaw !== null ? labelsRaw === 'true' : (masterData?.labels === 'yes');
         toggleLabel(labels);
@@ -160,12 +163,16 @@ async function refreshAllWindData() {
         entries.forEach(([id, p], i) => {
             const weather = results[i];
             if (!weather?.current) return;
+            const unit  = getCurrentUnit();
             const speed = weather.current.wind_speed_100m;
             const dir   = weather.current.wind_direction_100m;
             windSpeeds.push(speed);
-            const elSpeed = document.getElementById(p.windId);
             const elArrow = document.getElementById(p.arrowId);
-            if (elSpeed) elSpeed.textContent = `${speed.toFixed(1)} m/s`;
+            const elSpeed = document.getElementById(p.windId);
+            if (elSpeed) {
+                elSpeed.dataset.raw = speed; 
+                elSpeed.textContent = `${(speed * unit.factor).toFixed(1)} ${unit.label}`;
+            }
             if (elArrow) {
                 const cx = elArrow.getAttribute('data-cx');
                 const cy = elArrow.getAttribute('data-cy');
@@ -173,8 +180,10 @@ async function refreshAllWindData() {
             }
         });
         if (windSpeeds.length > 0) {
+            const sum = windSpeeds.reduce((a, b) => a + b, 0);
             windSummary.max = Math.max(...windSpeeds);
             windSummary.min = Math.min(...windSpeeds);
+            windSummary.avg = sum / windSpeeds.length;
             updateWindDashboard(windSummary);
         }
     } catch (err) {
@@ -183,13 +192,14 @@ async function refreshAllWindData() {
         isRefreshing = false;
     }
 }
-function updateWindDashboard({ max, min }) {
-    const maxText = max.toFixed(1);
-    const minText = min.toFixed(1);
-    document.getElementById('maxWind')?.replaceChildren(document.createTextNode(maxText));
-    document.getElementById('minWind')?.replaceChildren(document.createTextNode(minText));
-    $('.stat-max-wind-val').text(maxText);
-    $('.stat-min-wind-val').text(minText);
+function updateWindDashboard({ max, min, avg }) {
+    const unit = getCurrentUnit();
+    document.querySelectorAll('.stat-unit-label').forEach(el => {
+        el.textContent = unit.label;
+    });
+    $('.stat-max-wind-val').text((max * unit.factor).toFixed(1));
+    $('.stat-min-wind-val').text((min * unit.factor).toFixed(1));
+    $('.stat-avg-wind-val').text((avg * unit.factor).toFixed(1));
 }
 async function loadPoles() {
     const poles = await fetchJSON(`${BASE_URL}/api/poles.get`).catch(err => {
@@ -260,7 +270,7 @@ function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId
     const svgH = Math.abs(labelDy) + 30;
     const tipX = anchorX + labelDx;
     const tipY = anchorY + labelDy;
-    const BOX_W = 65, BOX_H = 20;
+    const BOX_W = 70, BOX_H = 20;
     const boxY    = tipY - BOX_H / 2;
     const boxX    = labelDx >= 0 ? tipX : tipX - BOX_W;
     const arrowCX = boxX + 12;
@@ -574,6 +584,8 @@ async function renderWindAreas(picker, areaData, masterData) {
     const bounds = featureGroup.getBounds();
     if (bounds.isValid()) {
         const padded = bounds.pad(0.1);
+        initialBounds  = bounds;
+        initialPadding = { padding: [20, 20] };
         map.fitBounds(bounds, { padding: [20, 20] });
         map.options.minZoom = map.getBoundsZoom(bounds);
         map.setMaxBounds(padded);
@@ -581,6 +593,13 @@ async function renderWindAreas(picker, areaData, masterData) {
         map.on('moveend', () => { if (!padded.contains(map.getCenter())) map.panInsideBounds(padded, { animate: true }); });
     }
     buildAreaPanel(polygons);
+}
+function resetView() {
+    if (!initialBounds) return;
+    map.flyToBounds(initialBounds, {
+        ...initialPadding,
+        duration: 0.8
+    });
 }
 function buildAreaPanel(polygons) {
     const list = document.getElementById('ap-list');
@@ -1113,3 +1132,52 @@ Fancybox.bind("[data-fancybox='gallery']", {
         display: { left: ['infobar'], middle: [], right: ['iterateZoom', 'close'] }
     }
 });
+const WIND_UNITS = [
+    { key: 'ms',   label: 'm/s',  factor: 1       },
+    { key: 'kmh',  label: 'km/h', factor: 3.6     },
+    { key: 'knot', label: 'kn',   factor: 1.94384 },
+];
+let currentUnitIdx = (() => {
+    const saved = localStorage.getItem('windUnit');
+    return saved !== null ? parseInt(saved) : 0;
+})();
+function getCurrentUnit() {
+    return WIND_UNITS[currentUnitIdx];
+}
+function cycleWindUnit() {
+    currentUnitIdx = (currentUnitIdx + 1) % WIND_UNITS.length;
+    localStorage.setItem('windUnit', currentUnitIdx);
+    const unit = getCurrentUnit();
+    document.getElementById('btn-wind-unit').textContent     = unit.label;
+    document.getElementById('legend-unit-label').textContent = unit.label;
+    [0, 5, 10, 15, 20].forEach((ms, i) => {
+        const id  = ['legend-0','legend-5','legend-10','legend-15','legend-20'][i];
+        const el  = document.getElementById(id);
+        if (!el) return;
+        el.textContent = i === 4
+            ? `${Math.round(ms * unit.factor)}+`
+            : Math.round(ms * unit.factor);
+    });
+    updateWindDashboardUnit(unit);
+    Object.values(poleMarkers).forEach(p => {
+        const el = document.getElementById(p.windId);
+        if (!el) return;
+        const ms = parseFloat(el.dataset.raw);
+        if (isNaN(ms)) return;
+        el.textContent = `${(ms * unit.factor).toFixed(1)} ${unit.label}`;
+    });
+}
+function initWindUnit() {
+    document.getElementById('btn-wind-unit').textContent = getCurrentUnit().label;
+}
+function updateWindDashboardUnit(unit) {
+    document.querySelectorAll('.stat-unit-label').forEach(el => {
+        el.textContent = unit.label;
+    });
+    const max = windSummary.max ?? 0;
+    const min = windSummary.min ?? 0;
+    const avg = windSummary.avg ?? 0;
+    $('.stat-max-wind-val').text((max * unit.factor).toFixed(1));
+    $('.stat-min-wind-val').text((min * unit.factor).toFixed(1));
+    $('.stat-avg-wind-val').text((avg * unit.factor).toFixed(1));
+}

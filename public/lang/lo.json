@@ -647,5 +647,7 @@
     "wind_intensity": "ຄວາມແຮງຂອງລົມ",
     "max_wind": "ລົມແຮງສູງສຸດ",
     "min_wind": "ລົມຕໍ່າສຸດ",
-    "show_place_label": "ສະແດງປ້າຍສະຖານທີ່."
+    "show_place_label": "ສະແດງປ້າຍສະຖານທີ່.",
+    "reset_view": "ຣີເຊັດມຸມມອງ",
+    "wind_unit": "ໜ່ວຍລົມ"
 }

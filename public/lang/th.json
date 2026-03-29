@@ -647,5 +647,7 @@
     "wind_intensity": "ความแรงของลม",
     "max_wind": "ลมแรงสูงสุด",
     "min_wind": "ลมแรงต่ำสุด",
-    "show_place_label": "แสดงป้ายสถานที่"
+    "show_place_label": "แสดงป้ายสถานที่",
+    "reset_view": "รีเซ็ตมุมมอง",
+    "wind_unit": "หน่วยลม"
 }

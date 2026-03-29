@@ -851,7 +851,7 @@ header .nav-link:hover {
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: visible; 
 }
-@media (max-width: 768px) {
+@media (max-width: 991px) {
     #area-panel {
         top: 100px;
     }
@@ -1316,6 +1316,17 @@ header .nav-link:hover {
     grid-template-columns: 1fr 1fr;
     gap: 10px;
 }
+.mini-card-grid-3 .mini-card:last-child {
+    grid-column: 1 / -1;
+}
+@media (max-width: 768px) {
+    .mini-card-grid-3 {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+    .mini-card-grid-3 .mini-card:last-child {
+        grid-column: auto;
+    }
+}
 .mini-card {
     background: rgba(255, 255, 255, 0.04);
     border-radius: 12px;
@@ -1357,7 +1368,7 @@ header .nav-link:hover {
         border-radius: 25px 25px 0 0;
         border: none;
         padding-bottom: env(safe-area-inset-bottom);
-        padding-bottom: 40px;
+        padding-bottom: 90px;
     }
     .side-control-panel.active {
         bottom: 0;
@@ -1407,4 +1418,40 @@ header .nav-link:hover {
 }
 .leaflet-marker-icon {
     z-index: 999;
+}
+.btn-reset-view {
+    width: 44px;
+    height: 24px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.btn-reset-view:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+.btn-reset-view:active {
+    background: rgba(91, 184, 245, 0.5);
+    color: #5bb8f5;
+}
+.btn-unit-toggle {
+    min-width: 44px;
+    height: 24px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.1);
+    color: #5bb8f5;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    padding: 0 8px;
+}
+.btn-unit-toggle:hover {
+    background: rgba(91,184,245,0.2);
 }
