@@ -615,7 +615,6 @@
     "use_folder_no": "No folder specified",
     "use_folder_yes": "Select folder",
     "user_not_found": "User not found",
-    "invalid_password": "Invalid password",
     "account_restricted": "Account restricted or suspended",
     "missing_parameters": "Please fill in all required fields",
     "disable_notifications": "Disable Notifications?",
@@ -649,5 +648,8 @@
     "min_wind": "Min Wind",
     "show_place_label": "Show location sign",
     "reset_view": "Reset View",
-    "wind_unit": "Wind Unit"
+    "wind_unit": "Wind Unit",
+    "invalid_password": "Invalid password. {n} attempts remaining.",
+    "too_many_attempts": "Too many attempts. Locked for {n} min (until {t})",
+    "account_locked": "Account locked. Try again in {n} min (at {t})"
 }

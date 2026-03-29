@@ -5,7 +5,7 @@
             $this->db = Database::getInstance()->pdo;
         }
         public function findMember($username) {
-            $stmt = $this->db->prepare('SELECT member_id, password_hash, role, status, privileges_id FROM wp_members WHERE email = ? or username = ? LIMIT 1');
+            $stmt = $this->db->prepare('SELECT member_id, password_hash, role, status, privileges_id, login_attempts, lock_until FROM wp_members WHERE email = ? or username = ? LIMIT 1');
             $stmt->execute([$username, $username]);
             return $stmt->fetch();
         }
@@ -174,5 +174,10 @@
                 return $result;
             }
             return null; 
+        }
+        public function updateLockStatus($member_id, $attempts, $lock_until = null) {
+            $sql = "UPDATE wp_members SET login_attempts = ?, lock_until = ? WHERE member_id = ?";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([$attempts, $lock_until, $member_id]);
         }
     }

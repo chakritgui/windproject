@@ -18,23 +18,37 @@ function doLogin() {
     let username = $("#username").val().trim();
     let password = $("#password").val().trim();
     let keepLoggedIn = $("#keepLoggedIn").is(':checked');
+
     if (!username) { showLoginWarning('username'); return; }
     if (!password) { showLoginWarning('password'); return; }
+
     showPageLoader();
+
     $.post(`${BASE_URL}/api/auth`, {
         username: username,
         password: password,
         timezone: tz,
         keepLoggedIn: keepLoggedIn
-    }, function(res){
+    }, function(res) {
         if (res.status === 'success') {
             window.location.href = `${BASE_URL}/${res.location}`;
         } else {
-            showError(langData[res.message] || res.message);
+            let message = langData[res.message] || res.message;
+            if (res.remaining !== undefined) {
+                message = message.replace('{n}', res.remaining);
+            } else if (res.wait_time !== undefined) {
+                message = message.replace('{n}', res.wait_time);
+            } else if (res.lock_until_minutes !== undefined) {
+                message = message.replace('{n}', res.lock_until_minutes);
+            }
+            if (res.unlock_time !== undefined) {
+                message = message.replace('{t}', res.unlock_time);
+            }
+            showError(message);
         }
     }, 'json').fail(function() {
-        showError(langData['error']);
-    }).always(function(){
+        showError(langData['error'] || 'Error');
+    }).always(function() {
         hidePageLoader();
     });
 }

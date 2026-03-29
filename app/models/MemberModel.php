@@ -479,17 +479,19 @@ class MemberModel {
                             updated_at = NOW(), 
                             username = :username, 
                             password_hash = :password_hash, 
-                            privileges_id = :privileges
+                            privileges_id = :privileges,
+                            login_attempts = 0,
+                            lock_until = null
                         WHERE member_id = :member_id";
                 $stmt = $pdo->prepare($sql);
                 $stmt->bindValue(':member_id', (int)$member_id, PDO::PARAM_INT);
             } else {
                 $sql = "INSERT INTO wp_members (
                             first_name, last_name, email, phone, role, status, 
-                            created_at, updated_at, username, password_hash, privileges_id
+                            created_at, updated_at, username, password_hash, privileges_id, login_attempts, lock_until
                         ) VALUES (
                             :first_name, :last_name, :email, :phone, :role, :status, 
-                            NOW(), NOW(), :username, :password_hash, :privileges
+                            NOW(), NOW(), :username, :password_hash, :privileges, 0, null
                         )";
                 $stmt = $pdo->prepare($sql);
             }

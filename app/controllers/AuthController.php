@@ -9,6 +9,8 @@ class AuthController extends Controller {
     }
     public function doLogin() {
         header('Content-Type: application/json; charset=utf-8');
+        $maxAttempts = $_ENV['LOGIN_MAX_ATTEMPTS'] ?? 5;
+        $lockMinutes = $_ENV['LOGIN_LOCK_MINUTES'] ?? 10;
         $username     = $_POST['username'] ?? null;
         $pass         = $_POST['password'] ?? null;
         $timezone     = $_POST['timezone'] ?? null;
@@ -23,14 +25,66 @@ class AuthController extends Controller {
             echo json_encode(['status' => 'error', 'message' => 'user_not_found']);
             exit;
         }
+        if ($user['lock_until']) {
+            $now = new DateTime('now', new DateTimeZone('UTC'));
+            $unlockDate = new DateTime($user['lock_until'], new DateTimeZone('UTC'));
+            if ($unlockDate > $now) {
+                $diff = $unlockDate->getTimestamp() - $now->getTimestamp();
+                $minutesLeft = ceil($diff / 60);
+                if ($minutesLeft <= 0) $minutesLeft = 1;
+                if ($timezone) {
+                    try {
+                        $unlockDate->setTimezone(new DateTimeZone($timezone));
+                    } catch (Exception $e) { }
+                }
+                $unlockTimeFormatted = $unlockDate->format('H:i'); 
+                echo json_encode([
+                    'status' => 'error', 
+                    'message' => 'account_locked',
+                    'wait_time' => (int)$minutesLeft,
+                    'unlock_time' => $unlockTimeFormatted
+                ]);
+                exit;
+            } else {
+                $m->updateLockStatus($user['member_id'], 0, null);
+                $user['login_attempts'] = 0;
+            }
+        }
         if ($pass !== decryptToken($user['password_hash'])) {
-            echo json_encode(['status' => 'error', 'message' => 'invalid_password']);
+            $newAttempts = $user['login_attempts'] + 1;
+            if ($newAttempts >= $maxAttempts) {
+                $date = new DateTime('now', new DateTimeZone('UTC'));
+                $date->modify("+$lockMinutes minutes");
+                $lockUntilUTC = $date->format('Y-m-d H:i:s');
+                $m->updateLockStatus($user['member_id'], $newAttempts, $lockUntilUTC);
+                $unlockDate = clone $date;
+                if ($timezone) {
+                    try {
+                        $unlockDate->setTimezone(new DateTimeZone($timezone));
+                    } catch (Exception $e) { }
+                }
+                $unlockTimeFormatted = $unlockDate->format('H:i');
+                echo json_encode([
+                    'status' => 'error', 
+                    'message' => 'too_many_attempts',
+                    'wait_time' => (int)$lockMinutes,
+                    'unlock_time' => $unlockTimeFormatted
+                ]);
+            } else {
+                $m->updateLockStatus($user['member_id'], $newAttempts, null);
+                echo json_encode([
+                    'status' => 'error', 
+                    'message' => 'invalid_password', 
+                    'remaining' => ($maxAttempts - $newAttempts)
+                ]);
+            }
             exit;
         }
         if ($user['status'] !== 'active') {
             echo json_encode(['status' => 'error', 'message' => 'account_restricted']);
             exit;
         }
+        $m->updateLockStatus($user['member_id'], 0, null);
         session_regenerate_id(true); 
         $session_id = session_id();  
         $m->updateLogin($user['member_id'], $timezone, $session_id);
