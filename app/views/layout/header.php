@@ -160,9 +160,16 @@
                         <i class="fa-regular fa-user"></i>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="<?=BASE_URL?>/account"><i class="fa-solid fa-address-book me-2"></i> <span data-i18n="member_profile"></span></a></li>
+                        <li><a class="dropdown-item" href="<?=BASE_URL?>/account"><i class="fa-solid fa-address-book me-2"></i><span data-i18n="member_profile"></span></a></li>
+<?php
+                        $disclaimer = $disclaimer ?? $_SESSION['pending_disclaimer'] ?? null;
+?>
+                        <?php if (!empty($disclaimer['content'])): ?>
+                            <li><a class="dropdown-item" href="<?=BASE_URL?>/disclaimer"><i class="fa-solid fa-file-shield me-2"></i><span data-i18n="disclaimer"></span></a></li>
+                        <?php else: ?>
+                        <?php endif; ?>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="<?=BASE_URL?>/logout"><i class="fa-solid fa-right-from-bracket me-2"></i> <span data-i18n="logout"></span></a></li>
+                        <li><a class="dropdown-item text-danger" href="<?=BASE_URL?>/logout"><i class="fa-solid fa-right-from-bracket me-2"></i><span data-i18n="logout"></span></a></li>
                     </ul>
                 </div>
             <?php } ?>

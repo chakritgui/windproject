@@ -651,5 +651,7 @@
     "wind_unit": "Wind Unit",
     "invalid_password": "Invalid password. {n} attempts remaining.",
     "too_many_attempts": "Too many attempts. Locked for {n} min (until {t})",
-    "account_locked": "Account locked. Try again in {n} min (at {t})"
+    "account_locked": "Account locked. Try again in {n} min (at {t})",
+    "confirm-and-continue": "Confirm and Continue",
+    "i_have_read_and_agree": "I have read and agree to the terms and conditions."
 }

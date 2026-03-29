@@ -18,12 +18,9 @@ function doLogin() {
     let username = $("#username").val().trim();
     let password = $("#password").val().trim();
     let keepLoggedIn = $("#keepLoggedIn").is(':checked');
-
     if (!username) { showLoginWarning('username'); return; }
     if (!password) { showLoginWarning('password'); return; }
-
     showPageLoader();
-
     $.post(`${BASE_URL}/api/auth`, {
         username: username,
         password: password,

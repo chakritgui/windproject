@@ -4,7 +4,7 @@
             session_start();
         }
         if (empty($_SESSION['user'])) {
-            header('Location: /login');
+            header('Location: ' . BASE_URL . '/login');
             exit;
         }
         $member_id  = $_SESSION['user']['id'];
@@ -15,8 +15,34 @@
         $isValid = $stmt->fetchColumn();
         if (!$isValid) {
             session_destroy();
-            header('Location: login');
+            header('Location: ' . BASE_URL . '/login');
             exit;
+        }
+        if(!empty($_SESSION['user']) && $_SESSION['user']['role'] === 'user') {
+            $authModel = new Auth();
+            $disclaimer = $authModel->getActiveDisclaimer();
+            if ($disclaimer && $disclaimer['is_active'] == 1) {
+                $hasAccepted = $authModel->checkUserAcceptedDisclaimer(
+                    $member_id, 
+                    $disclaimer['id'], 
+                    $disclaimer['version'], 
+                    $disclaimer['show_mode']
+                );
+                $current_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+                $is_disclaimer_page = (strpos($current_uri, '/disclaimer') !== false);
+                $is_api_call = (strpos($current_uri, '/api/accept-disclaimer') !== false);
+                if (!$hasAccepted) {
+                    $_SESSION['pending_disclaimer'] = $disclaimer;
+                    $_SESSION['disclaimer_readonly'] = false;
+                    if (!$is_disclaimer_page && !$is_api_call && $current_uri !== '/logout') {
+                        header('Location: ' . BASE_URL . '/disclaimer');
+                        exit;
+                    }
+                } else {
+                    $_SESSION['pending_disclaimer'] = $disclaimer;
+                    $_SESSION['disclaimer_readonly'] = true;
+                }
+            }
         }
     }
     function is_admin() {

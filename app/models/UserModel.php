@@ -371,4 +371,21 @@ class UserModel {
         }
         return [$where, $params];
     }
+    public function saveAcceptance($userId, $disclaimerId, $version) {
+        try {
+            $sql = "INSERT INTO wp_user_disclaimer_accepts (user_id, disclaimer_id, version, accepted_at) 
+                    VALUES (:user_id, :disclaimer_id, :version, NOW())
+                    ON DUPLICATE KEY UPDATE 
+                        version = VALUES(version), 
+                        accepted_at = NOW()";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([
+                ':user_id'       => $userId,
+                ':disclaimer_id' => $disclaimerId,
+                ':version'       => $version
+            ]);
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
 }

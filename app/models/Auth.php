@@ -180,4 +180,66 @@
             $stmt = $this->db->prepare($sql);
             return $stmt->execute([$attempts, $lock_until, $member_id]);
         }
+        public function getActiveDisclaimer() {
+            $userId = $_SESSION['user']['id'] ?? null;
+            $targetLang = 'en'; 
+            if ($userId) {
+                $stmtLang = $this->db->prepare("SELECT language FROM wp_members_language WHERE member_id = :member_id LIMIT 1");
+                $stmtLang->execute([':member_id' => $userId]);
+                $row = $stmtLang->fetch(PDO::FETCH_ASSOC);
+                if ($row) { $targetLang = $row['language']; }
+            }
+            $sql = "SELECT d.*, dt.title, dt.content, dt.lang_code 
+                    FROM wp_disclaimers d
+                    JOIN wp_disclaimer_translations dt ON d.id = dt.disclaimer_id
+                    WHERE d.is_active = 1 
+                    AND d.deleted_at IS NULL
+                    ORDER BY 
+                        CASE 
+                            WHEN dt.lang_code = :target_lang THEN 1
+                            WHEN dt.lang_code = 'en' THEN 2
+                            WHEN dt.lang_code = 'th' THEN 3
+                            WHEN dt.lang_code = 'lo' THEN 4
+                            ELSE 5 
+                        END ASC
+                    LIMIT 1";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([':target_lang' => $targetLang]);
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        }
+        public function checkUserAcceptedDisclaimer($userId, $disclaimerId, $currentVersion, $showMode) {
+            if ($showMode === 'every_login') {
+                return false; 
+            }
+            $sql = "SELECT id FROM wp_user_disclaimer_accepts 
+                    WHERE user_id = :user_id 
+                    AND disclaimer_id = :disclaimer_id";
+            if ($showMode === 'version_change') {
+                $sql .= " AND version = :version";
+                $params = [
+                    'user_id' => $userId,
+                    'disclaimer_id' => $disclaimerId,
+                    'version' => $currentVersion
+                ];
+            } else {
+                $params = [
+                    'user_id' => $userId,
+                    'disclaimer_id' => $disclaimerId
+                ];
+            }
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            return $stmt->fetch() ? true : false;
+        }
+        public function acceptDisclaimer($userId, $disclaimerId, $version) {
+            $sql = "INSERT INTO wp_user_disclaimer_accepts (user_id, disclaimer_id, version, accepted_at) 
+                    VALUES (:user_id, :disclaimer_id, :version, NOW())
+                    ON DUPLICATE KEY UPDATE version = :version, accepted_at = NOW()";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([
+                'user_id' => $userId,
+                'disclaimer_id' => $disclaimerId,
+                'version' => $version
+            ]);
+        }
     }

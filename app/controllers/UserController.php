@@ -39,6 +39,9 @@ class UserController extends Controller {
         $this->checkPermission('install-app');
         $this->view('user/download');
     }
+    public function disclaimer() {
+        $this->view('user/disclaimer');
+    }
     public function news() {
         ensure_login();
         $this->checkPermission('news');
@@ -210,5 +213,27 @@ class UserController extends Controller {
             'data' => $result,
             'breadcrumbs' => $breadcrumbs
         ]);
+    }
+    public function acceptDisclaimer() {
+        header('Content-Type: application/json');
+        if (empty($_SESSION['user']['id'])) {
+            echo json_encode(['status' => 'error', 'message' => 'session_expired']);
+            exit;
+        }
+        $disclaimer_id = $_POST['disclaimer_id'] ?? null;
+        $version       = $_POST['version'] ?? null;
+        $user_id       = $_SESSION['user']['id'];
+        if (!$disclaimer_id || !$version) {
+            echo json_encode(['status' => 'error', 'message' => 'missing_parameters']);
+            exit;
+        }
+        $result = $this->model->saveAcceptance($user_id, $disclaimer_id, $version);
+        if ($result) {
+            unset($_SESSION['pending_disclaimer']);
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'database_error']);
+        }
+        exit;
     }
 }

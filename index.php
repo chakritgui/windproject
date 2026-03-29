@@ -195,6 +195,8 @@
             $router->post('/api/project.unlink', 'ProjectController@unlink');
             $router->post('/api/project.sort', 'ProjectController@sort');
         } else {
+            $router->get('/disclaimer', 'UserController@disclaimer');
+            $router->post('/api/accept-disclaimer', 'UserController@acceptDisclaimer');
             $router->get('/home', 'UserController@user');
             $router->get('/news', 'UserController@news');
             $router->get('/pstg', 'UserController@project');
