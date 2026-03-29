@@ -285,7 +285,7 @@
                     <span data-i18n="show_wind_values"></span>
                 </div>
                 <div class="form-check form-switch">
-                    <input class="form-check-input custom-switch" type="checkbox" id="toggle-wind-values" checked>
+                    <input class="form-check-input custom-switch" type="checkbox" id="toggle-wind-values">
                 </div>
             </div>
             <div class="control-row">
