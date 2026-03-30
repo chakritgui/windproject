@@ -88,6 +88,7 @@
                 if (res.status === 'success') {
                     window.location.href = '<?php echo BASE_URL; ?>/home';
                 } else {
+                    showError(langData['process_failed']);
                     btn.prop('disabled', false).text('Confirm and Continue');
                 }
             }, 'json');
