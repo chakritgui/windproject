@@ -323,12 +323,12 @@ function updateWindUI() {
     if (btn) btn.textContent = unit.label;
     const legendUnit = document.getElementById('legend-unit-label');
     if (legendUnit) legendUnit.textContent = unit.label;
-    const steps = [0, 5, 10, 15, 20];
+    const steps = [0, 2, 5, 10, 15, 20, 25];
     steps.forEach((ms) => {
         const el = document.getElementById(`legend-${ms}`);
         if (!el) return;
         const val = Math.round(ms * unit.factor);
-        el.textContent = (ms === 20) ? `${val}+` : val;
+        el.textContent = (ms === 25) ? `${val}+` : val;
     });
     const bar = document.querySelector('.legend-bar');
     if (bar) {
@@ -340,18 +340,49 @@ function updateWindUI() {
         if (!el) return;
         const ms = parseFloat(el.dataset.raw);
         if (isNaN(ms)) return;
-        el.textContent = `${(ms * unit.factor).toFixed(1)} ${unit.label}`;
-        el.style.color = getWindColor(ms);
-        el.style.fontWeight = 'bold';
+        const activeColor = getWindColor(ms);
+        const displayVal = (ms * unit.factor).toFixed(1);
+        el.textContent = `${displayVal} ${unit.label}`;
+        el.setAttribute('fill', activeColor);
+        el.style.fontWeight = '700';
+        const arrow = document.getElementById(p.arrowId);
+        if (arrow) {
+            const arrowIcon = arrow.querySelector('text');
+            if (arrowIcon) arrowIcon.setAttribute('fill', activeColor);
+        }
     });
+    if (typeof customPickerMarker !== 'undefined' && customPickerMarker && customPickerMarker.isPopupOpen()) {
+        const popupPane = customPickerMarker.getPopup().getElement();
+        if (popupPane) {
+            const speedValEl = popupPane.querySelector('#picker-wind-value');
+            const speedWrap = popupPane.querySelector('#picker-speed-wrap');
+            const unitLabel = popupPane.querySelector('#picker-unit-label');
+            const arrowG = popupPane.querySelector('#picker-arrow-g');
+            if (speedValEl) {
+                const ms = parseFloat(speedValEl.dataset.raw);
+                const color = getWindColor(ms); 
+                speedValEl.textContent = (ms * unit.factor).toFixed(1);
+                if (speedWrap) speedWrap.style.color = color;
+                if (unitLabel) unitLabel.textContent = unit.label;
+                if (arrowG) {
+                    arrowG.querySelectorAll('line, polygon, circle').forEach(shape => {
+                        const attr = (shape.tagName === 'line') ? 'stroke' : 'fill';
+                        shape.setAttribute(attr, color);
+                    });
+                }
+            }
+            const gustValEl = popupPane.querySelector('#picker-gust-value');
+            const gustWrap = popupPane.querySelector('#picker-gust-wrap');
+            if (gustValEl) {
+                const gMs = parseFloat(gustValEl.dataset.raw);
+                gustValEl.textContent = `${(gMs * unit.factor).toFixed(1)} ${unit.label}`;
+                if (gustWrap) gustWrap.style.color = getWindColor(gMs);
+            }
+        }
+    }
     if (typeof updateWindDashboardUnit === 'function') {
         updateWindDashboardUnit(unit);
     }
-}
-function getWindColor(ms) {
-    if (isNaN(ms) || ms === null) return WINDY_COLORS[0].color;
-    const matched = [...WINDY_COLORS].reverse().find(threshold => ms >= threshold.ms);
-    return matched ? matched.color : WINDY_COLORS[0].color;
 }
 function cycleWindUnit() {
     currentUnitIdx = (currentUnitIdx + 1) % WIND_UNITS.length;

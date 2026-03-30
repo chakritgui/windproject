@@ -109,28 +109,34 @@ async function refreshAllWindData() {
         const lngs = entries.map(([, p]) => p.lng).join(',');
         const url = `${OPEN_METEO}?latitude=${lats}&longitude=${lngs}` +
                     `&current=wind_speed_100m,wind_direction_100m&wind_speed_unit=ms`;
-        const res  = await fetch(url);
+        const res = await fetch(url);
         if (!res.ok) throw new Error(`Open-Meteo HTTP ${res.status}`);
         const data = await res.json();
-        const results    = Array.isArray(data) ? data : [data];
+        const results = Array.isArray(data) ? data : [data];
         const windSpeeds = [];
+        const unit = getCurrentUnit();
         entries.forEach(([id, p], i) => {
             const weather = results[i];
             if (!weather?.current) return;
-            const unit  = getCurrentUnit();
             const speed = weather.current.wind_speed_100m;
             const dir   = weather.current.wind_direction_100m;
             windSpeeds.push(speed);
-            const elArrow = document.getElementById(p.arrowId);
+            const activeColor = getWindColor(speed);
             const elSpeed = document.getElementById(p.windId);
+            const elArrow = document.getElementById(p.arrowId);
             if (elSpeed) {
-                elSpeed.dataset.raw = speed; 
+                elSpeed.dataset.raw = speed;
                 elSpeed.textContent = `${(speed * unit.factor).toFixed(1)} ${unit.label}`;
+                elSpeed.setAttribute('fill', activeColor);
             }
             if (elArrow) {
                 const cx = elArrow.getAttribute('data-cx');
                 const cy = elArrow.getAttribute('data-cy');
                 elArrow.setAttribute('transform', `rotate(${dir - 90}, ${cx}, ${cy})`);
+                const arrowIcon = elArrow.querySelector('text');
+                if (arrowIcon) {
+                    arrowIcon.setAttribute('fill', activeColor);
+                }
             }
         });
         if (windSpeeds.length > 0) {
@@ -151,9 +157,15 @@ function updateWindDashboard({ max, min, avg }) {
     document.querySelectorAll('.stat-unit-label').forEach(el => {
         el.textContent = unit.label;
     });
-    $('.stat-max-wind-val').text((max * unit.factor).toFixed(1));
-    $('.stat-min-wind-val').text((min * unit.factor).toFixed(1));
-    $('.stat-avg-wind-val').text((avg * unit.factor).toFixed(1));
+    const maxVal = (max * unit.factor).toFixed(1);
+    $('.stat-max-wind-val').text(maxVal);
+    $('#stat-max-wind').removeClass('text-warning').css('color', getWindColor(max));
+    const minVal = (min * unit.factor).toFixed(1);
+    $('.stat-min-wind-val').text(minVal);
+    $('#stat-min-wind').removeClass('text-info').css('color', getWindColor(min));
+    const avgVal = (avg * unit.factor).toFixed(1);
+    $('.stat-avg-wind-val').text(avgVal);
+    $('#stat-avg-wind').removeClass('text-success').css('color', getWindColor(avg));
 }
 async function loadPoles() {
     if (poleLayerGroup && poleLayerGroup.getLayers().length > 0) {
@@ -252,7 +264,6 @@ function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId
     const svgH = Math.abs(labelDy) + 30;
     const tipX = anchorX + labelDx;
     const tipY = anchorY + labelDy;
-    
     const BOX_W = 75, BOX_H = 20;
     const boxY    = tipY - BOX_H / 2;
     const boxX    = labelDx >= 0 ? tipX : tipX - BOX_W;
@@ -260,6 +271,8 @@ function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId
     const arrowCY = tipY;
     const textX   = boxX + 22;
     const activeColor = getWindColor(windSpeed);
+    const unit = getCurrentUnit(); 
+    const displayValue = (windSpeed * unit.factor).toFixed(1);
     return {
         svgW, svgH,
         html: `
@@ -271,15 +284,15 @@ function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId
                 <text x="${arrowCX}" y="${arrowCY}" font-size="9" fill="${activeColor}" text-anchor="middle" dominant-baseline="central">➤</text>
             </g>
             <text id="${windId}" 
+                  data-raw="${windSpeed}" 
                   x="${textX}" 
                   y="${arrowCY}" 
-                  data-raw="${windSpeed}" 
                   font-size="9" 
                   font-weight="700" 
                   fill="${activeColor}" 
                   text-anchor="start" 
                   dominant-baseline="central">
-                ${windSpeed} m/s
+                ${displayValue} ${unit.label}
             </text>
         </svg>`
     };
@@ -328,8 +341,7 @@ async function openCustomPicker(latlng) {
         iconSize:   [24, 60],
         iconAnchor: [4, 58],
         html: `
-        <svg width="24" height="60" viewBox="0 0 24 60" xmlns="http://www.w3.org/2000/svg"
-             style="overflow:visible;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))">
+        <svg width="24" height="60" viewBox="0 0 24 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))">
             <circle cx="4" cy="57" r="4" fill="rgba(255,255,255,0.9)" stroke="#1a2535" stroke-width="1.5"/>
             <line x1="4" y1="53" x2="4" y2="4" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
             <line x1="4" y1="6"  x2="18" y2="6"  stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
@@ -404,13 +416,10 @@ async function fetchWindAtPoint(lat, lng) {
     }
 }
 function buildPickerPopupHTML(lat, lng, { speed, direction, gusts }) {
-    const compassDir  = direction !== null ? degToCompass(direction) : '—';
+    const unit = getCurrentUnit();
+    const compassDir = direction !== null ? degToCompass(direction) : '—';
     const arrowRotate = direction ?? 0;
-    const speedColor  = speed === null  ? '#aaa'
-                      : speed < 3      ? '#4fc3f7'
-                      : speed < 7      ? '#81c784'
-                      : speed < 12     ? '#ffb74d'
-                      :                  '#ef5350';
+    const speedColor = speed !== null ? getWindColor(speed) : '#aaa';
     const tickLines = Array.from({ length: 8 }, (_, i) => {
         const a  = (i * 45) * Math.PI / 180;
         const x1 = (36 + 28 * Math.sin(a)).toFixed(1);
@@ -420,10 +429,12 @@ function buildPickerPopupHTML(lat, lng, { speed, direction, gusts }) {
         return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>`;
     }).join('');
     const gustHtml = gusts !== null
-        ? `<div class="cpicker-gust">
+        ? `<div class="cpicker-gust" id="picker-gust-wrap" style="color:${getWindColor(gusts)}">
                <i class="fa-solid fa-wind" style="font-size:9px"></i>
                <span data-i18n="gusts">${langData['gusts'] || 'Gusts'}</span>
-               ${gusts.toFixed(1)} m/s
+               <span id="picker-gust-value" data-raw="${gusts}">
+                  ${(gusts * unit.factor).toFixed(1)} ${unit.label}
+               </span>
            </div>`
         : '';
     return `
@@ -435,14 +446,13 @@ function buildPickerPopupHTML(lat, lng, { speed, direction, gusts }) {
         <div class="cpicker-body">
             <div class="cpicker-compass-wrap">
                 <svg width="50" height="50" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="36" cy="36" r="34"
-                            fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+                    <circle cx="36" cy="36" r="34" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
                     ${tickLines}
                     <text x="36" y="7"  text-anchor="middle" dominant-baseline="central" font-size="9" fill="rgba(255,255,255,0.5)">N</text>
                     <text x="36" y="67" text-anchor="middle" dominant-baseline="central" font-size="9" fill="rgba(255,255,255,0.5)">S</text>
                     <text x="65" y="36" text-anchor="middle" dominant-baseline="central" font-size="9" fill="rgba(255,255,255,0.5)">E</text>
                     <text x="7"  y="36" text-anchor="middle" dominant-baseline="central" font-size="9" fill="rgba(255,255,255,0.5)">W</text>
-                    <g transform="rotate(${arrowRotate}, 36, 36)">
+                    <g id="picker-arrow-g" transform="rotate(${arrowRotate}, 36, 36)">
                         <line x1="36" y1="52" x2="36" y2="20" stroke="${speedColor}" stroke-width="2" stroke-linecap="round"/>
                         <polygon points="36,14 31,24 41,24" fill="${speedColor}"/>
                         <circle cx="36" cy="36" r="3" fill="${speedColor}" stroke="rgba(0,0,0,0.3)" stroke-width="1"/>
@@ -450,8 +460,11 @@ function buildPickerPopupHTML(lat, lng, { speed, direction, gusts }) {
                 </svg>
             </div>
             <div class="cpicker-values">
-                <div class="cpicker-speed" style="color:${speedColor}">
-                    ${speed !== null ? speed.toFixed(1) : '—'}<span class="cpicker-unit">m/s</span>
+                <div class="cpicker-speed" id="picker-speed-wrap" style="color:${speedColor}">
+                    <span id="picker-wind-value" data-raw="${speed}">
+                        ${speed !== null ? (speed * unit.factor).toFixed(1) : '—'}
+                    </span>
+                    <span class="cpicker-unit" id="picker-unit-label">${unit.label}</span>
                 </div>
                 <div class="cpicker-dir-text">
                     ${compassDir}
