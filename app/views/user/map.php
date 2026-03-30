@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.css">
 <script src="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.js"></script>
-<link href="<?=BASE_URL?>/public/css/page.css?v=<?=time();?>" rel="stylesheet">
+<link href="<?=BASE_URL?>/public/css/page.css?v=1.0.1" rel="stylesheet">
 <script>
     let windyAPI, map, poleLayerGroup;
     let DEFAULT_LEVEL = '100m';
@@ -8,17 +8,18 @@
         lat: 16.5, 
         lon: 106.0, 
         zoom: 8, 
-        labels: false,
+        preferCanvas: true,
+        updateWhenZooming: true,
+        updateWhenIdle: false,
+        updateInterval: 16, 
         zoomAnimation: true,
-        fadeAnimation: false,
+        fadeAnimation: true,
         markerZoomAnimation: true,
-        keepBuffer: 100,
-        updateWhenIdle: true,
-        updateWhenZooming: false, 
-        updateInterval: 500,
-        zoomSnap: 1, 
-        zoomDelta: 1,
-        wheelPxPerZoomLevel: 120
+        keepBuffer: 2, 
+        zoomSnap: 0.1,
+        zoomDelta: 0.5, 
+        wheelPxPerZoomLevel: 120,
+        labels: false, 
     };
     function loadScript(src) {
         return new Promise((resolve, reject) => {
@@ -40,81 +41,19 @@
                 DEFAULT_LEVEL = config.DEFAULT_LEVEL || '100m';
                 await loadScript("https://api.windy.com/assets/map-forecast/libBoot.js");
                 await Promise.all([
-                    loadScript(`<?=BASE_URL?>/public/js/user/map.js?v=<?=time();?>`),
-                    loadScript(`<?=BASE_URL?>/public/js/user/report.js?v=<?=time();?>`)
+                    loadScript(`<?=BASE_URL?>/public/js/user/map.js?v=1.0.1`),
+                    loadScript(`<?=BASE_URL?>/public/js/user/report.js?v=1.0.1`)
                 ]); 
-                console.log("System initialized with Config:", config);
             }
         } catch (err) {
             console.error("Initialization error:", err);
         }
     })();
 </script>
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/map.css?v=<?=time();?>">
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/pole.css?v=<?=time();?>">
-<style>
-    #globe-intro {
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-        background: radial-gradient(circle at 50% 40%, rgba(10,15,44,0.85) 0%, rgba(5,7,15,0.9) 40%, rgba(0,0,0,0.95) 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        transition: opacity 1.2s ease;
-    }
-    #globe-intro::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background:
-            radial-gradient(circle at 30% 30%, rgba(80,120,255,0.25), transparent 50%),
-            radial-gradient(circle at 70% 60%, rgba(140,80,255,0.2), transparent 50%);
-        filter: blur(80px);
-        opacity: 0.8;
-        animation: glowMove 12s ease-in-out infinite alternate;
-    }
-    @keyframes glowMove {
-        0% {
-            transform: translate(0,0) scale(1);
-        }
-        100% {
-            transform: translate(-5%,5%) scale(1.1);
-        }
-    }
-    #globe-intro.fade-out {
-        opacity: 0;
-        pointer-events: none;
-    }
-    #globe-canvas {
-        width: 100vw;
-        height: 100vh;
-    }
-    #globe-intro-text {
-        position: absolute;
-        bottom: 10%;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 12px;
-        color: rgba(180, 210, 255, 0.7);
-        text-shadow:
-            0 0 10px rgba(100,150,255,0.6),
-            0 0 20px rgba(80,120,255,0.4);
-        animation: pulse 2.5s infinite;
-    }
-    @keyframes pulse {
-        0%,100% { opacity: 0.4; transform: translateX(-50%) scale(1); }
-        50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
-    }
-    #globe-intro::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(circle, transparent 60%, rgba(0,0,0,0.8) 100%);
-        pointer-events: none;
-    }
-</style>
+<script src="<?=BASE_URL?>/public/js/user/mapConfig.js?v=1.0.1"></script>
+<script src="<?=BASE_URL?>/public/js/user/mapHelper.js?v=1.0.1"></script>
+<link rel="stylesheet" href="<?=BASE_URL?>/public/css/map.css?v=1.0.1">
+<link rel="stylesheet" href="<?=BASE_URL?>/public/css/pole.css?v=1.0.1">
 <div id="globe-intro">
     <canvas id="globe-canvas"></canvas>
     <div id="globe-intro-text" data-i18n="initializing"></div>
@@ -132,6 +71,7 @@
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
         camera.position.z = 4;
+        let requestId;
         const sun = new THREE.DirectionalLight(0xffffff, 2);
         sun.position.set(5,0,5);
         scene.add(sun);
@@ -265,6 +205,42 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
         animate();
+        function disposeThreeJS() {
+            console.log("Cleaning up Three.js resources...");
+            if (requestId) {
+                cancelAnimationFrame(requestId);
+            }
+            scene.traverse(object => {
+                if (!object.isMesh) return;
+                if (object.geometry) {
+                    object.geometry.dispose();
+                }
+                if (object.material) {
+                    if (Array.isArray(object.material)) {
+                        object.material.forEach(material => disposeMaterial(material));
+                    } else {
+                        disposeMaterial(object.material);
+                    }
+                }
+            });
+            if (renderer) {
+                renderer.dispose();
+                renderer.domElement.remove();
+                renderer = null;
+            }
+            scene = null;
+            camera = null;
+            controls = null;
+        }
+        function disposeMaterial(material) {
+            material.dispose();
+            for (const key of Object.keys(material)) {
+                const value = material[key];
+                if (value && typeof value.dispose === 'function' && value.isTexture) {
+                    value.dispose();
+                }
+            }
+        }
     })();
 </script>
 <div id="wind-loading">
@@ -402,4 +378,4 @@
 </button>
 <div class="panel-overlay" id="panelOverlay"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="<?=BASE_URL?>/public/js/user/pole.js?v=<?=time();?>" defer></script>
+<script src="<?=BASE_URL?>/public/js/user/pole.js?v=1.0.1" defer></script>
