@@ -641,7 +641,7 @@
     "initializing": "กำลังเริ่มต้นระบบ",
     "gusts": "ลมกระโชก",
     "map_controls": "การควบคุมแผนที่",
-    "show_wind_values": "แสดงค่าลม",
+    "show_wind_values": "แสดงความเร็วลม",
     "focus_mode": "โหมดโฟกัส",
     "wind_intensity": "ความแรงของลม",
     "max_wind": "ลมแรงสูงสุด",

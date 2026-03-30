@@ -641,7 +641,7 @@
     "initializing": "Initializing",
     "gusts": "Gusts",
     "map_controls": "Map Controls",
-    "show_wind_values": "Show Wind Values",
+    "show_wind_values": "Show Wind Speed",
     "focus_mode": "Focus Mode",
     "wind_intensity": "Wind Intensity",
     "max_wind": "Max Wind",

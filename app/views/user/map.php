@@ -332,7 +332,7 @@
         <div class="panel-section">
             <h6 class="section-title">
                 <i class="fa-solid fa-wind me-2"></i>
-                <span data-i18n="wind_intensity"></span>
+                <span data-i18n="wind_speed"></span>
                 (<span id="legend-unit-label">m/s</span>)
             </h6>
             <div class="legend-bar"></div>

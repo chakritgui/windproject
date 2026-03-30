@@ -1306,7 +1306,6 @@ header .nav-link:hover {
     height: 8px;
     width: 100%;
     border-radius: 10px;
-    background: linear-gradient(to right, #22c55e, #84cc16, #eab308, #f97316, #ef4444);
     margin: 12px 0 8px 0;
 }
 .legend-labels {

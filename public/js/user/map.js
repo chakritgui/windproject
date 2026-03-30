@@ -1132,6 +1132,21 @@ Fancybox.bind("[data-fancybox='gallery']", {
         display: { left: ['infobar'], middle: [], right: ['iterateZoom', 'close'] }
     }
 });
+const WINDY_COLORS = [
+    { ms: 0,  color: '#324376' },
+    { ms: 2,  color: '#2b59c3' }, 
+    { ms: 5,  color: '#22c55e' },
+    { ms: 10, color: '#84cc16' },
+    { ms: 15, color: '#eab308' },
+    { ms: 20, color: '#f97316' },
+    { ms: 25, color: '#ef4444' } 
+];
+function getWindColor(ms) {
+    for (let i = WINDY_COLORS.length - 1; i >= 0; i--) {
+        if (ms >= WINDY_COLORS[i].ms) return WINDY_COLORS[i].color;
+    }
+    return WINDY_COLORS[0].color;
+}
 const WIND_UNITS = [
     { key: 'ms',   label: 'm/s',  factor: 1       },
     { key: 'kmh',  label: 'km/h', factor: 3.6     },
@@ -1144,31 +1159,44 @@ let currentUnitIdx = (() => {
 function getCurrentUnit() {
     return WIND_UNITS[currentUnitIdx];
 }
-function cycleWindUnit() {
-    currentUnitIdx = (currentUnitIdx + 1) % WIND_UNITS.length;
-    localStorage.setItem('windUnit', currentUnitIdx);
+function updateWindUI() {
     const unit = getCurrentUnit();
-    document.getElementById('btn-wind-unit').textContent     = unit.label;
-    document.getElementById('legend-unit-label').textContent = unit.label;
-    [0, 5, 10, 15, 20].forEach((ms, i) => {
-        const id  = ['legend-0','legend-5','legend-10','legend-15','legend-20'][i];
-        const el  = document.getElementById(id);
+    const btn = document.getElementById('btn-wind-unit');
+    if (btn) btn.textContent = unit.label;
+    const legendUnit = document.getElementById('legend-unit-label');
+    if (legendUnit) legendUnit.textContent = unit.label;
+    const steps = [0, 5, 10, 15, 20];
+    steps.forEach((ms) => {
+        const el = document.getElementById(`legend-${ms}`);
         if (!el) return;
-        el.textContent = i === 4
-            ? `${Math.round(ms * unit.factor)}+`
-            : Math.round(ms * unit.factor);
+        const val = Math.round(ms * unit.factor);
+        el.textContent = (ms === 20) ? `${val}+` : val;
     });
-    updateWindDashboardUnit(unit);
+    const bar = document.querySelector('.legend-bar');
+    if (bar) {
+        const gradient = WINDY_COLORS.map(c => c.color).join(', ');
+        bar.style.background = `linear-gradient(to right, ${gradient})`;
+    }
     Object.values(poleMarkers).forEach(p => {
         const el = document.getElementById(p.windId);
         if (!el) return;
         const ms = parseFloat(el.dataset.raw);
         if (isNaN(ms)) return;
         el.textContent = `${(ms * unit.factor).toFixed(1)} ${unit.label}`;
+        el.style.color = getWindColor(ms);
+        el.style.fontWeight = 'bold';
     });
+    if (typeof updateWindDashboardUnit === 'function') {
+        updateWindDashboardUnit(unit);
+    }
+}
+function cycleWindUnit() {
+    currentUnitIdx = (currentUnitIdx + 1) % WIND_UNITS.length;
+    localStorage.setItem('windUnit', currentUnitIdx);
+    updateWindUI();
 }
 function initWindUnit() {
-    document.getElementById('btn-wind-unit').textContent = getCurrentUnit().label;
+    updateWindUI();
 }
 function updateWindDashboardUnit(unit) {
     document.querySelectorAll('.stat-unit-label').forEach(el => {
