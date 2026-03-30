@@ -1199,23 +1199,13 @@ function initWindUnit() {
     updateWindUI();
 }
 function updateWindDashboardUnit(unit) {
-    $('.stat-unit-label').text(unit.label);
-    const stats = [
-        { key: 'max', selector: '.stat-max-wind-val', unit: '.stat-unit-label-max' },
-        { key: 'min', selector: '.stat-min-wind-val', unit: '.stat-unit-label-min' },
-        { key: 'avg', selector: '.stat-avg-wind-val', unit: '.stat-unit-label-avg' }
-    ];
-    stats.forEach(stat => {
-        const rawValue = windSummary[stat.key] ?? 0; 
-        const displayValue = (rawValue * unit.factor).toFixed(1);
-        const color = getWindColor(rawValue);
-        const $el = $(stat.selector);
-        const $elUnit = $(stat.unit);
-        if ($el.length) {
-            $el.text(displayValue).css('color', color).css('font-weight', 'bold');
-        }
-        if ($elUnit.length) {
-            $elUnit.css('color', color).css('font-weight', 'bold');
-        }
+    document.querySelectorAll('.stat-unit-label').forEach(el => {
+        el.textContent = unit.label;
     });
+    const max = windSummary.max ?? 0;
+    const min = windSummary.min ?? 0;
+    const avg = windSummary.avg ?? 0;
+    $('.stat-max-wind-val').text((max * unit.factor).toFixed(1));
+    $('.stat-min-wind-val').text((min * unit.factor).toFixed(1));
+    $('.stat-avg-wind-val').text((avg * unit.factor).toFixed(1));
 }

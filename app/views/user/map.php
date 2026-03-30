@@ -347,24 +347,24 @@
         <div class="panel-section border-0">
             <div class="mini-card-grid-3">
                 <div class="mini-card">
-                    <div class="mini-card-label text-danger" data-i18n="max_wind"></div>
-                    <div class="mini-card-value" id="stat-max-wind">
+                    <div class="mini-card-label" data-i18n="max_wind"></div>
+                    <div class="mini-card-value text-warning" id="stat-max-wind">
                         <span class="stat-max-wind-val">0.0</span>
-                        <small class="stat-unit-label stat-unit-label-max">m/s</small>
+                        <small class="stat-unit-label">m/s</small>
                     </div>
                 </div>
                 <div class="mini-card">
-                    <div class="mini-card-label text-warning" data-i18n="avg_wind"></div>
-                    <div class="mini-card-value" id="stat-avg-wind">
+                    <div class="mini-card-label" data-i18n="avg_wind"></div>
+                    <div class="mini-card-value text-success" id="stat-avg-wind">
                         <span class="stat-avg-wind-val">0.0</span>
-                        <small class="stat-unit-label stat-unit-label-avg">m/s</small>
+                        <small class="stat-unit-label">m/s</small>
                     </div>
                 </div>
                 <div class="mini-card">
-                    <div class="mini-card-label text-info" data-i18n="min_wind"></div>
-                    <div class="mini-card-value" id="stat-min-wind">
+                    <div class="mini-card-label" data-i18n="min_wind"></div>
+                    <div class="mini-card-value text-info" id="stat-min-wind">
                         <span class="stat-min-wind-val">0.0</span>
-                        <small class="stat-unit-label stat-unit-label-min">m/s</small>
+                        <small class="stat-unit-label">m/s</small>
                     </div>
                 </div>
             </div>
