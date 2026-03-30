@@ -247,17 +247,19 @@ function _buildPoleIcon(pole) {
         </svg>`
     });
 }
-function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId }) {
+function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId, windSpeed = 0 }) {
     const svgW = Math.abs(labelDx) + 90;
     const svgH = Math.abs(labelDy) + 30;
     const tipX = anchorX + labelDx;
     const tipY = anchorY + labelDy;
-    const BOX_W = 70, BOX_H = 20;
+    
+    const BOX_W = 75, BOX_H = 20;
     const boxY    = tipY - BOX_H / 2;
     const boxX    = labelDx >= 0 ? tipX : tipX - BOX_W;
     const arrowCX = boxX + 12;
     const arrowCY = tipY;
     const textX   = boxX + 22;
+    const activeColor = getWindColor(windSpeed);
     return {
         svgW, svgH,
         html: `
@@ -266,9 +268,19 @@ function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId
             <circle cx="${anchorX}" cy="${anchorY}" r="3" fill="rgba(255,255,255,0.7)"/>
             <rect x="${boxX}" y="${boxY}" width="${BOX_W}" height="${BOX_H}" rx="10" fill="#1a2535" fill-opacity="0.92"/>
             <g id="${arrowId}" data-cx="${arrowCX}" data-cy="${arrowCY}" transform="rotate(0, ${arrowCX}, ${arrowCY})">
-                <text x="${arrowCX}" y="${arrowCY}" font-size="9" fill="#5bb8f5" text-anchor="middle" dominant-baseline="central">➤</text>
+                <text x="${arrowCX}" y="${arrowCY}" font-size="9" fill="${activeColor}" text-anchor="middle" dominant-baseline="central">➤</text>
             </g>
-            <text id="${windId}" x="${textX}" y="${arrowCY}" font-size="9" font-weight="700" fill="#ffffff" text-anchor="start" dominant-baseline="central">...</text>
+            <text id="${windId}" 
+                  x="${textX}" 
+                  y="${arrowCY}" 
+                  data-raw="${windSpeed}" 
+                  font-size="9" 
+                  font-weight="700" 
+                  fill="${activeColor}" 
+                  text-anchor="start" 
+                  dominant-baseline="central">
+                ${windSpeed} m/s
+            </text>
         </svg>`
     };
 }

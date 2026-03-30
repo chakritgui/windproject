@@ -348,6 +348,11 @@ function updateWindUI() {
         updateWindDashboardUnit(unit);
     }
 }
+function getWindColor(ms) {
+    if (isNaN(ms) || ms === null) return WINDY_COLORS[0].color;
+    const matched = [...WINDY_COLORS].reverse().find(threshold => ms >= threshold.ms);
+    return matched ? matched.color : WINDY_COLORS[0].color;
+}
 function cycleWindUnit() {
     currentUnitIdx = (currentUnitIdx + 1) % WIND_UNITS.length;
     localStorage.setItem('windUnit', currentUnitIdx);
