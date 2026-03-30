@@ -14,9 +14,6 @@ class  MapController extends BaseController {
         $result = $this->model->poleslocation();
         $this->json($result);
     }
-    public function contracts() {
-        $this->json($this->model->contracts());
-    }
     public function project() {
         $contract_id = (int)$this->input('contract_id', 0);
         $this->json($this->model->project($contract_id));
