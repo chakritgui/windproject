@@ -542,7 +542,6 @@ async function renderWindAreas(picker, areaData, masterData) {
                     map.once('moveend', () => {
                         setTimeout(() => {
                             handlePickerOpening(e.latlng, windyAPI.picker, e.target);
-                            loadPoles(); 
                             console.log("Zoom finished, picker opened.");
                         }, 200);
                     });
