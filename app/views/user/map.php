@@ -2,27 +2,53 @@
 <script src="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.js"></script>
 <link href="<?=BASE_URL?>/public/css/page.css?v=<?=time();?>" rel="stylesheet">
 <script>
-    let options = { lat: 16.5, lon: 106.0, zoom: 8, labels: false };
+    let windyAPI, map, poleLayerGroup;
     let DEFAULT_LEVEL = '100m';
+    let options = { 
+        lat: 16.5, 
+        lon: 106.0, 
+        zoom: 8, 
+        labels: false,
+        zoomAnimation: true,
+        fadeAnimation: false,
+        markerZoomAnimation: true,
+        keepBuffer: 100,
+        updateWhenIdle: true,
+        updateWhenZooming: false, 
+        updateInterval: 500,
+        zoomSnap: 1, 
+        zoomDelta: 1,
+        wheelPxPerZoomLevel: 120
+    };
     function loadScript(src) {
         return new Promise((resolve, reject) => {
             const s = document.createElement('script');
             s.src = src;
+            s.async = true;
             s.onload = resolve;
             s.onerror = reject;
             document.body.appendChild(s);
         });
     }
-    fetch(`${BASE_URL}/api/configs.get`).then(response => response.text()).then(async base64Data => {
-        const config = JSON.parse(atob(base64Data));
-        DEFAULT_LEVEL = config.DEFAULT_LEVEL;
-        if (config.WINDY_KEY) {
-            options.key = config.WINDY_KEY;
-            await loadScript("https://api.windy.com/assets/map-forecast/libBoot.js");
-            await loadScript("<?=BASE_URL?>/public/js/user/map.js?v=<?=time();?>");
-            await loadScript("<?=BASE_URL?>/public/js/user/report.js?v=<?=time();?>"); 
+    (async function initSystem() {
+        try {
+            const response = await fetch(`${BASE_URL}/api/configs.get`);
+            const base64Data = await response.text();
+            const config = JSON.parse(atob(base64Data));
+            if (config.WINDY_KEY) {
+                options.key = config.WINDY_KEY;
+                DEFAULT_LEVEL = config.DEFAULT_LEVEL || '100m';
+                await loadScript("https://api.windy.com/assets/map-forecast/libBoot.js");
+                await Promise.all([
+                    loadScript(`<?=BASE_URL?>/public/js/user/map.js?v=<?=time();?>`),
+                    loadScript(`<?=BASE_URL?>/public/js/user/report.js?v=<?=time();?>`)
+                ]); 
+                console.log("System initialized with Config:", config);
+            }
+        } catch (err) {
+            console.error("Initialization error:", err);
         }
-    }).catch(err => console.error("Config error:", err));
+    })();
 </script>
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/map.css?v=<?=time();?>">
 <link rel="stylesheet" href="<?=BASE_URL?>/public/css/pole.css?v=<?=time();?>">

@@ -7,8 +7,6 @@ const MENU_LEVELS = {
     3: { title: 'INSTALLATION', lang: 'installation', endpoint: `${BASE_URL}/api/installations.get`, key: 'installations_id', label: 'installations_name', isLast: true}
 };
 const COMPASS_DIRS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-let map, windyAPI;
-let poleLayerGroup;
 let poleMarkers        = {}; 
 let menuState          = {};
 let areaVisibility     = {};
@@ -58,38 +56,49 @@ function hideWindLoading() {
 }
 function initMap() {
     windyInit(options, async api => {
+        const { store, picker, map: windyMap } = api;
         windyAPI = api;
-        map      = api.map;
-        const { store, picker } = api;
+        map = windyMap;
         poleLayerGroup = L.layerGroup().addTo(map);
         store.set('overlay', 'wind');
         store.set('level', DEFAULT_LEVEL);
-        const [masterResult, windAreaResult] = await Promise.allSettled([
-            fetchJSON(`${BASE_URL}/api/master`),
-            fetchJSON(`${BASE_URL}/api/wind.boundary`)
-        ]);
-        const masterData   = masterResult.status   === 'fulfilled' ? masterResult.value   : null;
-        const windAreaData = windAreaResult.status  === 'fulfilled' ? windAreaResult.value : null;
-        if (masterData)   applyMasterSettings(masterData);
-        if (windAreaData) await renderWindAreas(picker, windAreaData, masterData);
-        show_country_line   = masterData?.show_country_line;
-        country_layers_data = masterData?.country_layers_data;
-        const winds = getLocalBool('winds', true);
-        windOn = winds;
-        $('#toggle-wind-values').prop('checked', winds);
-        await loadPoles();
-        initWindUnit();
-        const labelsRaw = localStorage.getItem('labels');
-        const labels    = labelsRaw !== null ? labelsRaw === 'true' : (masterData?.labels === 'yes');
-        toggleLabel(labels);
-        $('#toggle-label').prop('checked', labels !== false);
-        if (show_country_line === 'show' && country_layers_data) {
-            _drawCountryLines(country_layers_data);
-            const focus = getLocalBool('focus', false);
-            toggleFocus(focus);
-            $('#toggle-focus').prop('checked', focus);
+        try {
+            const [masterResult, windAreaResult] = await Promise.allSettled([
+                fetchJSON(`${BASE_URL}/api/master`),
+                fetchJSON(`${BASE_URL}/api/wind.boundary`)
+            ]);
+            const masterData = masterResult.status === 'fulfilled' ? masterResult.value : null;
+            const windAreaData = windAreaResult.status === 'fulfilled' ? windAreaResult.value : null;
+            if (!masterData) {
+                console.error("Master data is required but failed to load.");
+            }
+            if (masterData) {
+                applyMasterSettings(masterData);
+                show_country_line = masterData.show_country_line;
+                country_layers_data = masterData.country_layers_data;
+                if (show_country_line === 'show' && country_layers_data) {
+                    _drawCountryLines(country_layers_data);
+                    const focus = getLocalBool('focus', false);
+                    toggleFocus(focus);
+                    $('#toggle-focus').prop('checked', focus);
+                }
+                const labelsRaw = localStorage.getItem('labels');
+                const labels = labelsRaw !== null ? (labelsRaw === 'true') : (masterData.labels === 'yes');
+                toggleLabel(labels);
+                $('#toggle-label').prop('checked', labels);
+            }
+            if (windAreaData) {
+                await renderWindAreas(picker, windAreaData, masterData);
+            }
+            const winds = getLocalBool('winds', true);
+            windOn = winds;
+            $('#toggle-wind-values').prop('checked', winds);
+            _applyWindState(windOn);
+            await loadPoles();
+            initWindUnit();
+        } catch (error) {
+            console.error("Initialization Error:", error);
         }
-        _applyWindState(windOn);
     });
 }
 function _drawCountryLines(rawData) {
@@ -551,7 +560,13 @@ async function renderWindAreas(picker, areaData, masterData) {
                 e.originalEvent?.preventDefault();
                 highlightAreaItem(i);
                 if (e.target.getBounds) {
-                    map.flyToBounds(e.target.getBounds(), { padding: [50, 50], duration: 0.8 });
+                    map.flyToBounds(e.target.getBounds(), { 
+                        padding: [50, 50], 
+                        duration: 1.25,
+                        easeLinearity: 0.25,
+                        noMoveStart: true,
+                        animate: true
+                    });
                     map.once('moveend', () => handlePickerOpening(e.latlng, picker, e.target));
                 }
             });
@@ -571,14 +586,19 @@ async function renderWindAreas(picker, areaData, masterData) {
         }
     });
     if (isMaskMode && allHoles.length > 0) {
-        const world = [[90, -180], [90, 180], [-90, 180], [-90, -180]];
-        L.polygon([world, ...allHoles], {
+        const world = [[180, -360], [180, 360], [-180, 360], [-180, -360]];
+        const maskLayer = L.polygon([world, ...allHoles], {
             fillColor:   '#C0C0C0',
             fillOpacity: 0.75,
             stroke:      false,
             interactive: false,
-            _isMask:     true
-        }).addTo(map).bringToBack();
+            _isMask:     true,
+            pane: 'overlayPane'
+        }).addTo(map);
+        maskLayer.bringToBack();
+        map.on('zoomend', () => {
+            maskLayer.bringToBack();
+        });
     }
     featureGroup.addTo(map).bringToFront();
     const bounds = featureGroup.getBounds();
@@ -598,7 +618,10 @@ function resetView() {
     if (!initialBounds) return;
     map.flyToBounds(initialBounds, {
         ...initialPadding,
-        duration: 0.8
+        duration: 1.25,
+        easeLinearity: 0.25,
+        noMoveStart: true,
+        animate: true
     });
 }
 function buildAreaPanel(polygons) {
@@ -637,8 +660,18 @@ function flyToArea(index, area) {
     if (!layer) return;
     const bounds = layer.getBounds();
     if (bounds.isValid()) {
-        map.flyToBounds(bounds, { padding: [40, 40], duration: 1.2, easeLinearity: 0.1 });
-        openProject(area.project_id);
+        const onFlyEnd = () => {
+            openProject(area.project_id);
+            map.off('moveend', onFlyEnd); 
+        };
+        map.on('moveend', onFlyEnd);
+        map.flyToBounds(bounds, { 
+            padding: [50, 50], 
+            duration: 1.25, 
+            easeLinearity: 0.25, 
+            maxZoom: 17, 
+            animate: true
+        });
     }
 }
 function highlightAreaItem(index) {
