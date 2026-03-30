@@ -227,31 +227,32 @@ function renderMultimedia(content, lang, baseUrl) {
 async function openProject(project_id) {
     if (!project_id) return;
     try {
-        const res  = await fetch(`${BASE_URL}/api/project.poles`, {
-            method:  'POST',
+        const res = await fetch(`${BASE_URL}/api/project.poles`, {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ project_id })
+            body: JSON.stringify({ project_id })
         });
         const data = await res.json();
         if (!data?.poles?.length) {
             console.warn('No poles data for project', project_id);
             return;
         }
-        document.getElementById('pp-name').textContent  = data.project_name || 'Unknown Project';
+        document.getElementById('pp-name').textContent = data.project_name || 'Unknown Project';
         document.getElementById('pp-count').textContent = data.poles.length;
         const statusColor = data.status_color || '#ccc';
-        const statusName  = (data.project_status || 'UNKNOWN').toUpperCase();
-        const dot  = document.getElementById('pp-status-dot');
+        const statusName = (data.project_status || 'UNKNOWN').toUpperCase();
+        const dot = document.getElementById('pp-status-dot');
         const pill = document.getElementById('pp-status');
-        dot.style.backgroundColor  = statusColor;
+        dot.style.backgroundColor = statusColor;
         pill.style.backgroundColor = statusColor;
-        pill.style.color           = '#fff';
-        pill.textContent           = statusName;
+        pill.style.color = '#fff';
+        pill.textContent = statusName;
+        const unit = getCurrentUnit();
         document.getElementById('pp-body').innerHTML = data.poles.map(p => {
             const isEven = p.type_id % 2 === 0;
-            const color  = isEven ? '#5bb8f5' : '#f39c12';
+            const color = isEven ? '#5bb8f5' : '#f39c12';
             const color2 = isEven ? '#2d7fc1' : '#d68910';
-            const extra  = !isEven
+            const extra = !isEven
                 ? `<line x1="3" y1="14" x2="-5" y2="14" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
                    <circle cx="-5" cy="14" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>`
                 : '';
@@ -277,42 +278,47 @@ async function openProject(project_id) {
                     <div class="pole-coords"><i class="fa-solid fa-location-dot me-1"></i>${p.lat}° N, ${p.lng}° E</div>
                     <div class="pole-bar-wrap">
                         <div class="pole-bar" id="bar-${p.poles_id}"
-                             style="width:0%;transition:width 0.6s ease,background-color 0.3s"></div>
+                             style="width:0%;transition:width 0.6s ease, background-color 0.3s"></div>
                     </div>
                 </div>
                 <div class="pole-wind-box">
                     <i class="fa-solid fa-location-arrow wind-arrow" id="wind-arrow-${p.poles_id}"></i>
-                    <span class="pole-wind" id="wind-val-${p.poles_id}">-- <small>m/s</small></span>
+                    <span class="pole-wind" id="wind-val-${p.poles_id}" data-raw="0">-- <small>${unit.label}</small></span>
                 </div>
             </div>`;
         }).join('');
         bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('projectCanvas')).show();
-        const lats       = data.poles.map(p => p.lat).join(',');
-        const lngs       = data.poles.map(p => p.lng).join(',');
+        const lats = data.poles.map(p => p.lat).join(',');
+        const lngs = data.poles.map(p => p.lng).join(',');
         const weatherRes = await fetch(`${OPEN_METEO}?latitude=${lats}&longitude=${lngs}&current=wind_speed_100m&wind_speed_unit=ms`);
         const weatherData = await weatherRes.json();
-        const results     = Array.isArray(weatherData) ? weatherData : [weatherData];
+        const results = Array.isArray(weatherData) ? weatherData : [weatherData];
         let totalWind = 0;
         data.poles.forEach((p, i) => {
             const speed = results[i]?.current?.wind_speed_100m || 0;
-            totalWind  += speed;
-            const elWind  = document.getElementById(`wind-val-${p.poles_id}`);
+            totalWind += speed;
+            const elWind = document.getElementById(`wind-val-${p.poles_id}`);
             const elArrow = document.getElementById(`wind-arrow-${p.poles_id}`);
-            const elBar   = document.getElementById(`bar-${p.poles_id}`);
+            const elBar = document.getElementById(`bar-${p.poles_id}`);
             if (!elWind || !elBar) return;
-            const windClass = speed > 15 ? 'wind-high' : speed > 10 ? 'wind-warn' : 'wind-ok';
-            const barColor  = speed > 15 ? '#dc3545'  : speed > 10 ? '#ffc107'  : '#28a745';
-            elWind.className  = `pole-wind ${windClass}`;
-            if (elArrow) elArrow.className = `wind-arrow ${windClass}`;
-            elWind.innerHTML  = `${speed.toFixed(1)} <small>m/s</small>`;
+            const activeColor = getWindColor(speed);
+            const displaySpeed = (speed * unit.factor).toFixed(1);
+            elWind.dataset.raw = speed;
+            elWind.style.color = activeColor;
+            elWind.innerHTML = `${displaySpeed} <small>${unit.label}</small>`;
+            if (elArrow) elArrow.style.color = activeColor;
             const pct = Math.min((speed / 25) * 100, 100);
             requestAnimationFrame(() => {
-                elBar.style.width           = `${pct}%`;
-                elBar.style.backgroundColor = barColor;
+                elBar.style.width = `${pct}%`;
+                elBar.style.backgroundColor = activeColor;
             });
         });
-        document.getElementById('pp-avg-wind').textContent =
-            `${(totalWind / data.poles.length).toFixed(1)} m/s`;
+        const avgSpeed = totalWind / data.poles.length;
+        const avgEl = document.getElementById('pp-avg-wind');
+        if (avgEl) {
+            avgEl.textContent = `${(avgSpeed * unit.factor).toFixed(1)} ${unit.label}`;
+            avgEl.style.color = getWindColor(avgSpeed);
+        }
     } catch (err) {
         console.error('openProject error:', err);
     }
