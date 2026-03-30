@@ -401,7 +401,6 @@ function handleStationClick(lat, lng, id, el) {
     if (isNaN(lat) || isNaN(lng)) return;
     $('.station-item').removeClass('selected');
     $(el).addClass('selected');
-    if (windyAPI?.picker) handlePickerOpening({ lat, lng }, windyAPI.picker);
     $('.menu-panel').fadeOut();
     openPoles(id);
 }
