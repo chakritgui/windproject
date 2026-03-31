@@ -5,8 +5,8 @@
             $this->db = Database::getInstance()->pdo;
         }
         public function findMember($username) {
-            $stmt = $this->db->prepare('SELECT member_id, password_hash, role, status, privileges_id, login_attempts, lock_until FROM wp_members WHERE email = ? or username = ? LIMIT 1');
-            $stmt->execute([$username, $username]);
+            $stmt = $this->db->prepare('SELECT member_id, password_hash, role, status, privileges_id, login_attempts, lock_until FROM wp_members WHERE username = ? LIMIT 1');
+            $stmt->execute([$username]);
             return $stmt->fetch();
         }
         public function getMemberMenus($privileges_id) {

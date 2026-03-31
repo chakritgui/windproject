@@ -56,6 +56,11 @@
                 <i class="fa-solid fa-tower-broadcast"></i> <span data-i18n="poles"></span>
             </button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="windturbind-tab" data-bs-toggle="pill" data-bs-target="#windturbind" data-page="windturbind" type="button">
+                <i class="bi bi-fan"></i> <span data-i18n="windturbind"></span>
+            </button>
+        </li>
     </ul>
     <div class="tab-content" id="mainTabContent">
         <div class="tab-pane fade show active" id="contracts" role="tabpanel">
@@ -316,6 +321,37 @@
                 </table>
             </div>
         </div>
+        <div class="tab-pane fade" id="windturbind" role="tabpanel">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-2 col-6">
+                            <p><i class="fa-solid fa-folder-tree"></i> <span data-i18n="projects"></span></p>
+                            <select id="filter_windturbind_project" class="form-select filter"></select>
+                        </div>
+                        <div class="col-sm-2 col-6">
+                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <select id="filter_windturbind_status" class="form-select filter"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped table-hover" id="tb_windturbind">
+                    <thead>
+                        <tr>
+                            <th data-i18n="project"></th>
+                            <th data-i18n="latitude"></th>
+                            <th data-i18n="longitude"></th>
+                            <th data-i18n="create_at"></th>
+                            <th data-i18n="status"></th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -328,3 +364,4 @@
 <script src="<?=asset('public/js/admin/master/poles.js')?>" defer></script>
 <script src="<?=asset('public/js/admin/master/project-status.js')?>" defer></script>
 <script src="<?=asset('public/js/admin/master/level.js')?>" defer></script>
+<script src="<?=asset('public/js/admin/master/windturbind.js')?>" defer></script>

@@ -658,5 +658,9 @@
     "tip_website_name": "Recommended: 20-30 characters. Long names may be truncated in browser tabs.",
     "tip_scrolling_text": "Recommended: 150-200 characters per loop. Use '|' or icons to separate sentences.",
     "tip_site_assessment": "Recommended: 50-80 characters. Focus on keywords and use small icons (max 20px).",
-    "tip_footer": "Recommended: Max 100 characters. Keep it concise for a balanced look."
+    "tip_footer": "Recommended: Max 100 characters. Keep it concise for a balanced look.",
+    "windturbind": "Wind Turbind",
+    "importMode": "Import Mode",
+    "add-new-keep-old": "Add New (Keep Old)",
+    "replace-duplicate": "Replace Duplicate (Inactive All First)"
 }

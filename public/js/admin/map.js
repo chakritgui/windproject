@@ -190,34 +190,16 @@ function renderPolygonList() {
                 <div class="d-flex align-items-center" style="cursor:pointer; flex-grow:1" onclick="handleItemClick(${p.poly_id})">
                     <span class="me-2" style="display:inline-block; width:12px; height:12px; border-radius:50%; background-color:${fill}; border:1px solid ${border};"></span>
                     <div>
-                        <div class="fw-bold small text-truncate" style="max-width:130px;">
-                            ${p.name}
-                        </div>
+                        <div class="fw-bold small text-truncate" style="max-width:130px;">${p.name}</div>
                         <div class="mt-2" style="font-size:9px;">
-                            <span style="padding:2px 6px; border-radius:8px;
-                                ${p.project_name 
-                                    ? 'background:#eef3ff; color:#3b5bdb;' 
-                                    : 'background:#ffe3e3; color:#c92a2a;'
-                                }
-                            ">
-                                ${p.project_name 
-                                    ? '<i class="fa-solid fa-diagram-project me-1"></i>' + p.project_name 
-                                    : 'No Project'
-                                }
-                            </span>
+                            <span style="padding:2px 6px; border-radius:8px; ${p.project_name ? 'background:#eef3ff; color:#3b5bdb;' : 'background:#ffe3e3; color:#c92a2a;'}">${p.project_name ? '<i class="fa-solid fa-diagram-project me-1"></i>' + p.project_name : 'No Project'}</span>
                         </div>
                     </div>
                 </div>
                 <div class="btn-group border rounded-3 bg-white">
-                    <button class="btn btn-link text-info py-1" onclick="focusOnLayer(${p.poly_id})">
-                        <i class="fa-solid fa-eye"></i>
-                    </button>
-                    <button class="btn btn-link text-warning py-1 border-start" onclick="openEditPopup(${p.poly_id})">
-                        <i class="fa-solid fa-pen-to-square"></i>
-                    </button>
-                    <button class="btn btn-link text-danger py-1 border-start" onclick="deletePolygon(${p.poly_id})">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
+                    <button class="btn btn-link text-info py-1" onclick="focusOnLayer(${p.poly_id})"><i class="fa-solid fa-eye"></i></button>
+                    <button class="btn btn-link text-warning py-1 border-start" onclick="openEditPopup(${p.poly_id})"><i class="fa-solid fa-pen-to-square"></i></button>
+                    <button class="btn btn-link text-danger py-1 border-start" onclick="deletePolygon(${p.poly_id})"><i class="fa-solid fa-trash-can"></i></button>
                 </div>
             </div>
         `);
@@ -316,9 +298,39 @@ function deletePolygon(id) {
         renderPolygonList();
     });
 }
-function importMapJSON(json) {
-    let features = (json.type === 'FeatureCollection') ? json.features : (Array.isArray(json) ? json : [json]);
+function importMapJSON(input) {
+    let features = [];
+    if (typeof input === 'string') {
+        const trimmedInput = input.trim();
+        try {
+            const parsed = JSON.parse(trimmedInput);
+            features = (parsed.type === 'FeatureCollection') ? parsed.features : (Array.isArray(parsed) ? parsed : [parsed]);
+        } catch (e) {
+            console.log("Parsing as GeoJSONL...");
+            features = trimmedInput.split('\n').filter(line => line.trim() !== "").map(line => {
+                try {
+                    return JSON.parse(line);
+                } catch (err) {
+                    console.error("Invalid JSON line skipped:", line);
+                    return null;
+                }
+            }).filter(f => f !== null);
+        }
+    } else if (typeof input === 'object' && input !== null) {
+        features = (input.type === 'FeatureCollection') ? input.features : (Array.isArray(input) ? input : [input]);
+    }
+    if (!features || features.length === 0) {
+        console.warn("No features found to import.");
+        return;
+    }
     features.forEach((f) => {
+        if (f.type === 'FeatureCollection' && f.features) {
+            f.features.forEach(subF => processFeature(subF));
+        } else {
+            processFeature(f);
+        }
+    });
+    function processFeature(f) {
         if (f.geometry?.type === 'Polygon' || f.geometry?.type === 'MultiPolygon') {
             const name = f.properties?.NAME || f.properties?.name || `Area-${Date.now().toString().slice(-4)}`;
             const new_id = Date.now() + Math.floor(Math.random() * 1000);
@@ -331,7 +343,7 @@ function importMapJSON(json) {
                 project_name: null
             });
         }
-    });
+    }
     renderPolygons();
     setTimeout(fitAllLayers, 100);
 }
@@ -361,8 +373,12 @@ async function handleJsonImport(e) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => {
-        try { importMapJSON(JSON.parse(ev.target.result)); } catch (err) { showError(langData['invalid_json_file']); }
-    };
+    try { 
+        importMapJSON(ev.target.result); 
+    } catch (err) { 
+        showError(langData['invalid_json_file']); 
+    }
+};
     reader.readAsText(file);
 }
 async function handleJsonImports(e) {

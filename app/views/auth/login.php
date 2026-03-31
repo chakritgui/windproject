@@ -13,7 +13,7 @@
             <div>
                 <label class="auth-label">
                     <i class="fa-regular fa-circle-user"></i>
-                    <span data-i18n="username_or_email"></span>
+                    <span data-i18n="username"></span>
                 </label>
                 <input type="text" class="auth-input" id="username" autocomplete="username">
                 <label class="auth-label">

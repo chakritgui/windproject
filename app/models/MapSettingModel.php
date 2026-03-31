@@ -48,6 +48,10 @@ class MapSettingModel {
                             $project = $stmtFind->fetch(PDO::FETCH_ASSOC);
                             if ($project) {
                                 $projectId = $project['project_id'];
+                            } else {
+                                $stmtInsert = $this->db->prepare("INSERT INTO wp_project (project_name, created_at) VALUES (?, NOW())");
+                                $stmtInsert->execute([$poly['area_name']]);
+                                $projectId = $this->db->lastInsertId();
                             }
                         }
                     }

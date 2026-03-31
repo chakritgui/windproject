@@ -194,6 +194,12 @@
             $router->post('/api/project.content.delete', 'ProjectController@deleteContent');
             $router->post('/api/project.unlink', 'ProjectController@unlink');
             $router->post('/api/project.sort', 'ProjectController@sort');
+            $router->post('/api/windturbind.list', 'WindturbindController@list');
+            $router->post('/api/windturbind.filter', 'WindturbindController@filter');
+            $router->post('/api/windturbind.delete', 'WindturbindController@delete');
+            $router->post('/api/windturbind.import', 'WindturbindController@import');
+            $router->post('/api/windturbind.updateStatus', 'WindturbindController@updateStatus');
+            $router->post('/api/windturbind.clear', 'WindturbindController@clear');
         } else {
             $router->get('/disclaimer', 'UserController@disclaimer');
             $router->post('/api/accept-disclaimer', 'UserController@acceptDisclaimer');
