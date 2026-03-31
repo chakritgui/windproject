@@ -313,7 +313,7 @@ function renderModalContent(modalEl, document_id, isEdit, d) {
             <div class="col-md-6 mb-3"><label class="mb-2">${langData['project']}</label><select id="project" class="form-select"></select></div>
         </div>
         <div class="row">
-            <div class="col-md-6 mb-3"><label class="mb-2">${langData['pole_types']}</label><select id="type" class="form-select"></select></div>
+            <div class="col-md-6 mb-3"><label class="mb-2">${langData['wind_measurement_equipment']}</label><select id="type" class="form-select"></select></div>
             <div class="col-md-6 mb-3"><label class="mb-2">${langData['installation']}</label><select id="installation" class="form-select"></select></div>
         </div>
         <div class="row">

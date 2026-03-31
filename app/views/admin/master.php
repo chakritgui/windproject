@@ -38,7 +38,7 @@
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="pole-types-tab" data-bs-toggle="pill" data-bs-target="#pole-types" data-page="types" type="button">
-                <i class="fa-solid fa-tags"></i> <span data-i18n="pole_types"></span>
+                <i class="fa-solid fa-tags"></i> <span data-i18n="wind_measurement_equipment"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">

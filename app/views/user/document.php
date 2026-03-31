@@ -88,7 +88,7 @@
                     <div>
                         <div class="filter-label">
                             <i class="fa-solid fa-tags"></i>
-                            <span data-i18n="pole_types"></span>
+                            <span data-i18n="wind_measurement_equipment"></span>
                         </div>
                         <select id="filter_type" class="filter-control filter"></select>
                     </div>

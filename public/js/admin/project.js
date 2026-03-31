@@ -131,7 +131,7 @@ function renderTable(data, isNewSearch) {
                 </td>
                 <td class="text-center" style="width: 80px;">
                     <div style="width: 50px; height: 50px; line-height: 50px; overflow: hidden; margin: 0 auto; border-radius: 4px; border: 1px solid #eee;">
-                    ${item.cover &&  item.type === 'content' ? 
+                    ${item.cover ? 
                         `<img src="${BASE_URL}/${item.cover}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='${BASE_URL}/public/images/noimage.jpg';" loading="lazy">` : 
                         `
                             ${(item.type === 'document') ? `<i class="${getFileIconClass(item.cover)} fa-2x text-secondary-light"></i>` : `<i class="fa-solid ${icon} fa-3x"></i>`}

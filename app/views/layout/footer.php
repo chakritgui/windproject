@@ -91,12 +91,12 @@
                 <span class="stat-value" id="pp-count">0</span>
             </div>
             <div class="stat-cell">
-                <span class="stat-label" data-i18n="avg_wind"></span>
+                <span class="stat-label" data-i18n="avg_wind_speed"></span>
                 <span class="stat-value" id="pp-avg-wind">0 m/s</span>
             </div>
         </div>
         <div class="oc-poles-section">
-            <div class="section-label" data-i18n="pole_list"></div>
+            <div class="section-label" data-i18n="wind_measurement_equipment"></div>
             <div id="pp-body"></div>
         </div>
     </div>

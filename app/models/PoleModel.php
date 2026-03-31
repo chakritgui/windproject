@@ -147,7 +147,8 @@ class PoleModel {
                 LEFT JOIN wp_type t ON t.type_id = p.type_id
                 LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
                 LEFT JOIN wp_project_status s ON s.project_status_id = pj.project_status_id 
-                WHERE pj.project_id = :project_id AND p.status = 'online'";
+                WHERE pj.project_id = :project_id AND p.status = 'online' 
+                ORDER BY ifnull(p.item_order, p.poles_id) ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['project_id' => $project_id]);
         $poles = $stmt->fetchAll(PDO::FETCH_ASSOC);

@@ -2,7 +2,7 @@ const OPEN_METEO   = 'https://api.open-meteo.com/v1/forecast';
 const WIND_REFRESH = 60_000;
 const MENU_LEVELS = {
     1: { title: 'PROJECT', lang: 'project', endpoint: `${BASE_URL}/api/project.get`, key: 'project_id', label: 'project_name'},
-    2: { title: 'WIND MEASUREMENT EQUIPMENT', lang: 'pole_types', endpoint: `${BASE_URL}/api/type.get`, key: 'type_id', label: 'type_name'},
+    2: { title: 'WIND MEASUREMENT EQUIPMENT', lang: 'wind_measurement_equipment', endpoint: `${BASE_URL}/api/type.get`, key: 'type_id', label: 'type_name'},
     3: { title: 'INSTALLATION', lang: 'installation', endpoint: `${BASE_URL}/api/installations.get`, key: 'installations_id', label: 'installations_name', isLast: true}
 };
 const COMPASS_DIRS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
@@ -38,6 +38,6 @@ const WINDY_COLORS = [
 const WIND_UNITS = [
     { key: 'ms',   label: 'm/s',  factor: 1       },
     { key: 'kmh',  label: 'km/h', factor: 3.6     },
-    { key: 'knot', label: 'kn',   factor: 1.94384 },
+    { key: 'knot', label: 'kt',   factor: 1.94384 },
 ];
 const clamp = (val, min, max) => Math.max(min, Math.min(max, val));

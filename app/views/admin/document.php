@@ -49,7 +49,7 @@
                             <select id="filter_project" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-tags"></i> <span data-i18n="pole_types"></span></p>
+                            <p><i class="fa-solid fa-tags"></i> <span data-i18n="wind_measurement_equipment"></span></p>
                             <select id="filter_type" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6 d-none">

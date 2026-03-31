@@ -596,40 +596,46 @@ class DocumentModel {
                 'table' => 'wp_contract c',
                 'id'    => 'c.contract_id',
                 'text'  => 'c.contract_name',
-                'where' => "c.status = 'active'"
+                'where' => "c.status = 'active'",
+                'order' => "c.item_order ASC",
             ],
             'project' => [
                 'table' => 'wp_project p',
                 'id'    => 'p.project_id',
                 'text'  => 'p.project_name',
-                'where' => "p.status = 'active'"
+                'where' => "p.status = 'active'",
+                'order' => "p.item_order ASC",
             ],
             'type' => [
                 'table' => 'wp_type t',
                 'id'    => 't.type_id',
                 'text'  => 't.type_name',
                 'join'  => "LEFT JOIN wp_project_pole_type pt ON pt.type_id = t.type_id LEFT JOIN wp_project p ON p.project_id = pt.project_id",
-                'where' => "t.status = 'active'"
+                'where' => "t.status = 'active'",
+                'order' => "t.item_order ASC",
             ],
             'installation' => [
                 'table' => 'wp_installations i',
                 'id'    => 'i.installations_id',
                 'text'  => 'i.installations_name',
                 'join'  => "LEFT JOIN wp_project p ON p.project_id = i.project_id",
-                'where' => "i.status = 'active'"
+                'where' => "i.status = 'active'",
+                'order' => "i.item_order ASC",
             ],
             'pole' => [
                 'table' => 'wp_poles pl',
                 'id'    => 'pl.poles_id',
                 'text'  => 'pl.poles_code',
                 'join'  => "LEFT JOIN wp_project p ON p.project_id = pl.project_id",
-                'where' => "pl.status <> 'deleted'"
+                'where' => "pl.status <> 'deleted'",
+                'order' => "pl.item_order ASC",
             ],
             'document' => [
                 'table' => 'wp_documents',
                 'id'    => 'document_id',
                 'text'  => 'document_name',
-                'where' => "status <> 'deleted'"
+                'where' => "status <> 'deleted'",
+                'order' => "document_id ASC",
             ]
         ];
         if (!isset($config[$type])) return ['items' => [], 'total_count' => 0];
@@ -654,7 +660,7 @@ class DocumentModel {
         $whereSql = "WHERE " . implode(' AND ', $whereClauses);
         $joinSql  = $cfg['join'] ?? "";
         try {
-            $sqlCount = "SELECT COUNT(DISTINCT {$cfg['id']}) as total FROM {$cfg['table']} $joinSql $whereSql";
+            $sqlCount = "SELECT COUNT(DISTINCT {$cfg['id']}) as total FROM {$cfg['table']} $joinSql $whereSql ORDER BY {$cfg['order']}";
             $stmtCount = $this->db->prepare($sqlCount);
             $stmtCount->execute($params);
             $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;

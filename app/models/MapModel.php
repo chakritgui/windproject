@@ -10,11 +10,17 @@ class MapModel{
     }
     public function windarea() {
         $sql = "SELECT 
-            m.area_name, m.geo_data, m.custom_style, ifnull(s.project_status_color, '') as area_status_color, p.project_id 
+            CASE
+                WHEN m.project_id IS NOT NULL THEN COALESCE(NULLIF(p.project_name_display, ''), p.project_name, '')
+                ELSE m.area_name
+            END AS area_name, 
+            m.geo_data, m.custom_style, ifnull(s.project_status_color, '') as area_status_color, p.project_id 
             FROM wp_map_polygons m 
             LEFT JOIN wp_project p on p.project_id = m.project_id 
             LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id 
-            WHERE m.status = 'active' group by m.poly_id";
+            WHERE m.status = 'active' 
+            group by m.poly_id 
+            order by ifnull(m.item_order, m.poly_id) ASC";
         $polygons = $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
         return ['polygons' => $polygons];
     }
@@ -24,13 +30,14 @@ class MapModel{
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function project() {
-        $sql = "SELECT DISTINCT p.project_id, COALESCE(NULLIF(p.project_name_display, ''), p.project_name, '') AS project_name
-                FROM wp_project p
-                INNER JOIN wp_poles po ON po.project_id = p.project_id
-                WHERE p.status = 'active' AND po.status = 'online'
-                ORDER BY p.project_id ASC";
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute();
+        $sql = "SELECT 
+                p.project_id, COALESCE(NULLIF(p.project_name_display, ''), p.project_name, '') AS project_name, s.project_status_name, s.project_status_color
+            FROM wp_project p
+            INNER JOIN wp_poles po ON po.project_id = p.project_id AND po.status = 'online'
+            LEFT JOIN wp_project_status s ON s.project_status_id = p.project_status_id
+            WHERE p.status = 'active' 
+            ORDER BY ifnull(p.item_order, p.project_id) ASC";
+        $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function type($project_id) {
@@ -38,7 +45,7 @@ class MapModel{
                 FROM wp_type t
                 INNER JOIN wp_poles po ON po.type_id = t.type_id 
                 WHERE t.status = 'active' AND po.status = 'online' AND po.project_id = :project_id
-                ORDER BY t.type_id ASC";
+                ORDER BY ifnull(t.item_order, t.type_id) ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':project_id' => $project_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -53,7 +60,7 @@ class MapModel{
                 FROM wp_installations l
                 INNER JOIN wp_poles p ON p.installations_id = l.installations_id
                 WHERE l.status = 'active' AND p.status = 'online' AND p.project_id = :project_id AND p.type_id = :type_id
-                ORDER BY l.installations_id ASC";
+                ORDER BY ifnull(l.item_order, l.installations_id) ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             ':project_id' => $project_id,

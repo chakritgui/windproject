@@ -113,7 +113,7 @@
             <div class="mini-stat-card">
                 <i class="fa-solid fa-map-pin"></i>
                 <div class="h4 fw-bold mb-0" id="poleTypeCount">0</div>
-                <div class="small text-muted" data-i18n="pole_types"></div>
+                <div class="small text-muted" data-i18n="wind_measurement_equipment"></div>
             </div>
         </div>
         <div class="col-6 col-md-3">

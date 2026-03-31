@@ -61,71 +61,74 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
     (function () {
-        const canvas  = document.getElementById('globe-canvas');
-        const intro   = document.getElementById('globe-intro');
-        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha:true });
+        const canvas = document.getElementById('globe-canvas');
+        const intro = document.getElementById('globe-intro');
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.outputEncoding = THREE.sRGBEncoding;
         renderer.physicallyCorrectLights = true;
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const scene  = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.z = 4;
-        let requestId;
         const sun = new THREE.DirectionalLight(0xffffff, 2);
-        sun.position.set(5,0,5);
+        sun.position.set(5, 0, 5);
         scene.add(sun);
         const ambient = new THREE.AmbientLight(0x222222);
         scene.add(ambient);
         const loader = new THREE.TextureLoader();
         const earthTex = loader.load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg');
-        const bumpMap  = loader.load('https://threejs.org/examples/textures/earthbump1k.jpg');
-        const specMap  = loader.load('https://threejs.org/examples/textures/earthspec1k.jpg');
+        const bumpMap = loader.load('https://threejs.org/examples/textures/earthbump1k.jpg');
+        const specMap = loader.load('https://threejs.org/examples/textures/earthspec1k.jpg');
         const nightTex = loader.load('https://threejs.org/examples/textures/earthlights1k.jpg');
         const cloudTex = loader.load('https://threejs.org/examples/textures/earthcloudmap.jpg');
-        const geo = new THREE.SphereGeometry(1,64,64);
-        const mat = new THREE.MeshPhongMaterial({
-            map: earthTex,
-            bumpMap: bumpMap,
-            bumpScale: 0.05,
-            specularMap: specMap,
-            specular: new THREE.Color(0x333333),
-            shininess: 15,
-            emissiveMap: nightTex,
-            emissive: new THREE.Color(0xffffff),
-            emissiveIntensity: 0.4
-        });
-        const globe = new THREE.Mesh(geo, mat);
+        const globe = new THREE.Mesh(
+            new THREE.SphereGeometry(1, 64, 64),
+            new THREE.MeshPhongMaterial({
+                map: earthTex,
+                bumpMap: bumpMap,
+                bumpScale: 0.05,
+                specularMap: specMap,
+                specular: new THREE.Color(0x333333),
+                shininess: 15,
+                emissiveMap: nightTex,
+                emissive: new THREE.Color(0xffffff),
+                emissiveIntensity: 0.4
+            })
+        );
         scene.add(globe);
-        const cloudGeo = new THREE.SphereGeometry(1.01,64,64);
-        const cloudMat = new THREE.MeshPhongMaterial({
-            map: cloudTex,
-            transparent:true,
-            opacity:0.4,
-            depthWrite:false
-        });
-        const clouds = new THREE.Mesh(cloudGeo, cloudMat);
+        const clouds = new THREE.Mesh(
+            new THREE.SphereGeometry(1.01, 64, 64),
+            new THREE.MeshPhongMaterial({
+                map: cloudTex,
+                transparent: true,
+                opacity: 0.4,
+                depthWrite: false
+            })
+        );
         scene.add(clouds);
-        const atmosMat = new THREE.ShaderMaterial({
-            vertexShader: `
-                varying vec3 vNormal;
-                void main(){
-                    vNormal = normalize(normalMatrix * normal);
-                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
-                }
-            `,
-            fragmentShader: `
-                varying vec3 vNormal;
-                void main(){
-                    float intensity = pow(0.6 - dot(vNormal, vec3(0,0,1.0)), 3.0);
-                    gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0) * intensity;
-                }
-            `,
-            blending: THREE.AdditiveBlending,
-            side: THREE.BackSide,
-            transparent:true
-        });
-        const atmos = new THREE.Mesh(new THREE.SphereGeometry(1.1,64,64), atmosMat);
+        const atmos = new THREE.Mesh(
+            new THREE.SphereGeometry(1.1, 64, 64),
+            new THREE.ShaderMaterial({
+                vertexShader: `
+                    varying vec3 vNormal;
+                    void main(){
+                        vNormal = normalize(normalMatrix * normal);
+                        gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+                    }
+                `,
+                fragmentShader: `
+                    varying vec3 vNormal;
+                    void main(){
+                        float intensity = pow(0.6 - dot(vNormal, vec3(0,0,1.0)), 3.0);
+                        gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0) * intensity;
+                    }
+                `,
+                blending: THREE.AdditiveBlending,
+                side: THREE.BackSide,
+                transparent: true
+            })
+        );
         scene.add(atmos);
         const starTexture = new THREE.TextureLoader().load(
             'https://threejs.org/examples/textures/sprites/circle.png'
@@ -137,101 +140,142 @@
                 const r = radius * (0.7 + Math.random() * 0.3);
                 const theta = Math.random() * 2 * Math.PI;
                 const phi = Math.acos((Math.random() * 2) - 1);
-                positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
+                positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
                 positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
                 positions[i * 3 + 2] = r * Math.cos(phi);
             }
             geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            const mat = new THREE.PointsMaterial({
-                size: size,
-                map: starTexture,
-                transparent: true,
-                opacity: opacity,
-                depthWrite: false,
-                blending: THREE.AdditiveBlending
-            });
-            return new THREE.Points(geo, mat);
+            return new THREE.Points(geo, new THREE.PointsMaterial({
+                size, map: starTexture, transparent: true, opacity,
+                depthWrite: false, blending: THREE.AdditiveBlending
+            }));
         }
-        const starsFar  = createStarField(2000, 200, 0.6, 0.6);
-        const starsMid  = createStarField(1500, 120, 0.8, 0.8);
-        const starsNear = createStarField(800,  80,  1.2, 1.0);
+        const starsFar = createStarField(2000, 200, 0.6, 0.6);
+        const starsMid = createStarField(1500, 120, 0.8, 0.8);
+        const starsNear = createStarField(800,   80, 1.2, 1.0);
         scene.add(starsFar);
         scene.add(starsMid);
         scene.add(starsNear);
-        let start = null;
+        const flagCanvas = document.createElement('canvas');
+        flagCanvas.width = 192; flagCanvas.height = 120;
+        const fc = flagCanvas.getContext('2d');
+        fc.fillStyle = '#CE1126'; fc.fillRect(0, 0, 192, 120);
+        fc.fillStyle = '#002868'; fc.fillRect(0, 27, 192, 66);
+        fc.fillStyle = '#FFFFFF';
+        fc.beginPath(); fc.arc(96, 60, 22, 0, Math.PI * 2); fc.fill();
+        const flagTex = new THREE.CanvasTexture(flagCanvas);
+        const globePivot = new THREE.Group();
+        scene.add(globePivot);
+        const pinGroup = new THREE.Group();
+        const poleMesh = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.004, 0.004, 0.22, 8),
+            new THREE.MeshBasicMaterial({ color: 0xffffff })
+        );
+        poleMesh.position.y = 0.11;
+        pinGroup.add(poleMesh);
+        const flagMesh = new THREE.Mesh(
+            new THREE.PlaneGeometry(0.14, 0.088),
+            new THREE.MeshBasicMaterial({ map: flagTex, side: THREE.DoubleSide, transparent: true })
+        );
+        flagMesh.position.set(0.072, 0.2, 0);
+        pinGroup.add(flagMesh);
+        const pinLat = 18  * Math.PI / 180;
+        const pinLon = 103 * Math.PI / 180;
+        const pinPos = new THREE.Vector3(
+            Math.cos(pinLat) * Math.sin(pinLon),
+            Math.sin(pinLat),
+            Math.cos(pinLat) * Math.cos(pinLon)
+        );
+        pinGroup.position.copy(pinPos);
+        pinGroup.quaternion.setFromUnitVectors(
+            new THREE.Vector3(0, 1, 0),
+            pinPos.clone().normalize()
+        );
+        pinGroup.scale.setScalar(0);
+        globePivot.add(pinGroup);
+        const LAO_LON    = 103;
+        const LAO_LAT    = 18;
+        const targetRotY = -(LAO_LON * Math.PI / 180) + Math.PI;
+        const targetRotX =  (LAO_LAT * Math.PI / 180);
+        const startRotY  = targetRotY + Math.PI;
+        const startRotX  = 0.0;
+        globe.rotation.y  = startRotY;
+        globe.rotation.x  = startRotX;
+        clouds.rotation.y = startRotY;
+        clouds.rotation.x = startRotX;
+        atmos.rotation.y  = startRotY;
+        atmos.rotation.x  = startRotX;
+        globePivot.rotation.y = startRotY;
+        globePivot.rotation.x = startRotX;
+        let start     = null;
         let raf;
-        function ease(t){
-            return t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2;
-        }
-        function animate(ts){
+        let pinDropped = false;
+        function easeIn(t) { return t * t * t * t; }
+        function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+        function easeInOut(t) { return t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3) / 2; }
+        function animate(ts) {
             raf = requestAnimationFrame(animate);
-            if(!start) start = ts;
-            let t = (ts-start)/1000;
+            if (!start) start = ts;
+            const t = (ts - start) / 1000;
             const time = ts * 0.001;
-            globe.rotation.y += 0.002;
-            clouds.rotation.y += 0.0025;
-            atmos.rotation.y = globe.rotation.y;
-            starsFar.rotation.y += 0.0001;
-            starsMid.rotation.y += 0.0002;
+            if (t <= 4) {
+                const pe = easeIn(Math.min(t / 4, 1));
+                const ry = startRotY + (targetRotY - startRotY) * pe;
+                const rx = startRotX + (targetRotX - startRotX) * pe;
+                globe.rotation.y  = ry;
+                globe.rotation.x  = rx;
+                clouds.rotation.y = ry + 0.05;
+                clouds.rotation.x = rx;
+                atmos.rotation.y  = ry;
+                atmos.rotation.x  = rx;
+                globePivot.rotation.y = ry;
+                globePivot.rotation.x = rx;
+                camera.position.z = 4 + (0.85 - 4) * pe;
+            }
+            if (t > 4 && t <= 4.8) {
+                globePivot.rotation.y = globe.rotation.y;
+                globePivot.rotation.x = globe.rotation.x;
+                const p = (t - 4) / 0.8;
+                const pe = easeOut(Math.min(p, 1));
+                const bounce = pe < 0.8 ? easeOut(pe / 0.8) : 1 + Math.sin(((pe - 0.8) / 0.2) * Math.PI) * 0.2;
+                pinGroup.scale.setScalar(bounce);
+            }
+            if (t > 4.8 && t <= 6.5) {
+                globePivot.rotation.y = globe.rotation.y;
+                globePivot.rotation.x = globe.rotation.x;
+                pinGroup.scale.setScalar(1);
+                const pe = easeInOut(Math.min((t - 4.8) / 1.7, 1));
+                camera.position.z = 0.85 - pe * 0.5;
+            }
+            if (t > 5.5) {
+                intro.style.opacity = Math.max(0, 1 - (t - 5.5) / 0.8);
+            }
+            if (t > 6.5) {
+                cleanup();
+                return;
+            }
+            starsFar.rotation.y  += 0.0001;
+            starsMid.rotation.y  += 0.0002;
             starsNear.rotation.y += 0.0003;
             starsFar.material.opacity  = 0.5 + Math.sin(time * 0.5) * 0.1;
             starsMid.material.opacity  = 0.7 + Math.sin(time * 0.8) * 0.15;
             starsNear.material.opacity = 0.9 + Math.sin(time * 1.2) * 0.2;
-            if(t > 2 && t < 5){
-                let p = ease((t-2)/3);
-                camera.position.z = 4 + (0.6-4)*p;
-                globe.rotation.x = p*0.2;
-            }
-            if(t > 5){
-                intro.style.opacity = 1-(t-5)/1;
-            }
-            if(t > 6){
-                cleanup();
-                return;
-            }
-            renderer.render(scene,camera);
+            renderer.render(scene, camera);
         }
-        function cleanup(){
+        function cleanup() {
             cancelAnimationFrame(raf);
             intro.classList.add('fade-out');
-            setTimeout(()=>{
+            setTimeout(() => {
                 intro.remove();
                 renderer.dispose();
-            },1000);
+            }, 800);
         }
-        window.addEventListener('resize', ()=>{
-            camera.aspect = window.innerWidth/window.innerHeight;
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
         animate();
-        function disposeThreeJS() {
-            console.log("Cleaning up Three.js resources...");
-            if (requestId) {
-                cancelAnimationFrame(requestId);
-            }
-            scene.traverse(object => {
-                if (!object.isMesh) return;
-                if (object.geometry) {
-                    object.geometry.dispose();
-                }
-                if (object.material) {
-                    if (Array.isArray(object.material)) {
-                        object.material.forEach(material => disposeMaterial(material));
-                    } else {
-                        disposeMaterial(object.material);
-                    }
-                }
-            });
-            if (renderer) {
-                renderer.dispose();
-                renderer.domElement.remove();
-                renderer = null;
-            }
-            scene = null;
-            camera = null;
-            controls = null;
-        }
         function disposeMaterial(material) {
             material.dispose();
             for (const key of Object.keys(material)) {
@@ -240,6 +284,20 @@
                     value.dispose();
                 }
             }
+        }
+        function disposeThreeJS() {
+            cancelAnimationFrame(raf);
+            scene.traverse(object => {
+                if (!object.isMesh) return;
+                if (object.geometry) object.geometry.dispose();
+                if (object.material) {
+                    Array.isArray(object.material)
+                        ? object.material.forEach(disposeMaterial)
+                        : disposeMaterial(object.material);
+                }
+            });
+            renderer.dispose();
+            renderer.domElement.remove();
         }
     })();
 </script>
@@ -325,7 +383,7 @@
                 <div class="control-row">
                     <div class="d-flex align-items-center gap-2">
                         <i class="fa-solid fa-gauge"></i>
-                        <span data-i18n="wind_unit"></span>
+                        <span data-i18n="wind_speed_unit"></span>
                     </div>
                     <button class="btn-unit-toggle" onclick="cycleWindUnit()" id="btn-wind-unit">m/s</button>
                 </div>
@@ -349,21 +407,21 @@
         <div class="panel-section border-0">
             <div class="mini-card-grid-3">
                 <div class="mini-card">
-                    <div class="mini-card-label" data-i18n="max_wind"></div>
+                    <div class="mini-card-label" data-i18n="max_wind_speed"></div>
                     <div class="mini-card-value text-warning" id="stat-max-wind">
                         <span class="stat-max-wind-val">0.0</span>
                         <small class="stat-unit-label">m/s</small>
                     </div>
                 </div>
                 <div class="mini-card">
-                    <div class="mini-card-label" data-i18n="avg_wind"></div>
+                    <div class="mini-card-label" data-i18n="avg_wind_speed"></div>
                     <div class="mini-card-value text-success" id="stat-avg-wind">
                         <span class="stat-avg-wind-val">0.0</span>
                         <small class="stat-unit-label">m/s</small>
                     </div>
                 </div>
                 <div class="mini-card">
-                    <div class="mini-card-label" data-i18n="min_wind"></div>
+                    <div class="mini-card-label" data-i18n="min_wind_speed"></div>
                     <div class="mini-card-value text-info" id="stat-min-wind">
                         <span class="stat-min-wind-val">0.0</span>
                         <small class="stat-unit-label">m/s</small>

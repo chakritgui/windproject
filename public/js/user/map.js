@@ -59,15 +59,15 @@ function _drawCountryLines(rawData) {
 }
 function applyMasterSettings(master) {
     if (!master?.center_lat || !master?.center_lng) return;
-    const lat  = parseFloat(master.center_lat);
+    const lat = parseFloat(master.center_lat);
     const lng  = parseFloat(master.center_lng);
     const zoom = clamp((parseInt(master.zoom_level) || 10) + 1, 1, 13);
     const headerEl = document.querySelector('header');
     const footerEl = document.querySelector('footer, #footer, .footer');
     const headerH = headerEl ? headerEl.getBoundingClientRect().height : 60;
     const footerH = footerEl ? footerEl.getBoundingClientRect().height : 36;
-    const mapH       = window.innerHeight - headerH - footerH;
-    const offsetPx   = (footerH - headerH) / 2; 
+    const mapH = window.innerHeight - headerH - footerH;
+    const offsetPx = (footerH - headerH) / 2; 
     map.setView([lat, lng], zoom);
     map.setMinZoom(zoom);
     if (offsetPx !== 0) {
@@ -229,18 +229,22 @@ async function loadPoles() {
 function _buildPoleIcon(pole) {
     if (pole.type_icon?.trim()) {
         return L.icon({
-            iconUrl:     pole.type_icon,
-            iconSize:    [36, 36],
-            iconAnchor:  [18, 36],
+            iconUrl: pole.type_icon,
+            iconSize: [36, 36],
+            iconAnchor: [18, 36],
             popupAnchor: [0, -36]
         });
     }
     const isEven = pole.type_id % 2 === 0;
     const color  = isEven ? '#5bb8f5' : '#f39c12';
     const color2 = isEven ? '#2d7fc1' : '#d68910';
-    const extra  = !isEven
-        ? `<line x1="3" y1="14" x2="-5" y2="14" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
-           <circle cx="-5" cy="14" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>`
+    const animDuration = pole.wind_speed
+        ? Math.max(0.6, 4 - pole.wind_speed * 0.3).toFixed(2)
+        : '2.5';
+    const animName = `wspin_${pole.id ?? pole.type_id}`;
+    const extra = !isEven
+        ? `<line x1="3" y1="32" x2="-5" y2="32" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+           <circle cx="-5" cy="32" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>`
         : '';
     return L.divIcon({
         className:  '',
@@ -249,13 +253,28 @@ function _buildPoleIcon(pole) {
         html: `
         <svg width="20" height="52" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg"
              style="overflow:visible;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))">
+            <defs>
+                <style>
+                    @keyframes ${animName} {
+                        from { transform: rotate(0deg); }
+                        to   { transform: rotate(360deg); }
+                    }
+                    .wr-${animName} {
+                        transform-origin: 3px 12px;
+                        animation: ${animName} ${animDuration}s linear infinite;
+                    }
+                </style>
+            </defs>
             <circle cx="3" cy="49" r="3.5" fill="rgba(255,255,255,0.85)" stroke="${color}" stroke-width="1.5"/>
-            <line x1="3" y1="46" x2="3" y2="3" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
-            <line x1="3" y1="5"  x2="15" y2="5"  stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
-            <line x1="3" y1="14" x2="11" y2="14" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+            <line x1="3" y1="46" x2="3" y2="15" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+            <g class="wr-${animName}">
+                <path d="M3,12 C2.4,9.5 1.8,5.5 2.7,-3 C2.85,-3.8 3.15,-3.8 3.3,-3 C4.2,5.0 3.9,9.2 3,12Z" fill="white" opacity="0.95"/>
+                <path d="M3,12 C2.4,9.5 1.8,5.5 2.7,-3 C2.85,-3.8 3.15,-3.8 3.3,-3 C4.2,5.0 3.9,9.2 3,12Z" fill="white" opacity="0.95" transform="rotate(120,3,12)"/>
+                <path d="M3,12 C2.4,9.5 1.8,5.5 2.7,-3 C2.85,-3.8 3.15,-3.8 3.3,-3 C4.2,5.0 3.9,9.2 3,12Z" fill="white" opacity="0.95" transform="rotate(240,3,12)"/>
+                <circle cx="3" cy="12" r="2.0" fill="white"/>
+                <circle cx="3" cy="12" r="0.9" fill="rgba(0,0,0,0.25)"/>
+            </g>
             ${extra}
-            <circle cx="15" cy="5"  r="2.2" fill="${color}"  stroke="#ffffff" stroke-width="0.8"/>
-            <circle cx="11" cy="14" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>
         </svg>`
     });
 }
@@ -301,10 +320,10 @@ function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId
     };
 }
 const BASE_OFFSETS = [
-    { dx:  70, dy: -50 }, { dx: -70, dy: -50 },
-    { dx:  70, dy:  40 }, { dx: -70, dy:  40 },
-    { dx:   0, dy: -80 }, { dx: 120, dy:   0 },
-    { dx:-120, dy:   0 }
+    { dx: 70, dy: -50 }, { dx: -70, dy: -50 },
+    { dx: 70, dy:  40 }, { dx: -70, dy: 40 },
+    { dx: 0, dy: -80 }, { dx: 120, dy: 0 },
+    { dx:-120, dy: 0 }
 ];
 const LABEL_W = 70, LABEL_H = 24;
 function getSmartOffset(lat, lng, usedBoxes, map) {
@@ -706,8 +725,8 @@ function createMaskLayer(geoData) {
         }
     });
     return L.polygon([world, ...holes], {
-        color:       'transparent',
-        fillColor:   '#000',
+        color: 'transparent',
+        fillColor: '#000',
         fillOpacity: 0.5,
         interactive: false
     });
@@ -744,16 +763,20 @@ async function loadMenuLevel(level) {
     let html = `<div class="menu-header" data-i18n="${cfg.lang}">${langData[cfg.lang] || cfg.title}</div>`;
     data.forEach(item => {
         const label = item[cfg.label].replace(/\r\n|\n/g, '<br />');
+        let extraInfo = '';
+        if(cfg.title === 'PROJECT') {
+            extraInfo = item.project_status_color ? `<i class="fa-solid fa-circle-dot status-pulse me-2" style="color:${item.project_status_color};margin-right:6px"></i>` : '';
+        }
         if (cfg.isLast) {
             html += `<div class="menu-item station-item" onclick="handleStationClick(${item.poles_lat},${item.poles_lng},${item.poles_id},this)">
-                         <span>${label}</span>
-                         <i class="fa-solid fa-location-dot text-info"></i>
-                     </div>`;
+                <span>${extraInfo}${label}</span>
+                <i class="fa-solid fa-location-dot text-info"></i>
+            </div>`;
         } else {
             html += `<div class="menu-item" onclick="selectItem(${level},${item[cfg.key]},this)">
-                         <span>${label}</span>
-                         <i class="fa-solid fa-chevron-right"></i>
-                     </div>`;
+                <span>${extraInfo}${label}</span>
+                <i class="fa-solid fa-chevron-right"></i>
+            </div>`;
         }
     });
     const panel = $(`#menu-level-${level}`);
@@ -763,8 +786,8 @@ async function loadMenuLevel(level) {
 $(document).on('click', () => $('.menu-panel').fadeOut());
 $('.menu-panel').on('click', e => e.stopPropagation());
 $(document).ready(function () {
-    const $panel   = $('#sideControlPanel');
-    const $fab     = $('#fabToggle');
+    const $panel = $('#sideControlPanel');
+    const $fab = $('#fabToggle');
     const $overlay = $('#panelOverlay');
     const toggleMobileMenu = (forceState = null) => {
         const open = forceState !== null ? forceState : !$panel.hasClass('active');
@@ -781,13 +804,11 @@ $(document).ready(function () {
         }
     });
     let touchStartY = 0;
-    $('.drag-handle')
-        .on('touchstart', e => { touchStartY = e.originalEvent.touches[0].clientY; })
-        .on('touchmove',  e => {
-            if (e.originalEvent.touches[0].clientY - touchStartY > 50 && $panel.hasClass('active')) {
-                toggleMobileMenu(false);
-            }
-        });
+    $('.drag-handle').on('touchstart', e => { touchStartY = e.originalEvent.touches[0].clientY; }).on('touchmove',  e => {
+        if (e.originalEvent.touches[0].clientY - touchStartY > 50 && $panel.hasClass('active')) {
+            toggleMobileMenu(false);
+        }
+    });
     const $expandBtn = $('#toggleExpandBtn');
     const toggleExpand = (force = null) => {
         const expanded = force !== null ? force : !$panel.hasClass('expanded');
@@ -816,17 +837,15 @@ $(document).ready(function () {
     $('header, #ui, #sideControlPanel, #projectCanvas').hide();
     const $panel = $('#area-panel');
     $panel.addClass('collapsed').css('opacity', '0');
-    setTimeout(initMap, 3500);
+    setTimeout(initMap, 4000);
     setTimeout(() => {
-        if (typeof disposeThreeJS === 'function') {
-            disposeThreeJS();
-        }
+        if (typeof disposeThreeJS === 'function') disposeThreeJS();
         $('header, #ui, #sideControlPanel, #projectCanvas').fadeIn(400);
         $panel.show();
         requestAnimationFrame(() => {
             $panel.css({ opacity: '1', transition: 'all 0.6s cubic-bezier(0.34,1.56,0.64,1)' });
             if (!isMobile()) $panel.removeClass('collapsed');
         });
-    }, 5000);
-    setTimeout(hideWindLoading, 6000);
+    }, 7500);
+    setTimeout(hideWindLoading, 8500);
 });
