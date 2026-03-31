@@ -260,30 +260,14 @@ async function openProject(project_id) {
             return `
             <div class="pole-row" onclick="openPoles(${p.poles_id})">
                 <div class="pole-index">
-                    <svg width="20" height="52" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg"
-                         style="overflow:visible;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))">
-                        <defs>
-                            <style>
-                                @keyframes ${animName} {
-                                    from { transform: rotate(0deg); }
-                                    to   { transform: rotate(360deg); }
-                                }
-                                .wr-${animName} {
-                                    transform-origin: 3px 12px;
-                                    animation: ${animName} 2.5s linear infinite;
-                                }
-                            </style>
-                        </defs>
+                    <svg width="20" height="52" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))">
                         <circle cx="3" cy="49" r="3.5" fill="rgba(255,255,255,0.85)" stroke="${color}" stroke-width="1.5"/>
-                        <line x1="3" y1="46" x2="3" y2="15" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
-                        <g class="wr-${animName}" id="rotor-${p.poles_id}">
-                            <path d="M3,12 C2.4,9.5 1.8,5.5 2.7,-3 C2.85,-3.8 3.15,-3.8 3.3,-3 C4.2,5.0 3.9,9.2 3,12Z" fill="white" opacity="0.95"/>
-                            <path d="M3,12 C2.4,9.5 1.8,5.5 2.7,-3 C2.85,-3.8 3.15,-3.8 3.3,-3 C4.2,5.0 3.9,9.2 3,12Z" fill="white" opacity="0.95" transform="rotate(120,3,12)"/>
-                            <path d="M3,12 C2.4,9.5 1.8,5.5 2.7,-3 C2.85,-3.8 3.15,-3.8 3.3,-3 C4.2,5.0 3.9,9.2 3,12Z" fill="white" opacity="0.95" transform="rotate(240,3,12)"/>
-                            <circle cx="3" cy="12" r="2.0" fill="white"/>
-                            <circle cx="3" cy="12" r="0.9" fill="rgba(0,0,0,0.25)"/>
-                        </g>
+                        <line x1="3" y1="46" x2="3" y2="3"  stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+                        <line x1="3" y1="5"  x2="15" y2="5"  stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+                        <line x1="3" y1="14" x2="11" y2="14" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
                         ${extra}
+                        <circle cx="15" cy="5"  r="2.2" fill="${color}"  stroke="#ffffff" stroke-width="0.8"/>
+                        <circle cx="11" cy="14" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>
                     </svg>
                 </div>
                 <div class="pole-info">

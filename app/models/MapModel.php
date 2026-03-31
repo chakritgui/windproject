@@ -36,6 +36,7 @@ class MapModel{
             INNER JOIN wp_poles po ON po.project_id = p.project_id AND po.status = 'online'
             LEFT JOIN wp_project_status s ON s.project_status_id = p.project_status_id
             WHERE p.status = 'active' 
+            GROUP BY p.project_id
             ORDER BY ifnull(p.item_order, p.project_id) ASC";
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
