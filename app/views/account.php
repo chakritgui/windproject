@@ -1,5 +1,5 @@
-<link href="<?=BASE_URL?>/public/css/page.css?v=<?=time();?>" rel="stylesheet">
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/account.css?v=<?=time();?>">
+<link href="<?=asset('public/css/page.css')?>" rel="stylesheet">
+<link href="<?=asset('public/css/account.css')?>" rel="stylesheet">
 <div class="sky-wrap" id="skyWrap"></div>
 <div class="container profile-container">
     <div class="page">
@@ -177,5 +177,5 @@
         </div>
     </div>
 </div>
-<script src="<?=BASE_URL?>/public/js/user/sky.js?v=<?=time();?>"></script>
-<script src="<?=BASE_URL?>/public/js/account.js?v=<?=time();?>" defer></script>
+<script src="<?=asset('public/js/user/sky.js')?>"></script>
+<script src="<?=asset('public/js/account.js')?>" defer></script>

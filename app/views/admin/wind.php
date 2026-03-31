@@ -85,4 +85,4 @@
         </table>
     </div>
 </div>
-<script src="<?=BASE_URL?>/public/js/admin/wind.js?v=<?=time()?>"></script>
+<script src="<?=asset('public/js/admin/wind.js')?>" defer></script>

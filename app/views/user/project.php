@@ -1,9 +1,9 @@
 <script>
     const initialFolderPath = <?= json_encode($folderIds ?? []) ?>;
 </script>
-<link href="<?=BASE_URL?>/public/css/page.css?v=<?=time();?>" rel="stylesheet">
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/news.css?v=<?=time();?>">
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/project.css?v=<?=time();?>">
+<link href="<?=asset('public/css/page.css')?>" rel="stylesheet">
+<link href="<?=asset('public/css/news.css')?>" rel="stylesheet">
+<link href="<?=asset('public/css/project.css')?>" rel="stylesheet">
 <div class="sky-wrap" id="skyWrap"></div>
 <div class="container">  
     <div class="page">
@@ -67,5 +67,5 @@
     </div>
 </div>
 <div id="scrollEnd" style="height: 50px;"></div>
-<script src="<?=BASE_URL?>/public/js/user/sky.js?v=<?=time();?>"></script>
-<script src="<?=BASE_URL?>/public/js/user/project.js?v=<?=time();?>" defer></script>
+<script src="<?=asset('public/js/user/sky.js')?>"></script>
+<script src="<?=asset('public/js/user/project.js')?>" defer></script>

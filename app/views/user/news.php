@@ -1,5 +1,5 @@
-<link href="<?=BASE_URL?>/public/css/page.css?v=<?=time();?>" rel="stylesheet">
-<link href="<?=BASE_URL?>/public/css/news.css?v=<?=time();?>" rel="stylesheet">
+<link href="<?=asset('public/css/page.css')?>" rel="stylesheet">
+<link href="<?=asset('public/css/news.css')?>" rel="stylesheet">
 <div class="sky-wrap" id="skyWrap"></div>
 <div class="container">  
     <div class="page">
@@ -52,5 +52,5 @@
         <div id="scrollEnd"></div>
     </div>
 </div>
-<script src="<?=BASE_URL?>/public/js/user/sky.js?v=<?=time();?>"></script>
-<script src="<?=BASE_URL?>/public/js/user/news.js?v=<?=time();?>"></script>
+<script src="<?=asset('public/js/user/sky.js')?>"></script>
+<script src="<?=asset('public/js/user/news.js')?>" defer></script>

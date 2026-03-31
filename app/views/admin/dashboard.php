@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/admin/dashboard.css?v=<?php echo time(); ?>">
+<link href="<?=asset('public/css/admin/dashboard.css')?>" rel="stylesheet">
 <div class="container-fluid mt-90 mb-5">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm" style="background: #ffffff; border-left: 4px solid #0d6efd;">
         <div class="mb-2 mb-md-0">
@@ -236,4 +236,4 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="<?=BASE_URL?>/public/js/admin/dashboard.js?v=<?=time()?>"></script>
+<script src="<?=asset('public/js/admin/dashboard.js')?>" defer></script>

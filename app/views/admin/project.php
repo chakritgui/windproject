@@ -6,7 +6,7 @@
     };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/admin/project.css?v=<?php echo time(); ?>">
+<link href="<?=asset('public/css/admin/project.css')?>" rel="stylesheet">
 <div class="container-fluid mt-90 mb-5">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm"
         style="background:#fff;border-left:4px solid #0d6efd;">
@@ -106,7 +106,7 @@
     </div>
     <div id="scrollEnd"></div>
 </div>
-<script src="<?=BASE_URL?>/public/js/admin/project.js?v=<?=time()?>"></script>
+<script src="<?=asset('public/js/admin/project.js')?>" defer></script>
 <style>
     #listViewBody, #listViewBody * {
         -webkit-user-select: none; 

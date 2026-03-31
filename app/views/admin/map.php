@@ -1,9 +1,9 @@
 <link rel="stylesheet" href="<?=BASE_URL?>/vendor/leaflet/leaflet.css">
 <link rel="stylesheet" href="<?=BASE_URL?>/vendor/leaflet/leaflet.draw.css">
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/admin/map.css?v=<?=time();?>">
+<link href="<?=asset('public/css/admin/map.css')?>" rel="stylesheet">
 <script src="<?=BASE_URL?>/vendor/leaflet/leaflet.js"></script>
 <script src="<?=BASE_URL?>/vendor/leaflet/leaflet.draw.js"></script>
-<script src="<?=BASE_URL?>/public/js/admin/map.js?v=<?=time();?>"></script>
+<script src="<?=asset('public/js/admin/map.js')?>" defer></script>
 <div class="container-fluid mt-90 mb-3">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm" style="background: #ffffff; border-left: 4px solid #0d6efd;">
         <div class="mb-2 mb-md-0">

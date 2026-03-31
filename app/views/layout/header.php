@@ -33,8 +33,8 @@
 <link rel="stylesheet" href="<?=BASE_URL?>/vendor/animate.css/animate.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/summernote@0.8.20/dist/summernote-bs5.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link href="<?=BASE_URL?>/public/css/style.css?v=<?= time(); ?>" rel="stylesheet">
-<link href="<?=BASE_URL?>/public/css/notification.css?v=<?= time(); ?>" rel="stylesheet">
+<link href="<?=asset('public/css/style.css')?>" rel="stylesheet">
+<link href="<?=asset('public/css/notification.css')?>" rel="stylesheet">
 <?php if (file_exists($manifestFile)) { ?>
     <link rel="manifest" href="/public/manifest.json?v=1.0.0">
     <link rel="apple-touch-icon" href="/public/icons/icon-ios.png">
@@ -78,14 +78,14 @@
 </head>
 <body>
 <script src="<?=BASE_URL?>/vendor/sweetalert2/dist/sweetalert2.all.min.js"></script>
-<script src="<?=BASE_URL?>/public/js/app.js?v=<?=time();?>"></script>
-<script src="<?=BASE_URL?>/public/js/helper.js?v=<?=time();?>" defer></script>
-<script src="<?=BASE_URL?>/public/js/content.js?v=<?=time();?>" defer></script>
-<script src="<?=BASE_URL?>/public/js/alert.js?v=<?=time();?>" defer></script>
-<script src="<?=BASE_URL?>/public/js/object.js?v=<?=time();?>" defer></script>
-<script src="<?=BASE_URL?>/public/js/notification.js?v=<?=time();?>" defer></script>
-<script src="<?=BASE_URL?>/public/js/menu.js?v=<?=time();?>" defer></script>
-<script src="<?=BASE_URL?>/public/js/view.js?v=<?=time();?>" defer></script>
+<script src="<?=asset('public/js/app.js')?>"></script>
+<script src="<?=asset('public/js/helper.js')?>" defer></script>
+<script src="<?=asset('public/js/content.js')?>" defer></script>
+<script src="<?=asset('public/js/alert.js')?>" defer></script>
+<script src="<?=asset('public/js/object.js')?>" defer></script>
+<script src="<?=asset('public/js/notification.js')?>" defer></script>
+<script src="<?=asset('public/js/menu.js')?>" defer></script>
+<script src="<?=asset('public/js/view.js')?>" defer></script>
 <button type="button" id="btn-back-to-top" class="btn btn-sm btn-back-to-top rounded-circle shadow-lg transition-all" title="Back to Top">
     <i class="fa-solid fa-angle-up"></i>
 </button>

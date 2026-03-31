@@ -127,4 +127,4 @@
         </div>
     </div>
 </div>
-<script src="<?=BASE_URL?>/public/js/admin/document.js?v=<?=time()?>"></script>
+<script src="<?=asset('public/js/admin/document.js')?>" defer></script>

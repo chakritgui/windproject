@@ -1,5 +1,5 @@
-<link href="<?=BASE_URL?>/public/css/page.css?v=<?=time();?>" rel="stylesheet">
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/pole.css?v=<?=time();?>">
+<link href="<?=asset('public/css/page.css')?>" rel="stylesheet">
+<link href="<?=asset('public/css/pole.css')?>" rel="stylesheet">
 <input type="hidden" id="poles_id"  value="<?= htmlspecialchars($id ?? '', ENT_QUOTES, 'UTF-8') ?>">
 <input type="hidden" id="start" value="<?= htmlspecialchars($startDate ?? '', ENT_QUOTES, 'UTF-8') ?>">
 <input type="hidden" id="end" value="<?= htmlspecialchars($endDate ?? '', ENT_QUOTES, 'UTF-8') ?>">
@@ -169,6 +169,6 @@
     </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="<?=BASE_URL?>/public/js/user/sky.js?v=<?=time();?>"></script>
-<script src="<?=BASE_URL?>/public/js/user/pole.js?v=<?=time();?>" defer></script>
-<script src="<?=BASE_URL?>/public/js/user/report.js?v=<?=time();?>" defer></script>
+<script src="<?=asset('public/js/user/sky.js')?>"></script>
+<script src="<?=asset('public/js/user/pole.js')?>" defer></script>
+<script src="<?=asset('public/js/user/report.js')?>" defer></script>

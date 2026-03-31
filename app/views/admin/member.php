@@ -274,4 +274,4 @@
         </div>
     </div>
 </div>
-<script src="<?=BASE_URL?>/public/js/admin/member.js?v=<?=time()?>"></script>
+<script src="<?=asset('public/js/admin/member.js')?>" defer></script>

@@ -260,16 +260,16 @@ function _buildPoleIcon(pole) {
     });
 }
 function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId, windSpeed = 0 }) {
-    const svgW = Math.abs(labelDx) + 90;
-    const svgH = Math.abs(labelDy) + 30;
+    const svgW = Math.abs(labelDx) + 100;
+    const svgH = Math.abs(labelDy) + 40;
     const tipX = anchorX + labelDx;
     const tipY = anchorY + labelDy;
-    const BOX_W = 75, BOX_H = 20;
-    const boxY    = tipY - BOX_H / 2;
-    const boxX    = labelDx >= 0 ? tipX : tipX - BOX_W;
-    const arrowCX = boxX + 12;
+    const BOX_W = 75, BOX_H = 22;
+    const boxY = tipY - BOX_H / 2;
+    const boxX = labelDx >= 0 ? tipX : tipX - BOX_W;
+    const arrowCX = boxX + 14;
     const arrowCY = tipY;
-    const textX   = boxX + 22;
+    const textX   = boxX + 26;
     const activeColor = getWindColor(windSpeed);
     const unit = getCurrentUnit(); 
     const displayValue = (windSpeed * unit.factor).toFixed(1);
@@ -277,22 +277,25 @@ function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId
         svgW, svgH,
         html: `
         <svg width="${svgW}" height="${svgH}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;pointer-events:none;display:block">
-            <line x1="${anchorX}" y1="${anchorY}" x2="${tipX}" y2="${tipY}" stroke="rgba(255,255,255,0.5)" stroke-width="1" stroke-dasharray="4 3"/>
-            <circle cx="${anchorX}" cy="${anchorY}" r="3" fill="rgba(255,255,255,0.7)"/>
-            <rect x="${boxX}" y="${boxY}" width="${BOX_W}" height="${BOX_H}" rx="10" fill="#1a2535" fill-opacity="0.92"/>
-            <g id="${arrowId}" data-cx="${arrowCX}" data-cy="${arrowCY}" transform="rotate(0, ${arrowCX}, ${arrowCY})">
-                <text x="${arrowCX}" y="${arrowCY}" font-size="9" fill="${activeColor}" text-anchor="middle" dominant-baseline="central">➤</text>
+            <line x1="${anchorX}" y1="${anchorY}" x2="${tipX}" y2="${tipY}" stroke="rgba(255,255,255,0.4)" stroke-width="1.2" stroke-dasharray="4 3"/>
+            <circle cx="${anchorX}" cy="${anchorY}" r="3.5" fill="#fff" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
+            <defs>
+                <linearGradient id="labelGradient-${windId}" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#24272b"/>
+                    <stop offset="100%" stop-color="#121417"/>
+                </linearGradient>
+                <filter id="shadow-${windId}" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#000" flood-opacity="0.5"/>
+                </filter>
+            </defs>
+            <rect x="${boxX}" y="${boxY}" width="${BOX_W}" height="${BOX_H}" rx="11" fill="url(#labelGradient-${windId})" fill-opacity="0.98" stroke="rgba(255,255,255,0.25)" stroke-width="0.8" filter="url(#shadow-${windId})"/>
+            <g id="${arrowId}" 
+               transform="rotate(0, ${arrowCX}, ${arrowCY})"
+               style="filter: drop-shadow(0px 0px 1px rgba(0,0,0,0.5));">
+                <text x="${arrowCX}" y="${arrowCY}" font-size="11" fill="${activeColor}" text-anchor="middle" dominant-baseline="central">➤</text>
             </g>
-            <text id="${windId}" 
-                  data-raw="${windSpeed}" 
-                  x="${textX}" 
-                  y="${arrowCY}" 
-                  font-size="9" 
-                  font-weight="700" 
-                  fill="${activeColor}" 
-                  text-anchor="start" 
-                  dominant-baseline="central">
-                ${displayValue} ${unit.label}
+            <text id="${windId}" data-raw="${windSpeed}" x="${textX}" y="${arrowCY}" font-family="sans-serif" font-size="9" font-weight="700"  fill="#FFFFFF" text-anchor="start" dominant-baseline="central" style="paint-order: stroke; stroke: rgba(0,0,0,0.3); stroke-width: 1px;">
+                ${displayValue} <tspan font-weight="400" font-size="9" fill="rgba(255,255,255,0.7)">${unit.label}</tspan>
             </text>
         </svg>`
     };

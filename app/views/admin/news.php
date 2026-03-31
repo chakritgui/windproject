@@ -92,4 +92,4 @@
         </table>
     </div>
 </div>
-<script src="<?=BASE_URL?>/public/js/admin/news.js?v=<?=time()?>"></script>
+<script src="<?=asset('public/js/admin/news.js')?>" defer></script>

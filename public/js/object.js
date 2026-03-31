@@ -1,46 +1,57 @@
 function initSelect2Remote(selector, apiUrl, extraData = {}) {
-    $(selector).select2({
-        theme: 'bootstrap-5',
-        width: '100%',
-        allowClear: true,
-        ajax: {
-            url: apiUrl,
-            type: 'POST',
-            dataType: 'json',
-            delay: 250,
-            data: function (params) {
-                return $.extend({
-                    searchTerm: params.term,
-                    page: params.page || 1,
-                    limit: 10
-                }, extraData);
-            },
-            processResults: function (res, params) {
-                params.page = params.page || 1;
-                const data = res.data || res.status || {};
-                const items = (data.items || []).map(item => {
+    $(selector).each(function () {
+        const $this = $(this);
+        const $modal = $this.closest('.modal');
+        const config = {
+            theme: 'bootstrap-5',
+            width: '100%',
+            allowClear: true,
+            ajax: {
+                url: apiUrl,
+                type: 'POST',
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return $.extend({
+                        searchTerm: params.term,
+                        page: params.page || 1,
+                        limit: 10
+                    }, extraData);
+                },
+                processResults: function (res, params) {
+                    params.page = params.page || 1;
+                    const data = res.data || res.status || {};
+                    const items = (data.items || []).map(item => {
+                        return {
+                            ...item,
+                            text: langData[item.id] || item.text
+                        };
+                    });
+                    const total = parseInt(data.total_count || 0);
                     return {
-                        ...item,
-                        text: langData[item.id] || item.text
+                        results: items,
+                        pagination: {
+                            more: (params.page * 10) < total
+                        }
                     };
-                });
-                const total = parseInt(data.total_count || 0);
-                return {
-                    results: items,
-                    pagination: {
-                        more: (params.page * 10) < total
-                    }
-                };
+                },
+                cache: true
             },
-            cache: true
-        },
-        language: {
-            searching: () => langData['searching'] || "Searching...",
-            noResults: () => langData['no_results'] || "No results found",
-            inputTooShort: () => langData['input_too_short'] || "Please enter more characters"
-        },
-        placeholder: langData['select_option'] || 'Select an option',
-        minimumInputLength: 0
+            language: {
+                searching: () => langData['searching'] || "Searching...",
+                noResults: () => langData['no_results'] || "No results found",
+                inputTooShort: () => langData['input_too_short'] || "Please enter more characters"
+            },
+            placeholder: langData['select_option'] || 'Select an option',
+            minimumInputLength: 0
+        };
+        if ($modal.length) {
+            config.dropdownParent = $modal;
+        }
+        if ($this.hasClass("select2-hidden-accessible")) {
+            $this.select2('destroy');
+        }
+        $this.select2(config);
     });
 }
 function initDateRangePicker(selector, callback) {

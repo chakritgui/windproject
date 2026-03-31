@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/admin/setting.css?v=<?php echo time(); ?>">
+<link href="<?=asset('public/css/admin/setting.css')?>" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <div class="container-fluid mt-90 mb-5">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 p-3 rounded-3 shadow-sm" style="background: #ffffff; border-left: 4px solid #0d6efd;">
@@ -628,5 +628,5 @@
         </div>
     </div>
 </div>
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/setting.css?v=<?=time();?>">
-<script src="<?=BASE_URL?>/public/js/admin/setting.js?v=<?=time()?>"></script>
+<link href="<?=asset('public/css/admin/setting.css')?>" rel="stylesheet">
+<script src="<?=asset('public/js/admin/setting.js')?>" defer></script>

@@ -319,12 +319,12 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-<script src="<?=BASE_URL?>/public/js/admin/master.js?v=<?=time();?>"></script>
-<script src="<?=BASE_URL?>/public/js/admin/master/contracts.js?v=<?=time();?>"></script>
-<script src="<?=BASE_URL?>/public/js/admin/master/group.js?v=<?=time();?>"></script>
-<script src="<?=BASE_URL?>/public/js/admin/master/projects.js?v=<?=time();?>"></script>
-<script src="<?=BASE_URL?>/public/js/admin/master/types.js?v=<?=time();?>"></script>
-<script src="<?=BASE_URL?>/public/js/admin/master/installation.js?v=<?=time();?>"></script>
-<script src="<?=BASE_URL?>/public/js/admin/master/poles.js?v=<?=time();?>"></script>
-<script src="<?=BASE_URL?>/public/js/admin/master/project-status.js?v=<?=time();?>"></script>
-<script src="<?=BASE_URL?>/public/js/admin/master/level.js?v=<?=time();?>"></script>
+<script src="<?=asset('public/js/admin/master.js')?>" defer></script>
+<script src="<?=asset('public/js/admin/master/contracts.js')?>" defer></script>
+<script src="<?=asset('public/js/admin/master/group.js')?>" defer></script>
+<script src="<?=asset('public/js/admin/master/projects.js')?>" defer></script>
+<script src="<?=asset('public/js/admin/master/types.js')?>" defer></script>
+<script src="<?=asset('public/js/admin/master/installation.js')?>" defer></script>
+<script src="<?=asset('public/js/admin/master/poles.js')?>" defer></script>
+<script src="<?=asset('public/js/admin/master/project-status.js')?>" defer></script>
+<script src="<?=asset('public/js/admin/master/level.js')?>" defer></script>

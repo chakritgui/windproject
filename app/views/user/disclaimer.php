@@ -10,8 +10,8 @@
         exit;
     }
 ?>
-<link href="<?=BASE_URL?>/public/css/page.css?v=<?=time();?>" rel="stylesheet">
-<link href="<?=BASE_URL?>/public/css/download.css?v=<?=time();?>" rel="stylesheet">
+<link href="<?=asset('public/css/page.css')?>" rel="stylesheet">
+<link href="<?=asset('public/css/download.css')?>" rel="stylesheet">
 <div class="sky-wrap" id="skyWrap"></div>
 <div class="container">  
     <div class="page">

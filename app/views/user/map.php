@@ -1,6 +1,6 @@
 <link rel="stylesheet" href="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.css">
 <script src="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.js"></script>
-<link href="<?=BASE_URL?>/public/css/page.css?v=1.0.1" rel="stylesheet">
+<link href="<?=asset('public/css/page.css')?>" rel="stylesheet">
 <script>
     let windyAPI, map, poleLayerGroup;
     let DEFAULT_LEVEL = '100m';
@@ -41,8 +41,8 @@
                 DEFAULT_LEVEL = config.DEFAULT_LEVEL || '100m';
                 await loadScript("https://api.windy.com/assets/map-forecast/libBoot.js");
                 await Promise.all([
-                    loadScript(`<?=BASE_URL?>/public/js/user/map.js?v=1.0.1`),
-                    loadScript(`<?=BASE_URL?>/public/js/user/report.js?v=1.0.1`)
+                    loadScript(`<?=asset('public/js/user/map.js')?>`),
+                    loadScript(`<?=asset('public/js/user/report.js')?>`)
                 ]); 
             }
         } catch (err) {
@@ -50,10 +50,10 @@
         }
     })();
 </script>
-<script src="<?=BASE_URL?>/public/js/user/mapConfig.js?v=1.0.1"></script>
-<script src="<?=BASE_URL?>/public/js/user/mapHelper.js?v=1.0.1"></script>
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/map.css?v=1.0.1">
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/pole.css?v=1.0.1">
+<script src="<?=asset('public/js/user/mapConfig.js')?>"></script>
+<script src="<?=asset('public/js/user/mapHelper.js')?>"></script>
+<link rel="stylesheet" href="<?=asset('public/css/map.css')?>">
+<link rel="stylesheet" href="<?=asset('public/css/pole.css')?>">
 <div id="globe-intro">
     <canvas id="globe-canvas"></canvas>
     <div id="globe-intro-text" data-i18n="initializing"></div>
@@ -378,4 +378,4 @@
 </button>
 <div class="panel-overlay" id="panelOverlay"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="<?=BASE_URL?>/public/js/user/pole.js?v=1.0.1" defer></script>
+<script src="<?=asset('public/js/user/pole.js')?>" defer></script>

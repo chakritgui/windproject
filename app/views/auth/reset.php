@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="<?=BASE_URL?>/public/css/auth.css?v=<?=time();?>">
+<link href="<?=asset('public/css/auth.css')?>" rel="stylesheet">
 <img class="auth-bg-img-pc d-none d-md-block" alt="Background">
 <img class="auth-bg-img-mobile d-block d-md-none" alt="Background Mobile">
 <div class="sky-wrap" id="skyWrap"></div>
@@ -45,6 +45,6 @@
         </div>
     </div>
 </div>
-<script src="<?=BASE_URL?>/public/js/user/sky.js?v=<?=time();?>"></script>
-<script src="<?=BASE_URL?>/public/js/auth/auth.js?v=<?=time()?>"></script>
-<script src="<?=BASE_URL?>/public/js/auth/reset.js?v=<?=time()?>"></script>
+<script src="<?=asset('public/js/user/sky.js')?>"></script>
+<script src="<?=asset('public/js/auth/auth.js')?>" defer></script>
+<script src="<?=asset('public/js/auth/reset.js')?>" defer></script>
