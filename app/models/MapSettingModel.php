@@ -25,7 +25,7 @@ class MapSettingModel {
             $this->db->prepare($sqlClear)->execute([$mapId]);
             if (!empty($payload['polygons'])) {
                 $stmtFind = $this->db->prepare("SELECT project_id FROM wp_project WHERE project_name = ? LIMIT 1");
-                $stmtInsertProj = $this->db->prepare("INSERT INTO wp_project (project_name, created_at) VALUES (?, NOW())");
+                $stmtInsertProj = $this->db->prepare("INSERT INTO wp_project (project_name, created_at, updated_at) VALUES (?, NOW(), NOW())");
                 $sqlPoly = "INSERT INTO wp_map_polygons (map_id, project_id, area_name, custom_style, geo_data, status, created_at, updated_at) 
                             VALUES (:map_id, :project_id, :name, :style, :geo, 'active', NOW(), NOW())
                             ON DUPLICATE KEY UPDATE 
