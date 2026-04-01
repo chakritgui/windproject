@@ -510,12 +510,16 @@ function toggleEquipment(isOn) {
             if (p.marker) p.marker.setOpacity(1);
             if (p.labelMarker) p.labelMarker.setOpacity(windOn ? 1 : 0);
         });
+        _applyWindState(isOn);
+        $('#toggle-wind-values').prop('checked', true);
+        $('#wind-status-icon').addClass('spinning');
     } else {
         Object.values(poleMarkers).forEach(p => {
             if (p.marker) p.marker.setOpacity(0);
             if (p.labelMarker) p.labelMarker.setOpacity(0);
         });
         $('#toggle-wind-values').prop('checked', false);
+        $('#wind-status-icon').removeClass('spinning');
         windOn = false;
     }
 }
