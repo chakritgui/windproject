@@ -673,15 +673,6 @@ function toggleSatellite(isOn) {
         if (allHoles.length > 0) toggleHoles(true, allHoles);
     }
 }
-function _calcIconSize(zoom) {
-    const MIN_ZOOM = 8;
-    const MAX_ZOOM = maxZoomLevel;
-    const MIN_SIZE = 20;
-    const MAX_SIZE = 96;
-    const t    = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
-    const size = Math.round(MIN_SIZE + (MAX_SIZE - MIN_SIZE) * t);
-    return size;
-}
 // function _buildTurbineIcon(turbine, size = 24) {
 //     if (turbine.icon?.trim()) {
 //         return L.icon({
