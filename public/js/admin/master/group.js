@@ -12,7 +12,7 @@ function initGroupTable() {
     tb_group = $('#tb_group').DataTable({
         processing: true,
         serverSide: true,
-        order: [[1, 'desc']],
+        order: [[0, 'asc']],
         ajax: { 
             url: `${BASE_URL}/api/group.list`, 
             type: "POST",
@@ -20,7 +20,14 @@ function initGroupTable() {
                 d.status = $('#filter_group_status').val();
             }
         },
-        columns: [{ 
+        columns: [{
+            data: "item_order", 
+            orderable: false,
+            searchable: false,
+            render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+            }
+        },{ 
             data: "project_group_name",
             orderable: true,
             render: function (data, type, row) {
@@ -84,6 +91,14 @@ function initGroupTable() {
                 let btn = `
                     <button class="btn btn-primary btn-sm manage-group ms-2" data-id="">
                         <i class="fa-solid fa-plus"></i> <span>${langData['group'] || 'group'}</span>
+                    </button>
+                `;
+                $filter.append(btn);
+            }
+            if ($filter.find('.item-order').length === 0) {
+                let btn = `
+                    <button class="btn btn-warning btn-sm item-order ms-2" data-type="group">
+                        <i class="fa-solid fa-sort"></i> <span>${langData['sort'] || 'Sort'}</span>
                     </button>
                 `;
                 $filter.append(btn);

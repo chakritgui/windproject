@@ -12,7 +12,7 @@ function initContractsTable() {
     tb_contract = $('#tb_contract').DataTable({
         processing: true,
         serverSide: true,
-        order: [[5, 'desc']],
+        order: [[0, 'asc']],
         ajax: { 
             url: `${BASE_URL}/api/contracts.list`, 
             type: "POST",
@@ -20,7 +20,14 @@ function initContractsTable() {
                 d.status = $('#filter_status').val();
             }
         },
-        columns: [{ 
+        columns: [{
+            data: "item_order", 
+            orderable: false,
+            searchable: false,
+            render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+            }
+        },{ 
             data: "contract_no",
             orderable: true,
         },{ 
@@ -105,6 +112,14 @@ function initContractsTable() {
                 let btn = `
                     <button class="btn btn-primary btn-sm manage-contract ms-2" data-id="">
                         <i class="fa-solid fa-plus"></i> <span>${langData['contract'] || 'Contract'}</span>
+                    </button>
+                `;
+                $filter.append(btn);
+            }
+            if ($filter.find('.item-order').length === 0) {
+                let btn = `
+                    <button class="btn btn-warning btn-sm item-order ms-2" data-type="contract">
+                        <i class="fa-solid fa-sort"></i> <span>${langData['sort'] || 'Sort'}</span>
                     </button>
                 `;
                 $filter.append(btn);

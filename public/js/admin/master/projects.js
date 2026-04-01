@@ -12,7 +12,7 @@ function initProjectsTable() {
     tb_project = $('#tb_project').DataTable({
         processing: true,
         serverSide: true,
-        order: [[7, 'desc']],
+        order: [[0, 'asc']],
         ajax: { 
             url: `${BASE_URL}/api/projects.list`, 
             type: "POST",
@@ -23,7 +23,14 @@ function initProjectsTable() {
                 d.group = $('#filter_group').val();
             }
         },
-        columns: [{ 
+        columns: [{
+            data: "item_order", 
+            orderable: false,
+            searchable: false,
+            render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+            }
+        },{ 
             data: "project_code",
             orderable: true,
         },{ 
@@ -140,9 +147,17 @@ function initProjectsTable() {
                     self.search(input.val()).draw();
                 }
             });
-            if ($filter.find('.manage-contract[data-id=""]').length === 0) {
+            if ($filter.find('.manage-project[data-id=""]').length === 0) {
                 let btn = `
                     <button class="btn btn-primary btn-sm manage-project" data-id=""><i class="fa-solid fa-plus"></i> <span>${langData['project'] || 'Project'}</span></button>
+                `;
+                $filter.append(btn);
+            }
+            if ($filter.find('.item-order').length === 0) {
+                let btn = `
+                    <button class="btn btn-warning btn-sm item-order ms-2" data-type="project">
+                        <i class="fa-solid fa-sort"></i> <span>${langData['sort'] || 'Sort'}</span>
+                    </button>
                 `;
                 $filter.append(btn);
             }

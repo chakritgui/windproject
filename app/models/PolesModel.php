@@ -5,7 +5,7 @@ class PolesModel {
         $this->db = Database::getInstance()->pdo;
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 6, $orderDir = 'desc') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 0, $orderDir = 'asc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*)
             FROM wp_poles p
@@ -23,14 +23,15 @@ class PolesModel {
         $order = 'p.created_at';
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
-            0 => "p.poles_code",
-            1 => "t.type_name",
-            2 => "pj.project_name",
-            3 => "p.poles_lat",
-            4 => "p.poles_lng",
-            5 => "i.installations_name",
-            6 => "p.created_at",
-            7 => "p.status"
+            0 => "p.item_order",
+            1 => "p.poles_code",
+            2 => "t.type_name",
+            3 => "pj.project_name",
+            4 => "p.poles_lat",
+            5 => "p.poles_lng",
+            6 => "i.installations_name",
+            7 => "p.created_at",
+            8 => "p.status"
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -53,7 +54,8 @@ class PolesModel {
                     iLo.status as lo_status,
                     iTh.status as th_status,
                     p.created_at,
-                    p.poles_source
+                    p.poles_source,
+                    p.item_order
                 FROM wp_poles p
                 LEFT JOIN wp_project pj ON pj.project_id = p.project_id
                 LEFT JOIN wp_type t ON t.type_id = p.type_id

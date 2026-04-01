@@ -12,7 +12,7 @@ function initTypesTable() {
     tb_type = $('#tb_type').DataTable({
         processing: true,
         serverSide: true,
-        order: [[3, 'desc']],
+        order: [[0, 'asc']],
         ajax: { 
             url: `${BASE_URL}/api/types.list`, 
             type: "POST",
@@ -20,7 +20,14 @@ function initTypesTable() {
                 d.status = $('#filter_type_status').val();
             }
         },
-        columns: [{ 
+        columns: [{
+            data: "item_order", 
+            orderable: false,
+            searchable: false,
+            render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+            }
+        },{ 
             data: "type_icon",
             orderable: false,
             searchable: false,
@@ -101,10 +108,18 @@ function initTypesTable() {
                     self.search(input.val()).draw();
                 }
             });
-            if ($filter.find('.manage-contract[data-id=""]').length === 0) {
+            if ($filter.find('.manage-type[data-id=""]').length === 0) {
                 let btn = `
                     <button class="btn btn-primary btn-sm manage-type" data-id="">
                         <i class="fa-solid fa-plus"></i> <span>${langData['pole_types'] || 'Wind Measurement Equipment'}</span>
+                    </button>
+                `;
+                $filter.append(btn);
+            }
+            if ($filter.find('.item-order').length === 0) {
+                let btn = `
+                    <button class="btn btn-warning btn-sm item-order ms-2" data-type="pole_types">
+                        <i class="fa-solid fa-sort"></i> <span>${langData['sort'] || 'Sort'}</span>
                     </button>
                 `;
                 $filter.append(btn);

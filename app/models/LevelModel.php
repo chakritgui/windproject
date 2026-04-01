@@ -4,7 +4,7 @@ class LevelModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 3, $orderDir = 'desc'){
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 0, $orderDir = 'asc'){
         list($where, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(DISTINCT h.height_id) FROM wp_height h LEFT JOIN wp_height_levels l ON l.height_id = h.height_id  AND l.status <> 'deleted' {$where}";
         $stmtTotal = $this->db->prepare($sqlTotal);
@@ -14,10 +14,11 @@ class LevelModel {
         $stmtTotal->execute();
         $total = (int)$stmtTotal->fetchColumn();
         $orderMap = [
-            0 => "h.height_name",
-            2 => "h.height_limit",
-            3 => "h.created_at",
-            4 => "h.status"
+            0 => "h.item_order",
+            1 => "h.height_name",
+            3 => "h.height_limit",
+            4 => "h.created_at",
+            5 => "h.status"
         ];
         $order = $orderMap[$colIndex] ?? 'h.created_at';
         $orderDir = strtolower($orderDir) === 'asc' ? 'ASC' : 'DESC';
@@ -27,7 +28,8 @@ class LevelModel {
                 h.height_limit,
                 h.created_at,
                 GROUP_CONCAT(l.height_levels ORDER BY IFNULL(l.height_order, l.levels_id) ASC) AS height_levels,
-                h.status
+                h.status,
+                h.item_order
             FROM wp_height h
             LEFT JOIN wp_height_levels l ON l.height_id = h.height_id AND l.status <> 'deleted'
             {$where}

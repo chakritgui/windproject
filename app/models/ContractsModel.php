@@ -4,7 +4,7 @@ class ContractsModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 5, $orderDir = 'desc') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 0, $orderDir = 'asc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*) FROM wp_contract {$where}";
         $stmt = $this->db->prepare($sqlTotal);
@@ -13,13 +13,14 @@ class ContractsModel {
         $order = 'created_at';
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
-            0 => "contract_no",
-            1 => "contract_name",
-            2 => "contract_name_display",
-            3 => "contract_start",
-            4 => "contract_end",
-            5 => "created_at",
-            6 => "status"
+            0 => "item_order",
+            1 => "contract_no",
+            2 => "contract_name",
+            3 => "contract_name_display",
+            4 => "contract_start",
+            5 => "contract_end",
+            6 => "created_at",
+            7 => "status"
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -32,7 +33,8 @@ class ContractsModel {
                 contract_start, 
                 contract_end, 
                 status,
-                created_at
+                created_at,
+                item_order
             FROM wp_contract
             {$where}
             ORDER BY {$order} {$orderDir}

@@ -4,7 +4,7 @@ class TypesModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 3, $orderDir = 'desc') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 0, $orderDir = 'asc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*) FROM wp_type {$where}";
         $stmt = $this->db->prepare($sqlTotal);
@@ -13,10 +13,11 @@ class TypesModel {
         $order = 'created_at';
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
-            1 => "type_name",
-            2 => "type_name_display",
-            3 => "created_at",
-            4 => "status"
+            0 => "item_order",
+            2 => "type_name",
+            3 => "type_name_display",
+            4 => "created_at",
+            5 => "status"
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -27,7 +28,8 @@ class TypesModel {
                 type_name_display,
                 type_icon,
                 status,
-                created_at
+                created_at,
+                item_order
             FROM wp_type
             {$where}
             ORDER BY {$order} {$orderDir}

@@ -4,7 +4,7 @@ class InstallationsModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 3, $orderDir = 'desc') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 0, $orderDir = 'asc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*) FROM wp_installations i {$where}";
         $stmt = $this->db->prepare($sqlTotal);
@@ -13,12 +13,13 @@ class InstallationsModel {
         $order = 'i.created_at';
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
-            0 => "p.project_name",
-            1 => "t.type_name",
-            2 => "i.installations_name",
-            3 => "i.installations_name_display",
-            4 => "i.created_at",
-            5 => "i.status",
+            0 => "i.item_order",
+            1 => "p.project_name",
+            2 => "t.type_name",
+            3 => "i.installations_name",
+            4 => "i.installations_name_display",
+            5 => "i.created_at",
+            6 => "i.status",
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -30,7 +31,8 @@ class InstallationsModel {
                 i.status,
                 p.project_name,
                 t.type_name,
-                i.created_at
+                i.created_at,
+                i.item_order
             FROM wp_installations i
             LEFT JOIN wp_project p on p.project_id = i.project_id
             LEFT JOIN wp_type t on t.type_id = i.type_id

@@ -6,7 +6,7 @@ class ProjectsModel {
         $this->db = Database::getInstance()->pdo;
         $this->basePath = realpath(dirname(__DIR__, 2));
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 7, $orderDir = 'desc') {
+    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 0, $orderDir = 'asc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*) FROM wp_project p LEFT JOIN wp_contract c on c.contract_id = p.contract_id LEFT JOIN wp_project_group g on g.project_group_id = p.project_group_id {$where}";
         $stmt = $this->db->prepare($sqlTotal);
@@ -15,15 +15,16 @@ class ProjectsModel {
         $order = 'p.created_at';
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
-            0 => "p.project_code",
-            1 => "p.project_name",
-            2 => "p.project_name_display",
-            3 => "c.contract_name",
-            4 => "g.project_group_name",
-            5 => "p.project_start",
-            6 => "p.project_end",
-            7 => "p.created_at",
-            8 => "s.project_status_name"
+            0 => "p.item_order",
+            1 => "p.project_code",
+            2 => "p.project_name",
+            3 => "p.project_name_display",
+            4 => "c.contract_name",
+            5 => "g.project_group_name",
+            6 => "p.project_start",
+            7 => "p.project_end",
+            8 => "p.created_at",
+            9 => "s.project_status_name"
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -42,7 +43,8 @@ class ProjectsModel {
                 p.created_at,
                 p.project_background,
                 p.project_opacity,
-                p.status
+                p.status,
+                p.item_order
             FROM wp_project p
             LEFT JOIN wp_contract c on c.contract_id = p.contract_id 
             LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id

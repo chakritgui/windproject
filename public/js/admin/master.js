@@ -68,3 +68,112 @@ function initTable() {
             break;
     }
 }
+$(document).on('click', '.item-order', function() {
+    let type = $(this).data("type");
+    switch(type) {
+        case 'contract':
+            orderItem('contract', `${BASE_URL}/admin/projects/order`, `${langData['contract'] || 'Contract'}`);
+            break;
+        case 'project':
+            orderItem('project', `${BASE_URL}/admin/projects/order`, `${langData['project'] || 'Project'}`);
+            break;
+        case 'pole_types':
+            orderItem('pole_types', `${BASE_URL}/admin/types/order`, `${langData['pole_types'] || 'Wind Measurement Equipment'}`);
+            break;
+        case 'installation':
+            orderItem('installation', `${BASE_URL}/admin/installation/order`, `${langData['installation'] || 'Installation'}`);
+            break;
+        case 'level':
+            orderItem('level', `${BASE_URL}/admin/level/order`, `${langData['level'] || 'Level'}`);
+            break;
+        case 'poles':
+            orderItem('poles', `${BASE_URL}/admin/poles/order`, `${langData['poles'] || 'Poles'}`);
+            break;
+    }
+});
+function orderItem(type, url, title) {
+    $.ajax({
+        url: url,
+        type: 'GET',
+        dataType: 'json',
+        success: function(response) {
+            if (response.status === 'success') {
+                let items = response.data;
+                let content = `
+                    <ul class="list-group sortable" data-type="${type}">
+                `;
+                items.forEach(item => {
+                    content += `
+                        <li class="list-group-item" data-id="${item.id}">
+                            <i class="fa-solid fa-grip-vertical"></i> ${item.name}
+                        </li>
+                    `;
+                });
+                content += `</ul>`;
+                Swal.fire({ 
+                    title: title,
+                    html: content,
+                    width: 400,
+                    showCancelButton: true,
+                    confirmButtonText: langData['save'] || 'Save',
+                    cancelButtonText: langData['cancel'] || 'Cancel',
+                    didOpen: () => {    
+                        $('.sortable').sortable();
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        let order = [];
+                        $('.sortable li').each(function(index) {
+                            order.push($(this).data('id'));
+                        });
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: { order: order },
+                            dataType: 'json',
+                            success: function(response) {
+                                if (response.status === 'success') {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: langData['success'] || 'Success',
+                                        text: response.message,
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                    switch(type) {
+                                        case 'contract':
+                                            initContractsTable();
+                                            break;
+                                        case 'project':
+                                            initProjectsTable();
+                                            break;
+                                        case 'pole_types':
+                                            initTypesTable();
+                                            break;
+                                        case 'installation':
+                                            initInstallationsTable();
+                                            break;
+                                        case 'level':
+                                            initLevelTable();
+                                            break;
+                                        case 'poles':
+                                            initPolesTable();
+                                            break;
+                                    }
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: langData['error'] || 'Error',
+                                        text: response.message,
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        }
+    });
+}

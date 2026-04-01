@@ -7,7 +7,7 @@ function initProjectStatusTable() {
     tb_project_status = $('#tb_project_status').DataTable({
         processing: true,
         serverSide: true,
-        order: [[2, 'desc']],
+        order: [[0, 'asc']],
         ajax: { 
             url: `${BASE_URL}/api/project.status.list`, 
             type: "POST",
@@ -15,7 +15,14 @@ function initProjectStatusTable() {
                 d.status = $('#filter_projectstatus_status').val();
             }
         },
-        columns: [{ 
+        columns: [{
+            data: "item_order", 
+            orderable: false,
+            searchable: false,
+            render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+            }
+        },{ 
             data: "project_status_color",
             orderable: false,
             render: function (data, type, row) {
@@ -63,12 +70,30 @@ function initProjectStatusTable() {
         }],
         language: getTableLang(),
         initComplete: function() {
-            let $filter = $('#tb_project_status_filter');
-            $filter.append(`
-                <button class="btn btn-primary btn-sm manage-sta ms-2" data-id="">
-                    <i class="fa-solid fa-plus"></i> ${langData['status'] || 'Status'}
-                </button>
-            `);
+            var self = this.api();
+            var $filter = $('#tb_project_status_filter');
+            var input = $filter.find('input').unbind(); 
+            input.bind('keypress', function(e) {
+                if (e.keyCode == 13) {
+                    self.search(input.val()).draw();
+                }
+            });
+            if ($filter.find('.manage-sta[data-id=""]').length === 0) {
+                let btn = `
+                    <button class="btn btn-primary btn-sm manage-sta ms-2" data-id="">
+                        <i class="fa-solid fa-plus"></i> <span>${langData['status'] || 'Status'}</span>
+                    </button>
+                `;
+                $filter.append(btn);
+            }
+            if ($filter.find('.item-order').length === 0) {
+                let btn = `
+                    <button class="btn btn-warning btn-sm item-order ms-2" data-type="status">
+                        <i class="fa-solid fa-sort"></i> <span>${langData['sort'] || 'Sort'}</span>
+                    </button>
+                `;
+                $filter.append(btn);
+            }
         }
     });
 }

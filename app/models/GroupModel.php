@@ -4,7 +4,7 @@ class GroupModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0,$length = 10,$filters = [],$search = '',$colIndex = 1,$orderDir = 'desc') {
+    public function list($start = 0,$length = 10,$filters = [],$search = '',$colIndex = 0,$orderDir = 'asc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*) FROM wp_project_group {$where}";
         $stmtTotal = $this->db->prepare($sqlTotal);
@@ -14,9 +14,10 @@ class GroupModel {
         $stmtTotal->execute();
         $total = (int)$stmtTotal->fetchColumn();
         $orderMap = [
-            0 => "project_group_name",
-            1 => "created_at",
-            2 => "status"
+            0 => "item_order",
+            1 => "project_group_name",
+            2 => "created_at",
+            3 => "status"
         ];
         $order = $orderMap[$colIndex] ?? 'created_at';
         $orderDir = strtolower($orderDir) === 'asc' ? 'ASC' : 'DESC';
@@ -24,7 +25,8 @@ class GroupModel {
                 project_group_id,
                 project_group_name,
                 created_at,
-                status
+                status,
+                item_order
             FROM wp_project_group
             {$where}
             ORDER BY {$order} {$orderDir}

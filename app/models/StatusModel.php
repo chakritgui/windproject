@@ -4,7 +4,7 @@ class StatusModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10,$filters = [], $search = '', $colIndex = 2, $orderDir = 'desc') {
+    public function list($start = 0, $length = 10,$filters = [], $search = '', $colIndex = 0, $orderDir = 'asc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*) FROM wp_project_status {$where}";
         $stmtTotal = $this->db->prepare($sqlTotal);
@@ -14,9 +14,10 @@ class StatusModel {
         $stmtTotal->execute();
         $total = (int)$stmtTotal->fetchColumn();
         $orderMap = [
-            1 => "project_status_name",
-            2 => "created_at",
-            3 => "status"
+            0 => "item_order",
+            2 => "project_status_name",
+            3 => "created_at",
+            4 => "status"
         ];
         $order = $orderMap[$colIndex] ?? 'created_at';
         $orderDir = strtolower($orderDir) === 'asc' ? 'ASC' : 'DESC';
@@ -25,7 +26,8 @@ class StatusModel {
                 project_status_name,
                 project_status_color,
                 created_at,
-                status
+                status,
+                item_order
             FROM wp_project_status
             {$where}
             ORDER BY {$order} {$orderDir}
