@@ -929,7 +929,7 @@ $(document).ready(function () {
         $panel.show().css({ opacity: '1' });
         if (!isMobile()) $panel.removeClass('collapsed');
         setTimeout(initMap, 0);
-        setTimeout(hideWindLoading, 500);
+        setTimeout(hideWindLoading, 2000);
     } else {
         sessionStorage.setItem('globe_shown', '1');
         $('header, #ui, #sideControlPanel, #projectCanvas').hide();
