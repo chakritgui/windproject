@@ -30,7 +30,6 @@ body.loaded {
     right: 0;
     overflow-y: auto;
     min-width: 375px !important;
-    padding-bottom: 35px;
 }
 .main-container.blue-frame {
     background: linear-gradient(135deg, #7eb9e8 0%, #5a9fd4 100%);
@@ -63,67 +62,67 @@ header h1 {
     bottom: 0;
     left: 0;
     width: 100%;
-    box-shadow: 0 -3px 8px rgba(0,0,0,0.05);
-    z-index: 1000;
-    min-width: 375px !important;
-    line-height: 35px;
-}
-.footer-container {
+    height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-.scrolling {
-    display: block !important;
-    color: #555;
-    position: fixed;
-    bottom: 35px;
-    left: 0;
-    width: 100%;
+    box-shadow: 0 -3px 8px rgba(0,0,0,0.05);
     z-index: 1000;
-    height: 35px;
-    line-height: 35px;
     overflow: hidden;
 }
+.scrolling {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    overflow: hidden;
+    z-index: 1001;
+    pointer-events: none;
+}
 .scrolling-container {
-    display: inline-block;
-    white-space: nowrap; 
+    white-space: nowrap;
     padding-left: 100%;
     animation: marquee 25s linear infinite;
+    display: flex;
+    align-items: center;
 }
 .scrolling-text {
-    font-size: 11px; 
-    display: inline-flex;
+    font-size: 11px;
+    display: flex;
     align-items: center;
     gap: 8px;
+    height: 100%;
+    line-height: 1;
+    color: #ffffff;
 }
-.scrolling-text img {
-    height: 20px; 
-    width: auto;
-    vertical-align: middle;
-}
-@keyframes marquee {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(-100%, 0); }
-}
-.scrolling:hover .scrolling-container {
-    animation-play-state: paused;
-}
-.footer-logo {
-    height: 25px;
-    opacity: 0.9;
-    transition: transform 0.3s ease;
-    margin-left: 5px;
-    margin-right: 5px;
-}
-.footer-logo:hover {
-    transform: scale(1.05);
+.footer-container {
+    position: relative;
+    z-index: 1002;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%; 
 }
 .footer-text {
     font-size: 13px;
-    color: #666;
+    color: #333;
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+    height: 100%; 
+    line-height: 1;
+}
+.footer-logo {
+    height: 28px; 
+    max-height: 100%;
+}
+.scrolling-text img {
+    height: 20px;
+    max-height: 100%;
+}
+@keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
 }
 a {
     cursor: pointer;

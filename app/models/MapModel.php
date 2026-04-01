@@ -203,4 +203,12 @@ class MapModel{
             'total_count' => (int)$totalCount,
         ];
     }
+    public function windturbines() {
+        $sql = "SELECT wt.*, p.project_name 
+                FROM wp_windturbine wt 
+                LEFT JOIN wp_project p ON p.project_id = wt.project_id 
+                WHERE wt.status = 'active'";
+        $stmt = $this->db->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

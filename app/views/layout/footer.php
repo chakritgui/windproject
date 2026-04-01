@@ -1,10 +1,10 @@
 </div>
-<div class="scrolling d-none">
-    <div class="scrolling-container">
-        <span class="scrolling-text"></span>
-    </div>
-</div>
 <div class="footer">
+    <div class="scrolling">
+        <div class="scrolling-container">
+            <span class="scrolling-text"></span>
+        </div>
+    </div>
     <div class="footer-container">
         <span class="footer-text"></span>
     </div>
@@ -87,7 +87,7 @@
         </div>
         <div class="oc-stats-row">
             <div class="stat-cell">
-                <span class="stat-label" data-i18n="pole"></span>
+                <span class="stat-label" data-i18n="wind_measurement_equipment"></span>
                 <span class="stat-value" id="pp-count">0</span>
             </div>
             <div class="stat-cell">

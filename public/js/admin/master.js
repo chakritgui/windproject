@@ -60,11 +60,11 @@ function initTable() {
             $(".filter").on("change", () => initPolesTable());
             initPolesTable();
             break;
-        case 'windturbind':
-            initSelect2Remote('#filter_windturbind_project', `${BASE_URL}/api/windturbind.filter`, { type: 'project' });
-            initSelect2Remote('#filter_windturbind_status', `${BASE_URL}/api/windturbind.filter`, { type: 'status' });
-            $(".filter").on("change", () => initPolesTable());
-            initWindturbindTable();
+        case 'windturbine':
+            initSelect2Remote('#filter_windturbine_project', `${BASE_URL}/api/windturbine.filter`, { type: 'project' });
+            initSelect2Remote('#filter_windturbine_status', `${BASE_URL}/api/windturbine.filter`, { type: 'status' });
+            $(".filter").on("change", () => initWindturbineTable());
+            initWindturbineTable();
             break;
     }
 }

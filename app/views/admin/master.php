@@ -57,8 +57,8 @@
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="windturbind-tab" data-bs-toggle="pill" data-bs-target="#windturbind" data-page="windturbind" type="button">
-                <i class="bi bi-fan"></i> <span data-i18n="windturbind"></span>
+            <button class="nav-link" id="windturbine-tab" data-bs-toggle="pill" data-bs-target="#windturbine" data-page="windturbine" type="button">
+                <i class="bi bi-fan"></i> <span data-i18n="windturbine"></span>
             </button>
         </li>
     </ul>
@@ -321,23 +321,23 @@
                 </table>
             </div>
         </div>
-        <div class="tab-pane fade" id="windturbind" role="tabpanel">
+        <div class="tab-pane fade" id="windturbine" role="tabpanel">
             <div class="card shadow-sm mb-4">
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2 col-6">
                             <p><i class="fa-solid fa-folder-tree"></i> <span data-i18n="projects"></span></p>
-                            <select id="filter_windturbind_project" class="form-select filter"></select>
+                            <select id="filter_windturbine_project" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
                             <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
-                            <select id="filter_windturbind_status" class="form-select filter"></select>
+                            <select id="filter_windturbine_status" class="form-select filter"></select>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="table-responsive">
-                <table class="table table-striped table-hover" id="tb_windturbind">
+                <table class="table table-striped table-hover" id="tb_windturbine">
                     <thead>
                         <tr>
                             <th data-i18n="project"></th>
@@ -364,4 +364,4 @@
 <script src="<?=asset('public/js/admin/master/poles.js')?>" defer></script>
 <script src="<?=asset('public/js/admin/master/project-status.js')?>" defer></script>
 <script src="<?=asset('public/js/admin/master/level.js')?>" defer></script>
-<script src="<?=asset('public/js/admin/master/windturbind.js')?>" defer></script>
+<script src="<?=asset('public/js/admin/master/windturbine.js')?>" defer></script>

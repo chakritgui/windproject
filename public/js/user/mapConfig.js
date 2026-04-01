@@ -20,11 +20,21 @@ let windOn             = true;
 let focusOn            = false;
 let windRefreshTimer   = null;
 let isRefreshing       = false; 
+let animation = true;
+let windturbine = false;
+let equipment = true;
+let map_views = true;
+let satelliteLayer = null;
+let allHoles     = [];
+let isMaskMode = 'close';
 let windSummary = { max: 0, min: 0 };
 let show_country_line  = 'hide';
 let country_layers_data = null;
 let initialBounds = null;
 let initialPadding = { padding: [20, 20] };
+let maxZoomLevel = 17;
+let focusMaskLayer = null;
+let countryLayer = [];
 const isMobile = () => window.innerWidth <= 768;
 const WINDY_COLORS = [
     { ms: 0,  color: '#324376' },
@@ -36,8 +46,8 @@ const WINDY_COLORS = [
     { ms: 25, color: '#ef4444' } 
 ];
 const WIND_UNITS = [
-    { key: 'ms',   label: 'm/s',  factor: 1       },
-    { key: 'kmh',  label: 'km/h', factor: 3.6     },
+    { key: 'ms',   label: 'm/s',  factor: 1 },
+    { key: 'kmh',  label: 'km/h', factor: 3.6 },
     { key: 'knot', label: 'kt',   factor: 1.94384 },
 ];
 const clamp = (val, min, max) => Math.max(min, Math.min(max, val));

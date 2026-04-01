@@ -26,8 +26,8 @@ function safeInitMap() {
 function initMap() {
     if (!$('#map').length) return;
     map = L.map('map').setView([13.7563, 100.5018], 12);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { 
-        attribution: false 
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: false
     }).addTo(map);
     drawnItems = new L.FeatureGroup().addTo(map);
     setupDrawControl();
@@ -58,7 +58,37 @@ function setupEvents() {
         currentStyle.weight = parseInt(e.target.value, 10);
         $('#weightValue').text(e.target.value + 'px');
     });
-    $('input[name="show_country_line"]').on('change', function() {
+    $('#noFill').on('change', function () {
+        const checked = $(this).is(':checked');
+        if (checked) {
+            currentStyle.fillOpacity = 0;
+            $('#fillOpacity').prop('disabled', true);
+            $('#fillColor').prop('disabled', true);
+            $('#opacityValue').text('0%');
+        } else {
+            const val = parseFloat($('#fillOpacity').val()) || 30;
+            currentStyle.fillOpacity = val / 100;
+            $('#fillOpacity').prop('disabled', false);
+            $('#fillColor').prop('disabled', false);
+            $('#opacityValue').text(Math.round(val) + '%');
+        }
+    });
+    $('#noBorder').on('change', function () {
+        const checked = $(this).is(':checked');
+        if (checked) {
+            currentStyle.weight = 0;
+            $('#borderWeight').prop('disabled', true);
+            $('#borderColor').prop('disabled', true);
+            $('#weightValue').text('0px');
+        } else {
+            const val = parseInt($('#borderWeight').val()) || 2;
+            currentStyle.weight = val;
+            $('#borderWeight').prop('disabled', false);
+            $('#borderColor').prop('disabled', false);
+            $('#weightValue').text(val + 'px');
+        }
+    });
+    $('input[name="show_country_line"]').on('change', function () {
         const val = $(this).val();
         if (val === 'show') {
             $('#jsonUploadSection').slideDown();
@@ -79,10 +109,10 @@ function loadMapDataFromServer() {
         url: `${BASE_URL}/api/map.load`,
         method: 'GET',
         dataType: 'json',
-        success: function(res) {
+        success: function (res) {
             if (res.status && res.data) {
                 const settings = res.data.map_settings;
-                const savedPolygons = res.data.polygons; 
+                const savedPolygons = res.data.polygons;
                 if (settings) {
                     const lat = parseFloat(settings.center_lat) || 13.7563;
                     const lng = parseFloat(settings.center_lng) || 100.5018;
@@ -99,23 +129,24 @@ function loadMapDataFromServer() {
                     }
                     if (settings.country_layers_data) {
                         try {
-                            countryLayers = typeof settings.country_layers_data === 'string' 
+                            countryLayers = typeof settings.country_layers_data === 'string'
                                 ? JSON.parse(settings.country_layers_data) : settings.country_layers_data;
                             renderCountryLayersOnly();
-                        } catch(e) { console.error("Error parsing country data"); }
+                        } catch (e) { console.error("Error parsing country data"); }
                     }
                     if (settings.default_style) {
-                        currentStyle = typeof settings.default_style === 'string' ? JSON.parse(settings.default_style) : settings.default_style;
+                        currentStyle = typeof settings.default_style === 'string'
+                            ? JSON.parse(settings.default_style) : settings.default_style;
                         updateControlPanelUI();
                     }
                 }
                 if (savedPolygons && savedPolygons.length > 0) {
                     polygons = savedPolygons.map(p => ({
-                        poly_id: p.poly_id, 
+                        poly_id: p.poly_id,
                         name: p.area_name || `Area-${p.poly_id}`,
                         style: typeof p.custom_style === 'string' ? JSON.parse(p.custom_style) : p.custom_style,
                         data: typeof p.geo_data === 'string' ? JSON.parse(p.geo_data) : p.geo_data,
-                        project_id: p.project_id || null, 
+                        project_id: p.project_id || null,
                         project_name: p.project_name || ''
                     }));
                     renderPolygons();
@@ -132,9 +163,15 @@ function updateControlPanelUI() {
     $('#opacityValue').text(Math.round(currentStyle.fillOpacity * 100) + '%');
     $('#borderWeight').val(currentStyle.weight);
     $('#weightValue').text(currentStyle.weight + 'px');
+    const noFill = currentStyle.fillOpacity === 0;
+    const noBorder = currentStyle.weight === 0;
+    $('#noFill').prop('checked', noFill);
+    $('#fillOpacity, #fillColor').prop('disabled', noFill);
+    $('#noBorder').prop('checked', noBorder);
+    $('#borderWeight, #borderColor').prop('disabled', noBorder);
 }
 function onDrawCreated(e) {
-    const poly_id = Date.now(); 
+    const poly_id = Date.now();
     const layer = e.layer;
     layer.options.poly_id = poly_id;
     drawnItems.addLayer(layer);
@@ -146,7 +183,7 @@ function onDrawCreated(e) {
         project_id: null,
         project_name: null
     });
-    renderPolygonList(); 
+    renderPolygonList();
 }
 function renderPolygons() {
     drawnItems.clearLayers();
@@ -158,7 +195,7 @@ function renderPolygons() {
             geo.eachLayer(layer => {
                 layer.options.poly_id = p.poly_id;
                 drawnItems.addLayer(layer);
-                polygonLayers[p.poly_id] = layer; 
+                polygonLayers[p.poly_id] = layer;
             });
         } catch (err) { console.error("Error rendering poly_id:", p.poly_id, err); }
     });
@@ -208,6 +245,8 @@ function renderPolygonList() {
 function openEditPopup(id) {
     const poly = polygons.find(p => p.poly_id == id);
     if (!poly) return;
+    const noFillChecked   = poly.style.fillOpacity === 0  ? 'checked' : '';
+    const noBorderChecked = poly.style.weight == 0        ? 'checked' : '';
     const modalHtml = `
     <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-md modal-dialog-centered">
@@ -218,23 +257,33 @@ function openEditPopup(id) {
                 </div>
                 <div class="modal-body p-3">
                     <div class="mb-3">
-                        <label class="form-label small fw-bold">Project</label>
+                        <label class="form-label small fw-bold" data-i18n="project"></label>
                         <select id="editProject" class="form-select form-select-sm"></select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold mb-1" data-i18n="area_border_color"></label>
                         <div class="d-flex gap-2">
-                            <input type="color" id="editFillColor" class="form-control form-control-color w-100" value="${poly.style.fillColor}">
-                            <input type="color" id="editBorderColor" class="form-control form-control-color w-100" value="${poly.style.color}">
+                            <input type="color" id="editFillColor" class="form-control form-control-color w-100" value="${poly.style.fillColor}" ${noFillChecked   ? 'disabled' : ''}>
+                            <input type="color" id="editBorderColor" class="form-control form-control-color w-100" value="${poly.style.color}"      ${noBorderChecked ? 'disabled' : ''}>
+                        </div>
+                        <div class="d-flex gap-3 mt-2">
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input" type="checkbox" id="editNoFill" ${noFillChecked}>
+                                <label class="form-check-label small" for="editNoFill" data-i18n="no_fill"></label>
+                            </div>
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input" type="checkbox" id="editNoBorder" ${noBorderChecked}>
+                                <label class="form-check-label small" for="editNoBorder" data-i18n="no_border"></label>
+                            </div>
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold mb-1"><span data-i18n="opacity"></span>: <span id="valOpacity">${Math.round(poly.style.fillOpacity * 100)}%</span></label>
-                        <input type="range" id="editOpacity" class="form-range" min="0" max="100" value="${poly.style.fillOpacity * 100}">
+                        <input type="range" id="editOpacity" class="form-range" min="0" max="100" value="${poly.style.fillOpacity * 100}" ${noFillChecked ? 'disabled' : ''}>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label small fw-bold mb-1" data-i18n=""><span data-i18n="border_weight"></span>: <span id="valWeight">${poly.style.weight}px</span></label>
-                        <input type="range" class="form-range" id="editborderWeight" min="0" max="10" value="${poly.style.weight}">
+                        <label class="form-label small fw-bold mb-1"><span data-i18n="border_weight"></span>: <span id="valWeight">${poly.style.weight}px</span></label>
+                        <input type="range" class="form-range" id="editborderWeight" min="0" max="10" value="${poly.style.weight}" ${noBorderChecked ? 'disabled' : ''}>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0 d-flex gap-2">
@@ -248,34 +297,65 @@ function openEditPopup(id) {
     $('body').append(modalHtml);
     const myModal = new bootstrap.Modal(document.getElementById('editModal'));
     myModal.show();
-    $('#editOpacity').on('input', function() { 
-        $('#valOpacity').text($(this).val() + '%'); 
+    $('#editOpacity').on('input', function () {
+        $('#valOpacity').text($(this).val() + '%');
     });
-    $('#editborderWeight').on('input', function() { 
-        $('#valWeight').text($(this).val() + 'px'); 
+    $('#editborderWeight').on('input', function () {
+        $('#valWeight').text($(this).val() + 'px');
     });
-    $('#btnResetIndividual').on('click', function() {
-        showConfirm(langData['confirm'], langData['confirm_change'], function(){
-            $('#editborderWeight').val(currentStyle.weight);
+    $('#editNoFill').on('change', function () {
+        const checked = $(this).is(':checked');
+        $('#editFillColor, #editOpacity').prop('disabled', checked);
+        if (checked) {
+            $('#editOpacity').val(0);
+            $('#valOpacity').text('0%');
+        } else {
+            const prev = poly.style.fillOpacity > 0 ? Math.round(poly.style.fillOpacity * 100) : 30;
+            $('#editOpacity').val(prev);
+            $('#valOpacity').text(prev + '%');
+        }
+    });
+    $('#editNoBorder').on('change', function () {
+        const checked = $(this).is(':checked');
+        $('#editBorderColor, #editborderWeight').prop('disabled', checked);
+        if (checked) {
+            $('#editborderWeight').val(0);
+            $('#valWeight').text('0px');
+        } else {
+            const prev = poly.style.weight > 0 ? poly.style.weight : 2;
+            $('#editborderWeight').val(prev);
+            $('#valWeight').text(prev + 'px');
+        }
+    });
+    $('#btnResetIndividual').on('click', function () {
+        showConfirm(langData['confirm'], langData['confirm_change'], function () {
             $('#editFillColor').val(currentStyle.fillColor);
             $('#editBorderColor').val(currentStyle.color);
             $('#editOpacity').val(currentStyle.fillOpacity * 100);
             $('#valOpacity').text((currentStyle.fillOpacity * 100) + '%');
+            $('#editborderWeight').val(currentStyle.weight);
             $('#valWeight').text((currentStyle.weight) + 'px');
+            const noFill   = currentStyle.fillOpacity === 0;
+            const noBorder = currentStyle.weight === 0;
+            $('#editNoFill').prop('checked', noFill);
+            $('#editFillColor, #editOpacity').prop('disabled', noFill);
+            $('#editNoBorder').prop('checked', noBorder);
+            $('#editBorderColor, #editborderWeight').prop('disabled', noBorder);
             $('#btnSaveIndividual').click();
         });
     });
-    $('#btnSaveIndividual').on('click', function() {
+    $('#btnSaveIndividual').on('click', function () {
         poly.style = {
             ...poly.style,
             fillColor: $('#editFillColor').val(),
             color: $('#editBorderColor').val(),
-            fillOpacity: $('#editOpacity').val() / 100,
-            weight: $('#editborderWeight').val(),
+            fillOpacity: parseFloat($('#editOpacity').val()) / 100,
+            weight: parseInt($('#editborderWeight').val(), 10),
         };
         const selected = $('#editProject').select2('data')[0];
-        poly.project_id = selected ? selected.id : null;
+        poly.project_id = selected ? selected.id   : null;
         poly.project_name = selected ? selected.text : '';
+
         if (polygonLayers[id]) {
             polygonLayers[id].setStyle(poly.style);
         }
@@ -289,7 +369,7 @@ function openEditPopup(id) {
     }
 }
 function deletePolygon(id) {
-    showConfirm(langData['confirm'], langData['confirm_delete'], function(){
+    showConfirm(langData['confirm'], langData['confirm_delete'], function () {
         polygons = polygons.filter(p => p.poly_id != id);
         if (polygonLayers[id]) {
             drawnItems.removeLayer(polygonLayers[id]);
@@ -308,12 +388,8 @@ function importMapJSON(input) {
         } catch (e) {
             console.log("Parsing as GeoJSONL...");
             features = trimmedInput.split('\n').filter(line => line.trim() !== "").map(line => {
-                try {
-                    return JSON.parse(line);
-                } catch (err) {
-                    console.error("Invalid JSON line skipped:", line);
-                    return null;
-                }
+                try { return JSON.parse(line); }
+                catch (err) { console.error("Invalid JSON line skipped:", line); return null; }
             }).filter(f => f !== null);
         }
     } else if (typeof input === 'object' && input !== null) {
@@ -366,19 +442,18 @@ function applyLockState(locked) {
     if (map.dragging) map.dragging[action]();
     if (map.scrollWheelZoom) map.scrollWheelZoom[action]();
     if (map.doubleClickZoom) map.doubleClickZoom[action]();
-    $('#statusBadge').html(locked ? '<i class="fa-solid fa-lock text-danger"></i>' : '<i class="fa-solid fa-lock-open text-success"></i>');
+    $('#statusBadge').html(locked
+        ? '<i class="fa-solid fa-lock text-danger"></i>'
+        : '<i class="fa-solid fa-lock-open text-success"></i>');
 }
 async function handleJsonImport(e) {
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => {
-    try { 
-        importMapJSON(ev.target.result); 
-    } catch (err) { 
-        showError(langData['invalid_json_file']); 
-    }
-};
+        try { importMapJSON(ev.target.result); }
+        catch (err) { showError(langData['invalid_json_file']); }
+    };
     reader.readAsText(file);
 }
 async function handleJsonImports(e) {
@@ -386,7 +461,8 @@ async function handleJsonImports(e) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => {
-        try { importMapJSONs(JSON.parse(ev.target.result)); } catch (err) { showError(langData['invalid_json_file']); }
+        try { importMapJSONs(JSON.parse(ev.target.result)); }
+        catch (err) { showError(langData['invalid_json_file']); }
     };
     reader.readAsText(file);
 }
@@ -408,7 +484,7 @@ function getMapFullConfigForSave() {
             center_lat: center.lat.toFixed(8),
             center_lng: center.lng.toFixed(8),
             zoom_level: map.getZoom(),
-            is_locked: isZoomLocked ? 1 : 0, 
+            is_locked: isZoomLocked ? 1 : 0,
             default_style: JSON.stringify(currentStyle),
             polygon_visibility: polygonVisibility,
             show_country_line: show_country_line,
@@ -419,7 +495,7 @@ function getMapFullConfigForSave() {
             const currentLayer = polygonLayers[p.poly_id];
             const latestGeo = currentLayer ? currentLayer.toGeoJSON() : p.data;
             return {
-                poly_id: p.poly_id, 
+                poly_id: p.poly_id,
                 area_name: p.name,
                 project_id: p.project_id,
                 custom_style: JSON.stringify(p.style),
@@ -429,7 +505,7 @@ function getMapFullConfigForSave() {
     };
 }
 function handleMainSave() {
-    const $btn = $("#saveGlobalBtn");
+    const $btn    = $("#saveGlobalBtn");
     const payload = getMapFullConfigForSave();
     $btn.prop("disabled", true);
     $.ajax({
@@ -437,11 +513,15 @@ function handleMainSave() {
         method: 'POST',
         data: { payload: payload },
         dataType: 'json',
-        success: function(res) {
+        success: function (res) {
             if (res.status === true) {
                 showSuccess(langData['saved_successfully']);
+                setTimeout(() => {
+                    location.reload();
+                }, 3000);
             } else {
                 showError(res.message);
+                $btn.prop("disabled", false);
             }
         },
         error: () => showError(langData['cannot_save']),

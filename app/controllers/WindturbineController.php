@@ -1,10 +1,10 @@
 <?php
 require_once __DIR__ . '/BaseController.php';
-require_once __DIR__ . '/../models/WindturbindModel.php';
-class WindturbindController extends BaseController {
+require_once __DIR__ . '/../models/WindturbineModel.php';
+class WindturbineController extends BaseController {
     private $model;
     public function __construct() { 
-        $this->model = new WindturbindModel(); 
+        $this->model = new WindturbineModel(); 
     }
     public function list(){
         $start = intval($_POST['start'] ?? 0);

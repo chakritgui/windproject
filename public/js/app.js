@@ -637,6 +637,9 @@ function handleSettingItem(item) {
         case 'icon':
             icon = `${BASE_URL}/${val || 'public/images/icon.png'}?v=${Date.now()}`;
             $('link[rel="icon"]').attr('href', icon);
+            break;
+        case 'login_icon':
+            icon = `${BASE_URL}/${val || 'public/images/icon.png'}?v=${Date.now()}`;
             $('img.logo').attr('src', icon);
             break;
         case 'website_en': website.en = val; break;

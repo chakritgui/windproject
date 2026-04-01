@@ -76,7 +76,32 @@ class MapSettingModel {
             $stmt->execute([$mapId]);
             $master = $stmt->fetch(PDO::FETCH_ASSOC);
             if (!$master) return null;
-            $stmt = $this->db->prepare("SELECT m.*, p.project_id, p.project_name FROM wp_map_polygons m LEFT JOIN wp_project p on p.project_id = m.project_id WHERE m.map_id = ? AND m.status = 'active' group by m.poly_id");
+            $stmt = $this->db->prepare("SELECT 
+                    m.*, 
+                    p.project_id, 
+                    p.project_name 
+                FROM wp_map_polygons m 
+                LEFT JOIN wp_project p 
+                    ON p.project_id = m.project_id 
+                WHERE m.map_id = ? 
+                AND m.status = 'active'
+                GROUP BY m.poly_id
+                ORDER BY 
+                    CASE 
+                        WHEN m.project_id IS NULL OR m.project_id = '' THEN 0
+                        ELSE 1
+                    END ASC,
+                    
+                    CASE 
+                        WHEN m.project_id IS NULL OR m.project_id = '' 
+                        THEN m.poly_id
+                    END ASC,
+                    
+                    CASE 
+                        WHEN m.project_id IS NOT NULL AND m.project_id != '' 
+                        THEN IFNULL(p.item_order, p.project_id)
+                    END ASC
+            ");
             $stmt->execute([$mapId]);
             $polygons = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return [

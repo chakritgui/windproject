@@ -331,8 +331,7 @@ async function openProject(project_id) {
 }
 function updateWindUI() {
     const unit = getCurrentUnit();
-    const btn = document.getElementById('btn-wind-unit');
-    if (btn) btn.textContent = unit.label;
+    updateButtonStyles();
     const legendUnit = document.getElementById('legend-unit-label');
     if (legendUnit) legendUnit.textContent = unit.label;
     const steps = [0, 2, 5, 10, 15, 20, 25];
@@ -396,10 +395,21 @@ function updateWindUI() {
         updateWindDashboardUnit(unit);
     }
 }
-function cycleWindUnit() {
-    currentUnitIdx = (currentUnitIdx + 1) % WIND_UNITS.length;
+function setWindUnit(idx) {
+    currentUnitIdx = idx;
     localStorage.setItem('windUnit', currentUnitIdx);
     updateWindUI();
+    updateButtonStyles();
+}
+function updateButtonStyles() {
+    const buttons = document.querySelectorAll('.btn-unit-select');
+    buttons.forEach((btn, index) => {
+        if (index === currentUnitIdx) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
 }
 function initWindUnit() {
     updateWindUI();
@@ -482,4 +492,257 @@ function hideWindLoading() {
     el.style.transition    = 'opacity 0.3s ease-out';
     el.style.opacity       = 0;
     el.addEventListener('transitionend', () => el.remove(), { once: true });
+}
+function toggleAnimation(isOn) {
+    if(isOn) {
+        $("#windy #map-container .leaflet-tile-pane .particles-layer").css("z-index", 500);
+    } else {
+        $("#windy #map-container .leaflet-tile-pane .particles-layer").css("z-index", 0);   
+    }
+}
+function toggleEquipment(isOn) {
+    if (!map || !poleLayerGroup) return;
+    if (isOn) {
+        if (!map.hasLayer(poleLayerGroup)) {
+            poleLayerGroup.addTo(map);
+        }
+        Object.values(poleMarkers).forEach(p => {
+            if (p.marker) p.marker.setOpacity(1);
+            if (p.labelMarker) p.labelMarker.setOpacity(windOn ? 1 : 0);
+        });
+    } else {
+        Object.values(poleMarkers).forEach(p => {
+            if (p.marker) p.marker.setOpacity(0);
+            if (p.labelMarker) p.labelMarker.setOpacity(0);
+        });
+        $('#toggle-wind-values').prop('checked', false);
+        windOn = false;
+    }
+}
+function _applyWindState(isOn) {
+    windOn = isOn;
+    if (windyAPI?.store) {
+        windyAPI.store.set('overlay', isOn ? 'wind' : ''); 
+    }
+    Object.values(poleMarkers).forEach(p => {
+        const isPoleVisible = p.marker && p.marker.options.opacity > 0;
+        p.labelMarker?.setOpacity((isOn && isPoleVisible) ? 1 : 0);
+    });
+    $('#wind-status-icon').toggleClass('spinning', isOn);
+    $('.map-wind-label').stop().fadeTo(300, isOn ? 1 : 0);
+    clearInterval(windRefreshTimer);
+    windRefreshTimer = null;
+    if (isOn) {
+        refreshAllWindData();
+        windRefreshTimer = setInterval(refreshAllWindData, WIND_REFRESH);
+    }
+}
+function toggleWind(isOn) {
+    const equipmentIsOff = $('#toggle-equipment').prop('checked') === false;
+    if (isOn && equipmentIsOff) {
+        $('#toggle-equipment').prop('checked', true);
+        toggleEquipment(true);
+    }
+    _applyWindState(isOn);
+}
+function toggleFocus(isOn) {
+    focusOn = isOn;
+    if (!map.getPane('focusPane')) {
+        const pane = map.createPane('focusPane');
+        pane.style.zIndex = 450; 
+        pane.style.pointerEvents = 'none';
+    }
+    if (focusMaskLayer) {
+        map.removeLayer(focusMaskLayer);
+        focusMaskLayer = null;
+    }
+    map.eachLayer(layer => {
+        if (layer.options && layer.options.id === 'focus-mask-layer') {
+            map.removeLayer(layer);
+        }
+    });
+    if (isOn && geoDataGlobal) {
+        const world = [[90, -180], [90, 180], [-90, 180], [-90, -180]];
+        const countryHoles = [];
+        geoDataGlobal.features.forEach(feature => {
+            const geometry = feature.geometry;
+            if (geometry.type === 'Polygon') {
+                geometry.coordinates.forEach(ring => {
+                    countryHoles.push(ring.map(c => [c[1], c[0]]));
+                });
+            } else if (geometry.type === 'MultiPolygon') {
+                geometry.coordinates.forEach(polygon => {
+                    polygon.forEach(ring => {
+                        countryHoles.push(ring.map(c => [c[1], c[0]]));
+                    });
+                });
+            }
+        });
+        focusMaskLayer = L.polygon([world, ...countryHoles], {
+            id: 'focus-mask-layer',
+            fillColor: '#161616',
+            fillOpacity: 0.5,
+            stroke: false,
+            interactive: false,
+            pane: 'focusPane',
+            smoothFactor: 1
+        }).addTo(map);
+    }
+}
+function toggleHoles(show, allHoles = []) {
+    if (show) {
+        if (maskLayer) return;
+        const world = [
+            [90, -180],
+            [90, 180],
+            [-90, 180],
+            [-90, -180]
+        ];
+        maskLayer = L.polygon([world, ...allHoles], {
+            fillColor: '#C0C0C0',
+            fillOpacity: 0.75,
+            stroke: false,
+            interactive: false,
+            pane: 'overlayPane',
+            smoothFactor: 0.1,
+            noClip: true
+        }).addTo(map);
+        maskLayer.bringToBack();
+        maskLayer._zoomHandler = () => {
+            maskLayer && maskLayer.bringToBack();
+        };
+        map.on('zoomend', maskLayer._zoomHandler);
+    } else {
+        if (maskLayer) {
+            map.off('zoomend', maskLayer._zoomHandler);
+            map.removeLayer(maskLayer);
+            maskLayer = null;
+        }
+    }
+}
+function toggleLabel(isOn) {
+    if (!labelStyleEl) {
+        labelStyleEl = document.getElementById('hide-labels-style') || (() => {
+            const el = document.createElement('style');
+            el.id = 'hide-labels-style';
+            document.head.appendChild(el);
+            return el;
+        })();
+    }
+    labelStyleEl.innerHTML = isOn ? '' : `
+        .leaflet-label-pane,.windy-layer-labels,.labels-layer {
+            display:none!important;pointer-events:none!important;
+        }
+        canvas.vector-field-layer { display:block!important; }`;
+}
+function toggleWindTurbine(isOn) {
+    turbineMarkers.forEach(marker => {
+        if (isOn) {
+            if (!poleLayerGroup.hasLayer(marker)) marker.addTo(poleLayerGroup);
+        } else {
+            if (poleLayerGroup.hasLayer(marker)) poleLayerGroup.removeLayer(marker);
+        }
+    });
+}
+function toggleSatellite(isOn) {
+    if (!map) return;
+    if (isOn) {
+        if (!satelliteLayer) {
+            satelliteLayer = L.tileLayer(
+                'https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+                { 
+                    subdomains: ['0','1','2','3'], 
+                    detectRetina: true, 
+                    crossOrigin: true, 
+                    keepBuffer: 4, 
+                    maxZoom: 18,
+                    maxNativeZoom: 20
+                }
+            );
+        }
+        if (!map.hasLayer(satelliteLayer)) satelliteLayer.addTo(map);
+        windyAPI?.store.set('overlay', ''); 
+        windyAPI?.store.set('graticule', false);
+        map.setMaxZoom(18); 
+        if (allHoles.length > 0) toggleHoles(false, allHoles);
+    } else {
+        if (satelliteLayer && map.hasLayer(satelliteLayer)) map.removeLayer(satelliteLayer);
+        windyAPI?.store.set('graticule', false);
+        windyAPI?.store.set('overlay', 'wind');
+        map.setMaxZoom(11); 
+        if (allHoles.length > 0) toggleHoles(true, allHoles);
+    }
+}
+function _calcIconSize(zoom) {
+    const MIN_ZOOM = 8;
+    const MAX_ZOOM = maxZoomLevel;
+    const MIN_SIZE = 20;
+    const MAX_SIZE = 96;
+    const t    = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
+    const size = Math.round(MIN_SIZE + (MAX_SIZE - MIN_SIZE) * t);
+    return size;
+}
+// function _buildTurbineIcon(turbine, size = 24) {
+//     if (turbine.icon?.trim()) {
+//         return L.icon({
+//             iconUrl: turbine.icon,
+//             iconSize: [size, size],
+//             iconAnchor: [size / 2, size], 
+//             popupAnchor: [0, -size]
+//         });
+//     }
+//     const w = Math.round(size * 0.75);
+//     const h = size;
+//     return L.divIcon({
+//         className: 'turbine-icon-wrap',
+//         iconSize: [w, h],
+//         iconAnchor: [w / 2, h],
+//         html: `
+//         <style>
+//             @keyframes spin {
+//                 from { transform: rotate(0deg); }
+//                 to   { transform: rotate(360deg); }
+//             }
+//         </style>
+//         <svg width="${w}" height="${h}" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
+//             <path d="M13 38 L17 38 L16 15 L14 15 Z" fill="#b1c0d1"/>
+//             <path d="M14 38 L16 38 L15.5 15 L14.5 15 Z" fill="#cbd5e0"/>
+//             <g style="transform-origin: 15px 15px; animation: spin 3s linear infinite;">
+//                 <circle cx="15" cy="15" r="2" fill="#4a5568"/>
+//                 <path d="M15 15 L15 2 L17 15 Z" fill="#5bb8f5"/>
+//                 <path d="M15 15 L26.3 21.5 L15 17 Z" fill="#5bb8f5" transform="rotate(120,15,15)"/>
+//                 <path d="M15 15 L3.7 21.5 L15 17 Z"  fill="#5bb8f5" transform="rotate(240,15,15)"/>
+//             </g>
+//             <circle cx="15" cy="15" r="1" fill="#fff"/>
+//         </svg>`
+//     });
+// }
+function _buildTurbineIcon(turbine) { 
+    const smallSize = 8; 
+    return L.divIcon({
+        className: 'turbine-small-dot', 
+        iconSize: [smallSize, smallSize],
+        iconAnchor: [smallSize / 2, smallSize / 2], 
+        popupAnchor: [0, -smallSize / 2],
+        html: `
+            <div style=" width: ${smallSize}px; height: ${smallSize}px; background-color: #000000; border: 1px solid #ffffff; border-radius: 50%; box-shadow: 0 0 2px rgba(0,0,0,0.3);"></div>
+        `
+    });
+}
+function resetView() {
+    if (!initialBounds) return;
+    map.flyToBounds(initialBounds, {
+        ...initialPadding,
+        duration: 1.25,
+        easeLinearity: 0.25,
+        noMoveStart: true,
+        animate: true
+    });
+}
+function highlightAreaItem(index) {
+    document.querySelectorAll('.ap-item').forEach(el => el.classList.remove('active'));
+    document.getElementById(`ap-item-${index}`)?.classList.add('active');
+}
+function toggleAreaPanel() {
+    document.getElementById('area-panel')?.classList.toggle('collapsed');
 }

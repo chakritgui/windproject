@@ -23,6 +23,7 @@ class SettingModel {
             ));
             $this->uploadAndSave('logoInput', 'logo');
             $this->uploadAndSave('iconInput', 'icon');
+            $this->uploadAndSave('loginIconInput', 'login_icon');
             $this->db->commit();
             return true;
         } catch (Exception $e) {

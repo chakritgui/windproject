@@ -1,34 +1,34 @@
-let tb_windturbind;
-function initWindturbindTable() {
+let tb_windturbine;
+function initWindturbineTable() {
     let oldPage = 0;
-    if ($.fn.DataTable.isDataTable('#tb_windturbind')) {
-        oldPage = $('#tb_windturbind').DataTable().page();
-        $('#tb_windturbind').DataTable().destroy();
+    if ($.fn.DataTable.isDataTable('#tb_windturbine')) {
+        oldPage = $('#tb_windturbine').DataTable().page();
+        $('#tb_windturbine').DataTable().destroy();
     }
-    if ($.fn.DataTable.isDataTable('#tb_windturbind')) {
-        $('#tb_windturbind').DataTable().ajax.reload(null, false);
+    if ($.fn.DataTable.isDataTable('#tb_windturbine')) {
+        $('#tb_windturbine').DataTable().ajax.reload(null, false);
         return;
     }
-    tb_windturbind = $('#tb_windturbind').DataTable({
+    tb_windturbine = $('#tb_windturbine').DataTable({
         processing: true,
         serverSide: true,
         order: [[3, 'desc']],
         ajax: { 
-            url: `${BASE_URL}/api/windturbind.list`, 
+            url: `${BASE_URL}/api/windturbine.list`, 
             type: "POST",
             data: function(d){
-                d.project = $('#filter_windturbind_project').val();
-                d.status = $('#filter_windturbind_status').val();
+                d.project = $('#filter_windturbine_project').val();
+                d.status = $('#filter_windturbine_status').val();
             }
         },
         columns: [{ 
             data: "project_name",
             orderable: true,
         },{ 
-            data: "windturbind_lat",
+            data: "windturbine_lat",
             orderable: true,
         },{ 
-            data: "windturbind_lng",
+            data: "windturbine_lng",
             orderable: true,
         },{ 
             data: "created_at",
@@ -38,7 +38,7 @@ function initWindturbindTable() {
             orderable: true,
             render: function (status, type, row) {
                 const isChecked = (status === 'active') ? 'checked' : '';
-                const rowId = row.id || row.windturbind_id; 
+                const rowId = row.id;
                 return `
                     <div class="form-check form-switch">
                         <input class="form-check-input update-status-switch" type="checkbox" role="switch" id="switch_${rowId}" data-id="${rowId}" ${isChecked} style="cursor: pointer;">
@@ -53,7 +53,7 @@ function initWindturbindTable() {
             render: function(row){
                 return `
                     <div class="btn-group border rounded-3 bg-white">
-                        <button class="btn btn-link text-danger py-1 border-start delete-windturbind" data-id="${row.id}"><i class="fa-regular fa-trash-can"></i></button>
+                        <button class="btn btn-link text-danger py-1 border-start delete-windturbine" data-id="${row.id}"><i class="fa-regular fa-trash-can"></i></button>
                     </div>
                 `;
             }
@@ -67,24 +67,24 @@ function initWindturbindTable() {
         language: getTableLang(),
         initComplete: function() {
             var self = this.api();
-            var $filter = $('#tb_windturbind_filter');
+            var $filter = $('#tb_windturbine_filter');
             var input = $filter.find('input').unbind(); 
             input.bind('keypress', function(e) {
                 if (e.keyCode == 13) {
                     self.search(input.val()).draw();
                 }
             });
-            if ($filter.find('.import-windturbind').length === 0) {
+            if ($filter.find('.import-windturbine').length === 0) {
                 let btn = `
-                    <button class="btn btn-primary btn-sm import-windturbind ms-2">
+                    <button class="btn btn-primary btn-sm import-windturbine ms-2">
                         <i class="fa-solid fa-plus"></i> <span>${langData['import'] || "Import"}</span>
                     </button>
                 `;
                 $filter.append(btn);
             }
-            if ($filter.find('.clear-windturbind').length === 0) {
+            if ($filter.find('.clear-windturbine').length === 0) {
                 let btn = `
-                    <button class="btn btn-danger btn-sm clear-windturbind ms-2">
+                    <button class="btn btn-danger btn-sm clear-windturbine ms-2">
                         <i class="fa-solid fa-trash-can"></i> <span>${langData['clear_data'] || "Clear Data"}</span>
                     </button>
                 `;
@@ -96,18 +96,18 @@ function initWindturbindTable() {
         }
     });
 }
-$(document).on('click', '.delete-windturbind', function() {
+$(document).on('click', '.delete-windturbine', function() {
     let id = $(this).data("id");
     showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: `${BASE_URL}/api/windturbind.delete`,
+            url: `${BASE_URL}/api/windturbine.delete`,
             method: 'POST',
             data: { id: id },
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){
                     showSuccess(langData['deleted_successfully']);
-                    initWindturbindTable();
+                    initWindturbineTable();
                 } else {
                     showError(langData['cannot_delete']);
                 }   
@@ -118,12 +118,12 @@ $(document).on('click', '.delete-windturbind', function() {
         });
     });
 });
-$(document).on('click', '.import-windturbind', function () {
+$(document).on('click', '.import-windturbine', function () {
     let modalEl = $('#windModal');
     let modal = new bootstrap.Modal(modalEl[0]);
     modal.show();
     modalEl.find(".modal-header").html(`
-        <h5 class="modal-title">${langData['windturbind'] || 'Wind Turbind'}</h5>
+        <h5 class="modal-title">${langData['windturbine'] || 'Wind Turbine'}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     `);
     modalEl.find(".modal-footer").html(`
@@ -261,7 +261,7 @@ function importWindData() {
     let fakePercent = 0;
     let progressTimer;
     $.ajax({
-        url: `${BASE_URL}/api/windturbind.import`,
+        url: `${BASE_URL}/api/windturbine.import`,
         type: "POST",
         data: formData,
         contentType: false,
@@ -295,7 +295,7 @@ function importWindData() {
                 if (res.status === true) {
                     showSuccess(langData['import_successfully'] || 'Imported successfully');
                     $('#windModal').modal('hide');
-                    if (typeof initWindturbindTable === "function") initWindturbindTable();
+                    if (typeof initWindturbineTable === "function") initWindturbineTable();
                 } else {
                     showError(res.message);
                 }
@@ -323,14 +323,14 @@ $(document).on("change", ".update-status-switch", function() {
     let id = $(this).data("id");
     let newStatus = $(this).is(":checked") ? 'active' : 'inactive';
     $.ajax({
-        url: `${BASE_URL}/api/windturbind.updateStatus`,
+        url: `${BASE_URL}/api/windturbine.updateStatus`,
         method: 'POST',
         data: { id: id, status: newStatus },
         dataType: 'json',
         success: function(res) {    
             if(res.status === true){
                 showSuccess(langData['saved_successfully'] || 'Saved successfully');
-                if (typeof initWindturbindTable === "function") initWindturbindTable();
+                if (typeof initWindturbineTable === "function") initWindturbineTable();
             } else {
                 showError((langData['cannot_save'] || 'Error: ') + ' ' + (langData[res.message] || 'Unknown error'));
             }
@@ -346,16 +346,16 @@ $(document).on("change", ".update-status-switch", function() {
         }
     });
 });
-$(document).on('click', '.clear-windturbind', function() {
+$(document).on('click', '.clear-windturbine', function() {
     showConfirm(langData['confirm'], langData['confirm_clear'], function(){
         $.ajax({
-            url: `${BASE_URL}/api/windturbind.clear`,
+            url: `${BASE_URL}/api/windturbine.clear`,
             method: 'POST',
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){
                     showSuccess(langData['clear_successfully']);
-                    initWindturbindTable();
+                    initWindturbineTable();
                 } else {
                     showError(langData['cannot_clear']);
                 }   

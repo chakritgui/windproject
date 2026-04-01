@@ -20,6 +20,7 @@ class SettingController extends BaseController {
             'site_assessment_th' => $_POST['site_assessment_th'] ?? '',
             'logoInput' => $_FILES['logoInput'] ?? null,
             'iconInput' => $_FILES['iconInput'] ?? null,
+            'loginIconInput' => $_FILES['loginIconInput'] ?? null,
         ];
         $this->json(['status'=>$this->model->saveWebsiteSetting($data)]);
     }

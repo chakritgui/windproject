@@ -55,4 +55,7 @@ class  MapController extends BaseController {
         }
         return $data[$key] ?? $default;
     }
+    public function windturbines() {
+        $this->json($this->model->windturbines());
+    }
 }

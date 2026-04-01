@@ -1,12 +1,12 @@
 <?php
-class WindturbindModel {
+class WindturbineModel {
     private $db;
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
     public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 3, $orderDir = 'desc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
-        $sqlTotal = "SELECT COUNT(*) FROM wp_windturbind w {$where}";
+        $sqlTotal = "SELECT COUNT(*) FROM wp_windturbine w {$where}";
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = (int)$stmt->fetchColumn();
@@ -14,8 +14,8 @@ class WindturbindModel {
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
             0 => "p.project_name",
-            1 => "w.windturbind_lat",
-            2 => "w.windturbind_lng",
+            1 => "w.windturbine_lat",
+            2 => "w.windturbine_lng",
             3 => "w.created_at",
             4 => "w.status"
         ];
@@ -25,11 +25,11 @@ class WindturbindModel {
         $sql = "SELECT
                 w.id, 
                 p.project_name,
-                w.windturbind_lat,
-                w.windturbind_lng,
+                w.windturbine_lat,
+                w.windturbine_lng,
                 w.status,
                 w.created_at
-            FROM wp_windturbind w
+            FROM wp_windturbine w
             LEFT JOIN wp_project p ON p.project_id = w.project_id
             {$where}
             ORDER BY {$order} {$orderDir}
@@ -125,12 +125,12 @@ class WindturbindModel {
         ];
     }
     public function delete($id) {
-        $sql = "UPDATE wp_windturbind SET status=?, updated_at=NOW() WHERE id=?";
+        $sql = "UPDATE wp_windturbine SET status=?, updated_at=NOW() WHERE id=?";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute(['deleted', (int)$id]);
     }
     public function clear(){
-        $sql = "UPDATE wp_windturbind SET status = 'deleted' where status = 'active'";
+        $sql = "UPDATE wp_windturbine SET status = 'deleted' where status = 'active'";
         $this->db->exec($sql);
         return [
             'status'  => true,
@@ -172,9 +172,9 @@ class WindturbindModel {
                 }
             }
             if ($mode === 'replace') {
-                $this->db->query("UPDATE wp_windturbind SET status = 'deleted'"); 
+                $this->db->query("UPDATE wp_windturbine SET status = 'deleted'"); 
             }
-            $sql = "INSERT INTO wp_windturbind (project_id, windturbind_lat, windturbind_lng, status, created_at, updated_at) VALUES ";
+            $sql = "INSERT INTO wp_windturbine (project_id, windturbine_lat, windturbine_lng, status, created_at, updated_at) VALUES ";
             $placeholders = [];
             $values = [];
             foreach ($rows as $row) {
@@ -278,7 +278,7 @@ class WindturbindModel {
         return $value;
     }
     public function updateStatus($id, $status) {
-        $sql = "UPDATE wp_windturbind SET status=?, updated_at=NOW() WHERE id=?";
+        $sql = "UPDATE wp_windturbine SET status=?, updated_at=NOW() WHERE id=?";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([$status, (int)$id]);
     }

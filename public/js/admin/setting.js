@@ -126,8 +126,9 @@ const settingHandlers = {
     logo: v => renderImage('logoPreview', v),
     icon: v => renderImage('iconPreview', v),
     login_mobile_bg: v => renderBg('loginMobilePreview', v, 'mobile'),
-    login_bg: v => renderBg('loginPreview', v, 'pc'),
+    login_icon: v => renderBg('loginIconPreview', v),
     infography: v => renderBg('infographyPreview', v, 'infography'),
+    infography: v => renderBg('loginIconPreview', v, 'infography'),
     website_en: v => $('#nameEn').val(v),
     website_lo: v => $('#nameLo').val(v),
     website_th: v => $('#nameTh').val(v),
@@ -330,6 +331,7 @@ $(document).on('click', '.save-information', function () {
     fd.append('site_assessment_th', $('#site_assessment_th').html());
     fd.append('logoInput', $('#logoInput')[0].files[0] || null);
     fd.append('iconInput', $('#iconInput')[0].files[0] || null);
+    fd.append('loginIconInput', $('#loginIconInput')[0].files[0] || null);
     uploadWithProgress(`/api/settings.info`, fd, '.save-information').done(res => {
         res.status ? (showSuccess(langData['saved_successfully']), initSetting(), $('#windModal').modal('hide')) : showError(langData['cannot_save']);
     }).fail(() => showError(langData['cannot_save']));

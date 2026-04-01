@@ -80,6 +80,18 @@
                             <input type="file" id="iconInput" class="d-none" accept="image/*" onchange="previewImage(this, 'iconPreview')">
                             <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('iconInput').click()"><i class="fa-solid fa-upload me-2"></i><span data-i18n="choose"></span></button>
                         </div>
+                        <div class="col-md-4">
+                            <label class="form-label" data-i18n="login_icon"></label>
+                            <div class="preview-box" id="loginIconPreview">
+                                <div class="text-center">
+                                    <i class="a-cloud-arrow-up fs-1 text-muted"></i>
+                                    <p class="mt-2 text-muted"><span data-i18n="uploadFile"></span></p>
+                                    <small class="text-muted"><span data-i18n="image"></span> (<span data-i18n="recommend"></span> 200 x 200px)</small>
+                                </div>
+                            </div>
+                            <input type="file" id="loginIconInput" class="d-none" accept="image/*" onchange="previewImage(this, 'loginIconPreview', 'icon')">
+                            <button class="btn btn-outline-primary w-100 mt-3 upload-btn" onclick="document.getElementById('loginIconInput').click()"><i class="fa-solid fa-upload me-2"></i><span data-i18n="choose"></span></button>
+                        </div>
                     </div>
                     <h6 class="card-title mt-4 mb-3"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="website_name"></span></h6>
                     <small class="text-muted d-block mb-2">

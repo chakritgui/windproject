@@ -647,7 +647,7 @@
     "max_wind_speed": "Max wind speed",
     "min_wind_speed": "Min wind speed",
     "show_place_label": "Show location sign",
-    "reset_view": "Reset View",
+    "reset_view": "Reset view",
     "wind_speed_unit": "Wind Speed Unit",
     "invalid_password": "Invalid password. {n} attempts remaining.",
     "too_many_attempts": "Too many attempts. Locked for {n} min (until {t})",
@@ -659,8 +659,14 @@
     "tip_scrolling_text": "Recommended: 150-200 characters per loop. Use '|' or icons to separate sentences.",
     "tip_site_assessment": "Recommended: 50-80 characters. Focus on keywords and use small icons (max 20px).",
     "tip_footer": "Recommended: Max 100 characters. Keep it concise for a balanced look.",
-    "windturbind": "Wind Turbind",
+    "windturbine": "Wind turbine",
     "importMode": "Import Mode",
     "add-new-keep-old": "Add New (Keep Old)",
-    "replace-duplicate": "Replace Duplicate (Inactive All First)"
+    "replace-duplicate": "Replace Duplicate (Inactive All First)",
+    "wind_animation": "Wind animation",
+    "map_view": "Map view",
+    "no_fill": "No Fill",
+    "no_border": "No Border",
+    "layers": "Layers",
+    "satellite": "Satellite"
 }

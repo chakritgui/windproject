@@ -194,12 +194,12 @@
             $router->post('/api/project.content.delete', 'ProjectController@deleteContent');
             $router->post('/api/project.unlink', 'ProjectController@unlink');
             $router->post('/api/project.sort', 'ProjectController@sort');
-            $router->post('/api/windturbind.list', 'WindturbindController@list');
-            $router->post('/api/windturbind.filter', 'WindturbindController@filter');
-            $router->post('/api/windturbind.delete', 'WindturbindController@delete');
-            $router->post('/api/windturbind.import', 'WindturbindController@import');
-            $router->post('/api/windturbind.updateStatus', 'WindturbindController@updateStatus');
-            $router->post('/api/windturbind.clear', 'WindturbindController@clear');
+            $router->post('/api/windturbine.list', 'WindturbineController@list');
+            $router->post('/api/windturbine.filter', 'WindturbineController@filter');
+            $router->post('/api/windturbine.delete', 'WindturbineController@delete');
+            $router->post('/api/windturbine.import', 'WindturbineController@import');
+            $router->post('/api/windturbine.updateStatus', 'WindturbineController@updateStatus');
+            $router->post('/api/windturbine.clear', 'WindturbineController@clear');
         } else {
             $router->get('/disclaimer', 'UserController@disclaimer');
             $router->post('/api/accept-disclaimer', 'UserController@acceptDisclaimer');
@@ -223,6 +223,7 @@
             $router->post('/api/project.get', 'MapController@project');
             $router->post('/api/type.get', 'MapController@type');
             $router->post('/api/installations.get', 'MapController@station');
+            $router->post('/api/windturbines.get', 'MapController@windturbines');
             $router->post('/api/poles.stats', 'PoleController@polestats');
             $router->post('/api/poles.val', 'PoleController@poleval');
             $router->post('/api/heght.level', 'PoleController@level');

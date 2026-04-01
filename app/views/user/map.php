@@ -1,13 +1,15 @@
 <link rel="stylesheet" href="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.css">
 <script src="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.js"></script>
 <link href="<?=asset('public/css/page.css')?>" rel="stylesheet">
+<script src="<?=asset('public/js/user/mapConfig.js')?>"></script>
+<script src="<?=asset('public/js/user/mapHelper.js')?>"></script>
 <script>
     let windyAPI, map, poleLayerGroup;
     let DEFAULT_LEVEL = '100m';
     let options = { 
         lat: 16.5, 
         lon: 106.0, 
-        zoom: 8, 
+        zoom: 13, 
         preferCanvas: true,
         updateWhenZooming: true,
         updateWhenIdle: false,
@@ -16,10 +18,11 @@
         fadeAnimation: true,
         markerZoomAnimation: true,
         keepBuffer: 2, 
-        zoomSnap: 0.1,
-        zoomDelta: 0.5, 
+        zoomSnap: 1,
+        zoomDelta: 1,
         wheelPxPerZoomLevel: 120,
         labels: false, 
+        maxZoom: 14,
     };
     function loadScript(src) {
         return new Promise((resolve, reject) => {
@@ -50,8 +53,6 @@
         }
     })();
 </script>
-<script src="<?=asset('public/js/user/mapConfig.js')?>"></script>
-<script src="<?=asset('public/js/user/mapHelper.js')?>"></script>
 <link rel="stylesheet" href="<?=asset('public/css/map.css')?>">
 <link rel="stylesheet" href="<?=asset('public/css/pole.css')?>">
 <div id="globe-intro">
@@ -313,7 +314,7 @@
         <?php endfor; ?>
     </div>
 </div>
-<div id="area-panel">
+<div id="area-panel" class="collapsed">
     <button id="area-panel-tab" onclick="toggleAreaPanel()">
         <span class="tab-arrow">
             <i class="fa fa-chevron-right"></i>
@@ -331,70 +332,119 @@
 </div>
 <div id="windy"></div>
 <div class="side-control-panel" id="sideControlPanel">
-    <div class="panel-section">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="section-title mb-0"><i class="fa-solid fa-sliders me-2"></i><span data-i18n="map_controls"></span></h6>
-            <button class="btn-toggle-expand d-none d-md-flex" id="toggleExpandBtn">
-                <i class="fa-solid fa-chevron-down"></i>
-            </button>
+    <div class="scp-header">
+        <div class="scp-title">
+            <i class="fa-solid fa-sliders"></i>
+            <span data-i18n="map_controls"></span>
         </div>
-        <div class="control-grid-wrapper">
+        <button class="btn-collapse d-none d-md-flex" id="toggleExpandBtn" onclick="togglePanelCollapse()">
+            <i class="fa-solid fa-chevron-down"></i>
+        </button>
+    </div>
+    <div class="scp-body" id="scpBody">
+        <div class="scp-section">
             <div class="control-row">
-                <div class="d-flex align-items-center gap-2">
+                <div class="ctrl-label">
                     <i class="fa-solid fa-fan wind-icon-anim" id="wind-status-icon"></i>
                     <span data-i18n="show_wind_values"></span>
                 </div>
-                <div class="form-check form-switch">
-                    <input class="form-check-input custom-switch" type="checkbox" id="toggle-wind-values">
-                </div>
+                <label class="tog">
+                    <input type="checkbox" id="toggle-wind-values">
+                    <span class="tog-track"></span>
+                </label>
             </div>
             <div class="control-row">
-                <div class="d-flex align-items-center gap-2">
+                <div class="ctrl-label">
                     <i class="fa-solid fa-crosshairs"></i>
                     <span data-i18n="focus_mode"></span>
                 </div>
-                <div class="form-check form-switch">
-                    <input class="form-check-input custom-switch" type="checkbox" id="toggle-focus">
-                </div>
+                <label class="tog">
+                    <input type="checkbox" id="toggle-focus">
+                    <span class="tog-track"></span>
+                </label>
             </div>
             <div class="control-row">
-                <div class="d-flex align-items-center gap-2">
-                    <i class="fa-solid fa-expand"></i>
+                <div class="ctrl-label">
+                    <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
                     <span data-i18n="reset_view"></span>
                 </div>
-                <button class="btn-reset-view" onclick="resetView()" title="Reset View">
-                    <i class="fa-solid fa-arrow-rotate-left"></i>
+                <button class="btn-reset-view" onclick="resetView()">
+                    <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
                 </button>
             </div>
         </div>
-    </div>
-    <div class="panel-expandable-content" id="expandableContent">
-        <div class="panel-section">
-            <div class="control-grid-wrapper">
-                <div class="control-row">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-layer-group"></i>
-                        <span data-i18n="show_place_label"></span>
-                    </div>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input custom-switch" type="checkbox" id="toggle-label">
+        <div class="scp-section">
+            <div class="control-row">
+                <div class="ctrl-label">
+                    <i class="fas fa-broadcast-tower"></i>
+                    <span data-i18n="wind_measurement_equipment"></span>
+                </div>
+                <label class="tog">
+                    <input class="equipment-switch" type="checkbox" id="toggle-equipment">
+                    <span class="tog-track"></span>
+                </label>
+            </div>
+            <div class="control-row">
+                <div class="ctrl-label">
+                    <i class="bi bi-fan"></i>
+                    <span data-i18n="windturbine"></span>
+                </div>
+                <label class="tog">
+                    <input class="windturbine-switch" type="checkbox" id="toggle-windturbine">
+                    <span class="tog-track"></span>
+                </label>
+            </div>
+            <div class="control-row">
+                <div class="ctrl-label">
+                    <i class="fa-solid fa-wind"></i>
+                    <span data-i18n="wind_animation"></span>
+                </div>
+                <label class="tog">
+                    <input class="animation-switch" type="checkbox" id="toggle-animation">
+                    <span class="tog-track"></span>
+                </label>
+            </div>
+            <div class="control-row">
+                <div class="ctrl-label">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span data-i18n="show_place_label"></span>
+                </div>
+                <label class="tog">
+                    <input class="custom-switch" type="checkbox" id="toggle-label">
+                    <span class="tog-track"></span>
+                </label>
+            </div>
+        </div>
+        <div class="scp-section">
+            <div class="map-mode-wrap">
+                <div class="map-mode-card" id="mapModeWind" onclick="setMapMode('wind')">
+                    <img src="<?=BASE_URL?>/public/images/wind-thumb.jpg" alt="Satellite view" class="thumb-sat">
+                    <div class="mode-check"><i class="fa-solid fa-check"></i></div>
+                    <div class="mode-label">
+                        <i class="fa-solid fa-wind"></i> <span data-i18n="wind"></span>
                     </div>
                 </div>
-                <div class="control-row">
-                    <div class="d-flex align-items-center gap-2">
-                        <i class="fa-solid fa-gauge"></i>
-                        <span data-i18n="wind_speed_unit"></span>
+                <div class="map-mode-card" id="mapModeSat" onclick="setMapMode('satellite')">
+                    <img src="<?=BASE_URL?>/public/images/satellite-thumb.jpg" alt="Satellite view" class="thumb-sat">
+                    <div class="mode-check"><i class="fa-solid fa-check"></i></div>
+                    <div class="mode-label">
+                        <i class="fa-solid fa-earth-asia"></i> <span data-i18n="satellite"></span>
                     </div>
-                    <button class="btn-unit-toggle" onclick="cycleWindUnit()" id="btn-wind-unit">m/s</button>
                 </div>
             </div>
         </div>
-        <div class="panel-section">
-            <h6 class="section-title">
-                <i class="fa-solid fa-wind me-2"></i>
-                <span data-i18n="wind_speed"></span>
-                (<span id="legend-unit-label">m/s</span>)
-            </h6>
+        <div class="scp-section">
+            <div class="control-row" style="margin-bottom:0">
+                <div class="ctrl-label">
+                    <i class="fa-solid fa-gauge"></i>
+                    <span data-i18n="wind_speed"></span>
+                </div>
+                <div class="unit-group">
+                    <button class="btn-unit-select" onclick="setWindUnit(0)">m/s</button>
+                    <button class="btn-unit-select" onclick="setWindUnit(1)">km/h</button>
+                    <button class="btn-unit-select" onclick="setWindUnit(2)">kt</button>
+                </div>
+            </div>
             <div class="legend-bar"></div>
             <div class="legend-labels">
                 <span id="legend-0">0</span>
@@ -404,24 +454,24 @@
                 <span id="legend-20">20+</span>
             </div>
         </div>
-        <div class="panel-section border-0">
+        <div class="scp-section" style="border-bottom:none">
             <div class="mini-card-grid-3">
                 <div class="mini-card">
-                    <div class="mini-card-label" data-i18n="max_wind_speed"></div>
+                    <div class="mini-card-label" data-i18n="max_wind_speed">Max speed</div>
                     <div class="mini-card-value text-warning" id="stat-max-wind">
                         <span class="stat-max-wind-val">0.0</span>
                         <small class="stat-unit-label">m/s</small>
                     </div>
                 </div>
                 <div class="mini-card">
-                    <div class="mini-card-label" data-i18n="avg_wind_speed"></div>
+                    <div class="mini-card-label" data-i18n="avg_wind_speed">Avg speed</div>
                     <div class="mini-card-value text-success" id="stat-avg-wind">
                         <span class="stat-avg-wind-val">0.0</span>
                         <small class="stat-unit-label">m/s</small>
                     </div>
                 </div>
                 <div class="mini-card">
-                    <div class="mini-card-label" data-i18n="min_wind_speed"></div>
+                    <div class="mini-card-label" data-i18n="min_wind_speed">Min speed</div>
                     <div class="mini-card-value text-info" id="stat-min-wind">
                         <span class="stat-min-wind-val">0.0</span>
                         <small class="stat-unit-label">m/s</small>
@@ -431,9 +481,7 @@
         </div>
     </div>
 </div>
-<button class="mobile-fab btn btn-dark" id="fabToggle">
-    <i class="fa-solid fa-layer-group"></i>
-</button>
+<button class="mobile-fab btn" id="fabToggle"><i class="fa-solid fa-layer-group"></i></button>
 <div class="panel-overlay" id="panelOverlay"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="<?=asset('public/js/user/pole.js')?>" defer></script>
