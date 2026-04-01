@@ -10,6 +10,12 @@
     --card-bg:      rgba(255, 255, 255, 0.85);
     --radius:       18px;
 }
+body {
+    background: linear-gradient(160deg, #e8f4fd 0%, #d0eaf9 40%, #c5e2f5 100%);
+    min-height: 100vh;
+    color: var(--text);
+    overflow-x: hidden;
+}
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 .sky-wrap {
     position: fixed;
