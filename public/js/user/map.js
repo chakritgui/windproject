@@ -228,10 +228,10 @@ async function loadPoles() {
     });
     if (!Array.isArray(poles)) return;
     window._usedLabelBoxes = [];
-    const totalPoles  = poles.length;
-    const chunkSize   = 40;
-    let currentIndex  = 0;
-    const initSize    = _calcIconSize(map.getZoom()); 
+    const totalPoles = poles.length;
+    const chunkSize  = 40;
+    let currentIndex = 0;
+    const initSize   = _calcIconSize(map.getZoom());
     function renderChunk() {
         const end = Math.min(currentIndex + chunkSize, totalPoles);
         for (let i = currentIndex; i < end; i++) {
@@ -240,29 +240,34 @@ async function loadPoles() {
             const lng  = parseFloat(pole.poles_lng);
             if (isNaN(lat) || isNaN(lng)) continue;
             if (poleMarkers[pole.poles_id]) continue;
-            const marker = L.marker([lat, lng], { 
+            const marker = L.marker([lat, lng], {
                 icon:         _buildPoleIcon(pole, initSize),
-                zIndexOffset: 1000 
+                zIndexOffset: 1000
             }).addTo(poleLayerGroup);
             marker._poleData = pole;
             marker.on('click', () => openPoles(pole.poles_id));
             const windId  = `wind-auto-${pole.poles_id}`;
-            const arrowId = `arrow-${pole.poles_id}`; 
+            const arrowId = `arrow-${pole.poles_id}`;
             const off     = getSmartOffset(lat, lng, window._usedLabelBoxes, map);
             const anchorX = off.dx >= 0 ? 0 : Math.abs(off.dx);
             const anchorY = off.dy >= 0 ? 0 : Math.abs(off.dy);
-            const { svgW, svgH, html } = buildWindLabelSVG({ 
-                anchorX, anchorY, labelDx: off.dx, labelDy: off.dy, windId, arrowId 
+            const { svgW, svgH, html } = buildWindLabelSVG({
+                anchorX,
+                anchorY,
+                labelDx: off.dx,
+                labelDy: off.dy,
+                windId,
+                arrowId
             });
             const labelMarker = L.marker([lat, lng], {
-                icon: L.divIcon({ 
-                    className: 'pole-label-wrap',
-                    iconSize:  [svgW, svgH], 
-                    iconAnchor:[anchorX, anchorY], 
-                    html 
+                icon: L.divIcon({
+                    className:  'pole-label-wrap',
+                    iconSize:   [svgW, svgH],
+                    iconAnchor: [anchorX, anchorY], 
+                    html
                 }),
                 interactive:  false,
-                zIndexOffset: 500 
+                zIndexOffset: 500
             }).addTo(poleLayerGroup);
 
             if (!windOn) labelMarker.setOpacity(0);
@@ -309,7 +314,9 @@ function _buildPoleIcon(pole, size = 30) {
         iconSize:   [size * 0.6, size * 1.67],
         iconAnchor: [size * 0.1, size * 1.67],
         html: `
-        <svg width="20" height="52" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5)); width:${size * 0.6}px;height:${size * 1.67}px">
+        <svg width="20" height="52" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg"
+             style="overflow:visible;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+                    width:${size * 0.6}px;height:${size * 1.67}px">
             <circle cx="3" cy="49" r="3.5" fill="rgba(255,255,255,0.85)" stroke="${color}" stroke-width="1.5"/>
             <line x1="3" y1="46" x2="3" y2="3" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
             <line x1="3" y1="5"  x2="15" y2="5"  stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
@@ -320,52 +327,86 @@ function _buildPoleIcon(pole, size = 30) {
         </svg>`
     });
 }
-function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId, windSpeed = 0 }) {
+function buildWindLabelSVG({
+    anchorX, anchorY,
+    labelDx, labelDy,
+    windId, arrowId,
+    windSpeed = 0
+}) {
     const svgW = Math.abs(labelDx) + 100;
     const svgH = Math.abs(labelDy) + 40;
     const tipX = anchorX + labelDx;
     const tipY = anchorY + labelDy;
-    const BOX_W = 70, BOX_H = 20;
+    const BOX_W = 72;
+    const BOX_H = 22;
+    const boxX = labelDx >= 0 ? tipX         : tipX - BOX_W;
     const boxY = tipY - BOX_H / 2;
-    const boxX = labelDx >= 0 ? tipX : tipX - BOX_W;
     const arrowCX = boxX + 14;
     const arrowCY = tipY;
     const textX   = boxX + 26;
     const activeColor = getWindColor(windSpeed);
-    const unit = getCurrentUnit(); 
-    const displayValue = (windSpeed * unit.factor).toFixed(1);
+    const unit        = getCurrentUnit();
+    const displayVal  = (windSpeed * unit.factor).toFixed(1);
     return {
         svgW, svgH,
         html: `
-        <svg width="${svgW}" height="${svgH}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;pointer-events:none;display:block">
-            <line x1="${anchorX}" y1="${anchorY}" x2="${tipX}" y2="${tipY}" stroke="#ffffff" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.6" />
-            <circle cx="${anchorX}" cy="${anchorY}" r="3.5" fill="#fff" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
-            <defs>
-                <linearGradient id="labelGradient-${windId}" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#24272b"/>
-                    <stop offset="100%" stop-color="#121417"/>
-                </linearGradient>
-                <filter id="shadow-${windId}" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#000" flood-opacity="0.5"/>
-                </filter>
-            </defs>
-            <rect x="${boxX}" y="${boxY}" width="${BOX_W}" height="${BOX_H}" rx="11" fill="url(#labelGradient-${windId})" fill-opacity="0.98" stroke="rgba(255,255,255,0.25)" stroke-width="0.8" filter="url(#shadow-${windId})"/>
-            <g id="${arrowId}" data-cx="${arrowCX}" data-cy="${arrowCY}" transform="rotate(0, ${arrowCX}, ${arrowCY})" style="filter: drop-shadow(0px 0px 1px rgba(0,0,0,0.5));">
-                <text x="${arrowCX}" y="${arrowCY}" font-size="10" fill="${activeColor}" text-anchor="middle" dominant-baseline="central">➤</text>
-            </g>
-            <text id="${windId}" data-raw="${windSpeed}" x="${textX}" y="${arrowCY}" font-family="sans-serif" font-size="8" font-weight="700"  fill="#FFFFFF" text-anchor="start" dominant-baseline="central" style="paint-order: stroke; stroke: rgba(0,0,0,0.3); stroke-width: 1px;">
-                ${displayValue} <tspan font-weight="400" font-size="9" fill="rgba(255,255,255,0.7)">${unit.label}</tspan>
-            </text>
-        </svg>`
+<svg width="${svgW}" height="${svgH}" xmlns="http://www.w3.org/2000/svg"
+     style="overflow:visible;pointer-events:none;display:block">
+  <line
+    x1="${anchorX}" y1="${anchorY}"
+    x2="${tipX}"    y2="${tipY}"
+    stroke="#ffffff" stroke-width="1.2" stroke-dasharray="3,2" opacity="0.55"/>
+  <circle cx="${anchorX}" cy="${anchorY}" r="3" fill="#fff" stroke="rgba(0,0,0,0.25)" stroke-width="1"/>
+  <defs>
+    <linearGradient id="lg-${windId}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#24272b"/>
+      <stop offset="100%" stop-color="#121417"/>
+    </linearGradient>
+    <filter id="sh-${windId}" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <rect
+    x="${boxX}" y="${boxY}"
+    width="${BOX_W}" height="${BOX_H}"
+    rx="11"
+    fill="url(#lg-${windId})"
+    fill-opacity="0.97"
+    stroke="rgba(255,255,255,0.22)"
+    stroke-width="0.8"
+    filter="url(#sh-${windId})"/>
+  <g id="${arrowId}"
+     data-cx="${arrowCX}" data-cy="${arrowCY}"
+     transform="rotate(0, ${arrowCX}, ${arrowCY})">
+    <text
+      x="${arrowCX}" y="${arrowCY}"
+      font-size="10" fill="${activeColor}"
+      text-anchor="middle" dominant-baseline="central">➤</text>
+  </g>
+  <text
+    id="${windId}"
+    data-raw="${windSpeed}"
+    x="${textX}" y="${arrowCY}"
+    font-family="sans-serif" font-size="8" font-weight="700"
+    fill="#FFFFFF"
+    text-anchor="start" dominant-baseline="central"
+    style="paint-order:stroke;stroke:rgba(0,0,0,0.3);stroke-width:1px">
+    ${displayVal} <tspan font-weight="400" font-size="9" fill="rgba(255,255,255,0.65)">${unit.label}</tspan>
+  </text>
+</svg>`
     };
 }
 const BASE_OFFSETS = [
-    { dx: 70, dy: -50 }, { dx: -70, dy: -50 },
-    { dx: 70, dy:  40 }, { dx: -70, dy: 40 },
-    { dx: 0, dy: -80 }, { dx: 120, dy: 0 },
-    { dx:-120, dy: 0 }
+    { dx:  75, dy: -50 },
+    { dx: -75, dy: -50 },
+    { dx:  75, dy:  45 },
+    { dx: -75, dy:  45 },
+    { dx:   0, dy: -85 },
+    { dx: 130, dy:   0 },
+    { dx:-130, dy:   0 },
 ];
-const LABEL_W = 70, LABEL_H = 24;
+const LABEL_W = 72;
+const LABEL_H = 22;
 function getSmartOffset(lat, lng, usedBoxes, map) {
     const point = map.latLngToContainerPoint([lat, lng]);
     for (let step = 0; step < 8; step++) {
@@ -383,7 +424,10 @@ function getSmartOffset(lat, lng, usedBoxes, map) {
             }
         }
     }
-    return { dx: 100 + Math.random() * 50, dy: (Math.random() - 0.5) * 100 };
+    return {
+        dx: 100 + Math.random() * 50,
+        dy: (Math.random() - 0.5) * 100
+    };
 }
 function isOverlapping(a, b) {
     return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
