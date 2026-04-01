@@ -838,7 +838,7 @@ header .nav-link:hover {
 }
 #area-panel {
     position: fixed;
-    top: 75px;
+    top: 50px;
     left: 10px;
     width: 250px;
     max-height: calc(100vh - 70px);
