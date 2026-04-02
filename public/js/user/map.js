@@ -642,7 +642,7 @@ function buildPickerPopupHTML(lat, lng, { speed, direction, gusts }) {
         return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>`;
     }).join('');
     const gustHtml = gusts !== null
-        ? `<div class="cpicker-gust" id="picker-gust-wrap" style="color:${getWindColor(gusts)}">
+        ? `<div class="cpicker-gust" id="picker-gust-wrap">
                <i class="fa-solid fa-wind" style="font-size:9px"></i>
                <span data-i18n="gusts">${langData['gusts'] || 'Gusts'}</span>
                <span id="picker-gust-value" data-raw="${gusts}">
