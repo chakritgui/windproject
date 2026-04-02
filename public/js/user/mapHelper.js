@@ -381,11 +381,9 @@ function updateWindUI() {
                 }
             }
             const gustValEl = popupPane.querySelector('#picker-gust-value');
-            const gustWrap = popupPane.querySelector('#picker-gust-wrap');
             if (gustValEl) {
                 const gMs = parseFloat(gustValEl.dataset.raw);
                 gustValEl.textContent = `${(gMs * unit.factor).toFixed(1)} ${unit.label}`;
-                if (gustWrap) gustWrap.style.color = getWindColor(gMs);
             }
         }
     }

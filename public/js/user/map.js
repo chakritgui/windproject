@@ -222,6 +222,11 @@ async function loadWindTurbines() {
     const s = document.createElement('style');
     s.id = 'pole-map-styles';
     s.textContent = `
+        .wind-unit-label {
+            fill: rgba(255,255,255,0.55) !important;
+            stroke: none !important;
+            color: rgba(255,255,255,0.55) !important;
+        }
         .pole-label-wrap svg   { transition: opacity 0.25s ease; }
         .pole-icon-wrap  svg   { transition: width 0.2s ease, height 0.2s ease; }
         .leaflet-marker-icon,
@@ -258,7 +263,7 @@ function _calcLabelScale(zoom) {
 }
 function _calcIconSize(zoom) {
     const MIN_ZOOM = 8,  MAX_ZOOM = maxZoomLevel;
-    const MIN_SIZE = 25, MAX_SIZE = 120;
+    const MIN_SIZE = 24, MAX_SIZE = 120;
     const t    = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
     const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
     return Math.round(MIN_SIZE + (MAX_SIZE - MIN_SIZE) * ease);
@@ -358,7 +363,28 @@ function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId
             <g id="${arrowId}" data-cx="${arrowCX}" data-cy="${arrowCY}" transform="rotate(0, ${arrowCX}, ${arrowCY})">
                 <text x="${arrowCX}" y="${arrowCY}" font-size="${fs3}" fill="${activeColor}" text-anchor="middle" dominant-baseline="central" filter="url(#${glowId})">➤</text>
             </g>
-            <text id="${windId}" data-raw="${windSpeed}" x="${textX}" y="${arrowCY}" font-size="${fs1}" font-weight="700" fill="${activeColor}" text-anchor="start" dominant-baseline="central" style="paint-order:stroke;stroke:rgba(0,0,0,0.4);stroke-width:1.2px;stroke-linejoin:round"> ${displayVal}<tspan font-weight="400" font-size="${fs2}" fill="rgba(255,255,255,0.55)" dx="${Math.round(2 * scale)}"> ${label}</tspan></text>
+            <text id="${windId}" 
+                data-raw="${windSpeed}" 
+                x="${textX}" 
+                y="${arrowCY}" 
+                font-size="${fs1}" 
+                font-weight="700" 
+                fill="${activeColor}" 
+                text-anchor="start" 
+                dominant-baseline="central" 
+                style="paint-order:stroke; stroke:rgba(0,0,0,0.4); stroke-width:1.2px; stroke-linejoin:round"
+            > 
+                ${displayVal}
+                <tspan 
+                    class="wind-unit-label"
+                    font-weight="400" 
+                    font-size="${fs2}" 
+                    dx="${Math.round(2 * scale)}"
+                    style="fill: rgba(255,255,255,0.55) !important; stroke: none !important;"
+                > 
+                    ${label}
+                </tspan>
+            </text>
         </svg>`
     };
 }
@@ -645,9 +671,7 @@ function buildPickerPopupHTML(lat, lng, { speed, direction, gusts }) {
         ? `<div class="cpicker-gust" id="picker-gust-wrap">
                <i class="fa-solid fa-wind" style="font-size:9px"></i>
                <span data-i18n="gusts">${langData['gusts'] || 'Gusts'}</span>
-               <span id="picker-gust-value" data-raw="${gusts}">
-                  ${(gusts * unit.factor).toFixed(1)} ${unit.label}
-               </span>
+                <span id="picker-gust-value" data-raw="${gusts}">${(gusts * unit.factor).toFixed(1)} ${unit.label}</span>
            </div>`
         : '';
     return `
