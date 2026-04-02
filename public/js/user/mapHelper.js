@@ -342,22 +342,7 @@ function updateWindUI() {
         const gradient = WINDY_COLORS.map(c => c.color).join(', ');
         bar.style.background = `linear-gradient(to right, ${gradient})`;
     }
-    Object.values(poleMarkers).forEach(p => {
-        const el = document.getElementById(p.windId);
-        if (!el) return;
-        const ms = parseFloat(el.dataset.raw);
-        if (isNaN(ms)) return;
-        const activeColor = getWindColor(ms);
-        const displayVal = (ms * unit.factor).toFixed(1);
-        el.textContent = `${displayVal} ${unit.label}`;
-        el.setAttribute('fill', activeColor);
-        el.style.fontWeight = '700';
-        const arrow = document.getElementById(p.arrowId);
-        if (arrow) {
-            const arrowIcon = arrow.querySelector('text');
-            if (arrowIcon) arrowIcon.setAttribute('fill', activeColor);
-        }
-    });
+    resizeLabel();
     if (typeof customPickerMarker !== 'undefined' && customPickerMarker && customPickerMarker.isPopupOpen()) {
         const popupPane = customPickerMarker.getPopup().getElement();
         if (popupPane) {
@@ -390,6 +375,46 @@ function updateWindUI() {
     if (typeof updateWindDashboardUnit === 'function') {
         updateWindDashboardUnit(unit);
     }
+}
+function resizeLabel() {
+    const zoom  = map.getZoom();
+    const size  = _calcIconSize(zoom);
+    const scale = _calcLabelScale(zoom);
+    window._usedLabelBoxes = [];
+    const polePoints = Object.values(poleMarkers).map(({ lat, lng }) =>
+        map.latLngToContainerPoint([lat, lng])
+    );
+    Object.values(poleMarkers).forEach(({ marker, labelMarker, lat, lng, windId, arrowId }) => {
+        const pd = marker._poleData;
+        if (!pd) return;
+        marker.setIcon(_buildPoleIcon(pd, size));
+        const pt = map.latLngToContainerPoint([lat, lng]);
+        const otherPts = polePoints.filter(p =>
+            !(Math.abs(p.x - pt.x) < 1 && Math.abs(p.y - pt.y) < 1)
+        );
+        const off = getSmartOffset(lat, lng, window._usedLabelBoxes, map, zoom, otherPts);
+        const anchorX = off.dx >= 0 ? 0 : Math.abs(off.dx);
+        const anchorY = off.dy >= 0 ? 0 : Math.abs(off.dy);
+        const windEl    = document.getElementById(windId);
+        const arrowEl   = document.getElementById(arrowId);
+        const windSpeed = windEl  ? parseFloat(windEl.dataset.raw)  || 0 : 0;
+        const windDir   = arrowEl ? parseFloat(arrowEl.dataset.dir) || 0 : 0;
+        const { svgW, svgH, html } = buildWindLabelSVG({
+            anchorX, anchorY,
+            labelDx: off.dx,
+            labelDy: off.dy,
+            windId, arrowId,
+            windSpeed,
+            windDir,
+            scale
+        });
+        labelMarker.setIcon(L.divIcon({
+            className:  'pole-label-wrap',
+            iconSize:   [svgW, svgH],
+            iconAnchor: [anchorX, anchorY],
+            html
+        }));
+    });
 }
 function setWindUnit(idx) {
     currentUnitIdx = idx;
