@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 29, 2026 at 06:40 PM
+-- Generation Time: Apr 02, 2026 at 04:39 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -248,7 +248,8 @@ CREATE TABLE `wp_contract` (
   `contract_end` date DEFAULT NULL,
   `status` enum('active','inactive','expired','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  `item_order` bigint(20) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -386,7 +387,8 @@ CREATE TABLE `wp_height` (
   `height_limit` bigint(20) NOT NULL DEFAULT '3',
   `status` enum('active','inactive','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  `item_order` bigint(20) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -434,7 +436,8 @@ CREATE TABLE `wp_installations` (
   `installations_name_display` varchar(255) DEFAULT NULL,
   `status` enum('active','inactive','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  `item_order` bigint(20) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -492,7 +495,8 @@ CREATE TABLE `wp_map_polygons` (
   `project_id` bigint(20) DEFAULT NULL,
   `status` enum('active','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  `item_order` bigint(20) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -683,7 +687,8 @@ CREATE TABLE `wp_poles` (
   `poles_source` enum('manual','import') NOT NULL DEFAULT 'import',
   `status` enum('online','inactive','deleted') NOT NULL DEFAULT 'online',
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  `item_order` bigint(20) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -706,7 +711,8 @@ CREATE TABLE `wp_project` (
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   `project_background` varchar(255) DEFAULT NULL,
-  `project_opacity` bigint(20) NOT NULL DEFAULT '0'
+  `project_opacity` bigint(20) NOT NULL DEFAULT '0',
+  `item_order` bigint(20) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -720,7 +726,8 @@ CREATE TABLE `wp_project_group` (
   `project_group_name` varchar(255) NOT NULL,
   `status` enum('active','inactive','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  `item_order` bigint(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -733,7 +740,8 @@ CREATE TABLE `wp_project_pole_type` (
   `id` bigint(20) NOT NULL,
   `project_id` bigint(20) NOT NULL,
   `type_id` bigint(20) NOT NULL,
-  `created_at` datetime NOT NULL
+  `created_at` datetime NOT NULL,
+  `item_order` bigint(20) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -748,7 +756,8 @@ CREATE TABLE `wp_project_status` (
   `project_status_color` varchar(255) DEFAULT '#3b82f6',
   `status` enum('active','inactive','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  `item_order` bigint(20) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -778,7 +787,8 @@ CREATE TABLE `wp_type` (
   `type_icon` longtext,
   `status` enum('active','inactive','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL
+  `updated_at` datetime NOT NULL,
+  `item_order` bigint(20) DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
@@ -815,6 +825,22 @@ CREATE TABLE `wp_winds` (
   `turbulence_intensity` double(20,2) NOT NULL DEFAULT '0.00',
   `status` enum('active','deleted') NOT NULL DEFAULT 'active'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wp_windturbine`
+--
+
+CREATE TABLE `wp_windturbine` (
+  `id` bigint(20) NOT NULL,
+  `project_id` bigint(20) NOT NULL,
+  `windturbine_lat` decimal(10,6) DEFAULT NULL,
+  `windturbine_lng` decimal(10,6) DEFAULT NULL,
+  `status` enum('active','inactive','deleted') NOT NULL DEFAULT 'active',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Indexes for dumped tables
@@ -1157,6 +1183,13 @@ ALTER TABLE `wp_winds`
   ADD KEY `idx_levels_id` (`levels_id`);
 
 --
+-- Indexes for table `wp_windturbine`
+--
+ALTER TABLE `wp_windturbine`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_project_point` (`project_id`,`windturbine_lat`,`windturbine_lng`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -1428,6 +1461,12 @@ ALTER TABLE `wp_user_disclaimer_accepts`
 -- AUTO_INCREMENT for table `wp_winds`
 --
 ALTER TABLE `wp_winds`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `wp_windturbine`
+--
+ALTER TABLE `wp_windturbine`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
