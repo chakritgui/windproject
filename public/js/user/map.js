@@ -259,11 +259,11 @@ function _calcOffsetDist(zoom) {
 function _calcLabelScale(zoom) {
     const MIN_ZOOM = 8, MAX_ZOOM = maxZoomLevel;
     const t = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
-    return 0.42 + 0.58 * t;
+    return 0.52 + 0.68 * t;
 }
 function _calcIconSize(zoom) {
     const MIN_ZOOM = 8,  MAX_ZOOM = maxZoomLevel;
-    const MIN_SIZE = 24, MAX_SIZE = 120;
+    const MIN_SIZE = 26, MAX_SIZE = 120;
     const t    = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
     const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
     return Math.round(MIN_SIZE + (MAX_SIZE - MIN_SIZE) * ease);
