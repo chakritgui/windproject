@@ -1113,13 +1113,6 @@ $(document).ready(function () {
                 pointer-events: none;
                 transform: translateY(8px);
             }
-            #area-panel {
-                transition: opacity 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-            }
-            #area-panel.panel-pre-anim {
-                opacity: 0 !important;
-                transform: translateX(-16px);
-            }
             #wind-loading {
                 transition: opacity 0.6s ease;
             }
