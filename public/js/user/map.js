@@ -258,7 +258,7 @@ function _calcLabelScale(zoom) {
 }
 function _calcIconSize(zoom) {
     const MIN_ZOOM = 8,  MAX_ZOOM = maxZoomLevel;
-    const MIN_SIZE = 28, MAX_SIZE = 120;
+    const MIN_SIZE = 25, MAX_SIZE = 120;
     const t    = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
     const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
     return Math.round(MIN_SIZE + (MAX_SIZE - MIN_SIZE) * ease);
