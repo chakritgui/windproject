@@ -14,13 +14,15 @@ class MapModel{
                 WHEN m.project_id IS NOT NULL THEN COALESCE(NULLIF(p.project_name_display, ''), p.project_name, '')
                 ELSE m.area_name
             END AS area_name, 
-            m.geo_data, m.custom_style, ifnull(s.project_status_color, '') as area_status_color, p.project_id 
-            FROM wp_map_polygons m 
-            LEFT JOIN wp_project p on p.project_id = m.project_id 
-            LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id 
-            WHERE m.status = 'active' 
-            group by m.poly_id 
-            order by ifnull(m.item_order, m.poly_id) ASC";
+            m.geo_data, 
+            m.custom_style, 
+            IFNULL(s.project_status_color, '') AS area_status_color, 
+            p.project_id 
+        FROM wp_map_polygons m 
+        LEFT JOIN wp_project p ON p.project_id = m.project_id 
+        LEFT JOIN wp_project_status s ON s.project_status_id = p.project_status_id 
+        WHERE m.status = 'active' 
+        ORDER BY m.item_order ASC, m.poly_id ASC;";
         $polygons = $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
         return ['polygons' => $polygons];
     }

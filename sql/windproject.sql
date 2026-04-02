@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 02, 2026 at 04:39 PM
+-- Generation Time: Apr 02, 2026 at 05:11 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -1027,7 +1027,8 @@ ALTER TABLE `wp_login_logs`
   ADD PRIMARY KEY (`logs_id`),
   ADD KEY `idx_member_id` (`member_id`),
   ADD KEY `idx_login_at` (`login_at`),
-  ADD KEY `idx_log_type` (`log_type`);
+  ADD KEY `idx_log_type` (`log_type`),
+  ADD KEY `idx_member_last_log` (`member_id`,`logs_id`);
 
 --
 -- Indexes for table `wp_map_master`
@@ -1040,7 +1041,8 @@ ALTER TABLE `wp_map_master`
 --
 ALTER TABLE `wp_map_polygons`
   ADD PRIMARY KEY (`poly_id`),
-  ADD UNIQUE KEY `unique_area_per_map` (`map_id`,`area_name`);
+  ADD UNIQUE KEY `unique_area_per_map` (`map_id`,`area_name`),
+  ADD KEY `idx_status_project` (`status`,`project_id`);
 
 --
 -- Indexes for table `wp_members`

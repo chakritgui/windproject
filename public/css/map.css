@@ -1571,7 +1571,7 @@ header .nav-link:hover {
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: #fff;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-    z-index: 1100;
+    z-index: 10001;
     display: none;
     align-items: center;
     justify-content: center;

@@ -123,14 +123,15 @@
             $sql = "UPDATE wp_login_logs 
                     SET timezone = :timezone,
                         login_location = :login_location
-                    WHERE member_id = :member_id 
-                    ORDER BY logs_id DESC 
-                    LIMIT 1";
+                    WHERE logs_id = (
+                        SELECT MAX(logs_id) 
+                        FROM (SELECT logs_id FROM wp_login_logs WHERE member_id = :member_id_inner) AS tmp
+                    )";
             $stmt = $this->db->prepare($sql);
             $stmt->execute([
                 ':timezone'       => $timezone,
                 ':login_location' => $login_location,
-                ':member_id'      => $member_id
+                ':member_id_inner' => $member_id
             ]);
             return 'success';
         }
