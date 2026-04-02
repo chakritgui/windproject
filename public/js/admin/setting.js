@@ -125,6 +125,7 @@ function initSetting() {
 const settingHandlers = {
     logo: v => renderImage('logoPreview', v),
     icon: v => renderImage('iconPreview', v),
+    login_bg: v => renderBg('loginPreview', v, 'pc'),
     login_mobile_bg: v => renderBg('loginMobilePreview', v, 'mobile'),
     login_icon: v => renderBg('loginIconPreview', v),
     infography: v => renderBg('infographyPreview', v, 'infography'),

@@ -212,12 +212,20 @@
         let start = null;
         let raf;
         let pinDropped = false;
+        let delayBeforeStart = 1500;
         function easeIn(t) { return t * t * t * t; }
         function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
         function easeInOut(t) { return t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3) / 2; }
         function animate(ts) {
             raf = requestAnimationFrame(animate);
-            if (!start) start = ts;
+            if (!start) {
+                start = ts + delayBeforeStart;
+                return;
+            }
+            if (ts < start) {
+                renderer.render(scene, camera);
+                return;
+            }
             const t = (ts - start) / 1000;
             const time = ts * 0.001;
             if (t <= 4) {

@@ -9,65 +9,62 @@ class SortModel {
             case 'contract':
                 $sql = "SELECT 
                     contract_id as item_id,
-                    contract_name as item_name,
-                    '' as item_detail
+                    contract_name as item_name
                     FROM wp_contract
                     WHERE status <> 'deleted' ORDER BY ifnull(item_order, contract_id) ASC";
                 break;
             case 'project':
                 $sql = "SELECT 
                     project_id as item_id,
-                    project_name as item_name,
-                    '' as item_detail
+                    project_name as item_name
                     FROM wp_project
                     WHERE status <> 'deleted' ORDER BY ifnull(item_order, project_id) ASC";
                 break;
             case 'pole_types':
                 $sql = "SELECT 
                     type_id as item_id,
-                    type_name as item_name,
-                    '' as item_detail
+                    type_name as item_name
                     FROM wp_type
                     WHERE status <> 'deleted' ORDER BY ifnull(item_order, type_id) ASC";
                 break;
             case 'installation':
                 $sql = "SELECT 
                     installations_id as item_id,
-                    installations_name as item_name,
-                    '' as item_detail
+                    installations_name as item_name
                     FROM wp_installations
                     WHERE status <> 'deleted' ORDER BY ifnull(item_order, installations_id) ASC";
                 break;
             case 'level':
                 $sql = "SELECT 
                     height_id as item_id,
-                    height_name as item_name,
-                    '' as item_detail
+                    height_name as item_name
                     FROM wp_height
                     WHERE status <> 'deleted' ORDER BY ifnull(item_order, height_id) ASC";
                 break;
             case 'poles':
-                $sql = "SELECT 
-                    p.poles_id as item_id,
-                    p.poles_code as item_name,
-                    i.installations_name as item_detail
-                    FROM wp_poles p
-                    LEFT JOIN wp_installations i on i.installations_id = p.installations_id
-                    WHERE p.status <> 'deleted' GROUP BY p.poles_id ORDER BY ifnull(p.item_order, p.poles_id) ASC";
+                $sql = "SELECT
+                    p.poles_id,
+                    p.poles_code,
+                    pj.project_name,
+                    t.type_name,
+                    i.installations_name
+                FROM wp_poles p
+                LEFT JOIN wp_project pj ON pj.project_id = p.project_id
+                LEFT JOIN wp_type t ON t.type_id = p.type_id
+                LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
+                WHERE p.status <> 'deleted' ORDER BY ifnull(p.item_order, p.poles_id) ASC";
                 break;
             case 'group':
                 $sql = "SELECT 
                     project_group_id as item_id,
-                    project_group_name as item_name,
-                    '' as item_detail
+                    project_group_name as item_name
                     FROM wp_project_group
                     WHERE status <> 'deleted' ORDER BY ifnull(item_order, project_group_id) ASC";
                 break;
             case 'project_status':
                 $sql = "SELECT 
                     project_status_id as item_id,
-                    project_status_name as item_name,
-                    '' as item_detail
+                    project_status_name as item_name
                     FROM wp_project_status
                     WHERE status <> 'deleted' ORDER BY ifnull(item_order, project_status_id) ASC";
                 break;

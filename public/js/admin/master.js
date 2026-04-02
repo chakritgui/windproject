@@ -109,19 +109,42 @@ function orderItem(type, title) {
         <button type="button" class="btn btn-primary me-2 save-order-item">${langData['save'] || "Save"}</button>
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
     `);
-    modalEl.find(".modal-body").html(`
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th width="50px">${langData['sort'] || "Sort"}</th>
-                    <th>${langData[type] || title}</th>
-                </tr>
-            </thead>
-            <tbody id="sortable-list">
-                <tr><td colspan="2" class="text-center">Loading...</td></tr>
-            </tbody>
-        </table>
-    `);
+    let table = ``;
+    switch(type) {
+        case 'poles':
+            table = `
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th width="50px">${langData['sort'] || "Sort"}</th>
+                            <th data-i18n="pole_code"></th>
+                            <th data-i18n="type"></th>
+                            <th data-i18n="project"></th>
+                            <th data-i18n="installation"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="sortable-list">
+                        <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                    </tbody>
+                </table>
+            `;
+            break;
+        default: 
+            table = `
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th width="50px">${langData['sort'] || "Sort"}</th>
+                            <th>${langData[type] || title}</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sortable-list">
+                        <tr><td colspan="2" class="text-center">Loading...</td></tr>
+                    </tbody>
+                </table>
+            `;
+    }
+    modalEl.find(".modal-body").html(table);
     $.ajax({
         url: `${BASE_URL}/api/sort.list`,
         method: 'POST',
@@ -131,15 +154,28 @@ function orderItem(type, title) {
             if(res.status && res.data){
                 let html = '';
                 res.data.forEach((item, index) => {
-                    html += `
-                        <tr data-id="${item.item_id}" style="cursor: move;">
-                            <td class="text-center"><i class="fas fa-grip-lines"></i></td>
-                            <td>
-                                <strong>${item.item_name}</strong>
-                                ${item.item_detail ? `<br><small class="text-muted">${item.item_detail}</small>` : ''}
-                            </td>
-                        </tr>
-                    `;
+                    switch(type) {
+                        case 'poles':
+                            html += `
+                                <tr data-id="${item.poles_id}" style="cursor: move;">
+                                    <td class="text-center"><i class="fas fa-grip-lines"></i></td>
+                                    <td>${item.poles_code}</td>
+                                    <td>${item.type_name}</td>
+                                    <td>${item.project_name}</td>
+                                    <td>${item.installations_name}</td>
+                                </tr>
+                            `;
+                            break;
+                        default: 
+                        html += `
+                            <tr data-id="${item.item_id}" style="cursor: move;">
+                                <td class="text-center"><i class="fas fa-grip-lines"></i></td>
+                                <td>
+                                    ${item.item_name}
+                                </td>
+                            </tr>
+                        `;
+                    }
                 });
                 $('#sortable-list').html(html);
                 new Sortable(document.getElementById('sortable-list'), {
