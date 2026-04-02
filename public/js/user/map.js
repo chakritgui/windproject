@@ -222,11 +222,6 @@ async function loadWindTurbines() {
     const s = document.createElement('style');
     s.id = 'pole-map-styles';
     s.textContent = `
-        .wind-unit-label {
-            fill: rgba(255,255,255,0.55) !important;
-            stroke: none !important;
-            color: rgba(255,255,255,0.55) !important;
-        }
         .pole-label-wrap svg   { transition: opacity 0.25s ease; }
         .pole-icon-wrap  svg   { transition: width 0.2s ease, height 0.2s ease; }
         .leaflet-marker-icon,
@@ -322,7 +317,7 @@ function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId
     const arrowW = Math.round(fs3 * 1.2);
     const textW = Math.round(displayVal.length * fs1 * 0.62 + label.length * fs2 * 0.6 + 2);
     const BOX_W = PADDING + arrowW + Math.round(PADDING * 0.5) + textW + PADDING;
-    const svgW  = Math.abs(labelDx) + BOX_W + 12;
+    const svgW  = Math.abs(labelDx) + BOX_W + 13;
     const svgH  = Math.abs(labelDy) + BOX_H + 12;
     const tipX  = anchorX + labelDx;
     const tipY  = anchorY + labelDy;
@@ -380,7 +375,6 @@ function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId
                     font-weight="400" 
                     font-size="${fs2}" 
                     dx="${Math.round(2 * scale)}"
-                    style="fill: rgba(255,255,255,0.55) !important; stroke: none !important;"
                 > 
                     ${label}
                 </tspan>
@@ -1106,41 +1100,41 @@ $(document).ready(function () {
     };
 });
 $(document).ready(function () {
-  if (!document.getElementById('_init-transitions')) {
-    const style = document.createElement('style');
-    style.id = '_init-transitions';
-    style.textContent = `
-        header, #ui, #sideControlPanel, #projectCanvas {
-            transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-        header.ui-hidden, #ui.ui-hidden,
-        #sideControlPanel.ui-hidden, #projectCanvas.ui-hidden {
-            opacity: 0;
-            pointer-events: none;
-            transform: translateY(8px);
-        }
-        #area-panel {
-            transition: opacity 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-        }
-        #area-panel.panel-pre-anim {
-            opacity: 0 !important;
-            transform: translateX(-16px);
-        }
-        #wind-loading {
-            transition: opacity 0.6s ease;
-        }
-        #wind-loading.fading {
-            opacity: 0;
-            pointer-events: none;
-        }
-    `;
-    document.head.appendChild(style);
-  }
-  function revealUI(animate) {
-    const $ui = $('header, #ui, #sideControlPanel, #projectCanvas');
-    const $panel = $('#area-panel');
-    if (animate) {
-      requestAnimationFrame(() => {
+    if (!document.getElementById('_init-transitions')) {
+        const style = document.createElement('style');
+        style.id = '_init-transitions';
+        style.textContent = `
+            header, #ui, #sideControlPanel, #projectCanvas {
+                transition: opacity 0.5s ease, transform 0.5s ease;
+            }
+            header.ui-hidden, #ui.ui-hidden,
+            #sideControlPanel.ui-hidden, #projectCanvas.ui-hidden {
+                opacity: 0;
+                pointer-events: none;
+                transform: translateY(8px);
+            }
+            #area-panel {
+                transition: opacity 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+            }
+            #area-panel.panel-pre-anim {
+                opacity: 0 !important;
+                transform: translateX(-16px);
+            }
+            #wind-loading {
+                transition: opacity 0.6s ease;
+            }
+            #wind-loading.fading {
+                opacity: 0;
+                pointer-events: none;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    function revealUI(animate) {
+        const $ui = $('header, #ui, #sideControlPanel, #projectCanvas');
+        const $panel = $('#area-panel');
+        if (animate) {
+            requestAnimationFrame(() => {
                 $ui.removeClass('ui-hidden');
             });
             $panel.show().addClass('panel-pre-anim');
