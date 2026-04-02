@@ -71,7 +71,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label required"><span data-i18n="icon"></span> (180x180px)</label>
-                        <div class="icon-preview" id="iosIconPreview">
+                        <div class="icon-preview text-center" id="iosIconPreview">
                             <i class="fa-brands fa-apple"></i>
                         </div>
                         <input type="file" class="form-control obj-required" id="iosIcon" accept="image/png">
@@ -109,7 +109,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label required"><span data-i18n="icon"></span> (512x512px)</label>
-                        <div class="icon-preview" id="androidIconPreview">
+                        <div class="icon-preview text-center" id="androidIconPreview">
                             <i class="fa-brands fa-android"></i>
                         </div>
                         <input type="file" class="form-control obj-required" id="androidIcon" accept="image/png">
