@@ -308,7 +308,7 @@ function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId
     const PADDING = Math.round(10 * scale);
     const fs1 = Math.max(8,  Math.round(14 * scale));
     const fs2 = Math.max(7,  Math.round(11 * scale));
-    const fs3 = Math.max(8,  Math.round(13 * scale)); 
+    const fs3 = Math.max(10,  Math.round(13 * scale)); 
     const rx = Math.round(BOX_H / 2);
     const dotR = Math.max(2.5, 3.5 * scale);
     const lw = Math.max(0.8, 1.2 * scale);
@@ -354,33 +354,14 @@ function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId
             <line x1="${anchorX}" y1="${anchorY}" x2="${lineStartX}" y2="${lineStartY}" stroke="rgba(255,255,255,0.18)" stroke-width="${lw}" stroke-dasharray="${Math.round(3 * scale)},${Math.round(2.5 * scale)}" stroke-linecap="round"/>
             <circle cx="${anchorX}" cy="${anchorY}" r="${dotR + 2}" fill="${glowColor}" fill-opacity="0.15"/>
             <circle cx="${anchorX}" cy="${anchorY}" r="${dotR}" fill="${glowColor}" fill-opacity="0.7" stroke="rgba(255,255,255,0.35)" stroke-width="0.8"/>
-            <rect x="${boxX}" y="${boxY}" width="${BOX_W}" height="${BOX_H}" rx="${rx}" fill="url(#${lgId})" fill-opacity="0.96" stroke="${glowColor}" stroke-width="0.65" stroke-opacity="0.45" filter="url(#${shId})"/>
+            <rect x="${boxX}" y="${boxY}" width="${BOX_W + 3}" height="${BOX_H}" rx="${rx}" fill="url(#${lgId})" fill-opacity="0.96" stroke="${glowColor}" stroke-width="0.65" stroke-opacity="0.45" filter="url(#${shId})"/>
             <rect x="${boxX + 1}" y="${boxY + 1}" width="${BOX_W - 2}" height="${Math.round(BOX_H * 0.45)}" rx="${rx}" fill="rgba(255,255,255,0.04)"/>
-            <g id="${arrowId}" 
-                data-cx="${arrowCX}" 
-                data-cy="${arrowCY}" 
-                data-dir="${windDir}"
-                transform="rotate(${windDir - 90}, ${arrowCX}, ${arrowCY})">
+            <g id="${arrowId}" data-cx="${arrowCX}" data-cy="${arrowCY}" data-dir="${windDir}" transform="rotate(${windDir - 90}, ${arrowCX}, ${arrowCY})">
                 <text x="${arrowCX}" y="${arrowCY}" font-size="${fs3}" fill="${activeColor}" text-anchor="middle" dominant-baseline="central" filter="url(#${glowId})">➤</text>
             </g>
-            <text id="${windId}" 
-                data-raw="${windSpeed}" 
-                x="${textX}" 
-                y="${arrowCY}" 
-                font-size="${fs1}" 
-                font-weight="700" 
-                fill="${activeColor}" 
-                text-anchor="start" 
-                dominant-baseline="central" 
-                style="paint-order:stroke; stroke:rgba(0,0,0,0.4); stroke-width:1.2px; stroke-linejoin:round"
-            > 
+            <text id="${windId}" data-raw="${windSpeed}" x="${textX}" y="${arrowCY}" font-size="${fs1}" font-weight="700" fill="${activeColor}" text-anchor="start" dominant-baseline="central" style="paint-order:stroke; stroke:rgba(0,0,0,0.4); stroke-width:1.2px; stroke-linejoin:round"> 
                 ${displayVal}
-                <tspan 
-                    class="wind-unit-label"
-                    font-weight="400" 
-                    font-size="${fs2}" 
-                    dx="${Math.round(2 * scale)}"
-                > 
+                <tspan class="wind-unit-label" font-weight="400" font-size="${fs2}" dx="${Math.round(2 * scale)}"> 
                     ${label}
                 </tspan>
             </text>
