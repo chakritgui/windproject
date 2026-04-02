@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.css">
 <script src="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
 <link href="<?=asset('public/css/page.css')?>" rel="stylesheet">
 <script src="<?=asset('public/js/user/mapConfig.js')?>"></script>
 <script src="<?=asset('public/js/user/mapHelper.js')?>"></script>
@@ -194,8 +195,8 @@
         );
         pinGroup.scale.setScalar(0);
         globePivot.add(pinGroup);
-        const LAO_LON    = 103;
-        const LAO_LAT    = 18;
+        const LAO_LON = 103;
+        const LAO_LAT = 18;
         const targetRotY = -(LAO_LON * Math.PI / 180) + Math.PI;
         const targetRotX =  (LAO_LAT * Math.PI / 180);
         const startRotY  = targetRotY + Math.PI;
@@ -208,7 +209,7 @@
         atmos.rotation.x  = startRotX;
         globePivot.rotation.y = startRotY;
         globePivot.rotation.x = startRotX;
-        let start     = null;
+        let start = null;
         let raf;
         let pinDropped = false;
         function easeIn(t) { return t * t * t * t; }
@@ -265,10 +266,10 @@
         }
         function cleanup() {
             cancelAnimationFrame(raf);
+            document.dispatchEvent(new CustomEvent('globe:done')); 
             intro.classList.add('fade-out');
             setTimeout(() => {
                 intro.remove();
-                renderer.dispose();
             }, 800);
         }
         window.addEventListener('resize', () => {
@@ -292,9 +293,7 @@
                 if (!object.isMesh) return;
                 if (object.geometry) object.geometry.dispose();
                 if (object.material) {
-                    Array.isArray(object.material)
-                        ? object.material.forEach(disposeMaterial)
-                        : disposeMaterial(object.material);
+                    Array.isArray(object.material) ? object.material.forEach(disposeMaterial) : disposeMaterial(object.material);
                 }
             });
             renderer.dispose();

@@ -669,5 +669,6 @@
     "no_border": "No Border",
     "layers": "Layers",
     "satellite": "Satellite",
-    "sort": "Sort"
+    "sort": "Sort",
+    "login_icon": "Login Icon"
 }

@@ -128,7 +128,6 @@ const settingHandlers = {
     login_mobile_bg: v => renderBg('loginMobilePreview', v, 'mobile'),
     login_icon: v => renderBg('loginIconPreview', v),
     infography: v => renderBg('infographyPreview', v, 'infography'),
-    infography: v => renderBg('loginIconPreview', v, 'infography'),
     website_en: v => $('#nameEn').val(v),
     website_lo: v => $('#nameLo').val(v),
     website_th: v => $('#nameTh').val(v),

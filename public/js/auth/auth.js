@@ -28,6 +28,7 @@ function doLogin() {
         keepLoggedIn: keepLoggedIn
     }, function(res) {
         if (res.status === 'success') {
+            sessionStorage.removeItem('globe_shown');
             window.location.href = `${BASE_URL}/${res.location}`;
         } else {
             let message = langData[res.message] || res.message;

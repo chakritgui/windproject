@@ -4,6 +4,9 @@ function initMap() {
         const { store, picker, map: windyMap } = api;
         windyAPI = api;
         map = windyMap;
+        if (typeof restoreMapSettings === 'function') {
+            restoreMapSettings();
+        }
         poleLayerGroup = L.layerGroup().addTo(map);
         store.set('overlay', 'wind');
         store.set('level', DEFAULT_LEVEL);
@@ -86,15 +89,14 @@ function _drawCountryLines(rawData) {
 }
 function applyMasterSettings(master) {
     if (!master?.center_lat || !master?.center_lng) return;
-    const lat = parseFloat(master.center_lat);
+    const lat  = parseFloat(master.center_lat);
     const lng  = parseFloat(master.center_lng);
     const zoom = clamp((parseInt(master.zoom_level) || 10) + 1, 1, 13);
     const headerEl = document.querySelector('header');
     const footerEl = document.querySelector('footer, #footer, .footer');
-    const headerH = headerEl ? headerEl.getBoundingClientRect().height : 60;
-    const footerH = footerEl ? footerEl.getBoundingClientRect().height : 36;
-    const mapH = window.innerHeight - headerH - footerH;
-    const offsetPx = (footerH - headerH) / 2; 
+    const headerH  = headerEl ? headerEl.getBoundingClientRect().height : 60;
+    const footerH  = footerEl ? footerEl.getBoundingClientRect().height : 36;
+    const offsetPx = (footerH - headerH) / 2;
     map.setView([lat, lng], zoom);
     map.setMinZoom(zoom);
     if (offsetPx !== 0) {
@@ -159,18 +161,17 @@ async function refreshAllWindData() {
 }
 function updateWindDashboard({ max, min, avg }) {
     const unit = getCurrentUnit();
-    document.querySelectorAll('.stat-unit-label').forEach(el => {
-        el.textContent = unit.label;
-    });
-    const maxVal = (max * unit.factor).toFixed(1);
-    $('.stat-max-wind-val').text(maxVal);
-    $('#stat-max-wind').removeClass('text-warning').css('color', getWindColor(max));
-    const minVal = (min * unit.factor).toFixed(1);
-    $('.stat-min-wind-val').text(minVal);
-    $('#stat-min-wind').removeClass('text-info').css('color', getWindColor(min));
-    const avgVal = (avg * unit.factor).toFixed(1);
-    $('.stat-avg-wind-val').text(avgVal);
-    $('#stat-avg-wind').removeClass('text-success').css('color', getWindColor(avg));
+    const { label, factor } = unit;
+    $('.stat-unit-label').text(label);
+    const updateStat = (selectorId, value, defaultClass) => {
+        const calculatedValue = (value * factor).toFixed(1);
+        const color = getWindColor(value);
+        $(`${selectorId}-val`).text(calculatedValue);
+        $(selectorId).removeClass(defaultClass).css('color', color);
+    };
+    updateStat('#stat-max-wind', max, 'text-warning');
+    updateStat('#stat-min-wind', min, 'text-info');
+    updateStat('#stat-avg-wind', avg, 'text-success');
 }
 let turbineMarkers = []; 
 async function loadWindTurbines() {
@@ -205,7 +206,6 @@ async function loadWindTurbines() {
             map._turbineZoomBound = true;
             map.on('zoomend', () => {
                 const size = _calcIconSize(map.getZoom());
-                console.log('zoomend fired, zoom:', map.getZoom(), 'size:', size);
                 turbineMarkers.forEach(marker => {
                     const td = marker._turbineData;
                     if (!td) return;
@@ -216,6 +216,193 @@ async function loadWindTurbines() {
     } catch (err) {
         console.error('loadWindTurbines error:', err);
     }
+}
+(function injectPoleStyles() {
+    if (document.getElementById('pole-map-styles')) return;
+    const s = document.createElement('style');
+    s.id = 'pole-map-styles';
+    s.textContent = `
+        .pole-label-wrap svg   { transition: opacity 0.25s ease; }
+        .pole-icon-wrap  svg   { transition: width 0.2s ease, height 0.2s ease; }
+        .leaflet-marker-icon,
+        .leaflet-marker-shadow { transition: transform 0.18s ease, opacity 0.18s ease; }
+    `;
+    document.head.appendChild(s);
+})();
+const POLE_LABEL = {
+    W: 80,
+    H: 26, 
+    POLE_EXCL_R: 28,
+};
+const OFFSET_DIRS = [
+    { dx:  1.00, dy: -0.55 }, 
+    { dx: -1.00, dy: -0.55 },
+    { dx:  1.00, dy:  0.55 },
+    { dx: -1.00, dy:  0.55 },
+    { dx:  0.10, dy: -1.10 },
+    { dx:  0.10, dy:  1.10 },
+    { dx:  1.40, dy:  0.00 },
+    { dx: -1.40, dy:  0.00 },
+];
+function _calcOffsetDist(zoom) {
+    const MIN_ZOOM = 8,  MAX_ZOOM = 19;
+    const MIN_DIST = 42, MAX_DIST = 110;
+    const t = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
+    const ease = 1 - Math.pow(1 - t, 2);
+    return MIN_DIST + (MAX_DIST - MIN_DIST) * ease;
+}
+function _calcLabelScale(zoom) {
+    const MIN_ZOOM = 8, MAX_ZOOM = maxZoomLevel;
+    const t = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
+    return 0.42 + 0.58 * t;
+}
+function _calcIconSize(zoom) {
+    const MIN_ZOOM = 8,  MAX_ZOOM = maxZoomLevel;
+    const MIN_SIZE = 28, MAX_SIZE = 120;
+    const t    = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
+    const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    return Math.round(MIN_SIZE + (MAX_SIZE - MIN_SIZE) * ease);
+}
+function getSmartOffset(lat, lng, usedBoxes, map, zoom, polePoints) {
+    const dist  = _calcOffsetDist(zoom);
+    const point = map.latLngToContainerPoint([lat, lng]);
+    const poleBox = {
+        left:   point.x - POLE_LABEL.POLE_EXCL_R,
+        right:  point.x + POLE_LABEL.POLE_EXCL_R,
+        top:    point.y - POLE_LABEL.POLE_EXCL_R * 2,
+        bottom: point.y + POLE_LABEL.POLE_EXCL_R * 0.5,
+    };
+    for (let expansion = 0; expansion < 5; expansion++) {
+        for (const dir of OFFSET_DIRS) {
+            const dx = Math.round(dir.dx * dist + expansion * 30 * Math.sign(dir.dx || 1));
+            const dy = Math.round(dir.dy * dist + expansion * 20 * Math.sign(dir.dy || 1));
+            const labelCX = point.x + dx;
+            const labelCY = point.y + dy;
+            const box = {
+                left:   labelCX - POLE_LABEL.W / 2,
+                right:  labelCX + POLE_LABEL.W / 2,
+                top:    labelCY - POLE_LABEL.H / 2,
+                bottom: labelCY + POLE_LABEL.H / 2,
+            };
+            if (usedBoxes.some(b => _overlaps(box, b))) continue;
+            if (_overlaps(box, poleBox)) continue;
+            const tooCloseToPole = (polePoints || []).some(p => {
+                const ddx = p.x - labelCX, ddy = p.y - labelCY;
+                return Math.sqrt(ddx * ddx + ddy * ddy) < POLE_LABEL.POLE_EXCL_R * 1.4;
+            });
+            if (tooCloseToPole) continue;
+            usedBoxes.push(box);
+            return { dx, dy };
+        }
+    }
+    const dx = Math.round(dist * 1.6);
+    const dy = Math.round((Math.random() - 0.5) * dist * 0.6);
+    return { dx, dy };
+}
+function _overlaps(a, b) {
+    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+}
+function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId, windSpeed = 0, scale = 1 }) {
+    const BOX_H = Math.round(28 * scale);
+    const PADDING = Math.round(10 * scale);
+    const fs1 = Math.max(8,  Math.round(14 * scale));
+    const fs2 = Math.max(7,  Math.round(11 * scale));
+    const fs3 = Math.max(8,  Math.round(13 * scale)); 
+    const rx = Math.round(BOX_H / 2);
+    const dotR = Math.max(2.5, 3.5 * scale);
+    const lw = Math.max(0.8, 1.2 * scale);
+    const unit = getCurrentUnit();
+    const displayVal = (windSpeed * unit.factor).toFixed(1);
+    const label = unit.label;
+    const arrowW = Math.round(fs3 * 1.2);
+    const textW = Math.round(displayVal.length * fs1 * 0.62 + label.length * fs2 * 0.6 + 2);
+    const BOX_W = PADDING + arrowW + Math.round(PADDING * 0.5) + textW + PADDING;
+    const svgW  = Math.abs(labelDx) + BOX_W + 12;
+    const svgH  = Math.abs(labelDy) + BOX_H + 12;
+    const tipX  = anchorX + labelDx;
+    const tipY  = anchorY + labelDy;
+    const boxX  = labelDx >= 0 ? tipX : tipX - BOX_W;
+    const boxY  = tipY - BOX_H / 2;
+    const lineStartX = labelDx >= 0 ? boxX : boxX + BOX_W;
+    const lineStartY = tipY;
+    const arrowCX = boxX + PADDING + Math.round(arrowW / 2);
+    const arrowCY = tipY;
+    const textX   = boxX + PADDING + arrowW + Math.round(PADDING * 0.5);
+    const activeColor  = getWindColor(windSpeed);
+    const glowColor    = activeColor;
+    const lgId   = `lg-${windId}`;
+    const shId   = `sh-${windId}`;
+    const glowId = `gw-${windId}`;
+    return {
+        svgW, svgH,
+        html: `
+            <svg width="${svgW}" height="${svgH}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;pointer-events:none;display:block">
+            <defs>
+                <linearGradient id="${lgId}" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"   stop-color="#1e2228"/>
+                    <stop offset="100%" stop-color="#0d0f12"/>
+                </linearGradient>
+                <filter id="${shId}" x="-30%" y="-40%" width="160%" height="180%">
+                    <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.55"/>
+                </filter>
+                <filter id="${glowId}" x="-50%" y="-50%" width="200%" height="200%">
+                    <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+            </defs>
+            <line x1="${anchorX}" y1="${anchorY}" x2="${lineStartX}" y2="${lineStartY}" stroke="rgba(255,255,255,0.18)" stroke-width="${lw}" stroke-dasharray="${Math.round(3 * scale)},${Math.round(2.5 * scale)}" stroke-linecap="round"/>
+            <circle cx="${anchorX}" cy="${anchorY}" r="${dotR + 2}" fill="${glowColor}" fill-opacity="0.15"/>
+            <circle cx="${anchorX}" cy="${anchorY}" r="${dotR}" fill="${glowColor}" fill-opacity="0.7" stroke="rgba(255,255,255,0.35)" stroke-width="0.8"/>
+            <rect x="${boxX}" y="${boxY}" width="${BOX_W}" height="${BOX_H}" rx="${rx}" fill="url(#${lgId})" fill-opacity="0.96" stroke="${glowColor}" stroke-width="0.65" stroke-opacity="0.45" filter="url(#${shId})"/>
+            <rect x="${boxX + 1}" y="${boxY + 1}" width="${BOX_W - 2}" height="${Math.round(BOX_H * 0.45)}" rx="${rx}" fill="rgba(255,255,255,0.04)"/>
+            <g id="${arrowId}" data-cx="${arrowCX}" data-cy="${arrowCY}" transform="rotate(0, ${arrowCX}, ${arrowCY})">
+                <text x="${arrowCX}" y="${arrowCY}" font-size="${fs3}" fill="${activeColor}" text-anchor="middle" dominant-baseline="central" filter="url(#${glowId})">➤</text>
+            </g>
+            <text id="${windId}" data-raw="${windSpeed}" x="${textX}" y="${arrowCY}" font-size="${fs1}" font-weight="700" fill="${activeColor}" text-anchor="start" dominant-baseline="central" style="paint-order:stroke;stroke:rgba(0,0,0,0.4);stroke-width:1.2px;stroke-linejoin:round"> ${displayVal}<tspan font-weight="400" font-size="${fs2}" fill="rgba(255,255,255,0.55)" dx="${Math.round(2 * scale)}"> ${label}</tspan></text>
+        </svg>`
+    };
+}
+function _buildPoleIcon(pole, size = 30) {
+    if (pole.type_icon?.trim()) {
+        return L.icon({
+            iconUrl:     pole.type_icon,
+            iconSize:    [size, size],
+            iconAnchor:  [size / 2, size],
+            popupAnchor: [0, -size]
+        });
+    }
+    const isEven  = pole.type_id % 2 === 0;
+    const color   = isEven ? '#5bb8f5' : '#f5a623';
+    const color2  = isEven ? '#1e90d4' : '#d4821e';
+    const glowCol = isEven ? 'rgba(91,184,245,0.6)' : 'rgba(245,166,35,0.6)';
+    const extra = !isEven
+        ? `<line x1="3" y1="14" x2="-5" y2="14" stroke="rgba(255,255,255,0.85)" stroke-width="1.3" stroke-linecap="round"/>
+           <circle cx="-5" cy="14" r="1.8" fill="${color2}" stroke="rgba(255,255,255,0.9)" stroke-width="0.7"/>`
+        : '';
+    const w = size * 0.7;
+    const h = size * 1.9;
+    return L.divIcon({
+        className:  'pole-icon-wrap',
+        iconSize:   [w, h],
+        iconAnchor: [w * 0.18, h],
+        html: `
+            <svg width="${w}" height="${h}" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;display:block">
+            <defs>
+                <filter id="pglow-${pole.poles_id}" x="-80%" y="-40%" width="260%" height="180%">
+                    <feGaussianBlur stdDeviation="2" result="blur"/>
+                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+            </defs>
+            <ellipse cx="3" cy="49" rx="5" ry="2" fill="${glowCol}" filter="url(#pglow-${pole.poles_id})"/>
+            <circle cx="3" cy="49" r="3.5" fill="rgba(20,22,26,0.9)" stroke="${color}" stroke-width="1.5"/>
+            <line x1="3" y1="46" x2="3" y2="3" stroke="rgba(255,255,255,0.82)" stroke-width="1.7" stroke-linecap="round"/>
+            <line x1="3" y1="5" x2="15" y2="5" stroke="rgba(255,255,255,0.82)" stroke-width="1.3" stroke-linecap="round"/>
+            <line x1="3" y1="14" x2="11" y2="14" stroke="rgba(255,255,255,0.82)" stroke-width="1.3" stroke-linecap="round"/>
+            ${extra}
+            <circle cx="15" cy="5" r="2.5" fill="${color}" stroke="rgba(255,255,255,0.85)" stroke-width="0.7" filter="url(#pglow-${pole.poles_id})"/>
+            <circle cx="11" cy="14" r="2" fill="${color2}" stroke="rgba(255,255,255,0.85)" stroke-width="0.7"/>
+        </svg>`
+    });
 }
 async function loadPoles() {
     if (poleLayerGroup && poleLayerGroup.getLayers().length > 0) {
@@ -228,12 +415,22 @@ async function loadPoles() {
     });
     if (!Array.isArray(poles)) return;
     window._usedLabelBoxes = [];
+    const zoom       = map.getZoom();
+    const initSize   = _calcIconSize(zoom);
+    const initScale  = _calcLabelScale(zoom);
     const totalPoles = poles.length;
     const chunkSize  = 40;
-    let currentIndex = 0;
-    const initSize   = _calcIconSize(map.getZoom());
-    const initScale  = _calcLabelScale(map.getZoom());
+    let   currentIndex = 0;
+    function _getAllPolePoints() {
+        return poles.map(p => {
+            const lat = parseFloat(p.poles_lat);
+            const lng = parseFloat(p.poles_lng);
+            if (isNaN(lat) || isNaN(lng)) return null;
+            return map.latLngToContainerPoint([lat, lng]);
+        }).filter(Boolean);
+    }
     function renderChunk() {
+        const polePoints = _getAllPolePoints();
         const end = Math.min(currentIndex + chunkSize, totalPoles);
         for (let i = currentIndex; i < end; i++) {
             const pole = poles[i];
@@ -249,16 +446,18 @@ async function loadPoles() {
             marker.on('click', () => openPoles(pole.poles_id));
             const windId  = `wind-auto-${pole.poles_id}`;
             const arrowId = `arrow-${pole.poles_id}`;
-            const off     = getSmartOffset(lat, lng, window._usedLabelBoxes, map);
+            const otherPolePoints = polePoints.filter(p => {
+                const pt = map.latLngToContainerPoint([lat, lng]);
+                return !(Math.abs(p.x - pt.x) < 1 && Math.abs(p.y - pt.y) < 1);
+            });
+            const off = getSmartOffset(lat, lng, window._usedLabelBoxes, map, map.getZoom(), otherPolePoints);
             const anchorX = off.dx >= 0 ? 0 : Math.abs(off.dx);
             const anchorY = off.dy >= 0 ? 0 : Math.abs(off.dy);
             const { svgW, svgH, html } = buildWindLabelSVG({
-                anchorX,
-                anchorY,
+                anchorX, anchorY,
                 labelDx: off.dx,
                 labelDy: off.dy,
-                windId,
-                arrowId,
+                windId, arrowId,
                 scale: initScale
             });
             const labelMarker = L.marker([lat, lng], {
@@ -284,171 +483,62 @@ async function loadPoles() {
     renderChunk();
     if (!map._poleZoomBound) {
         map._poleZoomBound = true;
-        map.on('zoomend', () => {
-            const size  = _calcIconSize(map.getZoom());
-            const scale = _calcLabelScale(map.getZoom());
-            window._usedLabelBoxes = [];
-            Object.values(poleMarkers).forEach(({ marker, labelMarker, lat, lng, windId, arrowId }) => {
+        let _zoomTimer = null;
+        map.on('zoom', () => {
+            const size = _calcIconSize(map.getZoom());
+            const entries = Object.values(poleMarkers);
+            entries.forEach(({ marker }) => {
                 const pd = marker._poleData;
-                if (!pd) return;
-                marker.setIcon(_buildPoleIcon(pd, size));
-                const off     = getSmartOffset(lat, lng, window._usedLabelBoxes, map);
-                const anchorX = off.dx >= 0 ? 0 : Math.abs(off.dx);
-                const anchorY = off.dy >= 0 ? 0 : Math.abs(off.dy);
-                const windEl    = document.getElementById(windId);
-                const windSpeed = windEl ? parseFloat(windEl.dataset.raw) || 0 : 0;
-                const { svgW, svgH, html } = buildWindLabelSVG({
-                    anchorX, anchorY,
-                    labelDx: off.dx,
-                    labelDy: off.dy,
-                    windId, arrowId,
-                    windSpeed,
-                    scale
-                });
-                labelMarker.setIcon(L.divIcon({
-                    className:  'pole-label-wrap',
-                    iconSize:   [svgW, svgH],
-                    iconAnchor: [anchorX, anchorY],
-                    html
-                }));
+                if (!pd) {
+                    console.warn('no _poleData on marker');
+                    return;
+                }
+                const newIcon = _buildPoleIcon(pd, size);
+                marker.setIcon(newIcon);
+                const el = marker.getElement();
             });
         });
-    }
-}
-function _calcLabelScale(zoom) {
-    const MIN_ZOOM = 8;
-    const MAX_ZOOM = maxZoomLevel;
-    const t = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
-    return 0.4 + 0.6 * t;
-}
-function _calcIconSize(zoom) {
-    const MIN_ZOOM = 8;
-    const MAX_ZOOM = maxZoomLevel;
-    const MIN_SIZE = 20;
-    const MAX_SIZE = 96;
-    const t    = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
-    const size = Math.round(MIN_SIZE + (MAX_SIZE - MIN_SIZE) * t);
-    return size;
-}
-function _buildPoleIcon(pole, size = 30) {
-    if (pole.type_icon?.trim()) {
-        return L.icon({
-            iconUrl:     pole.type_icon,
-            iconSize:    [size, size],
-            iconAnchor:  [size / 2, size],
-            popupAnchor: [0, -size]
+        map.on('zoomend', () => {
+            clearTimeout(_zoomTimer);
+            _zoomTimer = setTimeout(() => {
+                const zoom  = map.getZoom();
+                const size  = _calcIconSize(zoom);
+                const scale = _calcLabelScale(zoom);
+                window._usedLabelBoxes = [];
+                const polePoints = Object.values(poleMarkers).map(({ lat, lng }) =>
+                    map.latLngToContainerPoint([lat, lng])
+                );
+                Object.values(poleMarkers).forEach(({ marker, labelMarker, lat, lng, windId, arrowId }) => {
+                    const pd = marker._poleData;
+                    if (!pd) return;
+                    marker.setIcon(_buildPoleIcon(pd, size));
+                    const pt = map.latLngToContainerPoint([lat, lng]);
+                    const otherPts = polePoints.filter(p =>
+                        !(Math.abs(p.x - pt.x) < 1 && Math.abs(p.y - pt.y) < 1)
+                    );
+                    const off = getSmartOffset(lat, lng, window._usedLabelBoxes, map, zoom, otherPts);
+                    const anchorX = off.dx >= 0 ? 0 : Math.abs(off.dx);
+                    const anchorY = off.dy >= 0 ? 0 : Math.abs(off.dy);
+                    const windEl    = document.getElementById(windId);
+                    const windSpeed = windEl ? parseFloat(windEl.dataset.raw) || 0 : 0;
+                    const { svgW, svgH, html } = buildWindLabelSVG({
+                        anchorX, anchorY,
+                        labelDx: off.dx,
+                        labelDy: off.dy,
+                        windId, arrowId,
+                        windSpeed,
+                        scale
+                    });
+                    labelMarker.setIcon(L.divIcon({
+                        className:  'pole-label-wrap',
+                        iconSize:   [svgW, svgH],
+                        iconAnchor: [anchorX, anchorY],
+                        html
+                    }));
+                });
+            }, 80);
         });
     }
-    const isEven = pole.type_id % 2 === 0;
-    const color  = isEven ? '#5bb8f5' : '#f39c12';
-    const color2 = isEven ? '#2d7fc1' : '#d68910';
-    const extra  = !isEven
-        ? `<line x1="3" y1="14" x2="-5" y2="14" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
-           <circle cx="-5" cy="14" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>`
-        : '';
-    return L.divIcon({
-        className:  '',
-        iconSize:   [size * 0.6, size * 1.67],
-        iconAnchor: [size * 0.1, size * 1.67],
-        html: `
-        <svg width="20" height="52" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5)); width:${size * 0.6}px;height:${size * 1.67}px">
-            <circle cx="3" cy="49" r="3.5" fill="rgba(255,255,255,0.85)" stroke="${color}" stroke-width="1.5"/>
-            <line x1="3" y1="46" x2="3" y2="3" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
-            <line x1="3" y1="5"  x2="15" y2="5"  stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
-            <line x1="3" y1="14" x2="11" y2="14" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
-            ${extra}
-            <circle cx="15" cy="5"  r="2.2" fill="${color}"  stroke="#ffffff" stroke-width="0.8"/>
-            <circle cx="11" cy="14" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>
-        </svg>`
-    });
-}
-function buildWindLabelSVG({anchorX, anchorY, labelDx, labelDy, windId, arrowId, windSpeed = 0, scale = 1}) {
-    const BOX_H   = Math.round(32 * scale);
-    const PADDING = Math.round(12 * scale);
-    const fs1     = Math.max(9, Math.round(16 * scale));
-    const fs2     = Math.max(9,  Math.round(13 * scale));
-    const fs3     = Math.max(9,  Math.round(15 * scale));
-    const rx      = Math.max(6,  Math.round(16 * scale));
-    const dot     = Math.max(3,  4.5 * scale);
-    const lw      = Math.max(1,  1.6 * scale);
-    const unit       = getCurrentUnit();
-    const displayVal = (windSpeed * unit.factor).toFixed(1);
-    const label      = unit.label;
-    const textLen    = displayVal.length;
-    const estimatedTextW = Math.round(textLen * fs1 * 0.65 + label.length * fs2 * 0.6 + 4);
-    const arrowW     = Math.round(fs3 * 1.2);
-    const BOX_W      = arrowW + PADDING + estimatedTextW + PADDING;
-    const svgW    = Math.abs(labelDx) + BOX_W + 10;
-    const svgH    = Math.abs(labelDy) + BOX_H + 10;
-    const tipX    = anchorX + labelDx;
-    const tipY    = anchorY + labelDy;
-    const boxX    = labelDx >= 0 ? tipX : tipX - BOX_W;
-    const boxY    = tipY - BOX_H / 2;
-    const arrowCX = boxX + PADDING + Math.round(arrowW / 2);
-    const arrowCY = tipY;
-    const textX   = boxX + PADDING + arrowW + Math.round(PADDING * 0.4);
-    const activeColor = getWindColor(windSpeed);
-    return {
-        svgW, svgH,
-        html: `
-            <svg width="${svgW}" height="${svgH}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;pointer-events:none;display:block">
-                <line x1="${anchorX}" y1="${anchorY}" x2="${tipX}" y2="${tipY}" stroke="#ffffff" stroke-width="${lw}" stroke-dasharray="${Math.round(3*scale)},${Math.round(2*scale)}" opacity="0.55"/>
-                <circle cx="${anchorX}" cy="${anchorY}" r="${dot}" fill="#fff" stroke="rgba(0,0,0,0.25)" stroke-width="1"/>
-                <defs>
-                <linearGradient id="lg-${windId}" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%"   stop-color="#24272b"/>
-                <stop offset="100%" stop-color="#121417"/>
-                </linearGradient>
-                <filter id="sh-${windId}" x="-25%" y="-25%" width="150%" height="150%">
-                <feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-color="#000" flood-opacity="0.45"/>
-                </filter>
-            </defs>
-            <rect x="${boxX}" y="${boxY}" width="${BOX_W}" height="${BOX_H}" rx="${rx}" fill="url(#lg-${windId})" fill-opacity="0.97" stroke="rgba(255,255,255,0.22)" stroke-width="0.8" filter="url(#sh-${windId})"/>
-            <g id="${arrowId}" data-cx="${arrowCX}" data-cy="${arrowCY}" transform="rotate(0, ${arrowCX}, ${arrowCY})">
-                <text x="${arrowCX}" y="${arrowCY}" font-size="${fs3}" fill="${activeColor}"
-                text-anchor="middle" dominant-baseline="central">➤</text>
-            </g>
-            <text id="${windId}" data-raw="${windSpeed}" x="${textX}" y="${arrowCY}" font-size="${fs1}" font-weight="700" fill="${activeColor}" text-anchor="start" dominant-baseline="central" style="paint-order:stroke;stroke:rgba(0,0,0,0.3);stroke-width:1px">
-                ${displayVal} <tspan font-weight="400" font-size="${fs2}" fill="${activeColor}">${label}</tspan>
-            </text>
-            </svg>`
-    };
-}
-const BASE_OFFSETS = [
-    { dx:  75, dy: -50 },
-    { dx: -75, dy: -50 },
-    { dx:  75, dy:  45 },
-    { dx: -75, dy:  45 },
-    { dx:   0, dy: -85 },
-    { dx: 130, dy:   0 },
-    { dx:-130, dy:   0 },
-];
-const LABEL_W = 72;
-const LABEL_H = 22;
-function getSmartOffset(lat, lng, usedBoxes, map) {
-    const point = map.latLngToContainerPoint([lat, lng]);
-    for (let step = 0; step < 8; step++) {
-        for (const base of BASE_OFFSETS) {
-            const off = { dx: base.dx + step * 40, dy: base.dy + step * 30 };
-            const box = {
-                left:   point.x + off.dx,
-                right:  point.x + off.dx + LABEL_W,
-                top:    point.y + off.dy - LABEL_H / 2,
-                bottom: point.y + off.dy + LABEL_H / 2
-            };
-            if (!usedBoxes.some(b => isOverlapping(box, b))) {
-                usedBoxes.push(box);
-                return off;
-            }
-        }
-    }
-    return {
-        dx: 100 + Math.random() * 50,
-        dy: (Math.random() - 0.5) * 100
-    };
-}
-function isOverlapping(a, b) {
-    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
 }
 function handlePickerOpening(latlng, picker, polygonLayer) {
     picker?.close?.();
@@ -468,10 +558,10 @@ async function openCustomPicker(latlng) {
         <svg width="24" height="60" viewBox="0 0 24 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))">
             <circle cx="4" cy="57" r="4" fill="rgba(255,255,255,0.9)" stroke="#1a2535" stroke-width="1.5"/>
             <line x1="4" y1="53" x2="4" y2="4" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
-            <line x1="4" y1="6"  x2="18" y2="6"  stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="4" y1="6"  x2="18" y2="6" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
             <line x1="4" y1="16" x2="14" y2="16" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
-            <circle cx="18" cy="6"  r="2.5" fill="#5bb8f5" stroke="#ffffff" stroke-width="1"/>
-            <circle cx="14" cy="16" r="2"   fill="#5bb8f5" stroke="#ffffff" stroke-width="1"/>
+            <circle cx="18" cy="6" r="2.5" fill="#5bb8f5" stroke="#ffffff" stroke-width="1"/>
+            <circle cx="14" cy="16" r="2" fill="#5bb8f5" stroke="#ffffff" stroke-width="1"/>
             <line x1="4" y1="4" x2="4" y2="0" stroke="rgba(255,255,255,0.6)" stroke-width="1" stroke-dasharray="2 2"/>
         </svg>`
     });
@@ -524,8 +614,7 @@ async function updateCustomPickerPopup(lat, lng) {
 }
 async function fetchWindAtPoint(lat, lng) {
     try {
-        const url = `${OPEN_METEO}?latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}` +
-                    `&current=wind_speed_100m,wind_direction_100m,wind_gusts_10m&wind_speed_unit=ms`;
+        const url = `${OPEN_METEO}?latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}` + `&current=wind_speed_100m,wind_direction_100m,wind_gusts_10m&wind_speed_unit=ms`;
         const res  = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
@@ -622,8 +711,7 @@ function pointInLatLngs(point, polygon) {
     for (let i = 0, j = n - 1; i < n; j = i++) {
         const xi = polygon[i].lat, yi = polygon[i].lng;
         const xj = polygon[j].lat, yj = polygon[j].lng;
-        const hit = ((yi > point.lng) !== (yj > point.lng)) &&
-                    (point.lat < (xj - xi) * (point.lng - yi) / (yj - yi) + xi);
+        const hit = ((yi > point.lng) !== (yj > point.lng)) && (point.lat < (xj - xi) * (point.lng - yi) / (yj - yi) + xi);
         if (hit) inside = !inside;
     }
     return inside;
@@ -671,7 +759,7 @@ async function renderWindAreas(picker, areaData, masterData) {
                     weight:      styleData.weight      !== undefined ? parseFloat(styleData.weight) : 2,
                     stroke:      styleData.weight !== 0,
                     opacity:     1,
-                    interactive: true
+                    interactive: true,
                 })
             });
             areaLayers[i] = geoLayer;
@@ -680,31 +768,14 @@ async function renderWindAreas(picker, areaData, masterData) {
                 e.originalEvent?.stopImmediatePropagation();
                 e.originalEvent?.preventDefault();
                 highlightAreaItem(i);
-                if (e.target.getBounds) {
-                    const targetBounds = e.target.getBounds();
-                    const focusZoom = map.getBoundsZoom(targetBounds, false, [25, 25]);
-                    map.flyToBounds(targetBounds, { 
-                        padding:      [25, 25], 
-                        duration:     1.25, 
-                        easeLinearity: 0.25,
-                        maxZoom: focusZoom, 
-                        animate: true
-                    });
-                    map.once('moveend', () => {
-                        setTimeout(() => {
-                            handlePickerOpening(e.latlng, windyAPI.picker, e.target);
-                        }, 200);
-                    });
-                }
+                flyToArea(i, area, true, false, e.latlng);
             });
             geoLayer.addTo(featureGroup);
             if (isMaskMode) {
                 geoLayer.eachLayer(layer => {
                     const lls = layer.getLatLngs?.();
                     if (!lls) return;
-                    const rings = Array.isArray(lls[0]) && !(lls[0][0] instanceof L.LatLng)
-                        ? lls.map(inner => inner[0])
-                        : [lls[0]];
+                    const rings = Array.isArray(lls[0]) && !(lls[0][0] instanceof L.LatLng) ? lls.map(inner => inner[0]) : [lls[0]];
                     allHoles.push(...rings);
                 });
             }
@@ -715,18 +786,77 @@ async function renderWindAreas(picker, areaData, masterData) {
     featureGroup.addTo(map).bringToFront();
     const bounds = featureGroup.getBounds();
     if (bounds.isValid()) {
-        const padded = bounds.pad(0.1);
+        const padded   = bounds.pad(0.1);
         initialBounds  = bounds;
         initialPadding = { padding: [20, 20] };
-        const fitZoom = map.getBoundsZoom(bounds, false, [20, 20]);
+        const fitZoom  = map.getBoundsZoom(bounds, false, [20, 20]);
         map.fitBounds(bounds, { padding: [20, 20] });
         map.options.minZoom = map.getBoundsZoom(bounds);
         map.setMinZoom(fitZoom);
         map.setMaxBounds(padded);
-        map.on('drag',    () => map.panInsideBounds(padded, { animate: false }));
-        map.on('moveend', () => { if (!padded.contains(map.getCenter())) map.panInsideBounds(padded, { animate: true }); });
+        map.on('drag', () => map.panInsideBounds(padded, { animate: false }));
+        map.on('moveend', () => {
+            if (!map._flyToFrame && !padded.contains(map.getCenter())) {
+                map.panInsideBounds(padded, { animate: true });
+            }
+        });
     }
     buildAreaPanel(polygons);
+}
+function _mergePolygons(geoJsonArray) {
+    if (typeof turf === 'undefined') {
+        console.warn('[renderWindAreas] Turf.js not loaded — polygon overlap not fixed');
+        return { type: 'FeatureCollection', features: geoJsonArray.map(g => _toFeature(g)) };
+    }
+    try {
+        const features = geoJsonArray.flatMap(g => {
+            const fc = _toFeatureCollection(g);
+            return fc.features;
+        }).filter(f => f?.geometry);
+        if (features.length === 0) return { type: 'FeatureCollection', features: [] };
+        if (features.length === 1) return features[0];
+        let merged = features[0];
+        for (let i = 1; i < features.length; i++) {
+            try {
+                const result = turf.union(merged, features[i]);
+                if (result) merged = result;
+            } catch (unionErr) {
+                console.warn('[renderWindAreas] union failed for feature', i, unionErr);
+            }
+        }
+        return merged;
+    } catch (err) {
+        console.error('[renderWindAreas] _mergePolygons error:', err);
+        return { type: 'FeatureCollection', features: geoJsonArray.map(g => _toFeature(g)) };
+    }
+}
+function _toFeature(g) {
+    if (g?.type === 'Feature') return g;
+    if (g?.type === 'FeatureCollection') return g.features[0] || null;
+    return { type: 'Feature', geometry: g, properties: {} };
+}
+function _toFeatureCollection(g) {
+    if (g?.type === 'FeatureCollection') return g;
+    if (g?.type === 'Feature') return { type: 'FeatureCollection', features: [g] };
+    return { type: 'FeatureCollection', features: [{ type: 'Feature', geometry: g, properties: {} }] };
+}
+function _findNearestAreaIndex(latlng, areas) {
+    const pt = [latlng.lng, latlng.lat];
+    for (const { index, geoJsonData } of areas) {
+        try {
+            if (typeof turf !== 'undefined') {
+                const fc = _toFeatureCollection(geoJsonData);
+                const inside = fc.features.some(f =>
+                    f?.geometry && turf.booleanPointInPolygon(turf.point(pt), f)
+                );
+                if (inside) return index;
+            } else {
+                const tempLayer = L.geoJSON(geoJsonData);
+                if (tempLayer.getBounds().contains(latlng)) return index;
+            }
+        } catch (_) {}
+    }
+    return areas[0]?.index ?? null;
 }
 function buildAreaPanel(polygons) {
     const list = document.getElementById('ap-list');
@@ -754,31 +884,62 @@ function buildAreaPanel(polygons) {
         el.addEventListener('click', function () {
             const i = parseInt(this.dataset.index);
             if (!areaVisibility[i]) return;
-            flyToArea(i, polygons[i], true);
+            flyToArea(i, polygons[i], false, true, null);
             highlightAreaItem(i);
         });
     });
 }
-function flyToArea(index, area, fromPanel = false) {
-    const layer = areaLayers[index];
-    if (!layer) return;
-    const bounds = layer.getBounds();
-    if (bounds.isValid()) {
-        const focusZoom = map.getBoundsZoom(bounds, false, [10, 10]);
-        const onFlyEnd = () => {
-            if (fromPanel) openProject(area.project_id);
-            map.off('moveend', onFlyEnd);
-        };
-
-        map.on('moveend', onFlyEnd);
-        map.flyToBounds(bounds, { 
-            padding:       [10, 10], 
-            duration:      1.25, 
-            easeLinearity: 0.25,
-            maxZoom:       focusZoom,
-            animate:       true
-        });
+function flyToArea(areaIndex, areaObj, openPicker = false, openProject = false, clickLatLng = null) {
+    const geoLayer = areaLayers[areaIndex];
+    if (!geoLayer) return;
+    const targetBounds = geoLayer.getBounds();
+    if (!targetBounds.isValid()) return;
+    const focusZoom  = map.getBoundsZoom(targetBounds, false, [25, 25]);
+    const currentMax = map.options.maxBounds;
+    const needsRelax = currentMax && !currentMax.contains(targetBounds);
+    const fromCenter = map.getCenter();
+    const toCenter   = targetBounds.getCenter();
+    const distDeg    = Math.hypot(
+        toCenter.lat - fromCenter.lat,
+        toCenter.lng - fromCenter.lng
+    );
+    const zoomDiff = Math.abs((map.getZoom() || 10) - focusZoom);
+    const rawDuration = 0.8 + distDeg * 1.8 + zoomDiff * 0.12;
+    const duration    = Math.min(2.2, Math.max(0.8, rawDuration));
+    if (needsRelax) {
+        const relaxed = currentMax.extend(targetBounds).pad(0.08);
+        map.setMaxBounds(relaxed);
     }
+    map.flyToBounds(targetBounds, {
+        padding:       [25, 25],
+        duration,
+        easeLinearity: 0.15,
+        maxZoom:       focusZoom,
+        animate:       true,
+    });
+    map.once('moveend', () => {
+        if (needsRelax && currentMax) {
+            setTimeout(() => {
+                map.setMaxBounds(currentMax);
+                if (!currentMax.contains(map.getCenter())) {
+                    map.panInsideBounds(currentMax, {
+                        animate:  true,
+                        duration: 0.5,
+                    });
+                }
+            }, 120);
+        }
+        if (openPicker) {
+            const pickerLatLng = clickLatLng || targetBounds.getCenter();
+            setTimeout(() => {
+                handlePickerOpening(pickerLatLng, windyAPI.picker, geoLayer);
+            }, 200);
+        }
+        if (openProject) {
+            const projectId = areaObj.project_id;
+            if (projectId) openProjectDetail(projectId);
+        }
+    });
 }
 document.getElementById('area-panel-toggle')?.addEventListener('click', toggleAreaPanel);
 function createMaskLayer(geoData) {
@@ -832,8 +993,8 @@ async function loadMenuLevel(level) {
 $(document).on('click', () => $('.menu-panel').fadeOut());
 $('.menu-panel').on('click', e => e.stopPropagation());
 $(document).ready(function () {
-    const $panel   = $('#sideControlPanel');
-    const $fab     = $('#fabToggle');
+    const $panel = $('#sideControlPanel');
+    const $fab = $('#fabToggle');
     const $overlay = $('#panelOverlay');
     const toggleMobilePanel = (forceState = null) => {
         const open = forceState !== null ? forceState : !$panel.hasClass('mobile-open');
@@ -844,16 +1005,12 @@ $(document).ready(function () {
     $fab.on('click', e => { e.stopPropagation(); toggleMobilePanel(); });
     $overlay.on('click', () => toggleMobilePanel(false));
     $(document).on('click', e => {
-        if ($(window).width() <= 768 &&
-            $panel.hasClass('mobile-open') &&
-            !$panel.is(e.target) &&
-            !$panel.has(e.target).length &&
-            !$fab.is(e.target)) {
+        if ($(window).width() <= 768 && $panel.hasClass('mobile-open') && !$panel.is(e.target) && !$panel.has(e.target).length && !$fab.is(e.target)) {
             toggleMobilePanel(false);
         }
     });
     let touchStartY = 0;
-    $('.drag-handle').on('touchstart', e => { touchStartY = e.originalEvent.touches[0].clientY; }).on('touchmove',  e => {
+    $('.drag-handle').on('touchstart', e => { touchStartY = e.originalEvent.touches[0].clientY; }).on('touchmove', e => {
         if (e.originalEvent.touches[0].clientY - touchStartY > 50 && $panel.hasClass('mobile-open')) {
             toggleMobilePanel(false);
         }
@@ -871,7 +1028,7 @@ $(document).ready(function () {
     const setMapMode = (mode) => {
         const isOn = mode === 'satellite';
         $('#mapModeWind').toggleClass('active', !isOn);
-        $('#mapModeSat').toggleClass('active',   isOn);
+        $('#mapModeSat').toggleClass('active',  isOn);
         toggleSatellite(isOn);
         localStorage.setItem('map_views', isOn ? 'true' : 'false');
     };
@@ -906,46 +1063,109 @@ $(document).ready(function () {
         toggleEquipment(isOn);
         localStorage.setItem('equipment', isOn ? 'true' : 'false');
     });
-    const restore = (key, $el, fn) => {
+    window.restoreMapSettings = function() {
+        const restore = (key, $el, fn) => {
         const val = localStorage.getItem(key);
         if (val === null) return;
         const isOn = val === 'true';
         $el.prop('checked', isOn);
-        fn(isOn);
+        if (typeof map !== 'undefined' && map !== null) {
+            fn(isOn);
+        }
+        };
+        restore('winds', $('#toggle-wind-values'), toggleWind);
+        restore('focus', $('#toggle-focus'), toggleFocus);
+        restore('labels', $('#toggle-label'), toggleLabel);
+        restore('windturbine', $('#toggle-windturbine'), toggleWindTurbine);
+        restore('animation', $('#toggle-animation'), toggleAnimation);
+        restore('equipment', $('#toggle-equipment'), toggleEquipment);
     };
-    restore('winds', $('#toggle-wind-values'), toggleWind);
-    restore('focus', $('#toggle-focus'), toggleFocus);
-    restore('labels', $('#toggle-label'), toggleLabel);
-    restore('windturbine', $('#toggle-windturbine'), toggleWindTurbine);
-    restore('animation', $('#toggle-animation'), toggleAnimation);
-    restore('equipment', $('#toggle-equipment'), toggleEquipment);
 });
 $(document).ready(function () {
-    const hasSeenGlobe = sessionStorage.getItem('globe_shown');
-    if (hasSeenGlobe) {
-        $('#globe-intro').hide();
-        $('header, #ui, #sideControlPanel, #projectCanvas').show();
-        const $panel = $('#area-panel');
-        $panel.show().css({ opacity: '1' });
-        if (!isMobile()) $panel.removeClass('collapsed');
-        setTimeout(initMap, 0);
-        setTimeout(hideWindLoading, 2000);
-    } else {
-        sessionStorage.setItem('globe_shown', '1');
-        $('header, #ui, #sideControlPanel, #projectCanvas').hide();
-        const $panel = $('#area-panel');
-        $panel.addClass('collapsed').css('opacity', '0');
-        setTimeout(initMap, 4000);
-        setTimeout(() => {
-            if (typeof disposeThreeJS === 'function') disposeThreeJS();
-            $('header, #ui, #sideControlPanel, #projectCanvas').fadeIn(400);
-            $panel.show();
-            requestAnimationFrame(() => {
-                $panel.css({ opacity: '1', transition: 'all 0.6s cubic-bezier(0.34,1.56,0.64,1)' });
-                if (!isMobile()) $panel.removeClass('collapsed');
+  if (!document.getElementById('_init-transitions')) {
+    const style = document.createElement('style');
+    style.id = '_init-transitions';
+    style.textContent = `
+        header, #ui, #sideControlPanel, #projectCanvas {
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        header.ui-hidden, #ui.ui-hidden,
+        #sideControlPanel.ui-hidden, #projectCanvas.ui-hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(8px);
+        }
+        #area-panel {
+            transition: opacity 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        }
+        #area-panel.panel-pre-anim {
+            opacity: 0 !important;
+            transform: translateX(-16px);
+        }
+        #wind-loading {
+            transition: opacity 0.6s ease;
+        }
+        #wind-loading.fading {
+            opacity: 0;
+            pointer-events: none;
+        }
+    `;
+    document.head.appendChild(style);
+  }
+  function revealUI(animate) {
+    const $ui = $('header, #ui, #sideControlPanel, #projectCanvas');
+    const $panel = $('#area-panel');
+    if (animate) {
+      requestAnimationFrame(() => {
+                $ui.removeClass('ui-hidden');
             });
-        }, 7500);
-        setTimeout(hideWindLoading, 8000);
+            $panel.show().addClass('panel-pre-anim');
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    $panel.removeClass('panel-pre-anim');
+                    if (!isMobile()) $panel.removeClass('collapsed');
+                });
+            });
+        } else {
+            $ui.removeClass('ui-hidden').css({ opacity: '', transform: '' });
+            $panel.show().css({ opacity: '', transform: '' });
+            if (!isMobile()) $panel.removeClass('collapsed');
+        }
     }
-    $(".scrolling").removeClass("d-none");
+    function bindWindLoadingHide() {
+        let attempts = 0;
+        const poll = setInterval(() => {
+            attempts++;
+            const mapReady = typeof map !== 'undefined' && map !== null;
+            if (mapReady || attempts > 50) {
+                clearInterval(poll);
+                setTimeout(hideWindLoading, 500);
+            }
+        }, 200);
+    }
+    const hasSeenGlobe = sessionStorage.getItem('globe_shown');
+    if (!hasSeenGlobe) {
+        sessionStorage.setItem('globe_shown', '1');
+        $('header, #ui, #sideControlPanel, #projectCanvas').addClass('ui-hidden');
+        $('#area-panel').addClass('collapsed').css('opacity', '0');
+        let started = false;
+        function startMapAfterGlobe() {
+            if (started) return;
+            started = true;
+            if (typeof disposeThreeJS === 'function') disposeThreeJS();
+            requestAnimationFrame(() => {
+                initMap();
+                revealUI(true);
+                bindWindLoadingHide();
+            });
+        }
+        document.addEventListener('globe:done', startMapAfterGlobe, { once: true });
+        setTimeout(startMapAfterGlobe, 7500);
+    } else {
+        $('#globe-intro').hide();
+        initMap();
+        revealUI(false);
+        bindWindLoadingHide();
+    }
+    $('.scrolling').removeClass('d-none');
 });

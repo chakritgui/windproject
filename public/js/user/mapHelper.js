@@ -224,7 +224,7 @@ function renderMultimedia(content, lang, baseUrl) {
     }
     return html;
 }
-async function openProject(project_id) {
+async function openProjectDetail(project_id) {
     if (!project_id) return;
     try {
         const res = await fetch(`${BASE_URL}/api/project.poles`, {
@@ -313,9 +313,7 @@ async function openProject(project_id) {
                 elBar.style.backgroundColor = activeColor;
             });
             if (elRotor) {
-                const dur = speed > 0
-                    ? Math.max(0.6, 4 - speed * 0.3).toFixed(2)
-                    : '2.5';
+                const dur = speed > 0 ? Math.max(0.6, 4 - speed * 0.3).toFixed(2) : '2.5';
                 elRotor.style.animationDuration = `${dur}s`;
             }
         });
