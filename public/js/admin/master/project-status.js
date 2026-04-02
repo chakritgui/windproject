@@ -94,6 +94,9 @@ function initProjectStatusTable() {
                 `;
                 $filter.append(btn);
             }
+        },
+        drawCallback: function(){
+            getTableLang();
         }
     });
 }

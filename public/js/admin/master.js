@@ -72,108 +72,129 @@ $(document).on('click', '.item-order', function() {
     let type = $(this).data("type");
     switch(type) {
         case 'contract':
-            orderItem('contract', `${BASE_URL}/admin/projects/order`, `${langData['contract'] || 'Contract'}`);
+            orderItem('contract', `${langData['contract'] || 'Contract'}`);
             break;
         case 'project':
-            orderItem('project', `${BASE_URL}/admin/projects/order`, `${langData['project'] || 'Project'}`);
+            orderItem('project', `${langData['project'] || 'Project'}`);
             break;
         case 'pole_types':
-            orderItem('pole_types', `${BASE_URL}/admin/types/order`, `${langData['pole_types'] || 'Wind Measurement Equipment'}`);
+            orderItem('pole_types', `${langData['pole_types'] || 'Wind Measurement Equipment'}`);
             break;
         case 'installation':
-            orderItem('installation', `${BASE_URL}/admin/installation/order`, `${langData['installation'] || 'Installation'}`);
+            orderItem('installation',`${langData['installation'] || 'Installation'}`);
             break;
         case 'level':
-            orderItem('level', `${BASE_URL}/admin/level/order`, `${langData['level'] || 'Level'}`);
+            orderItem('level', `${langData['level'] || 'Level'}`);
             break;
         case 'poles':
-            orderItem('poles', `${BASE_URL}/admin/poles/order`, `${langData['poles'] || 'Poles'}`);
+            orderItem('poles', `${langData['poles'] || 'Poles'}`);
+            break;
+        case 'group':
+            orderItem('group', `${langData['group'] || 'Group'}`);
+            break;
+        case 'status':
+            orderItem('project_status', `${langData['project_status'] || 'Project Status'}`);
             break;
     }
 });
-function orderItem(type, url, title) {
+function orderItem(type, title) {
+    let modalEl = $('#windModal');
+    let modal = new bootstrap.Modal(modalEl[0]);
+    modal.show();
+    modalEl.find(".modal-header").html(`
+        <h5 class="modal-title">${langData['sort'] || "Sort"} • ${langData[type] || title}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    `);
+    modalEl.find(".modal-footer").html(`
+        <button type="button" class="btn btn-primary me-2 save-order-item">${langData['save'] || "Save"}</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
+    `);
+    modalEl.find(".modal-body").html(`
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th width="50px">${langData['sort'] || "Sort"}</th>
+                    <th>${langData[type] || title}</th>
+                </tr>
+            </thead>
+            <tbody id="sortable-list">
+                <tr><td colspan="2" class="text-center">Loading...</td></tr>
+            </tbody>
+        </table>
+    `);
     $.ajax({
-        url: url,
-        type: 'GET',
+        url: `${BASE_URL}/api/sort.list`,
+        method: 'POST',
+        data: { type: type },
         dataType: 'json',
-        success: function(response) {
-            if (response.status === 'success') {
-                let items = response.data;
-                let content = `
-                    <ul class="list-group sortable" data-type="${type}">
-                `;
-                items.forEach(item => {
-                    content += `
-                        <li class="list-group-item" data-id="${item.id}">
-                            <i class="fa-solid fa-grip-vertical"></i> ${item.name}
-                        </li>
+        success: function(res) {
+            if(res.status && res.data){
+                let html = '';
+                res.data.forEach((item, index) => {
+                    html += `
+                        <tr data-id="${item.item_id}" style="cursor: move;">
+                            <td class="text-center"><i class="fas fa-grip-lines"></i></td>
+                            <td>
+                                <strong>${item.item_name}</strong>
+                                ${item.item_detail ? `<br><small class="text-muted">${item.item_detail}</small>` : ''}
+                            </td>
+                        </tr>
                     `;
                 });
-                content += `</ul>`;
-                Swal.fire({ 
-                    title: title,
-                    html: content,
-                    width: 400,
-                    showCancelButton: true,
-                    confirmButtonText: langData['save'] || 'Save',
-                    cancelButtonText: langData['cancel'] || 'Cancel',
-                    didOpen: () => {    
-                        $('.sortable').sortable();
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        let order = [];
-                        $('.sortable li').each(function(index) {
-                            order.push($(this).data('id'));
-                        });
-                        $.ajax({
-                            url: url,
-                            type: 'POST',
-                            data: { order: order },
-                            dataType: 'json',
-                            success: function(response) {
-                                if (response.status === 'success') {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: langData['success'] || 'Success',
-                                        text: response.message,
-                                        timer: 2000,
-                                        showConfirmButton: false
-                                    });
-                                    switch(type) {
-                                        case 'contract':
-                                            initContractsTable();
-                                            break;
-                                        case 'project':
-                                            initProjectsTable();
-                                            break;
-                                        case 'pole_types':
-                                            initTypesTable();
-                                            break;
-                                        case 'installation':
-                                            initInstallationsTable();
-                                            break;
-                                        case 'level':
-                                            initLevelTable();
-                                            break;
-                                        case 'poles':
-                                            initPolesTable();
-                                            break;
-                                    }
-                                } else {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: langData['error'] || 'Error',
-                                        text: response.message,
-                                        timer: 2000,
-                                        showConfirmButton: false
-                                    });
-                                }
-                            }
-                        });
-                    }
+                $('#sortable-list').html(html);
+                new Sortable(document.getElementById('sortable-list'), {
+                    animation: 150,
+                    ghostClass: 'bg-light'
                 });
+            } else {
+                showError(langData['cannot_load']);
             }
         }
+    });
+    modalEl.off('click', '.save-order-item').on('click', '.save-order-item', function() {
+        let orderData = [];
+        $('#sortable-list tr').each(function(index) {
+            orderData.push($(this).data('id'));
+        });
+        $.ajax({
+            url: `${BASE_URL}/api/sort.save`,
+            method: 'POST',
+            data: { 
+                type: type,
+                order: orderData
+            },
+            success: function(res) {
+                if(res.status) {
+                    showSuccess(langData['save_success'] || "Saved!");
+                    modal.hide();
+                    switch(type) {
+                        case 'contract':
+                            initContractsTable();
+                            break;
+                        case 'project':
+                            initProjectsTable();
+                            break;
+                        case 'pole_types':
+                            initTypesTable();
+                            break;
+                        case 'installation':
+                            initInstallationsTable();
+                            break;
+                        case 'level':
+                            initLevelTable();
+                            break;
+                        case 'poles':
+                            initPolesTable();
+                            break;
+                        case 'group':
+                            initGroupTable();
+                            break;
+                        case 'project_status':
+                            initProjectStatusTable();
+                            break;
+                    }
+                }
+            }
+        });
     });
 }
