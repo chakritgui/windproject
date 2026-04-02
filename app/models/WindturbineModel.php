@@ -166,7 +166,7 @@ class WindturbineModel {
             foreach ($projectNamesInFile as $name) {
                 $name = trim($name);
                 if ($name !== '' && !isset($existingProjects[$name])) {
-                    $stmt = $this->db->prepare("INSERT INTO wp_project (project_name, created_at) VALUES (?, NOW())");
+                    $stmt = $this->db->prepare("INSERT INTO wp_project (project_name, created_at, updated_at) VALUES (?, NOW(), NOW())");
                     $stmt->execute([$name]);
                     $existingProjects[$name] = $this->db->lastInsertId();
                 }
