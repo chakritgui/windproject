@@ -1113,6 +1113,13 @@ $(document).ready(function () {
                 pointer-events: none;
                 transform: translateY(8px);
             }
+            #area-panel {
+                transition: opacity 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+            }
+            #area-panel.panel-pre-anim {
+                opacity: 0 !important;
+                transform: translateX(-16px);
+            }
             #wind-loading {
                 transition: opacity 0.6s ease;
             }
@@ -1134,13 +1141,13 @@ $(document).ready(function () {
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     $panel.removeClass('panel-pre-anim');
-                    if (!isMobile()) $panel.removeClass('collapsed');
+                    if (!isMobile()) $panel.removeClass('collapsed').css('opacity', '1');
                 });
             });
         } else {
             $ui.removeClass('ui-hidden').css({ opacity: '', transform: '' });
             $panel.show().css({ opacity: '', transform: '' });
-            if (!isMobile()) $panel.removeClass('collapsed');
+            if (!isMobile()) $panel.removeClass('collapsed').css('opacity', '1');
         }
     }
     function bindWindLoadingHide() {
