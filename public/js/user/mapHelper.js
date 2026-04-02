@@ -134,9 +134,7 @@ async function openPoles(poleId) {
             const src  = $img.attr('src');
             if (!src) return;
             $img.removeAttr('width height');
-            let style = ($img.attr('style') || '')
-                .replace(/width\s*:\s*[^;]+;?/gi, '')
-                .replace(/height\s*:\s*[^;]+;?/gi, '');
+            let style = ($img.attr('style') || '').replace(/width\s*:\s*[^;]+;?/gi, '').replace(/height\s*:\s*[^;]+;?/gi, '');
             $img.attr({ style: style.trim(), loading: 'lazy' });
             if (!$img.parent('a').length) {
                 $img.wrap(`<a href="${src}" data-fancybox="content-images" class="content-img-link"></a>`);
@@ -381,9 +379,11 @@ function updateWindUI() {
                 }
             }
             const gustValEl = popupPane.querySelector('#picker-gust-value');
+            const gustWrap = popupPane.querySelector('#picker-gust-wrap');
             if (gustValEl) {
                 const gMs = parseFloat(gustValEl.dataset.raw);
                 gustValEl.textContent = `${(gMs * unit.factor).toFixed(1)} ${unit.label}`;
+                if (gustWrap) gustWrap.style.color = getWindColor(gMs);
             }
         }
     }

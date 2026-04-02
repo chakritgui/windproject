@@ -140,6 +140,7 @@ async function refreshAllWindData() {
                 const cx = elArrow.getAttribute('data-cx');
                 const cy = elArrow.getAttribute('data-cy');
                 elArrow.setAttribute('transform', `rotate(${dir - 90}, ${cx}, ${cy})`);
+                elArrow.dataset.dir = dir;
                 const arrowIcon = elArrow.querySelector('text');
                 if (arrowIcon) {
                     arrowIcon.setAttribute('fill', activeColor);
@@ -302,7 +303,7 @@ function getSmartOffset(lat, lng, usedBoxes, map, zoom, polePoints) {
 function _overlaps(a, b) {
     return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
 }
-function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId, windSpeed = 0, scale = 1 }) {
+function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId, windSpeed = 0, windDir = 0, scale = 1 }) {
     const BOX_H = Math.round(28 * scale);
     const PADDING = Math.round(10 * scale);
     const fs1 = Math.max(8,  Math.round(14 * scale));
@@ -355,7 +356,11 @@ function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId
             <circle cx="${anchorX}" cy="${anchorY}" r="${dotR}" fill="${glowColor}" fill-opacity="0.7" stroke="rgba(255,255,255,0.35)" stroke-width="0.8"/>
             <rect x="${boxX}" y="${boxY}" width="${BOX_W}" height="${BOX_H}" rx="${rx}" fill="url(#${lgId})" fill-opacity="0.96" stroke="${glowColor}" stroke-width="0.65" stroke-opacity="0.45" filter="url(#${shId})"/>
             <rect x="${boxX + 1}" y="${boxY + 1}" width="${BOX_W - 2}" height="${Math.round(BOX_H * 0.45)}" rx="${rx}" fill="rgba(255,255,255,0.04)"/>
-            <g id="${arrowId}" data-cx="${arrowCX}" data-cy="${arrowCY}" transform="rotate(0, ${arrowCX}, ${arrowCY})">
+            <g id="${arrowId}" 
+                data-cx="${arrowCX}" 
+                data-cy="${arrowCY}" 
+                data-dir="${windDir}"
+                transform="rotate(${windDir - 90}, ${arrowCX}, ${arrowCY})">
                 <text x="${arrowCX}" y="${arrowCY}" font-size="${fs3}" fill="${activeColor}" text-anchor="middle" dominant-baseline="central" filter="url(#${glowId})">➤</text>
             </g>
             <text id="${windId}" 
@@ -540,13 +545,16 @@ async function loadPoles() {
                     const anchorX = off.dx >= 0 ? 0 : Math.abs(off.dx);
                     const anchorY = off.dy >= 0 ? 0 : Math.abs(off.dy);
                     const windEl    = document.getElementById(windId);
-                    const windSpeed = windEl ? parseFloat(windEl.dataset.raw) || 0 : 0;
+                    const arrowEl   = document.getElementById(arrowId);
+                    const windSpeed = windEl  ? parseFloat(windEl.dataset.raw)  || 0 : 0;
+                    const windDir   = arrowEl ? parseFloat(arrowEl.dataset.dir) || 0 : 0;
                     const { svgW, svgH, html } = buildWindLabelSVG({
                         anchorX, anchorY,
                         labelDx: off.dx,
                         labelDy: off.dy,
                         windId, arrowId,
                         windSpeed,
+                        windDir,
                         scale
                     });
                     labelMarker.setIcon(L.divIcon({
