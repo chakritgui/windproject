@@ -722,12 +722,25 @@ function _buildTurbineIcon(turbine) {
 }
 function resetView() {
     if (!initialBounds) return;
-    map.flyToBounds(initialBounds, {
-        ...initialPadding,
-        duration: 1.25,
-        easeLinearity: 0.25,
-        noMoveStart: true,
-        animate: true
+    const fromCenter  = map.getCenter();
+    const toCenter    = initialBounds.getCenter();
+    const distDeg     = Math.hypot(toCenter.lat - fromCenter.lat, toCenter.lng - fromCenter.lng);
+    const zoomDiff    = Math.abs((map.getZoom() || 10) - map.getBoundsZoom(initialBounds, false, [20, 20]));
+    const rawDuration = 1.2 + distDeg * 2.2 + zoomDiff * 0.18;
+    const duration    = Math.min(3.0, Math.max(1.2, rawDuration));
+    try {
+        if (windyAPI?.map?.stop)  windyAPI.map.stop();
+        if (windyAPI?.store?.set) windyAPI.store.set('overlay', windyAPI.store.get('overlay'));
+    } catch (_) {}
+    map.options.zoomAnimation = false;
+    map.setView(toCenter, map.getBoundsZoom(initialBounds, false, [20, 20]), {
+        animate:       true,
+        duration,
+        easeLinearity: 0.08,
+        noMoveStart:   true,
+    });
+    map.once('moveend', () => {
+        map.options.zoomAnimation = true;
     });
 }
 function highlightAreaItem(index) {

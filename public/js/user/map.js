@@ -772,41 +772,71 @@ async function renderWindAreas(picker, areaData, masterData) {
     });
     isMaskMode = masterData?.polygon_visibility === 'close';
     const featureGroup = L.featureGroup();
+    const styleGroups = new Map();
     polygons.forEach((area, i) => {
         if (!area.geo_data) return;
         try {
             const geoJsonData = JSON.parse(area.geo_data);
             const styleData   = JSON.parse(area.custom_style || '{}');
-            const geoLayer = L.geoJSON(geoJsonData, {
-                style: () => ({
-                    fillColor:   styleData.fillColor   || '#3388ff',
-                    fillOpacity: styleData.fillOpacity !== undefined ? parseFloat(styleData.fillOpacity) : 0.2,
-                    color:       styleData.color       || '#3388ff',
-                    weight:      styleData.weight      !== undefined ? parseFloat(styleData.weight) : 2,
-                    stroke:      styleData.weight !== 0,
-                    opacity:     1,
-                    interactive: true,
-                })
+            const styleKey = JSON.stringify({
+                fillColor:   styleData.fillColor   || '#3388ff',
+                fillOpacity: styleData.fillOpacity !== undefined ? parseFloat(styleData.fillOpacity) : 0.2,
+                color:       styleData.color       || '#3388ff',
+                weight:      styleData.weight      !== undefined ? parseFloat(styleData.weight) : 2,
             });
-            areaLayers[i] = geoLayer;
-            geoLayer.on('touchend click', function (e) {
-                if (!e.latlng) return;
-                e.originalEvent?.stopImmediatePropagation();
-                e.originalEvent?.preventDefault();
-                highlightAreaItem(i);
-                flyToArea(i, area, true, false, e.latlng);
-            });
-            geoLayer.addTo(featureGroup);
-            if (isMaskMode) {
-                geoLayer.eachLayer(layer => {
-                    const lls = layer.getLatLngs?.();
-                    if (!lls) return;
-                    const rings = Array.isArray(lls[0]) && !(lls[0][0] instanceof L.LatLng) ? lls.map(inner => inner[0]) : [lls[0]];
-                    allHoles.push(...rings);
-                });
+            if (!styleGroups.has(styleKey)) {
+                styleGroups.set(styleKey, { styleData, areas: [] });
             }
+            styleGroups.get(styleKey).areas.push({ index: i, geoJsonData, area });
+
         } catch (err) {
             console.error('Area JSON parse error:', err);
+        }
+    });
+    styleGroups.forEach(({ styleData, areas }) => {
+        const mergedGeo = _mergePolygons(areas.map(a => a.geoJsonData));
+        const fillColor   = styleData.fillColor   || '#3388ff';
+        const fillOpacity = styleData.fillOpacity !== undefined ? parseFloat(styleData.fillOpacity) : 0.2;
+        const color       = styleData.color       || '#3388ff';
+        const weight      = styleData.weight      !== undefined ? parseFloat(styleData.weight) : 2;
+        const geoLayer = L.geoJSON(mergedGeo, {
+            style: () => ({
+                fillColor, fillOpacity, color, weight,
+                stroke:      weight !== 0,
+                opacity:     1,
+                interactive: true,
+            })
+        });
+        areas.forEach(({ index, geoJsonData }) => {
+            try {
+                const tempLayer = L.geoJSON(geoJsonData);
+                const b = tempLayer.getBounds();
+                if (b.isValid()) areaBounds[index] = b;
+            } catch (_) {}
+        });
+        areas.forEach(({ index }) => {
+            areaLayers[index] = geoLayer;
+        });
+        geoLayer.on('touchend click', function (e) {
+            if (!e.latlng) return;
+            e.originalEvent?.stopImmediatePropagation();
+            e.originalEvent?.preventDefault();
+            const clickedIndex = _findNearestAreaIndex(e.latlng, areas);
+            const targetIndex  = clickedIndex ?? areas[0].index;
+            const targetArea   = areas.find(a => a.index === targetIndex)?.area ?? areas[0].area;
+            highlightAreaItem(targetIndex);
+            flyToArea(targetIndex, targetArea, true, false, e.latlng);
+        });
+        geoLayer.addTo(featureGroup);
+        if (isMaskMode) {
+            geoLayer.eachLayer(layer => {
+                const lls = layer.getLatLngs?.();
+                if (!lls) return;
+                const rings = Array.isArray(lls[0]) && !(lls[0][0] instanceof L.LatLng)
+                    ? lls.map(inner => inner[0])
+                    : [lls[0]];
+                allHoles.push(...rings);
+            });
         }
     });
     featureGroup.addTo(map).bringToFront();
@@ -916,42 +946,46 @@ function buildAreaPanel(polygons) {
     });
 }
 function flyToArea(areaIndex, areaObj, openPicker = false, openProject = false, clickLatLng = null) {
-    const geoLayer = areaLayers[areaIndex];
-    if (!geoLayer) return;
-    const targetBounds = geoLayer.getBounds();
-    if (!targetBounds.isValid()) return;
+    let targetBounds = areaBounds?.[areaIndex];
+    if (!targetBounds?.isValid()) {
+        const geoLayer = areaLayers[areaIndex];
+        if (!geoLayer) return;
+        targetBounds = geoLayer.getBounds();
+    }
+    if (!targetBounds?.isValid()) return;
+    const geoLayer   = areaLayers[areaIndex];
     const focusZoom  = map.getBoundsZoom(targetBounds, false, [25, 25]);
     const currentMax = map.options.maxBounds;
     const needsRelax = currentMax && !currentMax.contains(targetBounds);
-    const fromCenter = map.getCenter();
-    const toCenter   = targetBounds.getCenter();
-    const distDeg    = Math.hypot(
-        toCenter.lat - fromCenter.lat,
-        toCenter.lng - fromCenter.lng
-    );
-    const zoomDiff = Math.abs((map.getZoom() || 10) - focusZoom);
-    const rawDuration = 0.8 + distDeg * 1.8 + zoomDiff * 0.12;
-    const duration    = Math.min(2.2, Math.max(0.8, rawDuration));
+    const fromCenter  = map.getCenter();
+    const toCenter    = targetBounds.getCenter();
+    const distDeg     = Math.hypot(toCenter.lat - fromCenter.lat, toCenter.lng - fromCenter.lng);
+    const zoomDiff    = Math.abs((map.getZoom() || 10) - focusZoom);
+    const rawDuration = 1.2 + distDeg * 2.2 + zoomDiff * 0.18;
+    const duration    = Math.min(3.0, Math.max(1.2, rawDuration));
     if (needsRelax) {
         const relaxed = currentMax.extend(targetBounds).pad(0.08);
         map.setMaxBounds(relaxed);
     }
-    map.flyToBounds(targetBounds, {
-        padding:       [25, 25],
+    try {
+        if (windyAPI?.map?.stop)   windyAPI.map.stop();
+        if (windyAPI?.store?.set)  windyAPI.store.set('overlay', windyAPI.store.get('overlay'));
+    } catch (_) {}
+    const targetCenter = targetBounds.getCenter();
+    map.options.zoomAnimation = false;
+    map.setView(targetCenter, focusZoom, {
+        animate:   true,
         duration,
-        easeLinearity: 0.15,
-        maxZoom:       focusZoom,
-        animate:       true,
+        easeLinearity: 0.08,
+        noMoveStart: true,
     });
     map.once('moveend', () => {
+        map.options.zoomAnimation = true;
         if (needsRelax && currentMax) {
             setTimeout(() => {
                 map.setMaxBounds(currentMax);
                 if (!currentMax.contains(map.getCenter())) {
-                    map.panInsideBounds(currentMax, {
-                        animate:  true,
-                        duration: 0.5,
-                    });
+                    map.panInsideBounds(currentMax, { animate: true, duration: 0.5 });
                 }
             }, 120);
         }
@@ -962,7 +996,7 @@ function flyToArea(areaIndex, areaObj, openPicker = false, openProject = false, 
             }, 200);
         }
         if (openProject) {
-            const projectId = areaObj.project_id;
+            const projectId = areaObj?.project_id;
             if (projectId) openProjectDetail(projectId);
         }
     });

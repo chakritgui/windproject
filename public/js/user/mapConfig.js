@@ -10,6 +10,7 @@ let poleMarkers        = {};
 let menuState          = {};
 let areaVisibility     = {};
 let areaLayers         = {};
+let areaBounds    = {};
 let maskLayer          = null;
 let geoDataGlobal      = null;
 let labelStyleEl       = null;
