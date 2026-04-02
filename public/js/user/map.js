@@ -1141,13 +1141,13 @@ $(document).ready(function () {
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     $panel.removeClass('panel-pre-anim');
-                    if (!isMobile()) $panel.removeClass('collapsed').css('opacity', '1');
+                    if (!isMobile()) $panel.removeClass('collapsed');
                 });
             });
         } else {
             $ui.removeClass('ui-hidden').css({ opacity: '', transform: '' });
             $panel.show().css({ opacity: '', transform: '' });
-            if (!isMobile()) $panel.removeClass('collapsed').css('opacity', '1');
+            if (!isMobile()) $panel.removeClass('collapsed');
         }
     }
     function bindWindLoadingHide() {
@@ -1175,6 +1175,7 @@ $(document).ready(function () {
                 initMap();
                 revealUI(true);
                 bindWindLoadingHide();
+                $('#area-panel').css('opacity', '1');
             });
         }
         document.addEventListener('globe:done', startMapAfterGlobe, { once: true });
