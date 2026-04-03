@@ -79,36 +79,26 @@
         scene.add(sun);
         const ambient = new THREE.AmbientLight(0x222222);
         scene.add(ambient);
-        const loader   = new THREE.TextureLoader();
+        const loader = new THREE.TextureLoader();
         const earthTex = loader.load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg');
-        const bumpMap  = loader.load('https://threejs.org/examples/textures/earthbump1k.jpg');
-        const specMap  = loader.load('https://threejs.org/examples/textures/earthspec1k.jpg');
-        const nightTex = loader.load('https://threejs.org/examples/textures/earthlights1k.jpg');
         const cloudTex = loader.load('https://threejs.org/examples/textures/earthcloudmap.jpg');
         const globe = new THREE.Mesh(
-            new THREE.SphereGeometry(1, 64, 64),
+            new THREE.SphereGeometry(1, 48, 48),
             new THREE.MeshPhongMaterial({
-                map: earthTex,
-                bumpMap: bumpMap,
-                bumpScale: 0.05,
-                specularMap: specMap,
-                specular: new THREE.Color(0x333333),
-                shininess: 15,
-                emissiveMap: nightTex,
-                emissive: new THREE.Color(0x113311),
-                emissiveIntensity: 0.2,
+                map: earthTex
             })
         );
-        scene.add(globe);
         const clouds = new THREE.Mesh(
-            new THREE.SphereGeometry(1.01, 64, 64),
+            new THREE.SphereGeometry(1.01, 32, 32),
             new THREE.MeshPhongMaterial({
                 map: cloudTex,
                 transparent: true,
-                opacity: 0.4,
+                opacity: 0.3,
                 depthWrite: false
             })
         );
+
+        scene.add(globe);
         scene.add(clouds);
         const atmos = new THREE.Mesh(
             new THREE.SphereGeometry(1.1, 64, 64),
