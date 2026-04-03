@@ -1213,7 +1213,7 @@ $(document).ready(function () {
                     startMapAfterGlobe();
                     setTimeout(() => {
                         $('header, #ui, #sideControlPanel, #projectCanvas').removeClass('ui-hidden');
-                        $('#area-panel').removeClass('collapsed').css('opacity', '1');
+                        if (!isMobile()) $('#area-panel').removeClass('collapsed').css('opacity', '1');
                     }, 600);
                 }, 200); 
             });
