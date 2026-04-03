@@ -380,38 +380,25 @@ function resizeLabel() {
     const zoom  = map.getZoom();
     const size  = _calcIconSize(zoom);
     const scale = _calcLabelScale(zoom);
-
     window._usedLabelBoxes = [];
-
     const polePoints = Object.values(poleMarkers).map(({ lat, lng }) =>
         map.latLngToContainerPoint([lat, lng])
     );
-
-    // -------------------------
-    // POLE (ของเดิม ไม่แตะ)
-    // -------------------------
     Object.values(poleMarkers).forEach(({ marker, labelMarker, lat, lng, windId, arrowId }) => {
         const pd = marker._poleData;
         if (!pd) return;
-
         marker.setIcon(_buildPoleIcon(pd, size));
-
         const pt = map.latLngToContainerPoint([lat, lng]);
         const otherPts = polePoints.filter(p =>
             !(Math.abs(p.x - pt.x) < 1 && Math.abs(p.y - pt.y) < 1)
         );
-
         const off = getSmartOffset(lat, lng, window._usedLabelBoxes, map, zoom, otherPts);
-
         const anchorX = off.dx >= 0 ? 0 : Math.abs(off.dx);
         const anchorY = off.dy >= 0 ? 0 : Math.abs(off.dy);
-
         const windEl    = document.getElementById(windId);
         const arrowEl   = document.getElementById(arrowId);
-
         const windSpeed = windEl  ? parseFloat(windEl.dataset.raw)  || 0 : 0;
         const windDir   = arrowEl ? parseFloat(arrowEl.dataset.dir) || 0 : 0;
-
         const { svgW, svgH, html } = buildWindLabelSVG({
             anchorX, anchorY,
             labelDx: off.dx,
@@ -421,7 +408,6 @@ function resizeLabel() {
             windDir,
             scale
         });
-
         labelMarker.setIcon(L.divIcon({
             className:  'pole-label-wrap',
             iconSize:   [svgW, svgH],
@@ -429,13 +415,8 @@ function resizeLabel() {
             html
         }));
     });
-
-    // -------------------------
-    // TURBINE (เพิ่มใหม่)
-    // -------------------------
     if (typeof turbineMarkers !== 'undefined') {
-        const turbineSize = Math.max(6, size * 0.7); // ให้เล็กกว่า pole
-
+        const turbineSize = Math.max(6, size * 0.7);
         Object.values(turbineMarkers).forEach(({ marker, turbine }) => {
             if (!marker) return;
 
@@ -727,15 +708,14 @@ function toggleSatellite(mode) {
 }
 const turbineIconCache = {};
 function _buildTurbineIcon(turbine, size) { 
-    if (!turbineIconCache[size]) {
-        turbineIconCache[size] = L.icon({
-            iconUrl: BASE_URL + '/public/images/turbine.png',
-            iconSize: [size, size],
-            iconAnchor: [size / 2, size / 2],
-            popupAnchor: [0, -size / 2]
-        });
-    }
-    return turbineIconCache[size];
+    return L.divIcon({
+        className: 'turbine-icon-glow',
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+        html: `
+            <img src="${BASE_URL}/public/images/turbine.png" style="width:${size}px;height:${size}px;">
+        `
+    });
 }
 function resetView() {
     if (!initialBounds) return;

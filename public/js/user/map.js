@@ -257,7 +257,7 @@ function _calcLabelScale(zoom) {
     return 0.52 + 0.68 * t;
 }
 function _calcIconTurbindSize(zoom) {
-    return Math.max(3, Math.min(24, zoom * 1.2));
+    return Math.max(5, Math.min(24, zoom * 1.2));
 }
 function _calcIconSize(zoom) {
     const MIN_ZOOM = 8,  MAX_ZOOM = maxZoomLevel;
