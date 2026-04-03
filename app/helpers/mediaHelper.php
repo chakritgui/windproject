@@ -141,7 +141,7 @@ class MediaHelper {
         }
         $imgInfo = @getimagesize($file['tmp_name']);
         $isImage = ($imgInfo !== false);
-        $baseName = md5($content_id);
+        $baseName = md5($content_id . '_' . uniqid('', true));
         if ($isImage && function_exists('imagewebp')) {
             $newName = $baseName . ".webp";
             $target  = $uploadPath . $newName;
