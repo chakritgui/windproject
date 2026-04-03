@@ -186,14 +186,16 @@ async function loadWindTurbines() {
         turbineMarkers = {};
         const isVisible = localStorage.getItem('windturbine') === 'true';
         const zoom = map.getZoom();
-        const initSize = Math.max(3, Math.min(24, (zoom - 5) * 2.5));
+        const initSize = Math.max(3, Math.min(12, (zoom - 10) * 1.5 + 3));
+        const opacity = zoom < 10 ? 0.6 : 1;
         turbines.forEach((turbine, index) => {
             const lat = parseFloat(turbine.windturbine_lat);
             const lng = parseFloat(turbine.windturbine_lng);
             if (isNaN(lat) || isNaN(lng)) return;
             const marker = L.marker([lat, lng], {
                 icon: _buildTurbineIcon(turbine, initSize),
-                zIndexOffset: 900
+                zIndexOffset: 900,
+                opacity: opacity
             });
             marker._turbineData = turbine;
             if (turbine.windturbine_name) {
@@ -377,13 +379,11 @@ function _buildPoleIcon(pole, size = 30) {
         });
     }
     const isEven  = pole.type_id % 2 === 0;
-    const color   = isEven ? '#5bb8f5' : '#f5a623';
-    const color2  = isEven ? '#1e90d4' : '#d4821e';
+    const color   = isEven ? '#f5a623' : '#5bb8f5';
+    const color2  = isEven ? '#d4821e' : '#1e90d4';
     const glowCol = isEven ? 'rgba(91,184,245,0.6)' : 'rgba(245,166,35,0.6)';
-    const extra = !isEven
-        ? `<line x1="3" y1="14" x2="-5" y2="14" stroke="rgba(255,255,255,0.85)" stroke-width="1.3" stroke-linecap="round"/>
+    const extra = `<line x1="3" y1="14" x2="-5" y2="14" stroke="rgba(255,255,255,0.85)" stroke-width="1.3" stroke-linecap="round"/>
            <circle cx="-5" cy="14" r="1.8" fill="${color2}" stroke="rgba(255,255,255,0.9)" stroke-width="0.7"/>`
-        : '';
     const w = size * 0.7;
     const h = size * 1.9;
     return L.divIcon({

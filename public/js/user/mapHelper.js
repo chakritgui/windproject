@@ -247,14 +247,12 @@ async function openProjectDetail(project_id) {
         pill.textContent = statusName;
         const unit = getCurrentUnit();
         document.getElementById('pp-body').innerHTML = data.poles.map(p => {
-            const isEven = p.type_id % 2 === 0;
-            const color  = isEven ? '#5bb8f5' : '#f39c12';
-            const color2 = isEven ? '#2d7fc1' : '#d68910';
+            const isEven = p.type_id % 2 !== 0;
+            const color   = isEven ? '#f5a623' : '#5bb8f5';
+            const color2  = isEven ? '#d4821e' : '#1e90d4';
             const animName = `wspin_${p.poles_id}`;
-            const extra = !isEven
-                ? `<line x1="3" y1="32" x2="-5" y2="32" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
-                   <circle cx="-5" cy="32" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>`
-                : '';
+            const extra = `<line x1="3" y1="32" x2="-5" y2="32" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+                   <circle cx="-5" cy="32" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>`;
             return `
             <div class="pole-row" onclick="openPoles(${p.poles_id})">
                 <div class="pole-index">
@@ -416,11 +414,12 @@ function resizeLabel() {
         }));
     });
     if (typeof turbineMarkers !== 'undefined') {
-        const zoom = map.getZoom();
-        const turbineSize = Math.max(2, Math.min(24, (zoom - 4) * 1.8));
+        const turbineSize = Math.max(2, Math.min(12, (zoom - 10) * 1.5 + 3));
+        const opacity = zoom < 10 ? 0.7 : 1;
         Object.values(turbineMarkers).forEach(({ marker, turbine }) => {
             if (!marker) return;
             marker.setIcon(_buildTurbineIcon(turbine, turbineSize));
+            marker.setOpacity(opacity);
         });
     }
 }
@@ -713,12 +712,20 @@ function toggleSatellite(mode) {
 }
 const turbineIconCache = {};
 function _buildTurbineIcon(turbine, size) { 
+    const borderStyle = size < 4 ? '0.2px solid #ff0000' : '1px solid #ff0000';
     return L.divIcon({
-        className: 'turbine-icon-glow',
+        className: 'turbine-point-red',
         iconSize: [size, size],
         iconAnchor: [size / 2, size / 2],
         html: `
-            <img src="${BASE_URL}/public/images/turbine.png" style="width:${size}px;height:${size}px;">
+            <div style="
+                width: ${size}px; 
+                height: ${size}px; 
+                background-color: #ff0000; 
+                border: ${borderStyle}; 
+                border-radius: 50%;
+                box-sizing: border-box;
+            "></div>
         `
     });
 }
