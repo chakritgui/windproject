@@ -173,18 +173,21 @@ function updateWindDashboard({ max, min, avg }) {
     updateStat('#stat-min-wind', min, 'text-info');
     updateStat('#stat-avg-wind', avg, 'text-success');
 }
-let turbineMarkers = []; 
+let turbineMarkers = {};
 async function loadWindTurbines() {
     try {
         const turbines = await fetchJSON(`${BASE_URL}/api/windturbines.get`);
         if (!Array.isArray(turbines)) return;
-        turbineMarkers.forEach(m => {
-            if (poleLayerGroup.hasLayer(m)) poleLayerGroup.removeLayer(m);
+        Object.values(turbineMarkers).forEach(({ marker }) => {
+            if (marker && poleLayerGroup.hasLayer(marker)) {
+                poleLayerGroup.removeLayer(marker);
+            }
         });
-        turbineMarkers = [];
+        turbineMarkers = {};
         const isVisible = localStorage.getItem('windturbine') === 'true';
-        const initSize  = _calcIconTurbindSize(map.getZoom());
-        turbines.forEach(turbine => {
+        const zoom = map.getZoom();
+        const initSize = Math.max(3, Math.min(24, (zoom - 5) * 2.5));
+        turbines.forEach((turbine, index) => {
             const lat = parseFloat(turbine.windturbine_lat);
             const lng = parseFloat(turbine.windturbine_lng);
             if (isNaN(lat) || isNaN(lng)) return;
@@ -195,22 +198,19 @@ async function loadWindTurbines() {
             marker._turbineData = turbine;
             if (turbine.windturbine_name) {
                 marker.bindTooltip(turbine.windturbine_name, {
-                    permanent:  false,
-                    direction:  'top'
+                    permanent: false,
+                    direction: 'top'
                 });
             }
-            turbineMarkers.push(marker);
+            turbineMarkers[index] = { marker, turbine };
             if (isVisible) marker.addTo(poleLayerGroup);
         });
         if (!map._turbineZoomBound) {
             map._turbineZoomBound = true;
             map.on('zoomend', () => {
-                const size = _calcIconTurbindSize(map.getZoom());
-                turbineMarkers.forEach(marker => {
-                    const td = marker._turbineData;
-                    if (!td) return;
-                    marker.setIcon(_buildTurbineIcon(td, size));
-                });
+                if (typeof resizeLabel === 'function') {
+                    resizeLabel();
+                }
             });
         }
     } catch (err) {
@@ -255,9 +255,6 @@ function _calcLabelScale(zoom) {
     const MIN_ZOOM = 8, MAX_ZOOM = maxZoomLevel;
     const t = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
     return 0.52 + 0.68 * t;
-}
-function _calcIconTurbindSize(zoom) {
-    return Math.max(5, Math.min(24, zoom * 1.2));
 }
 function _calcIconSize(zoom) {
     const MIN_ZOOM = 8,  MAX_ZOOM = maxZoomLevel;
@@ -744,46 +741,51 @@ async function renderWindAreas(picker, areaData, masterData) {
         const fillColor   = styleData.fillColor   || '#3388ff';
         const fillOpacity = styleData.fillOpacity !== undefined ? parseFloat(styleData.fillOpacity) : 0.2;
         const color       = styleData.color       || '#3388ff';
-        const weight      = styleData.weight      !== undefined ? parseFloat(styleData.weight) : 2;
-        const geoLayer = L.geoJSON(mergedGeo, {
+        const weight      = styleData.weight      || 2;
+        const fillLayer = L.geoJSON(mergedGeo, {
             style: () => ({
-                fillColor, fillOpacity, color, weight,
-                stroke:      weight !== 0,
-                opacity:     1,
-                interactive: true,
+                fillColor,
+                fillOpacity,
+                stroke: false,
+                interactive: false
             })
-        });
-        areas.forEach(({ index, geoJsonData }) => {
+        }).addTo(featureGroup);
+        areas.forEach(({ index, geoJsonData, area }) => {
+            const strokeLayer = L.geoJSON(geoJsonData, {
+                style: () => ({
+                    fillColor: 'transparent',
+                    fillOpacity: 0,
+                    color: color,
+                    weight: weight,
+                    stroke: weight !== 0,
+                    opacity: 1,
+                    interactive: true,
+                })
+            });
             try {
-                const tempLayer = L.geoJSON(geoJsonData);
-                const b = tempLayer.getBounds();
+                const b = strokeLayer.getBounds();
                 if (b.isValid()) areaBounds[index] = b;
             } catch (_) {}
-        });
-        areas.forEach(({ index }) => {
-            areaLayers[index] = geoLayer;
-        });
-        geoLayer.on('touchend click', function (e) {
-            if (!e.latlng) return;
-            e.originalEvent?.stopImmediatePropagation();
-            e.originalEvent?.preventDefault();
-            const clickedIndex = _findNearestAreaIndex(e.latlng, areas);
-            const targetIndex  = clickedIndex ?? areas[0].index;
-            const targetArea   = areas.find(a => a.index === targetIndex)?.area ?? areas[0].area;
-            highlightAreaItem(targetIndex);
-            flyToArea(targetIndex, targetArea, true, false, e.latlng);
-        });
-        geoLayer.addTo(featureGroup);
-        if (isMaskMode) {
-            geoLayer.eachLayer(layer => {
-                const lls = layer.getLatLngs?.();
-                if (!lls) return;
-                const rings = Array.isArray(lls[0]) && !(lls[0][0] instanceof L.LatLng)
-                    ? lls.map(inner => inner[0])
-                    : [lls[0]];
-                allHoles.push(...rings);
+            areaLayers[index] = strokeLayer;
+            strokeLayer.on('touchend click', function (e) {
+                if (!e.latlng) return;
+                e.originalEvent?.stopImmediatePropagation();
+                e.originalEvent?.preventDefault();
+                highlightAreaItem(index);
+                flyToArea(index, area, true, false, e.latlng);
             });
-        }
+            strokeLayer.addTo(featureGroup);
+            if (isMaskMode) {
+                strokeLayer.eachLayer(layer => {
+                    const lls = layer.getLatLngs?.();
+                    if (!lls) return;
+                    const rings = Array.isArray(lls[0]) && !(lls[0][0] instanceof L.LatLng)
+                        ? lls.map(inner => inner[0])
+                        : [lls[0]];
+                    allHoles.push(...rings);
+                });
+            }
+        });
     });
     featureGroup.addTo(map).bringToFront();
     const bounds = featureGroup.getBounds();

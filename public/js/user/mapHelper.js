@@ -416,10 +416,10 @@ function resizeLabel() {
         }));
     });
     if (typeof turbineMarkers !== 'undefined') {
-        const turbineSize = Math.max(6, size * 0.7);
+        const zoom = map.getZoom();
+        const turbineSize = Math.max(2, Math.min(24, (zoom - 4) * 1.8));
         Object.values(turbineMarkers).forEach(({ marker, turbine }) => {
             if (!marker) return;
-
             marker.setIcon(_buildTurbineIcon(turbine, turbineSize));
         });
     }
@@ -669,11 +669,16 @@ function toggleLabel(isOn) {
         canvas.vector-field-layer { display:block!important; }`;
 }
 function toggleWindTurbine(isOn) {
-    turbineMarkers.forEach(marker => {
+    Object.values(turbineMarkers).forEach(({ marker }) => {
+        if (!marker) return;
         if (isOn) {
-            if (!poleLayerGroup.hasLayer(marker)) marker.addTo(poleLayerGroup);
+            if (!poleLayerGroup.hasLayer(marker)) {
+                marker.addTo(poleLayerGroup);
+            }
         } else {
-            if (poleLayerGroup.hasLayer(marker)) poleLayerGroup.removeLayer(marker);
+            if (poleLayerGroup.hasLayer(marker)) {
+                poleLayerGroup.removeLayer(marker);
+            }
         }
     });
 }
