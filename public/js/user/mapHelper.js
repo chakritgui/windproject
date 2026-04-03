@@ -251,11 +251,14 @@ async function openProjectDetail(project_id) {
             const color   = isEven ? '#f5a623' : '#5bb8f5';
             const color2  = isEven ? '#d4821e' : '#1e90d4';
             const animName = `wspin_${p.poles_id}`;
-            const extra = `<line x1="3" y1="32" x2="-5" y2="32" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
-                   <circle cx="-5" cy="32" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>`;
-            return `
-            <div class="pole-row" onclick="openPoles(${p.poles_id})">
-                <div class="pole-index">
+            let iconHtml = '';
+            const iconSize = 40;
+            if (p.type_icon?.trim()) {
+                iconHtml = `<img src="${BASE_URL}/${p.type_icon}" style="width:${iconSize}px; height:${iconSize}px; object-fit:contain; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))" alt="icon">`;
+            } else {
+                const extra = `<line x1="3" y1="32" x2="-5" y2="32" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+                            <circle cx="-5" cy="32" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>`;
+                iconHtml = `
                     <svg width="20" height="52" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))">
                         <circle cx="3" cy="49" r="3.5" fill="rgba(255,255,255,0.85)" stroke="${color}" stroke-width="1.5"/>
                         <line x1="3" y1="46" x2="3" y2="3"  stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
@@ -264,23 +267,28 @@ async function openProjectDetail(project_id) {
                         ${extra}
                         <circle cx="15" cy="5"  r="2.2" fill="${color}"  stroke="#ffffff" stroke-width="0.8"/>
                         <circle cx="11" cy="14" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>
-                    </svg>
-                </div>
-                <div class="pole-info">
-                    <div class="pole-title">
-                        <strong>${p.type_name || 'N/A'}</strong>
-                        <div class="small">${p.installations_name || 'N/A'}</div>
+                    </svg>`;
+            }
+            return `
+                <div class="pole-row" onclick="openPoles(${p.poles_id})">
+                    <div class="pole-index" style="width: 45px; display:flex; justify-content:center; align-items:center;">
+                        ${iconHtml}
                     </div>
-                    <div class="pole-coords"><i class="fa-solid fa-location-dot me-1"></i>${p.lat}° N, ${p.lng}° E</div>
-                    <div class="pole-bar-wrap">
-                        <div class="pole-bar" id="bar-${p.poles_id}" style="width:0%;transition:width 0.6s ease, background-color 0.3s"></div>
+                    <div class="pole-info">
+                        <div class="pole-title">
+                            <strong>${p.type_name || 'N/A'}</strong>
+                            <div class="small">${p.installations_name || 'N/A'}</div>
+                        </div>
+                        <div class="pole-coords"><i class="fa-solid fa-location-dot me-1"></i>${p.lat}° N, ${p.lng}° E</div>
+                        <div class="pole-bar-wrap">
+                            <div class="pole-bar" id="bar-${p.poles_id}" style="width:0%;transition:width 0.6s ease, background-color 0.3s"></div>
+                        </div>
                     </div>
-                </div>
-                <div class="pole-wind-box">
-                    <i class="fa-solid fa-location-arrow wind-arrow" id="wind-arrow-${p.poles_id}"></i>
-                    <span class="pole-wind" id="wind-val-${p.poles_id}" data-raw="0">-- <small>${unit.label}</small></span>
-                </div>
-            </div>`;
+                    <div class="pole-wind-box">
+                        <i class="fa-solid fa-location-arrow wind-arrow" id="wind-arrow-${p.poles_id}"></i>
+                        <span class="pole-wind" id="wind-val-${p.poles_id}" data-raw="0">-- <small>${unit.label}</small></span>
+                    </div>
+                </div>`;
         }).join('');
         bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('projectCanvas')).show();
         const lats = data.poles.map(p => p.lat).join(',');

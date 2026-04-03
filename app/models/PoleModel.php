@@ -141,7 +141,8 @@ class PoleModel {
     }
     public function polesList($project_id) {
         $sql = "SELECT
-                    p.poles_id, p.poles_lat AS lat, p.poles_lng AS lng, pj.project_name, t.type_id, t.type_name, i.installations_name, s.project_status_name AS project_status, s.project_status_color
+                    p.poles_id, p.poles_lat AS lat, p.poles_lng AS lng, pj.project_name, t.type_id, t.type_name, i.installations_name, s.project_status_name AS project_status, s.project_status_color,
+                    t.type_icon
                 FROM wp_poles p
                 LEFT JOIN wp_project pj ON pj.project_id = p.project_id
                 LEFT JOIN wp_type t ON t.type_id = p.type_id
