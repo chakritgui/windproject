@@ -1664,12 +1664,25 @@ header .nav-link:hover {
     position: fixed;
     inset: 0;
     z-index: 10002;
-    background: radial-gradient(circle at 50% 40%, rgba(10,15,44,0.85) 0%, rgba(5,7,15,0.9) 40%, rgba(0,0,0,0.95) 100%);
+    background: radial-gradient(circle at 50% 40%, rgba(10,15,44,1) 0%, rgba(5,7,15,1) 40%, rgba(0,0,0,1) 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    transition: opacity 1.2s ease;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                background 0.2s ease-in;
+}
+#globe-intro.fade-out {
+    opacity: 0;
+    background: #ffffff !important;
+    transition: opacity 0.6s ease-in, background 0.1s ease-out;
+    pointer-events: none;
+}
+#globe-intro.fade-out::before,
+#globe-intro.fade-out::after,
+#globe-intro.fade-out #globe-intro-text {
+    opacity: 0;
+    transition: opacity 0.1s ease;
 }
 #globe-intro::before {
     content: "";
@@ -1683,16 +1696,8 @@ header .nav-link:hover {
     animation: glowMove 12s ease-in-out infinite alternate;
 }
 @keyframes glowMove {
-    0% {
-        transform: translate(0,0) scale(1);
-    }
-    100% {
-        transform: translate(-5%,5%) scale(1.1);
-    }
-}
-#globe-intro.fade-out {
-    opacity: 0;
-    pointer-events: none;
+    0% { transform: translate(0,0) scale(1); }
+    100% { transform: translate(-5%,5%) scale(1.1); }
 }
 #globe-canvas {
     width: 100vw;
@@ -1704,11 +1709,13 @@ header .nav-link:hover {
     left: 50%;
     transform: translateX(-50%);
     font-size: 12px;
-    color: rgba(180, 210, 255, 0.7);
+    letter-spacing: 2px;
+    color: rgba(180, 210, 255, 0.9);
     text-shadow:
         0 0 10px rgba(100,150,255,0.6),
         0 0 20px rgba(80,120,255,0.4);
     animation: pulse 2.5s infinite;
+    z-index: 10;
 }
 @keyframes pulse {
     0%,100% { opacity: 0.4; transform: translateX(-50%) scale(1); }
@@ -1718,7 +1725,7 @@ header .nav-link:hover {
     content: "";
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle, transparent 60%, rgba(0,0,0,0.8) 100%);
+    background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.9) 100%);
     pointer-events: none;
 }
 .leaflet-container, 
@@ -1742,4 +1749,18 @@ header .nav-link:hover {
 .turbine-icon-glow img {
     border-radius: 50%;
     border: 1px solid #000000;
+}
+.leaflet-tile-container img {
+    width: 257px !important; 
+    height: 257px !important;
+    margin-left: -0.5px;
+    margin-top: -0.5px;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+.leaflet-tile {
+    filter: inherit;
+    visibility: inherit;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 }

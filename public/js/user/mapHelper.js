@@ -693,17 +693,10 @@ function toggleSatellite(mode) {
     if (!map) return;
     if (mode === 'satellite') {
         if (!satelliteLayer) {
-            satelliteLayer = L.tileLayer(
-                'https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-                { 
-                    subdomains: ['0','1','2','3'], 
-                    detectRetina: true, 
-                    crossOrigin: true, 
-                    keepBuffer: 4, 
-                    maxZoom: 18,
-                    maxNativeZoom: 20
-                }
-            );
+            satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri',
+                maxZoom: 18
+            });
         }
         if (!map.hasLayer(satelliteLayer)) satelliteLayer.addTo(map);
         windyAPI?.store.set('overlay', ''); 
@@ -718,22 +711,16 @@ function toggleSatellite(mode) {
         if (allHoles.length > 0) toggleHoles(true, allHoles);
     }
 }
-const turbineIconCache = {};
 function _buildTurbineIcon(turbine, size) { 
-    const borderStyle = size < 4 ? '0.2px solid #ff0000' : '1px solid #ff0000';
+    const outerSize = size * 1.8;
     return L.divIcon({
-        className: 'turbine-point-red',
-        iconSize: [size, size],
-        iconAnchor: [size / 2, size / 2],
+        className: 'turbine-premium-ring',
+        iconSize: [outerSize, outerSize],
+        iconAnchor: [outerSize / 2, outerSize / 2],
         html: `
-            <div style="
-                width: ${size}px; 
-                height: ${size}px; 
-                background-color: #ff0000; 
-                border: ${borderStyle}; 
-                border-radius: 50%;
-                box-sizing: border-box;
-            "></div>
+            <div style="width: ${outerSize}px; height: ${outerSize}px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255, 0, 0, 0.4); border-radius: 50%; background: rgba(255, 0, 0, 0.05);">
+                <div style="width: ${size}px; height: ${size}px; background: radial-gradient(circle at 30% 30%, #ff0000, #ff0000);  border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>
+            </div>
         `
     });
 }

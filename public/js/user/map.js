@@ -1208,11 +1208,21 @@ $(document).ready(function () {
             if (started) return;
             started = true;
             clearTimeout(fallbackTimer); 
-            startMapAfterGlobe();
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    startMapAfterGlobe();
+                    setTimeout(() => {
+                        $('header, #ui, #sideControlPanel, #projectCanvas').removeClass('ui-hidden');
+                        $('#area-panel').removeClass('collapsed').css('opacity', '1');
+                    }, 600);
+                }, 200); 
+            });
         }
         document.addEventListener('globe:done', onGlobeDone, { once: true });
-        const fallbackTimer = setTimeout(onGlobeDone, 9000);
-
+        const fallbackTimer = setTimeout(() => {
+            console.warn("Globe animation timeout, forcing map start.");
+            onGlobeDone();
+        }, 5000);
     } else {
         const intro = document.getElementById('globe-intro');
         if (intro) intro.remove();

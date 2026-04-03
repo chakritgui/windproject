@@ -44,3 +44,30 @@
 </div>
 <script src="<?=asset('public/js/user/sky.js')?>"></script>
 <script src="<?=asset('public/js/auth/auth.js')?>" defer></script>
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.4.0/leaflet.css" as="style">
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.4.0/leaflet.js" as="script">
+<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" as="script">
+<link rel="preload" href="https://api.windy.com/assets/map-forecast/libBoot.js" as="script">
+<link rel="preload" href="https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg" as="image">
+<link rel="preload" href="https://threejs.org/examples/textures/earthcloudmap.jpg" as="image">
+<link rel="preload" href="https://threejs.org/examples/textures/earthbump1k.jpg" as="image">
+<link rel="preload" href="https://threejs.org/examples/textures/earthspec1k.jpg" as="image">
+<link rel="preload" href="https://threejs.org/examples/textures/earthlights1k.jpg" as="image">
+<link rel="preload" href="https://threejs.org/examples/sprites/circle.png" as="image">
+<script>
+    window.addEventListener('load', function() {
+        const textures = [
+            'https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg',
+            'https://threejs.org/examples/textures/earthbump1k.jpg',
+            'https://threejs.org/examples/textures/earthspec1k.jpg',
+            'https://threejs.org/examples/textures/earthlights1k.jpg',
+            'https://threejs.org/examples/textures/earthcloudmap.jpg',
+            'https://threejs.org/examples/sprites/circle.png'
+        ];
+        textures.forEach(url => {
+            const img = new Image();
+            img.src = url;
+        });
+        console.log("Background preloading started...");
+    });
+</script>

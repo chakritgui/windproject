@@ -1,5 +1,5 @@
-<link rel="stylesheet" href="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.css">
-<script src="<?=BASE_URL?>/vendor/leaflet/1.4.0/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.4.0/leaflet.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.4.0/leaflet.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js"></script>
 <link href="<?=asset('public/css/page.css')?>" rel="stylesheet">
 <script src="<?=asset('public/js/user/mapConfig.js')?>"></script>
@@ -95,8 +95,8 @@
                 specular: new THREE.Color(0x333333),
                 shininess: 15,
                 emissiveMap: nightTex,
-                emissive: new THREE.Color(0xffffff),
-                emissiveIntensity: 0.4
+                emissive: new THREE.Color(0x113311),
+                emissiveIntensity: 0.2,
             })
         );
         scene.add(globe);
@@ -194,11 +194,12 @@
         );
         pinGroup.scale.setScalar(0);
         globePivot.add(pinGroup);
-        const LAO_LON    = 103, LAO_LAT = 18;
-        const targetRotY = -(LAO_LON * Math.PI / 180) + Math.PI;
-        const targetRotX =  (LAO_LAT * Math.PI / 180);
-        const startRotY  = targetRotY + Math.PI;
-        const startRotX  = 0.0;
+        const LAO_LAT = 18.2;
+        const LAO_LON = 104.8;
+        const targetRotY = (LAO_LON * Math.PI / 180) - (Math.PI / 2);
+        const targetRotX = -(LAO_LAT * Math.PI / 180) * 0.85;
+        const startRotY = targetRotY - Math.PI; 
+        const startRotX = 0;
         globe.rotation.y      = startRotY; globe.rotation.x      = startRotX;
         clouds.rotation.y     = startRotY; clouds.rotation.x     = startRotX;
         atmos.rotation.y      = startRotY; atmos.rotation.x      = startRotX;
@@ -212,50 +213,40 @@
             raf = requestAnimationFrame(animate);
             if (!start) { start = ts + delayBeforeStart; return; }
             if (ts < start) { renderer.render(scene, camera); return; }
-            const t    = (ts - start) / 1000;
+            const t = (ts - start) / 1000;
             const time = ts * 0.001;
-            if (t <= 4) {
-                const pe = easeIn(Math.min(t / 4, 1));
-                const ry = startRotY + (targetRotY - startRotY) * pe;
+            if (t <= 3.2) {
+                const pe = easeInOut(Math.min(t / 3.2, 1));
+                const ry = startRotY + ((-targetRotY) - startRotY) * pe;
                 const rx = startRotX + (targetRotX - startRotX) * pe;
-                globe.rotation.y      = ry;
-                globe.rotation.x      = rx;
-                clouds.rotation.y     = ry + 0.05;
-                clouds.rotation.x     = rx;
-                atmos.rotation.y      = ry;
-                atmos.rotation.x      = rx;
+                globe.rotation.y = ry;
+                globe.rotation.x = rx;
+                clouds.rotation.y = ry + 0.05;
+                clouds.rotation.x = rx;
+                atmos.rotation.y = ry;
+                atmos.rotation.x = rx;
                 globePivot.rotation.y = ry;
                 globePivot.rotation.x = rx;
-                camera.position.z     = 4 + (0.85 - 4) * pe;
+                camera.position.z = 4 + (0.85 - 4) * pe;
             }
-            if (t > 4 && t <= 4.8) {
-                globePivot.rotation.y = globe.rotation.y;
-                globePivot.rotation.x = globe.rotation.x;
-                const p      = (t - 4) / 0.8;
-                const pe     = easeOut(Math.min(p, 1));
-                const bounce = pe < 0.8 ? easeOut(pe / 0.8) : 1 + Math.sin(((pe - 0.8) / 0.2) * Math.PI) * 0.2;
+            if (t > 3.2 && t <= 4.2) {
+                const p = (t - 3.2) / 1.0;
+                const pe = easeOut(p);
+                const bounce = pe < 0.7 ? easeOut(pe / 0.7) : 1 + Math.sin(((pe - 0.7) / 0.3) * Math.PI) * 0.1;
                 pinGroup.scale.setScalar(bounce);
+                camera.position.z = 0.85 - (pe * 0.4);
+                if (t > 3.7 && !intro.classList.contains('fade-out')) {
+                    intro.classList.add('fade-out');
+                    document.dispatchEvent(new CustomEvent('globe:done'));
+                }
             }
-            if (t > 4.8 && t <= 6.5) {
-                globePivot.rotation.y = globe.rotation.y;
-                globePivot.rotation.x = globe.rotation.x;
-                pinGroup.scale.setScalar(1);
-                const pe = easeInOut(Math.min((t - 4.8) / 1.7, 1));
-                camera.position.z = 0.85 - pe * 0.5;
-            }
-            if (t > 5.5) {
-                intro.style.opacity = Math.max(0, 1 - (t - 5.5) / 0.8);
-            }
-            if (t > 6.5) {
+            if (t > 4.2) {
                 cleanup();
                 return;
             }
             starsFar.rotation.y  += 0.0001;
             starsMid.rotation.y  += 0.0002;
             starsNear.rotation.y += 0.0003;
-            starsFar.material.opacity  = 0.5 + Math.sin(time * 0.5)  * 0.1;
-            starsMid.material.opacity  = 0.7 + Math.sin(time * 0.8)  * 0.15;
-            starsNear.material.opacity = 0.9 + Math.sin(time * 1.2)  * 0.2;
             renderer.render(scene, camera);
         }
         function disposeMaterial(material) {
@@ -283,11 +274,20 @@
             window.disposeThreeJS = null;
         };
         function cleanup() {
-            cancelAnimationFrame(raf);
-            document.dispatchEvent(new CustomEvent('globe:done'));
-            intro.classList.add('fade-out');
-            setTimeout(() => intro.remove(), 800);
+    cancelAnimationFrame(raf);
+    document.dispatchEvent(new CustomEvent('globe:done'));
+    
+    const intro = document.getElementById('globe-intro');
+    intro.classList.add('fade-out');
+
+    // รอให้จางหายสนิท (ตามเวลา CSS 0.6s) ค่อยสั่งลบ Three.js ทิ้ง
+    setTimeout(() => {
+        if (typeof window.disposeThreeJS === 'function') {
+            window.disposeThreeJS();
         }
+        $(intro).remove();
+    }, 700); 
+}
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
