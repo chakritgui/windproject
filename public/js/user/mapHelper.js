@@ -247,7 +247,7 @@ async function openProjectDetail(project_id) {
         pill.textContent = statusName;
         const unit = getCurrentUnit();
         document.getElementById('pp-body').innerHTML = data.poles.map(p => {
-            const isEven = p.type_id % 2 !== 0;
+            const isEven = p.type_id % 2 === 0;
             const color   = isEven ? '#f5a623' : '#5bb8f5';
             const color2  = isEven ? '#d4821e' : '#1e90d4';
             const animName = `wspin_${p.poles_id}`;
