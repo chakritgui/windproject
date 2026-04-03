@@ -35,6 +35,13 @@
             document.body.appendChild(s);
         });
     }
+    (function() {
+        const hasSeenGlobe = sessionStorage.getItem('globe_shown');
+        if (!hasSeenGlobe) {
+            window.location.replace("<?=BASE_URL?>/intro"); 
+            return;
+        }
+    })();
     (async function initSystem() {
         try {
             const response = await fetch(`${BASE_URL}/api/configs.get`);

@@ -1124,12 +1124,6 @@ $(document).ready(function () {
     };
 });
 $(document).ready(function () {
-    const INTRO_PAGE_URL = `${BASE_URL}/intro`;
-    const hasSeenGlobe = sessionStorage.getItem('globe_shown');
-    if (!hasSeenGlobe) {
-        window.location.replace(INTRO_PAGE_URL);
-        return;
-    }
     function bindWindLoadingHide() {
         let attempts = 0;
         const poll = setInterval(() => {
