@@ -44,8 +44,3 @@
 </div>
 <script src="<?=asset('public/js/user/sky.js')?>"></script>
 <script src="<?=asset('public/js/auth/auth.js')?>" defer></script>
-<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js" as="script">
-<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.4.0/leaflet.css" as="style">
-<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.4.0/leaflet.js" as="script">
-<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js" as="script">
-<link rel="preload" href="https://api.windy.com/assets/map-forecast/libBoot.js" as="script">

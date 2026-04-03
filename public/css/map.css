@@ -134,74 +134,50 @@ header .nav-link:hover {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
-    z-index: 10001; 
+    height: 50vh; 
+    z-index: 10001;
     pointer-events: none;
     overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; 
     -webkit-mask-image: linear-gradient(
         to bottom,
         rgba(0,0,0,1) 0%,
-        rgba(0,0,0,1) 30%,
-        rgba(0,0,0,.5) 60%,
-        rgba(0,0,0,0) 100%
+        rgba(0,0,0,1) 20%,
+        rgba(0,0,0,0.5) 60%, 
+        rgba(0,0,0,0) 100% 
     );
     mask-image: linear-gradient(
         to bottom,
         rgba(0,0,0,1) 0%,
-        rgba(0,0,0,1) 30%,
-        rgba(0,0,0,.5) 60%,
+        rgba(0,0,0,1) 20%,
+        rgba(0,0,0,0.5) 60%,
         rgba(0,0,0,0) 100%
     );
 }
 .wind-grid {
     width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: 1400px;
     display: grid;
-    grid-template-columns: repeat(5, 1fr) 150px repeat(5, 1fr);
+    grid-template-columns: repeat(12, 1fr); 
     gap: 15px;
-    padding: 20px;
-    justify-items: center;
-    align-items: center;
-}
-.wind-spacer {
-    grid-column: 6;
-    grid-row: 1;
-    width: 150px;
-    height: 75px;
-    pointer-events: none;
-    display: none;
+    padding-top: 15px;
 }
 .wind-grid img {
-    width: 75px;
-    height: 75px;
+    width: 55px;  
+    height: 55px;
     object-fit: contain;
-    pointer-events: none;
+    opacity: 0.7;
 }
 @media (max-width: 1024px) {
-    .wind-grid {
-        grid-template-columns: repeat(2, 1fr) 120px repeat(2, 1fr);
-    }
-    .wind-spacer {
-        width: 120px;
-    }
+    .wind-grid { grid-template-columns: repeat(8, 1fr); }
+    .wind-grid img { width: 45px; height: 45px; }
 }
-@media (max-width: 700px) {
-    #wind-loading {
-        top: 35px;
-    }
-    .wind-grid {
-        grid-template-columns: repeat(2, 1fr) 90px repeat(2, 1fr);
-        gap: 10px;
-    }
-    .wind-spacer {
-        width: 90px;
-        height: 60px;
-    }
-    .wind-grid img {
-        width: 48px;
-        height: 48px;
-    }
+@media (max-width: 600px) {
+    #wind-loading { height: 40vh; }
+    .wind-grid { grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .wind-grid img { width: 35px; height: 35px; }
 }
 .side-menu-wrapper {
     position: fixed;
@@ -1659,74 +1635,6 @@ header .nav-link:hover {
 }
 .btn-unit-toggle:hover {
     background: rgba(91,184,245,0.2);
-}
-#globe-intro {
-    position: fixed;
-    inset: 0;
-    z-index: 10002;
-    background: radial-gradient(circle at 50% 40%, rgba(10,15,44,1) 0%, rgba(5,7,15,1) 40%, rgba(0,0,0,1) 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-                background 0.2s ease-in;
-}
-#globe-intro.fade-out {
-    opacity: 0 !important;
-    background: #ffffff !important;
-    transition: opacity 0.6s ease-in, background 0.1s ease-out;
-    pointer-events: none;
-}
-#globe-intro.fade-out::before,
-#globe-intro.fade-out::after,
-#globe-intro.fade-out #globe-intro-text {
-    opacity: 0;
-    transition: opacity 0.1s ease;
-}
-#globe-intro::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(circle at 30% 30%, rgba(80,120,255,0.25), transparent 50%),
-        radial-gradient(circle at 70% 60%, rgba(140,80,255,0.2), transparent 50%);
-    filter: blur(80px);
-    opacity: 0.8;
-    animation: glowMove 12s ease-in-out infinite alternate;
-}
-@keyframes glowMove {
-    0% { transform: translate(0,0) scale(1); }
-    100% { transform: translate(-5%,5%) scale(1.1); }
-}
-#globe-canvas {
-    width: 100vw;
-    height: 100vh;
-}
-#globe-intro-text {
-    position: absolute;
-    bottom: 10%;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 12px;
-    letter-spacing: 2px;
-    color: rgba(180, 210, 255, 0.9);
-    text-shadow:
-        0 0 10px rgba(100,150,255,0.6),
-        0 0 20px rgba(80,120,255,0.4);
-    animation: pulse 2.5s infinite;
-    z-index: 10;
-}
-@keyframes pulse {
-    0%,100% { opacity: 0.4; transform: translateX(-50%) scale(1); }
-    50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
-}
-#globe-intro::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle, transparent 50%, rgba(0,0,0,0.9) 100%);
-    pointer-events: none;
 }
 .leaflet-container, 
 .windy-canvas-container {

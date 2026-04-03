@@ -206,6 +206,7 @@
             $router->get('/disclaimer', 'UserController@disclaimer');
             $router->post('/api/accept-disclaimer', 'UserController@acceptDisclaimer');
             $router->get('/home', 'UserController@user');
+            $router->get('/intro', 'UserController@intro');
             $router->get('/news', 'UserController@news');
             $router->get('/pstg', 'UserController@project');
             $router->get('/pstg/(.*)', 'UserController@project');

@@ -13,6 +13,11 @@ class UserController extends Controller {
         $this->checkPermission('home');
         $this->view('user/map');
     }
+    public function intro() {
+        ensure_login();
+        $this->checkPermission('home');
+        $this->view('intro');
+    }
     public function project($path = null){
         ensure_login();
         $this->checkPermission('pstg');

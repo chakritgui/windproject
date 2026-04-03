@@ -30,7 +30,11 @@ function doLogin() {
         if (res.status === 'success') {
             sessionStorage.removeItem('globe_shown');
             setTimeout(() => {
-                window.location.href = `${BASE_URL}/${res.location}`;
+                if(res.location === 'home' || res.location === 'map') {
+                    window.location.href = `${BASE_URL}/intro`;
+                } else {
+                    window.location.href = `${BASE_URL}/${res.location}`;
+                }
             }, 50);
         } else {
             let message = langData[res.message] || res.message;

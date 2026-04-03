@@ -1124,53 +1124,6 @@ $(document).ready(function () {
     };
 });
 $(document).ready(function () {
-    if (!document.getElementById('_init-transitions')) {
-        const style = document.createElement('style');
-        style.id = '_init-transitions';
-        style.textContent = `
-            header, #ui, #sideControlPanel, #projectCanvas {
-                transition: opacity 0.5s ease, transform 0.5s ease;
-            }
-            header.ui-hidden, #ui.ui-hidden,
-            #sideControlPanel.ui-hidden, #projectCanvas.ui-hidden {
-                opacity: 0;
-                pointer-events: none;
-                transform: translateY(8px);
-            }
-            #area-panel {
-                transition: opacity 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
-                            transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-            }
-            #area-panel.panel-pre-anim {
-                opacity: 0 !important;
-                transform: translateX(-16px);
-            }
-            #wind-loading {
-                transition: opacity 0.6s ease;
-            }
-            #wind-loading.fading {
-                opacity: 0;
-                pointer-events: none;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-    function revealUI(animate) {
-        const $ui    = $('header, #ui, #sideControlPanel, #projectCanvas');
-        const $panel = $('#area-panel');
-        if (animate) {
-            requestAnimationFrame(() => $ui.removeClass('ui-hidden'));
-            $panel.show().addClass('panel-pre-anim');
-            requestAnimationFrame(() => requestAnimationFrame(() => {
-                $panel.removeClass('panel-pre-anim');
-                if (!isMobile()) $panel.removeClass('collapsed');
-            }));
-        } else {
-            $ui.removeClass('ui-hidden').css({ opacity: '', transform: '' });
-            $panel.show().css({ opacity: '', transform: '' });
-            if (!isMobile()) $panel.removeClass('collapsed');
-        }
-    }
     function bindWindLoadingHide() {
         let attempts = 0;
         const poll = setInterval(() => {
@@ -1181,54 +1134,8 @@ $(document).ready(function () {
             }
         }, 200);
     }
-    function startMapAfterGlobe() {
-        if (typeof window.disposeThreeJS === 'function') {
-            window.disposeThreeJS();
-        } else {
-            const intro = document.getElementById('globe-intro');
-            if (intro) {
-                intro.classList.add('fade-out');
-                setTimeout(() => intro.remove(), 800);
-            }
-        }
-        requestAnimationFrame(() => {
-            initMap();
-            revealUI(true);
-            bindWindLoadingHide();
-            $('#area-panel').css('opacity', '1');
-        });
-    }
-    const hasSeenGlobe = sessionStorage.getItem('globe_shown');
-    if (!hasSeenGlobe) {
-        sessionStorage.setItem('globe_shown', '1');
-        $('header, #ui, #sideControlPanel, #projectCanvas').addClass('ui-hidden');
-        $('#area-panel').addClass('collapsed').css('opacity', '0');
-        let started = false;
-        function onGlobeDone() {
-            if (started) return;
-            started = true;
-            clearTimeout(fallbackTimer); 
-            requestAnimationFrame(() => {
-                setTimeout(() => {
-                    startMapAfterGlobe();
-                    setTimeout(() => {
-                        $('header, #ui, #sideControlPanel, #projectCanvas').removeClass('ui-hidden');
-                        if (!isMobile()) $('#area-panel').removeClass('collapsed').css('opacity', '1');
-                    }, 600);
-                }, 200); 
-            });
-        }
-        document.addEventListener('globe:done', onGlobeDone, { once: true });
-        const fallbackTimer = setTimeout(() => {
-            console.warn("Globe animation timeout, forcing map start.");
-            onGlobeDone();
-        }, 5000);
-    } else {
-        const intro = document.getElementById('globe-intro');
-        if (intro) intro.remove();
-        initMap();
-        revealUI(false);
-        bindWindLoadingHide();
-    }
+    initMap();
+    bindWindLoadingHide();
+    if (!isMobile()) $('#area-panel').removeClass('collapsed').css('opacity', '1');
     $('.scrolling').removeClass('d-none');
 });
