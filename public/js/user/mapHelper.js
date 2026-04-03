@@ -698,53 +698,53 @@ function toggleSatellite(mode) {
         if (allHoles.length > 0) toggleHoles(true, allHoles);
     }
 }
-// function _buildTurbineIcon(turbine, size = 24) {
-//     if (turbine.icon?.trim()) {
-//         return L.icon({
-//             iconUrl: turbine.icon,
-//             iconSize: [size, size],
-//             iconAnchor: [size / 2, size], 
-//             popupAnchor: [0, -size]
-//         });
-//     }
-//     const w = Math.round(size * 0.75);
-//     const h = size;
-//     return L.divIcon({
-//         className: 'turbine-icon-wrap',
-//         iconSize: [w, h],
-//         iconAnchor: [w / 2, h],
-//         html: `
-//         <style>
-//             @keyframes spin {
-//                 from { transform: rotate(0deg); }
-//                 to   { transform: rotate(360deg); }
-//             }
-//         </style>
-//         <svg width="${w}" height="${h}" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
-//             <path d="M13 38 L17 38 L16 15 L14 15 Z" fill="#b1c0d1"/>
-//             <path d="M14 38 L16 38 L15.5 15 L14.5 15 Z" fill="#cbd5e0"/>
-//             <g style="transform-origin: 15px 15px; animation: spin 3s linear infinite;">
-//                 <circle cx="15" cy="15" r="2" fill="#4a5568"/>
-//                 <path d="M15 15 L15 2 L17 15 Z" fill="#5bb8f5"/>
-//                 <path d="M15 15 L26.3 21.5 L15 17 Z" fill="#5bb8f5" transform="rotate(120,15,15)"/>
-//                 <path d="M15 15 L3.7 21.5 L15 17 Z"  fill="#5bb8f5" transform="rotate(240,15,15)"/>
-//             </g>
-//             <circle cx="15" cy="15" r="1" fill="#fff"/>
-//         </svg>`
-//     });
-// }
-function _buildTurbineIcon(turbine) { 
-    const smallSize = 8; 
+function _buildTurbineIcon(turbine, size = 24) {
+    if (turbine.icon?.trim()) {
+        return L.icon({
+            iconUrl: turbine.icon,
+            iconSize: [size, size],
+            iconAnchor: [size / 2, size], 
+            popupAnchor: [0, -size]
+        });
+    }
+    const w = Math.round(size * 0.75);
+    const h = size;
     return L.divIcon({
-        className: 'turbine-small-dot', 
-        iconSize: [smallSize, smallSize],
-        iconAnchor: [smallSize / 2, smallSize / 2], 
-        popupAnchor: [0, -smallSize / 2],
+        className: 'turbine-icon-wrap',
+        iconSize: [w, h],
+        iconAnchor: [w / 2, h],
         html: `
-            <div style=" width: ${smallSize}px; height: ${smallSize}px; background-color: #000000; border: 1px solid #ffffff; border-radius: 50%; box-shadow: 0 0 2px rgba(0,0,0,0.3);"></div>
-        `
+        <style>
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to   { transform: rotate(360deg); }
+            }
+        </style>
+        <svg width="${w}" height="${h}" viewBox="0 0 30 40" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 38 L17 38 L16 15 L14 15 Z" fill="#b1c0d1"/>
+            <path d="M14 38 L16 38 L15.5 15 L14.5 15 Z" fill="#cbd5e0"/>
+            <g style="transform-origin: 15px 15px; animation: spin 3s linear infinite;">
+                <circle cx="15" cy="15" r="2" fill="#4a5568"/>
+                <path d="M15 15 L15 2 L17 15 Z" fill="#5bb8f5"/>
+                <path d="M15 15 L26.3 21.5 L15 17 Z" fill="#5bb8f5" transform="rotate(120,15,15)"/>
+                <path d="M15 15 L3.7 21.5 L15 17 Z"  fill="#5bb8f5" transform="rotate(240,15,15)"/>
+            </g>
+            <circle cx="15" cy="15" r="1" fill="#fff"/>
+        </svg>`
     });
 }
+// function _buildTurbineIcon(turbine) { 
+//     const smallSize = 8; 
+//     return L.divIcon({
+//         className: 'turbine-small-dot', 
+//         iconSize: [smallSize, smallSize],
+//         iconAnchor: [smallSize / 2, smallSize / 2], 
+//         popupAnchor: [0, -smallSize / 2],
+//         html: `
+//             <div style=" width: ${smallSize}px; height: ${smallSize}px; background-color: #000000; border: 1px solid #ffffff; border-radius: 50%; box-shadow: 0 0 2px rgba(0,0,0,0.3);"></div>
+//         `
+//     });
+// }
 function resetView() {
     if (!initialBounds) return;
     const fromCenter  = map.getCenter();
