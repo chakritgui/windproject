@@ -70,26 +70,28 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.outputEncoding = THREE.sRGBEncoding;
-        renderer.physicallyCorrectLights = true;
         const scene  = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.z = 4;
         const sun = new THREE.DirectionalLight(0xffffff, 2);
         sun.position.set(5, 0, 5);
         scene.add(sun);
-        const ambient = new THREE.AmbientLight(0x222222);
-        scene.add(ambient);
-        const loader = new THREE.TextureLoader();
+        scene.add(new THREE.AmbientLight(0x333333));
+        const manager = new THREE.LoadingManager();
+        const loader = new THREE.TextureLoader(manager);
+        manager.onLoad = function () {
+            intro.style.opacity = '1';
+            requestAnimationFrame(animate);
+        };
         const earthTex = loader.load(`${BASE_URL}/public/images/land_ocean_ice_cloud_2048_11zon.jpg`);
+        earthTex.minFilter = THREE.LinearFilter; 
         const globe = new THREE.Mesh(
             new THREE.SphereGeometry(1, 32, 32),
-            new THREE.MeshPhongMaterial({
-                map: earthTex
-            })
+            new THREE.MeshPhongMaterial({ map: earthTex })
         );
         scene.add(globe);
         const atmos = new THREE.Mesh(
-            new THREE.SphereGeometry(1.1, 64, 64),
+            new THREE.SphereGeometry(1.1, 32, 32), 
             new THREE.ShaderMaterial({
                 vertexShader: `
                     varying vec3 vNormal;
@@ -113,133 +115,93 @@
         scene.add(atmos);
         const createStarTexture = () => {
             const canvas = document.createElement('canvas');
-            canvas.width = 64;
-            canvas.height = 64;
-            const context = canvas.getContext('2d');
-            const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
-            gradient.addColorStop(0, 'rgba(255,255,255,1)');
-            gradient.addColorStop(0.2, 'rgba(255,255,255,0.8)');
-            gradient.addColorStop(1, 'rgba(255,255,255,0)');
-            context.fillStyle = gradient;
-            context.fillRect(0, 0, 64, 64);
+            canvas.width = 64; canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+            grad.addColorStop(0, 'rgba(255,255,255,1)');
+            grad.addColorStop(0.2, 'rgba(255,255,255,0.8)');
+            grad.addColorStop(1, 'rgba(255,255,255,0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 64, 64);
             return new THREE.CanvasTexture(canvas);
         };
-        const starTexture = createStarTexture();
         function createStarField(count) {
             const geo = new THREE.BufferGeometry();
-            const positions = new Float32Array(count * 3);
-            const colors = new Float32Array(count * 3);
+            const pos = new Float32Array(count * 3);
             for (let i = 0; i < count; i++) {
-                const r = 80 + Math.random() * 120; 
+                const r = 80 + Math.random() * 120;
                 const theta = Math.random() * 2 * Math.PI;
                 const phi = Math.acos((Math.random() * 2) - 1);
-                positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
-                positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-                positions[i * 3 + 2] = r * Math.cos(phi);
-                const s = 0.8 + Math.random() * 0.2;
-                colors[i * 3] = s; 
-                colors[i * 3 + 1] = s; 
-                colors[i * 3 + 2] = 1; 
+                pos[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+                pos[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+                pos[i * 3 + 2] = r * Math.cos(phi);
             }
-            geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
             return new THREE.Points(geo, new THREE.PointsMaterial({
-                size: 0.7, 
-                map: starTexture, 
-                transparent: true,
-                vertexColors: true, 
-                blending: THREE.AdditiveBlending,
-                depthWrite: false,
-                sizeAttenuation: true 
+                size: 0.7, map: createStarTexture(), transparent: true,
+                blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true
             }));
         }
-        const starField = createStarField(4300);
-        scene.add(starField);
-        const LAO_LAT = 18.2;
-        const LAO_LON = 104.8;
+        scene.add(createStarField(4000));
+        const LAO_LAT = 18.2; const LAO_LON = 104.8;
         const targetRotY = (LAO_LON * Math.PI / 180) - (Math.PI / 2);
         const targetRotX = -(LAO_LAT * Math.PI / 180) * 0.85;
-        const startRotY = targetRotY - Math.PI; 
-        const startRotX = 0;
-        globe.rotation.y      = startRotY; globe.rotation.x      = startRotX;
-        atmos.rotation.y      = startRotY; atmos.rotation.x      = startRotX;
+        const startRotY = targetRotY - Math.PI;
+        globe.rotation.y = atmos.rotation.y = startRotY;
         let start = null, raf;
-        const delayBeforeStart = 1500;
-        function easeIn(t)    { return t * t * t * t; }
-        function easeOut(t)   { return 1 - Math.pow(1 - t, 3); }
+        const delayBeforeStart = 1000;
         function easeInOut(t) { return t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3) / 2; }
+        function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
         function animate(ts) {
-            raf = requestAnimationFrame(animate);
-            if (!start) { start = ts + delayBeforeStart; return; }
-            if (ts < start) { renderer.render(scene, camera); return; }
+            if (!start) { start = ts + delayBeforeStart; }
             const t = (ts - start) / 1000;
-            const time = ts * 0.001;
-            if (t <= 3.2) {
-                const pe = easeInOut(Math.min(t / 3.2, 1));
-                const ry = startRotY + ((-targetRotY) - startRotY) * pe;
-                const rx = startRotX + (targetRotX - startRotX) * pe;
-                globe.rotation.y = ry;
-                globe.rotation.x = rx;
-                atmos.rotation.y = ry;
-                atmos.rotation.x = rx;
-                camera.position.z = 4 + (0.85 - 4) * pe;
-            }
-            if (t > 3.2 && t <= 4.2) {
-                const p = (t - 3.2) / 1.0;
-                const pe = easeOut(p);
-                const bounce = pe < 0.7 ? easeOut(pe / 0.7) : 1 + Math.sin(((pe - 0.7) / 0.3) * Math.PI) * 0.1;
-                camera.position.z = 0.85 - (pe * 0.4);
-                if (t > 3.7 && !intro.classList.contains('fade-out')) {
-                    intro.classList.add('fade-out');
-                    document.dispatchEvent(new CustomEvent('globe:done'));
-                }
-            }
             if (t > 4.2) {
                 cleanup();
                 return;
             }
-            renderer.render(scene, camera);
-        }
-        function disposeMaterial(material) {
-            material.dispose();
-            for (const key of Object.keys(material)) {
-                const value = material[key];
-                if (value && typeof value.dispose === 'function' && value.isTexture) {
-                    value.dispose();
+            if (t >= 0 && t <= 3.2) {
+                const pe = easeInOut(Math.min(t / 3.2, 1));
+                const ry = startRotY + ((-targetRotY) - startRotY) * pe;
+                const rx = targetRotX * pe;
+                globe.rotation.y = atmos.rotation.y = ry;
+                globe.rotation.x = atmos.rotation.x = rx;
+                camera.position.z = 4 + (0.85 - 4) * pe;
+            } else if (t > 3.2) {
+                const pe = easeOut(Math.min((t - 3.2) / 1.0, 1));
+                camera.position.z = 0.85 - (pe * 0.4);
+                if (t > 3.7 && !intro.classList.contains('fade-out')) {
+                    intro.classList.add('fade-out');
                 }
             }
+            renderer.render(scene, camera);
+            raf = requestAnimationFrame(animate);
         }
-        window.disposeThreeJS = function () {
-            cancelAnimationFrame(raf);
-            scene.traverse(object => {
-                if (!object.isMesh) return;
-                if (object.geometry) object.geometry.dispose();
-                if (object.material) {
-                    Array.isArray(object.material) ? object.material.forEach(disposeMaterial) : disposeMaterial(object.material);
-                }
-            });
-            renderer.dispose();
-            canvas.remove();
-            window.disposeThreeJS = null;
-        };
         function cleanup() {
             cancelAnimationFrame(raf);
             document.dispatchEvent(new CustomEvent('globe:done'));
-            const intro = document.getElementById('globe-intro');
             intro.classList.add('fade-out');
             setTimeout(() => {
-                if (typeof window.disposeThreeJS === 'function') {
-                    window.disposeThreeJS();
-                }
-                $(intro).remove();
-            }, 700); 
+                if (window.disposeThreeJS) window.disposeThreeJS();
+            }, 800);
         }
+        window.disposeThreeJS = function () {
+            cancelAnimationFrame(raf);
+            scene.traverse(obj => {
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) {
+                    if (Array.isArray(obj.material)) obj.material.forEach(m => m.dispose());
+                    else obj.material.dispose();
+                }
+            });
+            renderer.dispose();
+            if (canvas.parentNode) canvas.remove();
+            window.disposeThreeJS = null;
+        };
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-        animate();
     })();
 </script>
 <div id="wind-loading">

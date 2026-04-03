@@ -1673,7 +1673,7 @@ header .nav-link:hover {
                 background 0.2s ease-in;
 }
 #globe-intro.fade-out {
-    opacity: 0;
+    opacity: 0 !important;
     background: #ffffff !important;
     transition: opacity 0.6s ease-in, background 0.1s ease-out;
     pointer-events: none;
