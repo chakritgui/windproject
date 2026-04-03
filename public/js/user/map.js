@@ -27,11 +27,10 @@ function initMap() {
                 applyMasterSettings(masterData);
                 show_country_line = masterData.show_country_line;
                 country_layers_data = masterData.country_layers_data;
-                const map_viewsRaw = localStorage.getItem('map_views');
-                const map_viewsVal = map_viewsRaw !== null ? map_viewsRaw : map_views;
+                const map_viewsVal = localStorage.getItem('map_views') || DEFAULT_MODE;
                 toggleSatellite(map_viewsVal);
-                $('#mapModeWind').toggleClass('active', !map_viewsVal);
-                $('#mapModeSat').toggleClass('active',   map_viewsVal);
+                $('#mapModeWind').toggleClass('active', map_viewsVal === 'wind');
+                $('#mapModeSat').toggleClass('active',   map_viewsVal === 'satellite');
                 const labelsRaw = localStorage.getItem('labels');
                 const labels = labelsRaw !== null ? (labelsRaw === 'true') : (masterData.labels === 'yes');
                 toggleLabel(labels);
