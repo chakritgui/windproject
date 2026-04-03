@@ -28,7 +28,7 @@ function initMap() {
                 show_country_line = masterData.show_country_line;
                 country_layers_data = masterData.country_layers_data;
                 const map_viewsRaw = localStorage.getItem('map_views');
-                const map_viewsVal = map_viewsRaw !== null ? (map_viewsRaw === 'true') : map_views;
+                const map_viewsVal = map_viewsRaw !== null ? map_viewsRaw : map_views;
                 toggleSatellite(map_viewsVal);
                 $('#mapModeWind').toggleClass('active', !map_viewsVal);
                 $('#mapModeSat').toggleClass('active',   map_viewsVal);
@@ -37,9 +37,9 @@ function initMap() {
                 toggleLabel(labels);
                 $('#toggle-label').prop('checked', labels);
                 const windturbineRaw = localStorage.getItem('windturbine');
-                const windturbine = windturbineRaw !== null ? (windturbineRaw === 'true') : false;
-                toggleWindTurbine(windturbine);
-                $('#toggle-windturbine').prop('checked', windturbine);
+                const windturbines = windturbineRaw !== null ? (windturbineRaw === 'true') : windturbine;
+                toggleWindTurbine(windturbines);
+                $('#toggle-windturbine').prop('checked', windturbines);
                 const animationRaw = localStorage.getItem('animation');
                 const animationVal = animationRaw !== null ? (animationRaw === 'true') : animation;
                 toggleAnimation(animationVal);
@@ -1030,11 +1030,10 @@ $(document).ready(function () {
     };
     $('#toggleExpandBtn').on('click', () => togglePanelCollapse());
     const setMapMode = (mode) => {
-        const isOn = mode === 'satellite';
-        $('#mapModeWind').toggleClass('active', !isOn);
-        $('#mapModeSat').toggleClass('active',  isOn);
-        toggleSatellite(isOn);
-        localStorage.setItem('map_views', isOn ? 'true' : 'false');
+        $('#mapModeWind').toggleClass('active', mode === 'wind');
+        $('#mapModeSat').toggleClass('active',  mode === 'satellite');
+        toggleSatellite(mode);
+        localStorage.setItem('map_views', mode);
     };
     window.setMapMode = setMapMode;
     $('#toggle-wind-values').on('change', function () {

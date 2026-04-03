@@ -669,9 +669,9 @@ function toggleWindTurbine(isOn) {
         }
     });
 }
-function toggleSatellite(isOn) {
+function toggleSatellite(mode) {
     if (!map) return;
-    if (isOn) {
+    if (mode === 'satellite') {
         if (!satelliteLayer) {
             satelliteLayer = L.tileLayer(
                 'https://mt{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',

@@ -1663,7 +1663,7 @@ header .nav-link:hover {
 #globe-intro {
     position: fixed;
     inset: 0;
-    z-index: 9999;
+    z-index: 10002;
     background: radial-gradient(circle at 50% 40%, rgba(10,15,44,0.85) 0%, rgba(5,7,15,0.9) 40%, rgba(0,0,0,0.95) 100%);
     display: flex;
     align-items: center;
