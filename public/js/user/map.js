@@ -1198,8 +1198,7 @@ $(document).ready(function () {
             $('#area-panel').css('opacity', '1');
         });
     }
-    // const hasSeenGlobe = sessionStorage.getItem('globe_shown');
-    const hasSeenGlobe = false;
+    const hasSeenGlobe = sessionStorage.getItem('globe_shown');
     if (!hasSeenGlobe) {
         sessionStorage.setItem('globe_shown', '1');
         $('header, #ui, #sideControlPanel, #projectCanvas').addClass('ui-hidden');
