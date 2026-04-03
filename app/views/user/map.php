@@ -80,7 +80,7 @@
         const ambient = new THREE.AmbientLight(0x222222);
         scene.add(ambient);
         const loader = new THREE.TextureLoader();
-        const earthTex = loader.load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg');
+        const earthTex = loader.load(`${BASE_URL}/public/images/land_ocean_ice_cloud_2048_11zon.jpg`);
         const globe = new THREE.Mesh(
             new THREE.SphereGeometry(1, 32, 32),
             new THREE.MeshPhongMaterial({
@@ -111,67 +111,50 @@
             })
         );
         scene.add(atmos);
-        const starTexture = new THREE.TextureLoader().load(
-            'https://threejs.org/examples/textures/sprites/circle.png'
-        );
-        function createStarField(count, radius, size, opacity) {
-            const geo       = new THREE.BufferGeometry();
+        const createStarTexture = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const context = canvas.getContext('2d');
+            const gradient = context.createRadialGradient(32, 32, 0, 32, 32, 32);
+            gradient.addColorStop(0, 'rgba(255,255,255,1)');
+            gradient.addColorStop(0.2, 'rgba(255,255,255,0.8)');
+            gradient.addColorStop(1, 'rgba(255,255,255,0)');
+            context.fillStyle = gradient;
+            context.fillRect(0, 0, 64, 64);
+            return new THREE.CanvasTexture(canvas);
+        };
+        const starTexture = createStarTexture();
+        function createStarField(count) {
+            const geo = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
             for (let i = 0; i < count; i++) {
-                const r     = radius * (0.7 + Math.random() * 0.3);
+                const r = 80 + Math.random() * 120; 
                 const theta = Math.random() * 2 * Math.PI;
-                const phi   = Math.acos((Math.random() * 2) - 1);
+                const phi = Math.acos((Math.random() * 2) - 1);
                 positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
                 positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
                 positions[i * 3 + 2] = r * Math.cos(phi);
+                const s = 0.8 + Math.random() * 0.2;
+                colors[i * 3] = s; 
+                colors[i * 3 + 1] = s; 
+                colors[i * 3 + 2] = 1; 
             }
             geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
             return new THREE.Points(geo, new THREE.PointsMaterial({
-                size, map: starTexture, transparent: true, opacity,
-                depthWrite: false, blending: THREE.AdditiveBlending
+                size: 0.7, 
+                map: starTexture, 
+                transparent: true,
+                vertexColors: true, 
+                blending: THREE.AdditiveBlending,
+                depthWrite: false,
+                sizeAttenuation: true 
             }));
         }
-        const starsFar  = createStarField(2000, 200, 0.6, 0.6);
-        const starsMid  = createStarField(1500, 120, 0.8, 0.8);
-        const starsNear = createStarField(800,   80, 1.2, 1.0);
-        scene.add(starsFar, starsMid, starsNear);
-        const flagCanvas  = document.createElement('canvas');
-        flagCanvas.width  = 192; flagCanvas.height = 120;
-        const fc = flagCanvas.getContext('2d');
-        fc.fillStyle = '#CE1126'; fc.fillRect(0, 0, 192, 120);
-        fc.fillStyle = '#002868'; fc.fillRect(0, 27, 192, 66);
-        fc.fillStyle = '#FFFFFF';
-        fc.beginPath(); fc.arc(96, 60, 22, 0, Math.PI * 2); fc.fill();
-        const flagTex = new THREE.CanvasTexture(flagCanvas);
-        const globePivot = new THREE.Group();
-        scene.add(globePivot);
-        const pinGroup = new THREE.Group();
-        const poleMesh = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.004, 0.004, 0.22, 8),
-            new THREE.MeshBasicMaterial({ color: 0xffffff })
-        );
-        poleMesh.position.y = 0.11;
-        pinGroup.add(poleMesh);
-        const flagMesh = new THREE.Mesh(
-            new THREE.PlaneGeometry(0.14, 0.088),
-            new THREE.MeshBasicMaterial({ map: flagTex, side: THREE.DoubleSide, transparent: true })
-        );
-        flagMesh.position.set(0.072, 0.2, 0);
-        pinGroup.add(flagMesh);
-        const pinLat = 18  * Math.PI / 180;
-        const pinLon = 103 * Math.PI / 180;
-        const pinPos = new THREE.Vector3(
-            Math.cos(pinLat) * Math.sin(pinLon),
-            Math.sin(pinLat),
-            Math.cos(pinLat) * Math.cos(pinLon)
-        );
-        pinGroup.position.copy(pinPos);
-        pinGroup.quaternion.setFromUnitVectors(
-            new THREE.Vector3(0, 1, 0),
-            pinPos.clone().normalize()
-        );
-        pinGroup.scale.setScalar(0);
-        globePivot.add(pinGroup);
+        const starField = createStarField(4300);
+        scene.add(starField);
         const LAO_LAT = 18.2;
         const LAO_LON = 104.8;
         const targetRotY = (LAO_LON * Math.PI / 180) - (Math.PI / 2);
@@ -180,7 +163,6 @@
         const startRotX = 0;
         globe.rotation.y      = startRotY; globe.rotation.x      = startRotX;
         atmos.rotation.y      = startRotY; atmos.rotation.x      = startRotX;
-        globePivot.rotation.y = startRotY; globePivot.rotation.x = startRotX;
         let start = null, raf;
         const delayBeforeStart = 1500;
         function easeIn(t)    { return t * t * t * t; }
@@ -200,15 +182,12 @@
                 globe.rotation.x = rx;
                 atmos.rotation.y = ry;
                 atmos.rotation.x = rx;
-                globePivot.rotation.y = ry;
-                globePivot.rotation.x = rx;
                 camera.position.z = 4 + (0.85 - 4) * pe;
             }
             if (t > 3.2 && t <= 4.2) {
                 const p = (t - 3.2) / 1.0;
                 const pe = easeOut(p);
                 const bounce = pe < 0.7 ? easeOut(pe / 0.7) : 1 + Math.sin(((pe - 0.7) / 0.3) * Math.PI) * 0.1;
-                pinGroup.scale.setScalar(bounce);
                 camera.position.z = 0.85 - (pe * 0.4);
                 if (t > 3.7 && !intro.classList.contains('fade-out')) {
                     intro.classList.add('fade-out');
@@ -219,9 +198,6 @@
                 cleanup();
                 return;
             }
-            starsFar.rotation.y  += 0.0001;
-            starsMid.rotation.y  += 0.0002;
-            starsNear.rotation.y += 0.0003;
             renderer.render(scene, camera);
         }
         function disposeMaterial(material) {
@@ -239,9 +215,7 @@
                 if (!object.isMesh) return;
                 if (object.geometry) object.geometry.dispose();
                 if (object.material) {
-                    Array.isArray(object.material)
-                        ? object.material.forEach(disposeMaterial)
-                        : disposeMaterial(object.material);
+                    Array.isArray(object.material) ? object.material.forEach(disposeMaterial) : disposeMaterial(object.material);
                 }
             });
             renderer.dispose();
@@ -249,20 +223,17 @@
             window.disposeThreeJS = null;
         };
         function cleanup() {
-    cancelAnimationFrame(raf);
-    document.dispatchEvent(new CustomEvent('globe:done'));
-    
-    const intro = document.getElementById('globe-intro');
-    intro.classList.add('fade-out');
-
-    // รอให้จางหายสนิท (ตามเวลา CSS 0.6s) ค่อยสั่งลบ Three.js ทิ้ง
-    setTimeout(() => {
-        if (typeof window.disposeThreeJS === 'function') {
-            window.disposeThreeJS();
+            cancelAnimationFrame(raf);
+            document.dispatchEvent(new CustomEvent('globe:done'));
+            const intro = document.getElementById('globe-intro');
+            intro.classList.add('fade-out');
+            setTimeout(() => {
+                if (typeof window.disposeThreeJS === 'function') {
+                    window.disposeThreeJS();
+                }
+                $(intro).remove();
+            }, 700); 
         }
-        $(intro).remove();
-    }, 700); 
-}
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
