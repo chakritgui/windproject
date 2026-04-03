@@ -183,7 +183,7 @@ async function loadWindTurbines() {
         });
         turbineMarkers = [];
         const isVisible = localStorage.getItem('windturbine') === 'true';
-        const initSize  = _calcIconSize(map.getZoom());
+        const initSize  = _calcIconTurbindSize(map.getZoom());
         turbines.forEach(turbine => {
             const lat = parseFloat(turbine.windturbine_lat);
             const lng = parseFloat(turbine.windturbine_lng);
@@ -205,7 +205,7 @@ async function loadWindTurbines() {
         if (!map._turbineZoomBound) {
             map._turbineZoomBound = true;
             map.on('zoomend', () => {
-                const size = _calcIconSize(map.getZoom());
+                const size = _calcIconTurbindSize(map.getZoom());
                 turbineMarkers.forEach(marker => {
                     const td = marker._turbineData;
                     if (!td) return;
@@ -255,6 +255,9 @@ function _calcLabelScale(zoom) {
     const MIN_ZOOM = 8, MAX_ZOOM = maxZoomLevel;
     const t = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
     return 0.52 + 0.68 * t;
+}
+function _calcIconTurbindSize(zoom) {
+    return Math.max(3, Math.min(24, zoom * 1.2));
 }
 function _calcIconSize(zoom) {
     const MIN_ZOOM = 8,  MAX_ZOOM = maxZoomLevel;

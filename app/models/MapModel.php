@@ -22,7 +22,7 @@ class MapModel{
         LEFT JOIN wp_project p ON p.project_id = m.project_id 
         LEFT JOIN wp_project_status s ON s.project_status_id = p.project_status_id 
         WHERE m.status = 'active' 
-        ORDER BY m.item_order ASC, m.poly_id ASC;";
+        ORDER BY m.item_order ASC";
         $polygons = $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
         return ['polygons' => $polygons];
     }
