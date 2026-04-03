@@ -1098,7 +1098,8 @@ $(document).ready(function () {
                 transform: translateY(8px);
             }
             #area-panel {
-                transition: opacity 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+                transition: opacity 0.55s cubic-bezier(0.34, 1.56, 0.64, 1),
+                            transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
             }
             #area-panel.panel-pre-anim {
                 opacity: 0 !important;
@@ -1115,19 +1116,15 @@ $(document).ready(function () {
         document.head.appendChild(style);
     }
     function revealUI(animate) {
-        const $ui = $('header, #ui, #sideControlPanel, #projectCanvas');
+        const $ui    = $('header, #ui, #sideControlPanel, #projectCanvas');
         const $panel = $('#area-panel');
         if (animate) {
-            requestAnimationFrame(() => {
-                $ui.removeClass('ui-hidden');
-            });
+            requestAnimationFrame(() => $ui.removeClass('ui-hidden'));
             $panel.show().addClass('panel-pre-anim');
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    $panel.removeClass('panel-pre-anim');
-                    if (!isMobile()) $panel.removeClass('collapsed');
-                });
-            });
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                $panel.removeClass('panel-pre-anim');
+                if (!isMobile()) $panel.removeClass('collapsed');
+            }));
         } else {
             $ui.removeClass('ui-hidden').css({ opacity: '', transform: '' });
             $panel.show().css({ opacity: '', transform: '' });
@@ -1138,12 +1135,28 @@ $(document).ready(function () {
         let attempts = 0;
         const poll = setInterval(() => {
             attempts++;
-            const mapReady = typeof map !== 'undefined' && map !== null;
-            if (mapReady || attempts > 50) {
+            if ((typeof map !== 'undefined' && map !== null) || attempts > 50) {
                 clearInterval(poll);
                 setTimeout(hideWindLoading, 500);
             }
         }, 200);
+    }
+    function startMapAfterGlobe() {
+        if (typeof window.disposeThreeJS === 'function') {
+            window.disposeThreeJS();
+        } else {
+            const intro = document.getElementById('globe-intro');
+            if (intro) {
+                intro.classList.add('fade-out');
+                setTimeout(() => intro.remove(), 800);
+            }
+        }
+        requestAnimationFrame(() => {
+            initMap();
+            revealUI(true);
+            bindWindLoadingHide();
+            $('#area-panel').css('opacity', '1');
+        });
     }
     const hasSeenGlobe = sessionStorage.getItem('globe_shown');
     if (!hasSeenGlobe) {
@@ -1151,21 +1164,18 @@ $(document).ready(function () {
         $('header, #ui, #sideControlPanel, #projectCanvas').addClass('ui-hidden');
         $('#area-panel').addClass('collapsed').css('opacity', '0');
         let started = false;
-        function startMapAfterGlobe() {
+        function onGlobeDone() {
             if (started) return;
             started = true;
-            if (typeof disposeThreeJS === 'function') disposeThreeJS();
-            requestAnimationFrame(() => {
-                initMap();
-                revealUI(true);
-                bindWindLoadingHide();
-                $('#area-panel').css('opacity', '1');
-            });
+            clearTimeout(fallbackTimer); 
+            startMapAfterGlobe();
         }
-        document.addEventListener('globe:done', startMapAfterGlobe, { once: true });
-        setTimeout(startMapAfterGlobe, 7500);
+        document.addEventListener('globe:done', onGlobeDone, { once: true });
+        const fallbackTimer = setTimeout(onGlobeDone, 9000);
+
     } else {
-        $('#globe-intro').hide();
+        const intro = document.getElementById('globe-intro');
+        if (intro) intro.remove();
         initMap();
         revealUI(false);
         bindWindLoadingHide();

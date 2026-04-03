@@ -29,7 +29,9 @@ function doLogin() {
     }, function(res) {
         if (res.status === 'success') {
             sessionStorage.removeItem('globe_shown');
-            window.location.href = `${BASE_URL}/${res.location}`;
+            setTimeout(() => {
+                window.location.href = `${BASE_URL}/${res.location}`;
+            }, 50);
         } else {
             let message = langData[res.message] || res.message;
             if (res.remaining !== undefined) {

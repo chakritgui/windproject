@@ -64,7 +64,8 @@
 <script>
     (function () {
         const canvas = document.getElementById('globe-canvas');
-        const intro = document.getElementById('globe-intro');
+        const intro  = document.getElementById('globe-intro');
+        if (!canvas || !intro) return;
         const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -78,10 +79,10 @@
         scene.add(sun);
         const ambient = new THREE.AmbientLight(0x222222);
         scene.add(ambient);
-        const loader = new THREE.TextureLoader();
+        const loader   = new THREE.TextureLoader();
         const earthTex = loader.load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg');
-        const bumpMap = loader.load('https://threejs.org/examples/textures/earthbump1k.jpg');
-        const specMap = loader.load('https://threejs.org/examples/textures/earthspec1k.jpg');
+        const bumpMap  = loader.load('https://threejs.org/examples/textures/earthbump1k.jpg');
+        const specMap  = loader.load('https://threejs.org/examples/textures/earthspec1k.jpg');
         const nightTex = loader.load('https://threejs.org/examples/textures/earthlights1k.jpg');
         const cloudTex = loader.load('https://threejs.org/examples/textures/earthcloudmap.jpg');
         const globe = new THREE.Mesh(
@@ -136,13 +137,13 @@
             'https://threejs.org/examples/textures/sprites/circle.png'
         );
         function createStarField(count, radius, size, opacity) {
-            const geo = new THREE.BufferGeometry();
+            const geo       = new THREE.BufferGeometry();
             const positions = new Float32Array(count * 3);
             for (let i = 0; i < count; i++) {
-                const r = radius * (0.7 + Math.random() * 0.3);
+                const r     = radius * (0.7 + Math.random() * 0.3);
                 const theta = Math.random() * 2 * Math.PI;
-                const phi = Math.acos((Math.random() * 2) - 1);
-                positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+                const phi   = Math.acos((Math.random() * 2) - 1);
+                positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
                 positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
                 positions[i * 3 + 2] = r * Math.cos(phi);
             }
@@ -152,14 +153,12 @@
                 depthWrite: false, blending: THREE.AdditiveBlending
             }));
         }
-        const starsFar = createStarField(2000, 200, 0.6, 0.6);
-        const starsMid = createStarField(1500, 120, 0.8, 0.8);
+        const starsFar  = createStarField(2000, 200, 0.6, 0.6);
+        const starsMid  = createStarField(1500, 120, 0.8, 0.8);
         const starsNear = createStarField(800,   80, 1.2, 1.0);
-        scene.add(starsFar);
-        scene.add(starsMid);
-        scene.add(starsNear);
-        const flagCanvas = document.createElement('canvas');
-        flagCanvas.width = 192; flagCanvas.height = 120;
+        scene.add(starsFar, starsMid, starsNear);
+        const flagCanvas  = document.createElement('canvas');
+        flagCanvas.width  = 192; flagCanvas.height = 120;
         const fc = flagCanvas.getContext('2d');
         fc.fillStyle = '#CE1126'; fc.fillRect(0, 0, 192, 120);
         fc.fillStyle = '#002868'; fc.fillRect(0, 27, 192, 66);
@@ -195,58 +194,45 @@
         );
         pinGroup.scale.setScalar(0);
         globePivot.add(pinGroup);
-        const LAO_LON = 103;
-        const LAO_LAT = 18;
+        const LAO_LON    = 103, LAO_LAT = 18;
         const targetRotY = -(LAO_LON * Math.PI / 180) + Math.PI;
         const targetRotX =  (LAO_LAT * Math.PI / 180);
         const startRotY  = targetRotY + Math.PI;
         const startRotX  = 0.0;
-        globe.rotation.y  = startRotY;
-        globe.rotation.x  = startRotX;
-        clouds.rotation.y = startRotY;
-        clouds.rotation.x = startRotX;
-        atmos.rotation.y  = startRotY;
-        atmos.rotation.x  = startRotX;
-        globePivot.rotation.y = startRotY;
-        globePivot.rotation.x = startRotX;
-        let start = null;
-        let raf;
-        let pinDropped = false;
-        let delayBeforeStart = 1500;
-        function easeIn(t) { return t * t * t * t; }
-        function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+        globe.rotation.y      = startRotY; globe.rotation.x      = startRotX;
+        clouds.rotation.y     = startRotY; clouds.rotation.x     = startRotX;
+        atmos.rotation.y      = startRotY; atmos.rotation.x      = startRotX;
+        globePivot.rotation.y = startRotY; globePivot.rotation.x = startRotX;
+        let start = null, raf;
+        const delayBeforeStart = 1500;
+        function easeIn(t)    { return t * t * t * t; }
+        function easeOut(t)   { return 1 - Math.pow(1 - t, 3); }
         function easeInOut(t) { return t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2, 3) / 2; }
         function animate(ts) {
             raf = requestAnimationFrame(animate);
-            if (!start) {
-                start = ts + delayBeforeStart;
-                return;
-            }
-            if (ts < start) {
-                renderer.render(scene, camera);
-                return;
-            }
-            const t = (ts - start) / 1000;
+            if (!start) { start = ts + delayBeforeStart; return; }
+            if (ts < start) { renderer.render(scene, camera); return; }
+            const t    = (ts - start) / 1000;
             const time = ts * 0.001;
             if (t <= 4) {
                 const pe = easeIn(Math.min(t / 4, 1));
                 const ry = startRotY + (targetRotY - startRotY) * pe;
                 const rx = startRotX + (targetRotX - startRotX) * pe;
-                globe.rotation.y  = ry;
-                globe.rotation.x  = rx;
-                clouds.rotation.y = ry + 0.05;
-                clouds.rotation.x = rx;
-                atmos.rotation.y  = ry;
-                atmos.rotation.x  = rx;
+                globe.rotation.y      = ry;
+                globe.rotation.x      = rx;
+                clouds.rotation.y     = ry + 0.05;
+                clouds.rotation.x     = rx;
+                atmos.rotation.y      = ry;
+                atmos.rotation.x      = rx;
                 globePivot.rotation.y = ry;
                 globePivot.rotation.x = rx;
-                camera.position.z = 4 + (0.85 - 4) * pe;
+                camera.position.z     = 4 + (0.85 - 4) * pe;
             }
             if (t > 4 && t <= 4.8) {
                 globePivot.rotation.y = globe.rotation.y;
                 globePivot.rotation.x = globe.rotation.x;
-                const p = (t - 4) / 0.8;
-                const pe = easeOut(Math.min(p, 1));
+                const p      = (t - 4) / 0.8;
+                const pe     = easeOut(Math.min(p, 1));
                 const bounce = pe < 0.8 ? easeOut(pe / 0.8) : 1 + Math.sin(((pe - 0.8) / 0.2) * Math.PI) * 0.2;
                 pinGroup.scale.setScalar(bounce);
             }
@@ -267,25 +253,11 @@
             starsFar.rotation.y  += 0.0001;
             starsMid.rotation.y  += 0.0002;
             starsNear.rotation.y += 0.0003;
-            starsFar.material.opacity  = 0.5 + Math.sin(time * 0.5) * 0.1;
-            starsMid.material.opacity  = 0.7 + Math.sin(time * 0.8) * 0.15;
-            starsNear.material.opacity = 0.9 + Math.sin(time * 1.2) * 0.2;
+            starsFar.material.opacity  = 0.5 + Math.sin(time * 0.5)  * 0.1;
+            starsMid.material.opacity  = 0.7 + Math.sin(time * 0.8)  * 0.15;
+            starsNear.material.opacity = 0.9 + Math.sin(time * 1.2)  * 0.2;
             renderer.render(scene, camera);
         }
-        function cleanup() {
-            cancelAnimationFrame(raf);
-            document.dispatchEvent(new CustomEvent('globe:done')); 
-            intro.classList.add('fade-out');
-            setTimeout(() => {
-                intro.remove();
-            }, 800);
-        }
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-        animate();
         function disposeMaterial(material) {
             material.dispose();
             for (const key of Object.keys(material)) {
@@ -295,18 +267,33 @@
                 }
             }
         }
-        function disposeThreeJS() {
+        window.disposeThreeJS = function () {
             cancelAnimationFrame(raf);
             scene.traverse(object => {
                 if (!object.isMesh) return;
                 if (object.geometry) object.geometry.dispose();
                 if (object.material) {
-                    Array.isArray(object.material) ? object.material.forEach(disposeMaterial) : disposeMaterial(object.material);
+                    Array.isArray(object.material)
+                        ? object.material.forEach(disposeMaterial)
+                        : disposeMaterial(object.material);
                 }
             });
             renderer.dispose();
-            renderer.domElement.remove();
+            canvas.remove();
+            window.disposeThreeJS = null;
+        };
+        function cleanup() {
+            cancelAnimationFrame(raf);
+            document.dispatchEvent(new CustomEvent('globe:done'));
+            intro.classList.add('fade-out');
+            setTimeout(() => intro.remove(), 800);
         }
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        animate();
     })();
 </script>
 <div id="wind-loading">
