@@ -382,8 +382,11 @@ function _buildPoleIcon(pole, size = 30) {
     const color   = isEven ? '#f5a623' : '#5bb8f5';
     const color2  = isEven ? '#d4821e' : '#1e90d4';
     const glowCol = isEven ? 'rgba(91,184,245,0.6)' : 'rgba(245,166,35,0.6)';
-    const extra = `<line x1="3" y1="14" x2="-5" y2="14" stroke="rgba(255,255,255,0.85)" stroke-width="1.3" stroke-linecap="round"/>
-           <circle cx="-5" cy="14" r="1.8" fill="${color2}" stroke="rgba(255,255,255,0.9)" stroke-width="0.7"/>`
+    const midY = 26; 
+    const extra = `
+        <line x1="3" y1="${midY}" x2="-5" y2="${midY}" stroke="rgba(255,255,255,0.85)" stroke-width="1.3" stroke-linecap="round"/>
+        <circle cx="-5" cy="${midY}" r="1.8" fill="${color2}" stroke="rgba(255,255,255,0.9)" stroke-width="0.7"/>
+    `;
     const w = size * 0.7;
     const h = size * 1.9;
     return L.divIcon({
@@ -399,13 +402,13 @@ function _buildPoleIcon(pole, size = 30) {
                 </filter>
             </defs>
             <ellipse cx="3" cy="49" rx="5" ry="2" fill="${glowCol}" filter="url(#pglow-${pole.poles_id})"/>
-            <circle cx="3" cy="49" r="3.5" fill="rgba(20,22,26,0.9)" stroke="${color}" stroke-width="1.5"/>
-            <line x1="3" y1="46" x2="3" y2="3" stroke="rgba(255,255,255,0.82)" stroke-width="1.7" stroke-linecap="round"/>
+            <circle cx="3" cy="49" r="3.5" fill="rgba(20,22,26,0.9)" stroke="${color}" stroke-width="1.5"/> 
+            <line x1="3" y1="46" x2="3" y2="3" stroke="rgba(255,255,255,0.82)" stroke-width="1.7" stroke-linecap="round"/>  
             <line x1="3" y1="5" x2="15" y2="5" stroke="rgba(255,255,255,0.82)" stroke-width="1.3" stroke-linecap="round"/>
-            <line x1="3" y1="14" x2="11" y2="14" stroke="rgba(255,255,255,0.82)" stroke-width="1.3" stroke-linecap="round"/>
-            ${extra}
             <circle cx="15" cy="5" r="2.5" fill="${color}" stroke="rgba(255,255,255,0.85)" stroke-width="0.7" filter="url(#pglow-${pole.poles_id})"/>
-            <circle cx="11" cy="14" r="2" fill="${color2}" stroke="rgba(255,255,255,0.85)" stroke-width="0.7"/>
+            <line x1="3" y1="${midY}" x2="11" y2="${midY}" stroke="rgba(255,255,255,0.82)" stroke-width="1.3" stroke-linecap="round"/>
+            ${extra}
+            <circle cx="11" cy="${midY}" r="2" fill="${color2}" stroke="rgba(255,255,255,0.85)" stroke-width="0.7"/>
         </svg>`
     });
 }
