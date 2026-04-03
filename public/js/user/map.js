@@ -718,76 +718,88 @@ async function renderWindAreas(picker, areaData, masterData) {
     });
     isMaskMode = masterData?.polygon_visibility === 'close';
     const featureGroup = L.featureGroup();
-    const styleGroups = new Map();
+    const overlapGroups = {};
     polygons.forEach((area, i) => {
-        if (!area.geo_data) return;
-        try {
-            const geoJsonData = JSON.parse(area.geo_data);
-            const styleData   = JSON.parse(area.custom_style || '{}');
-            const styleKey = JSON.stringify({
-                fillColor:   styleData.fillColor   || '#3388ff',
-                fillOpacity: styleData.fillOpacity !== undefined ? parseFloat(styleData.fillOpacity) : 0.2,
-                color:       styleData.color       || '#3388ff',
-                weight:      styleData.weight      !== undefined ? parseFloat(styleData.weight) : 2,
-            });
-            if (!styleGroups.has(styleKey)) {
-                styleGroups.set(styleKey, { styleData, areas: [] });
-            }
-            styleGroups.get(styleKey).areas.push({ index: i, geoJsonData, area });
-
-        } catch (err) {
-            console.error('Area JSON parse error:', err);
-        }
+        const key = area.overlap_group ?? 'single_' + i;
+        if (!overlapGroups[key]) overlapGroups[key] = [];
+        overlapGroups[key].push({ index: i, area });
     });
-    styleGroups.forEach(({ styleData, areas }) => {
-        const mergedGeo = _mergePolygons(areas.map(a => a.geoJsonData));
-        const fillColor   = styleData.fillColor   || '#3388ff';
-        const fillOpacity = styleData.fillOpacity !== undefined ? parseFloat(styleData.fillOpacity) : 0.2;
-        const color       = styleData.color       || '#3388ff';
-        const weight      = styleData.weight      || 2;
-        const fillLayer = L.geoJSON(mergedGeo, {
-            style: () => ({
-                fillColor,
-                fillOpacity,
-                stroke: false,
-                interactive: false
-            })
-        }).addTo(featureGroup);
-        areas.forEach(({ index, geoJsonData, area }) => {
-            const strokeLayer = L.geoJSON(geoJsonData, {
-                style: () => ({
-                    fillColor: 'transparent',
-                    fillOpacity: 0,
-                    color: color,
-                    weight: weight,
-                    stroke: weight !== 0,
-                    opacity: 1,
-                    interactive: true,
-                })
-            });
+    Object.entries(overlapGroups).forEach(([groupKey, group]) => {
+        const styleGroups = new Map();
+        group.forEach(({ index, area }) => {
+            if (!area.geo_data) return;
             try {
-                const b = strokeLayer.getBounds();
-                if (b.isValid()) areaBounds[index] = b;
-            } catch (_) {}
-            areaLayers[index] = strokeLayer;
-            strokeLayer.on('touchend click', function (e) {
-                if (!e.latlng) return;
-                e.originalEvent?.stopImmediatePropagation();
-                e.originalEvent?.preventDefault();
-                highlightAreaItem(index);
-                flyToArea(index, area, true, false, e.latlng);
-            });
-            strokeLayer.addTo(featureGroup);
-            if (isMaskMode) {
-                strokeLayer.eachLayer(layer => {
-                    const lls = layer.getLatLngs?.();
-                    if (!lls) return;
-                    const rings = Array.isArray(lls[0]) && !(lls[0][0] instanceof L.LatLng)
-                        ? lls.map(inner => inner[0])
-                        : [lls[0]];
-                    allHoles.push(...rings);
+                const geoJsonData = JSON.parse(area.geo_data);
+                const styleData   = JSON.parse(area.custom_style || '{}');
+                const styleKey = JSON.stringify({
+                    fillColor:   styleData.fillColor   || '#3388ff',
+                    fillOpacity: styleData.fillOpacity !== undefined ? parseFloat(styleData.fillOpacity) : 0.2,
+                    color:       styleData.color       || '#3388ff',
+                    weight:      styleData.weight      !== undefined ? parseFloat(styleData.weight) : 2,
                 });
+                if (!styleGroups.has(styleKey)) {
+                    styleGroups.set(styleKey, { styleData, areas: [] });
+                }
+                styleGroups.get(styleKey).areas.push({ index, geoJsonData, area });
+            } catch (err) {
+                console.error('Area JSON parse error:', err);
             }
+        });
+        styleGroups.forEach(({ styleData, areas }) => {
+            const fillColor   = styleData.fillColor   || '#3388ff';
+            const fillOpacity = styleData.fillOpacity !== undefined ? parseFloat(styleData.fillOpacity) : 0.2;
+            const color       = styleData.color       || '#3388ff';
+            const weight      = styleData.weight      || 2;
+            const allGeoJsons = areas.map(a => a.geoJsonData);
+            const unionGeo    = _mergePolygonsToUnion(allGeoJsons);
+            if (unionGeo) {
+                L.geoJSON(unionGeo, {
+                    style: () => ({
+                        fillColor,
+                        fillOpacity,
+                        stroke:      false,
+                        interactive: false,
+                    })
+                }).addTo(featureGroup);
+            }
+            areas.forEach(({ index, geoJsonData, area }, posInGroup) => {
+                const tempLayer = L.geoJSON(geoJsonData);
+                try {
+                    const b = tempLayer.getBounds();
+                    if (b.isValid()) {
+                        areaBounds[index] = b;
+                    }
+                } catch (_) {}
+                const isRepresentative = posInGroup === 0;
+                const strokeLayer = L.geoJSON(geoJsonData, {
+                    style: () => ({
+                        fill:        true,
+                        fillColor: 'rgba(0,0,0,0)',
+                        fillOpacity: 0,
+                        color,
+                        weight:      isRepresentative ? weight : 0,  
+                        stroke:      isRepresentative ? (weight !== 0) : false,
+                        opacity:     isRepresentative ? 1 : 0,
+                        interactive: true,
+                    }),
+                });
+                areaLayers[index] = strokeLayer;
+                strokeLayer.on('click', function (e) {
+                    highlightAreaItem(index);
+                    flyToArea(index, area, true, false, e.latlng);
+                });
+                strokeLayer.addTo(featureGroup);
+                if (isMaskMode && isRepresentative) {
+                    strokeLayer.eachLayer(layer => {
+                        const lls = layer.getLatLngs?.();
+                        if (!lls) return;
+                        const rings = Array.isArray(lls[0]) && !(lls[0][0] instanceof L.LatLng)
+                            ? lls.map(inner => inner[0])
+                            : [lls[0]];
+                        allHoles.push(...rings);
+                    });
+                }
+            });
         });
     });
     featureGroup.addTo(map).bringToFront();
@@ -796,12 +808,12 @@ async function renderWindAreas(picker, areaData, masterData) {
         const padded   = bounds.pad(0.1);
         initialBounds  = bounds;
         initialPadding = { padding: [20, 20] };
-        const fitZoom  = map.getBoundsZoom(bounds, false, [20, 20]);
+        const fitZoom = map.getBoundsZoom(bounds, false, [20, 20]);
         map.fitBounds(bounds, { padding: [20, 20] });
         map.options.minZoom = map.getBoundsZoom(bounds);
         map.setMinZoom(fitZoom);
         map.setMaxBounds(padded);
-        map.on('drag', () => map.panInsideBounds(padded, { animate: false }));
+        map.on('drag',    () => map.panInsideBounds(padded, { animate: false }));
         map.on('moveend', () => {
             if (!map._flyToFrame && !padded.contains(map.getCenter())) {
                 map.panInsideBounds(padded, { animate: true });
@@ -810,9 +822,33 @@ async function renderWindAreas(picker, areaData, masterData) {
     }
     buildAreaPanel(polygons);
 }
-function _mergePolygons(geoJsonArray) {
+function _mergePolygonsToUnion(geoJsonArray) {
+    if (!geoJsonArray?.length) return null;
+    if (geoJsonArray.length === 1) return _toFeatureCollection(geoJsonArray[0]);
     if (typeof turf === 'undefined') {
-        console.warn('[renderWindAreas] Turf.js not loaded — polygon overlap not fixed');
+        console.warn('[_mergePolygonsToUnion] turf not loaded');
+        return { type: 'FeatureCollection', features: geoJsonArray.map(g => _toFeature(g)) };
+    }
+    try {
+        const features = geoJsonArray.flatMap(g => _toFeatureCollection(g).features).filter(f => f?.geometry);
+        if (!features.length) return null;
+        let merged = features[0];
+        for (let i = 1; i < features.length; i++) {
+            try {
+                merged = turf.union(merged, features[i]);
+            } catch (e) {
+                console.warn('[_mergePolygonsToUnion] union failed at index', i, e);
+            }
+        }
+        return merged;
+    } catch (err) {
+        console.error('[_mergePolygonsToUnion] error:', err);
+        return _toFeatureCollection(geoJsonArray[0]);
+    }
+}
+function _mergePolygonsNoOverlap(geoJsonArray) {
+    if (typeof turf === 'undefined') {
+        console.warn('[renderWindAreas] Turf.js not loaded');
         return { type: 'FeatureCollection', features: geoJsonArray.map(g => _toFeature(g)) };
     }
     try {
@@ -820,50 +856,46 @@ function _mergePolygons(geoJsonArray) {
             const fc = _toFeatureCollection(g);
             return fc.features;
         }).filter(f => f?.geometry);
-        if (features.length === 0) return { type: 'FeatureCollection', features: [] };
-        if (features.length === 1) return features[0];
-        let merged = features[0];
-        for (let i = 1; i < features.length; i++) {
+        let resultFeatures = [];
+        let accumulated = null;
+        features.forEach((feature, i) => {
             try {
-                const result = turf.union(merged, features[i]);
-                if (result) merged = result;
-            } catch (unionErr) {
-                console.warn('[renderWindAreas] union failed for feature', i, unionErr);
+                let cleanFeature = feature;
+                if (accumulated) {
+                    try {
+                        cleanFeature = turf.difference(feature, accumulated);
+                    } catch (err) {
+                        console.warn('difference error', err);
+                    }
+                }
+                if (cleanFeature) {
+                    resultFeatures.push(cleanFeature);
+                    accumulated = accumulated ? turf.union(accumulated, feature) : feature;
+                }
+            } catch (err) {
+                console.warn('process feature error', err);
             }
-        }
-        return merged;
+        });
+        return {
+            type: 'FeatureCollection',
+            features: resultFeatures
+        };
     } catch (err) {
-        console.error('[renderWindAreas] _mergePolygons error:', err);
+        console.error('[renderWindAreas] _mergePolygonsNoOverlap error:', err);
         return { type: 'FeatureCollection', features: geoJsonArray.map(g => _toFeature(g)) };
     }
 }
-function _toFeature(g) {
-    if (g?.type === 'Feature') return g;
-    if (g?.type === 'FeatureCollection') return g.features[0] || null;
-    return { type: 'Feature', geometry: g, properties: {} };
-}
-function _toFeatureCollection(g) {
-    if (g?.type === 'FeatureCollection') return g;
-    if (g?.type === 'Feature') return { type: 'FeatureCollection', features: [g] };
-    return { type: 'FeatureCollection', features: [{ type: 'Feature', geometry: g, properties: {} }] };
-}
-function _findNearestAreaIndex(latlng, areas) {
-    const pt = [latlng.lng, latlng.lat];
-    for (const { index, geoJsonData } of areas) {
-        try {
-            if (typeof turf !== 'undefined') {
-                const fc = _toFeatureCollection(geoJsonData);
-                const inside = fc.features.some(f =>
-                    f?.geometry && turf.booleanPointInPolygon(turf.point(pt), f)
-                );
-                if (inside) return index;
-            } else {
-                const tempLayer = L.geoJSON(geoJsonData);
-                if (tempLayer.getBounds().contains(latlng)) return index;
-            }
-        } catch (_) {}
-    }
-    return areas[0]?.index ?? null;
+function _toFeatureCollection(g) { 
+    if (g?.type === 'FeatureCollection') return g; 
+    if (g?.type === 'Feature') return { type: 'FeatureCollection', features: [g] }; 
+    return { 
+        type: 'FeatureCollection', 
+        features: [{ 
+            type: 'Feature', 
+            geometry: g, 
+            properties: {} 
+        }] 
+    }; 
 }
 function buildAreaPanel(polygons) {
     const list = document.getElementById('ap-list');
@@ -881,8 +913,7 @@ function buildAreaPanel(polygons) {
         const hasStatus = !!area.area_status_color;
         areaVisibility[i] = true;
         return `
-        <div class="ap-item animate__animated animate__fadeInUp" id="ap-item-${i}" data-index="${i}"
-             style="animation-delay:${i * 0.05}s">
+        <div class="ap-item animate__animated animate__fadeInUp" id="ap-item-${i}" data-index="${i}" style="animation-delay:${i * 0.05}s">
             <i class="fa-solid fa-circle-dot ${hasStatus ? 'status-pulse' : ''} me-2" style="color:${color}"></i>
             <span class="ap-name" title="${area.area_name}">${area.area_name}</span>
         </div>`;
@@ -904,6 +935,7 @@ function flyToArea(areaIndex, areaObj, openPicker = false, openProject = false, 
         targetBounds = geoLayer.getBounds();
     }
     if (!targetBounds?.isValid()) return;
+    const groupKey   = areaObj?.overlap_group ?? 'single_' + areaIndex;
     const geoLayer   = areaLayers[areaIndex];
     const focusZoom  = map.getBoundsZoom(targetBounds, false, [25, 25]);
     const currentMax = map.options.maxBounds;
@@ -919,13 +951,13 @@ function flyToArea(areaIndex, areaObj, openPicker = false, openProject = false, 
         map.setMaxBounds(relaxed);
     }
     try {
-        if (windyAPI?.map?.stop)   windyAPI.map.stop();
-        if (windyAPI?.store?.set)  windyAPI.store.set('overlay', windyAPI.store.get('overlay'));
+        if (windyAPI?.map?.stop)  windyAPI.map.stop();
+        if (windyAPI?.store?.set) windyAPI.store.set('overlay', windyAPI.store.get('overlay'));
     } catch (_) {}
     const targetCenter = targetBounds.getCenter();
     map.options.zoomAnimation = false;
     map.setView(targetCenter, focusZoom, {
-        animate:   true,
+        animate: true,
         duration,
         easeLinearity: 0.08,
         noMoveStart: true,

@@ -10,26 +10,81 @@ class MapModel{
     }
     public function windarea() {
         $sql = "SELECT 
-            CASE
-                WHEN m.project_id IS NOT NULL THEN COALESCE(NULLIF(p.project_name_display, ''), p.project_name, '')
-                ELSE m.area_name
-            END AS area_name, 
-            m.geo_data, 
-            m.custom_style, 
-            IFNULL(s.project_status_color, '') AS area_status_color, 
-            p.project_id 
-        FROM wp_map_polygons m 
-        LEFT JOIN wp_project p ON p.project_id = m.project_id 
-        LEFT JOIN wp_project_status s ON s.project_status_id = p.project_status_id 
-        WHERE m.status = 'active' 
-        ORDER BY 
-            CASE 
-                WHEN m.project_id IS NOT NULL 
-                    THEN IFNULL(NULLIF(p.item_order, ''), p.project_id)
-                ELSE m.poly_id
-            END ASC";
-        $polygons = $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+                    CASE
+                        WHEN m.project_id IS NOT NULL THEN COALESCE(NULLIF(p.project_name_display, ''), p.project_name, '')
+                        ELSE m.area_name
+                    END AS area_name, 
+                    m.geo_data, 
+                    m.custom_style, 
+                    IFNULL(s.project_status_color, '') AS area_status_color, 
+                    p.project_id,
+                    m.poly_id
+                FROM wp_map_polygons m 
+                LEFT JOIN wp_project p ON p.project_id = m.project_id 
+                LEFT JOIN wp_project_status s ON s.project_status_id = p.project_status_id 
+                WHERE m.status = 'active' 
+                ORDER BY 
+                    CASE 
+                        WHEN m.project_id IS NOT NULL 
+                            THEN IFNULL(NULLIF(p.item_order, ''), p.project_id)
+                        ELSE m.poly_id
+                    END ASC";
+        $rows = $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        $polygons = [];
+        foreach ($rows as $row) {
+            if (empty($row['geo_data'])) continue;
+            $geo = json_decode($row['geo_data'], true);
+            if (!$geo) continue;
+            $coords = $this->extractCoordinates($geo);
+            $row['coord_hash']    = $coords ? md5(json_encode($coords)) : null;
+            $row['overlap_group'] = null;
+            $polygons[]           = $row;
+        }
+        $hashToGroup = [];
+        $groupId     = 1;
+        foreach ($polygons as &$p) {
+            $hash = $p['coord_hash'];
+            if (!$hash) {
+                $p['overlap_group'] = $groupId++;
+                continue;
+            }
+            if (!isset($hashToGroup[$hash])) {
+                $hashToGroup[$hash] = $groupId++;
+            }
+            $p['overlap_group'] = $hashToGroup[$hash];
+        }
+        unset($p);
+        foreach ($polygons as &$p) {
+            unset($p['coord_hash'], $p['poly_id']);
+        }
         return ['polygons' => $polygons];
+    }
+    private function extractCoordinates($geo): ?array {
+        if (isset($geo['type']) && $geo['type'] === 'Feature') {
+            $geo = $geo['geometry'] ?? null;
+        }
+        if (!$geo || !isset($geo['type']) || !isset($geo['coordinates'])) {
+            return null;
+        }
+        $coords = [];
+        if ($geo['type'] === 'MultiPolygon') {
+            foreach ($geo['coordinates'] as $poly) {
+                foreach ($poly as $ring) {
+                    foreach ($ring as $pt) {
+                        if (count($pt) >= 2) $coords[] = [$pt[0], $pt[1]];
+                    }
+                }
+            }
+        } elseif ($geo['type'] === 'Polygon') {
+            foreach ($geo['coordinates'] as $ring) {
+                foreach ($ring as $pt) {
+                    if (count($pt) >= 2) $coords[] = [$pt[0], $pt[1]];
+                }
+            }
+        }
+        if (empty($coords)) return null;
+        sort($coords);
+        return $coords;
     }
     public function poleslocation() {
         $sql = "SELECT p.*, t.type_id, t.type_name, l.installations_name, t.type_icon FROM wp_poles p INNER JOIN wp_type t ON t.type_id = p.type_id INNER JOIN wp_installations l ON l.installations_id = p.installations_id WHERE p.status = 'online'";
