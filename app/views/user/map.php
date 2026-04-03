@@ -81,25 +81,13 @@
         scene.add(ambient);
         const loader = new THREE.TextureLoader();
         const earthTex = loader.load('https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg');
-        const cloudTex = loader.load('https://threejs.org/examples/textures/earthcloudmap.jpg');
         const globe = new THREE.Mesh(
-            new THREE.SphereGeometry(1, 48, 48),
+            new THREE.SphereGeometry(1, 32, 32),
             new THREE.MeshPhongMaterial({
                 map: earthTex
             })
         );
-        const clouds = new THREE.Mesh(
-            new THREE.SphereGeometry(1.01, 32, 32),
-            new THREE.MeshPhongMaterial({
-                map: cloudTex,
-                transparent: true,
-                opacity: 0.3,
-                depthWrite: false
-            })
-        );
-
         scene.add(globe);
-        scene.add(clouds);
         const atmos = new THREE.Mesh(
             new THREE.SphereGeometry(1.1, 64, 64),
             new THREE.ShaderMaterial({
@@ -191,7 +179,6 @@
         const startRotY = targetRotY - Math.PI; 
         const startRotX = 0;
         globe.rotation.y      = startRotY; globe.rotation.x      = startRotX;
-        clouds.rotation.y     = startRotY; clouds.rotation.x     = startRotX;
         atmos.rotation.y      = startRotY; atmos.rotation.x      = startRotX;
         globePivot.rotation.y = startRotY; globePivot.rotation.x = startRotX;
         let start = null, raf;
@@ -211,8 +198,6 @@
                 const rx = startRotX + (targetRotX - startRotX) * pe;
                 globe.rotation.y = ry;
                 globe.rotation.x = rx;
-                clouds.rotation.y = ry + 0.05;
-                clouds.rotation.x = rx;
                 atmos.rotation.y = ry;
                 atmos.rotation.x = rx;
                 globePivot.rotation.y = ry;
