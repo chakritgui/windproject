@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 02, 2026 at 05:11 PM
+-- Generation Time: Apr 05, 2026 at 02:00 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -829,6 +829,23 @@ CREATE TABLE `wp_winds` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `wp_windturbind_icon`
+--
+
+CREATE TABLE `wp_windturbind_icon` (
+  `id` bigint(20) NOT NULL,
+  `map_id` bigint(20) NOT NULL,
+  `icon_type` enum('pole','windturbine') NOT NULL DEFAULT 'pole',
+  `cover` longtext,
+  `zoom_level` longtext,
+  `zoom_val` longtext,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `wp_windturbine`
 --
 
@@ -1185,6 +1202,12 @@ ALTER TABLE `wp_winds`
   ADD KEY `idx_levels_id` (`levels_id`);
 
 --
+-- Indexes for table `wp_windturbind_icon`
+--
+ALTER TABLE `wp_windturbind_icon`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `wp_windturbine`
 --
 ALTER TABLE `wp_windturbine`
@@ -1463,6 +1486,12 @@ ALTER TABLE `wp_user_disclaimer_accepts`
 -- AUTO_INCREMENT for table `wp_winds`
 --
 ALTER TABLE `wp_winds`
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `wp_windturbind_icon`
+--
+ALTER TABLE `wp_windturbind_icon`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --

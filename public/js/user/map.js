@@ -88,6 +88,8 @@ function _drawCountryLines(rawData) {
 }
 function applyMasterSettings(master) {
     if (!master?.center_lat || !master?.center_lng) return;
+    globalWindturbineIcon = master.windturbine_icon || '';
+    globalPoleIcon = master.pole_icon || '';
     const lat  = parseFloat(master.center_lat);
     const lng  = parseFloat(master.center_lng);
     const zoom = clamp((parseInt(master.zoom_level) || 10) + 1, 1, 13);
@@ -176,33 +178,30 @@ function updateWindDashboard({ max, min, avg }) {
 let turbineMarkers = {};
 async function loadWindTurbines() {
     try {
-        const turbines = await fetchJSON(`${BASE_URL}/api/windturbines.get`);
+        const res = await fetchJSON(`${BASE_URL}/api/windturbines.get`);
+        const turbines = Array.isArray(res) ? res : (res.list || []);
+        if (res.icon_config) window.globalWindturbineIcon = res.icon_config;
         if (!Array.isArray(turbines)) return;
         Object.values(turbineMarkers).forEach(({ marker }) => {
-            if (marker && poleLayerGroup.hasLayer(marker)) {
-                poleLayerGroup.removeLayer(marker);
-            }
+            if (marker && poleLayerGroup.hasLayer(marker)) poleLayerGroup.removeLayer(marker);
         });
         turbineMarkers = {};
         const isVisible = localStorage.getItem('windturbine') === 'true';
         const zoom = map.getZoom();
-        const initSize = Math.max(3, Math.min(12, (zoom - 10) * 1.5 + 3));
+        const currentSize = _getTurbineSize(zoom); 
         const opacity = zoom < 10 ? 0.6 : 1;
         turbines.forEach((turbine, index) => {
             const lat = parseFloat(turbine.windturbine_lat);
             const lng = parseFloat(turbine.windturbine_lng);
             if (isNaN(lat) || isNaN(lng)) return;
             const marker = L.marker([lat, lng], {
-                icon: _buildTurbineIcon(turbine, initSize),
+                icon: _buildTurbineIcon(currentSize),
                 zIndexOffset: 900,
                 opacity: opacity
             });
             marker._turbineData = turbine;
             if (turbine.windturbine_name) {
-                marker.bindTooltip(turbine.windturbine_name, {
-                    permanent: false,
-                    direction: 'top'
-                });
+                marker.bindTooltip(turbine.windturbine_name, { permanent: false, direction: 'top' });
             }
             turbineMarkers[index] = { marker, turbine };
             if (isVisible) marker.addTo(poleLayerGroup);
@@ -210,9 +209,7 @@ async function loadWindTurbines() {
         if (!map._turbineZoomBound) {
             map._turbineZoomBound = true;
             map.on('zoomend', () => {
-                if (typeof resizeLabel === 'function') {
-                    resizeLabel();
-                }
+                if (typeof resizeLabel === 'function') resizeLabel();
             });
         }
     } catch (err) {
@@ -307,9 +304,9 @@ function _overlaps(a, b) {
 function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId, windSpeed = 0, windDir = 0, scale = 1 }) {
     const BOX_H = Math.round(28 * scale);
     const PADDING = Math.round(10 * scale);
-    const fs1 = Math.max(8,  Math.round(14 * scale));
-    const fs2 = Math.max(7,  Math.round(11 * scale));
-    const fs3 = Math.max(8,  Math.round(13 * scale)); 
+    const fs1 = Math.max(7,  Math.round(13 * scale));
+    const fs2 = Math.max(6,  Math.round(10 * scale));
+    const fs3 = Math.max(7,  Math.round(10 * scale)); 
     const rx = Math.round(BOX_H / 2);
     const dotR = Math.max(2.5, 3.5 * scale);
     const lw = Math.max(0.8, 1.2 * scale);
@@ -369,7 +366,7 @@ function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId
         </svg>`
     };
 }
-function _buildPoleIcon(pole, size = 30) {
+function _buildPoleIcon(pole, size = 20) {
     if (pole.type_icon?.trim()) {
         return L.icon({
             iconUrl:     pole.type_icon,
@@ -382,22 +379,25 @@ function _buildPoleIcon(pole, size = 30) {
     const color   = isEven ? '#f5a623' : '#5bb8f5';
     const color2  = isEven ? '#d4821e' : '#1e90d4';
     const glowCol = isEven ? 'rgba(91,184,245,0.6)' : 'rgba(245,166,35,0.6)';
+    const baseW = 20;
+    const baseH = 52;
+    const ratio = baseH / baseW;
+    const w = size;
+    const h = size * ratio; 
     const extraY = 30;
     const extra = `
         <line x1="3" y1="${extraY}" x2="-5" y2="${extraY}" stroke="rgba(255,255,255,0.85)" stroke-width="1.3" stroke-linecap="round"/>
         <circle cx="-5" cy="${extraY}" r="1.8" fill="${color}" stroke="rgba(255,255,255,0.9)" stroke-width="0.7"/>
     `;
-    const w = size * 0.7;
-    const h = size * 1.9;
     return L.divIcon({
         className:  'pole-icon-wrap',
         iconSize:   [w, h],
-        iconAnchor: [w * 0.18, h],
+        iconAnchor: [w * 0.15, h],
         html: `
-            <svg width="${w}" height="${h}" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;display:block">
+            <svg width="${w}" height="${h}" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg" style="overflow:visible; display:block; filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3));">
             <defs>
-                <filter id="pglow-${pole.poles_id}" x="-80%" y="-40%" width="260%" height="180%">
-                    <feGaussianBlur stdDeviation="2" result="blur"/>
+                <filter id="pglow-${pole.poles_id}" x="-100%" y="-100%" width="300%" height="300%">
+                    <feGaussianBlur stdDeviation="1.5" result="blur"/>
                     <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
                 </filter>
             </defs>
@@ -447,7 +447,7 @@ async function loadPoles() {
             if (isNaN(lat) || isNaN(lng)) continue;
             if (poleMarkers[pole.poles_id]) continue;
             const marker = L.marker([lat, lng], {
-                icon:         _buildPoleIcon(pole, initSize),
+                icon: _buildPoleIcon(pole, initSize),
                 zIndexOffset: 1000
             }).addTo(poleLayerGroup);
             marker._poleData = pole;

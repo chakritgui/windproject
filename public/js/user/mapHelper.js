@@ -382,10 +382,19 @@ function updateWindUI() {
         updateWindDashboardUnit(unit);
     }
 }
+function _getTurbineSize(zoom) {
+    if (globalWindturbineIcon && globalWindturbineIcon.sizes) {
+        return globalWindturbineIcon.sizes[zoom] || 16;
+    }
+    return Math.max(3, Math.min(12, (zoom - 10) * 1.5 + 3));
+}
 function resizeLabel() {
     const zoom  = map.getZoom();
-    const size  = _calcIconSize(zoom);
     const scale = _calcLabelScale(zoom);
+    let poleSize = 20; 
+    if (globalPoleIcon && globalPoleIcon.sizes && globalPoleIcon.sizes[zoom]) {
+        poleSize = globalPoleIcon.sizes[zoom];
+    }
     window._usedLabelBoxes = [];
     const polePoints = Object.values(poleMarkers).map(({ lat, lng }) =>
         map.latLngToContainerPoint([lat, lng])
@@ -393,7 +402,7 @@ function resizeLabel() {
     Object.values(poleMarkers).forEach(({ marker, labelMarker, lat, lng, windId, arrowId }) => {
         const pd = marker._poleData;
         if (!pd) return;
-        marker.setIcon(_buildPoleIcon(pd, size));
+        marker.setIcon(_buildPoleIcon(pd, poleSize));
         const pt = map.latLngToContainerPoint([lat, lng]);
         const otherPts = polePoints.filter(p =>
             !(Math.abs(p.x - pt.x) < 1 && Math.abs(p.y - pt.y) < 1)
@@ -422,11 +431,12 @@ function resizeLabel() {
         }));
     });
     if (typeof turbineMarkers !== 'undefined') {
-        const turbineSize = Math.max(2, Math.min(12, (zoom - 10) * 1.5 + 3));
+        const turbineSize = _getTurbineSize(zoom); 
         const opacity = zoom < 10 ? 0.7 : 1;
         Object.values(turbineMarkers).forEach(({ marker, turbine }) => {
             if (!marker) return;
-            marker.setIcon(_buildTurbineIcon(turbine, turbineSize));
+            const newIcon = _buildTurbineIcon(turbineSize);
+            marker.setIcon(newIcon);
             marker.setOpacity(opacity);
         });
     }
@@ -711,17 +721,22 @@ function toggleSatellite(mode) {
         if (allHoles.length > 0) toggleHoles(true, allHoles);
     }
 }
-function _buildTurbineIcon(turbine, size) { 
-    const outerSize = size * 1.8;
+function _buildTurbineIcon(size) { 
+    const iconUrl = (globalWindturbineIcon && globalWindturbineIcon.url) ? `${BASE_URL}/${globalWindturbineIcon.url}` : '';
+    if (iconUrl) {
+        return L.icon({
+            iconUrl: iconUrl,
+            iconSize: [size, size],
+            iconAnchor: [size / 2, size / 2],
+            popupAnchor: [0, -size / 2],
+            className: 'turbine-icon'
+        });
+    }
     return L.divIcon({
-        className: 'turbine-premium-ring',
-        iconSize: [outerSize, outerSize],
-        iconAnchor: [outerSize / 2, outerSize / 2],
-        html: `
-            <div style="width: ${outerSize}px; height: ${outerSize}px; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255, 0, 0, 0.4); border-radius: 50%; background: rgba(255, 0, 0, 0.05);">
-                <div style="width: ${size}px; height: ${size}px; background: radial-gradient(circle at 30% 30%, #ff0000, #ff0000);  border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>
-            </div>
-        `
+        className: 'turbine-dot',
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
+        html: `<div style="width: ${size}px; height: ${size}px; background: radial-gradient(circle at 30% 30%, #ef1515, #ef1515);  border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`
     });
 }
 function resetView() {

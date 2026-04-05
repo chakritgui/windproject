@@ -670,5 +670,8 @@
     "layers": "Layers",
     "satellite": "Satellite",
     "sort": "Sort",
-    "login_icon": "Login Icon"
+    "login_icon": "Login Icon",
+    "auto": "Auto",
+    "zoom_scale": "Zoom Scale (Drag)",
+    "auto_scale" : "Auto Scale (Relative)"
 }

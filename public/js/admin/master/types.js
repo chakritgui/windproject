@@ -116,6 +116,14 @@ function initTypesTable() {
                 `;
                 $filter.append(btn);
             }
+            if ($filter.find('.icon-type').length === 0) {
+                let btn = `
+                    <button class="btn btn-info btn-sm icon-type ms-2">
+                        <i class="fa-solid fa-gears"></i> <span>${langData['icon'] || "Icon"}</span>
+                    </button>
+                `;
+                $filter.append(btn);
+            }
             if ($filter.find('.item-order').length === 0) {
                 let btn = `
                     <button class="btn btn-warning btn-sm item-order ms-2" data-type="pole_types">
@@ -299,3 +307,6 @@ function saveType() {
         }
     });
 }
+$(document).on('click', '.icon-type', function () {
+    openIconSetting('pole');
+});

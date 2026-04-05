@@ -36,6 +36,8 @@ let initialPadding = { padding: [20, 20] };
 let maxZoomLevel = 17;
 let focusMaskLayer = null;
 let countryLayer = [];
+let globalWindturbineIcon = null;
+let globalPoleIcon = null;
 const isMobile = () => window.innerWidth <= 768;
 const WINDY_COLORS = [
     { ms: 0,  color: '#324376' },

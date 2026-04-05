@@ -234,3 +234,158 @@ function orderItem(type, title) {
         });
     });
 }
+function openIconSetting(type) {
+    $.ajax({
+        url: `${BASE_URL}/api/windturbine.get`,
+        data: { icon_type: type },
+        method: 'POST',
+        dataType: 'json',
+        success: function(res) {
+            if(res.status === true){
+                let turbineData = res.data || {};
+                let savedSettings = {};
+                if (turbineData.zoom_level && turbineData.zoom_val) {
+                    turbineData.zoom_level.forEach((z, index) => {
+                        savedSettings[z] = turbineData.zoom_val[index];
+                    });
+                }
+                let modalEl = $('#windModal');
+                let modal = new bootstrap.Modal(modalEl[0]);
+                modal.show();
+                modalEl.find(".modal-header").html(`
+                    <h5 class="modal-title">${langData['icon_settings'] || 'Icon Settings'} (${type})</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                `);
+                modalEl.find(".modal-footer").html(`
+                    <button type="button" class="btn btn-primary btn-save-icon">Save</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                `);
+                let zoomHtml = '';
+                for (let z = 8; z <= 17; z++) {
+                    let currentSize = savedSettings[z] || (3 + (z - 8) * 2);
+                    zoomHtml += `
+                    <div class="mb-3 zoom-row">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="d-flex align-items-center">
+                                <span class="me-2">${langData['configure_zoom_level'] || 'Configure Zoom Level'} ${z}</span>
+                                <div class="preview-container" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border-radius: 4px; border: 1px solid #eee;">
+                                    <div id="previewDot${z}" style="width: ${currentSize}px; height: ${currentSize}px; background: red; border-radius: 50%;"></div>
+                                </div>
+                            </label>
+                            <span><b class="zoom-value" id="zoomVal${z}">${currentSize}</b> px</span>
+                        </div>
+                        <input type="range" class="form-range zoom-slider" min="1" max="100" value="${currentSize}" data-zoom="${z}">
+                    </div>`;
+                }
+                const coverSection = (type === 'windturbine') 
+                    ? `<div class="mb-4">${renderCover(turbineData, 'icon')}</div>
+                       <input type="hidden" id="ex_cover" value="${turbineData.cover || ''}">`
+                    : `<input type="hidden" id="ex_cover" value="">`;
+                const autoScaleLabel = langData['auto_scale'] || 'Auto Scale (Relative)';
+                modalEl.find(".modal-body").html(`
+                    <input type="hidden" id="icon_type" value="${type}">
+                    <div class="container-fluid">
+                        ${coverSection}
+                        <div class="d-flex justify-content-between mb-2 mt-3">
+                            <label class="fw-bold">${langData['zoom_scale'] || 'Zoom Scale (Drag)'}</label>
+                            <div class="d-flex gap-2">
+                                <div class="form-check form-switch me-2">
+                                    <input class="form-check-input" type="checkbox" id="enableRelScale" checked>
+                                    <label class="form-check-label small" for="enableRelScale">${autoScaleLabel}</label>
+                                </div>
+                                <button class="btn btn-sm btn-outline-primary" id="autoFill" data-type="${type}">${langData['auto'] || 'Auto'}</button>
+                            </div>
+                        </div>
+                        <div id="zoomSliderBox">
+                            ${zoomHtml}
+                        </div>
+                    </div>
+                `);
+                if(type === 'windturbine' && typeof initCoverUpload === 'function') initCoverUpload();
+
+            } else {
+                showError(langData['cannot_load']);
+            }
+        },
+        error: function(){
+            showError(langData['cannot_load']);
+        }
+    });
+}
+$(document).on('input', '.zoom-slider', function () {
+    let currentZoom = $(this).data('zoom');
+    let currentVal  = parseInt($(this).val());
+    updateZoomUI(currentZoom, currentVal);
+    if ($('#enableRelScale').is(':checked')) {
+        $('.zoom-slider').each(function () {
+            let z = $(this).data('zoom');
+            if (z > currentZoom) {
+                let newVal = currentVal + (z - currentZoom) * 2;
+                if (newVal > 100) newVal = 100;
+                $(this).val(newVal);
+                updateZoomUI(z, newVal);
+            }
+        });
+    }
+});
+$(document).on('click', '#autoFill', function () {
+    let type = $(this).data('type');
+    let base = (type === 'pole') ? 20 : 3;
+    $('.zoom-slider').each(function () {
+        let z = $(this).data('zoom');
+        let val = base + (z - 8) * 2;
+        $(this).val(val);
+        updateZoomUI(z, val);
+    });
+});
+function updateZoomUI(zoom, val) {
+    $('#zoomVal' + zoom).text(val);
+    $('#previewDot' + zoom).css({
+        'width': val + 'px',
+        'height': val + 'px'
+    });
+}
+$(document).on('click', '.btn-save-icon', function () {
+    const btn = $(".btn-save-icon");
+    const type = $("#icon_type").val();
+    btn.prop("disabled", true);
+    let zoomData = [];
+    $('.zoom-slider').each(function() {
+        zoomData.push({
+            zoom: $(this).data('zoom'),
+            val: $(this).val()
+        });
+    });
+    const formData = new FormData();
+    formData.append("ex_cover", $("#ex_cover").val() || "");
+    formData.append("icon_type", type);
+    formData.append("zoom_settings", JSON.stringify(zoomData));
+    if (type === 'windturbine') {
+        const fileInput = $("#cover")[0];
+        if (fileInput && fileInput.files[0]) {
+            formData.append("cover", fileInput.files[0]);
+        }
+    }
+    $.ajax({
+        url: `${BASE_URL}/api/windturbine.save`,
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+        dataType: "json",
+        success: function (res) {
+            if (res.status === true) {
+                showSuccess(langData['saved_successfully'] || 'Saved!');
+                $('#windModal').modal('hide');
+            } else {
+                showError(langData[res.message] || res.message || 'Save failed');
+            }
+        },
+        error: function () {
+            showError(langData['cannot_save']);
+        },
+        complete: function() {
+            btn.prop("disabled", false);
+        }
+    });
+});

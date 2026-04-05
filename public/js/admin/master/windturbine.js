@@ -82,6 +82,14 @@ function initWindturbineTable() {
                 `;
                 $filter.append(btn);
             }
+            if ($filter.find('.icon-windturbine').length === 0) {
+                let btn = `
+                    <button class="btn btn-info btn-sm icon-windturbine ms-2">
+                        <i class="fa-solid fa-gears"></i> <span>${langData['icon'] || "Icon"}</span>
+                    </button>
+                `;
+                $filter.append(btn);
+            }
             if ($filter.find('.clear-windturbine').length === 0) {
                 let btn = `
                     <button class="btn btn-danger btn-sm clear-windturbine ms-2">
@@ -169,6 +177,10 @@ $(document).on('click', '.import-windturbine', function () {
         </div>
     `);
     loadLang(currentLang);
+});
+$(document).on('click', '.icon-windturbine', function () {
+    openIconSetting('windturbine');
+    
 });
 $(document).on("click", "#btn_select_file", function () {
     $("#wind_file").trigger("click");

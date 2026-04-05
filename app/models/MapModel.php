@@ -5,8 +5,39 @@ class MapModel{
         $this->db = Database::getInstance()->pdo;
     }
     public function master() {
-        $sql = "SELECT center_lat, center_lng, zoom_level, polygon_visibility, show_country_line, country_layers_data,map_labels FROM wp_map_master LIMIT 1";
-        return $this->db->query($sql)->fetch(PDO::FETCH_ASSOC);
+        $sql = "SELECT center_lat, center_lng, zoom_level, polygon_visibility, show_country_line, country_layers_data, map_labels FROM wp_map_master LIMIT 1";
+        $master = $this->db->query($sql)->fetch(PDO::FETCH_ASSOC);
+        $types = [
+            'windturbine' => ['base' => 3,  'step' => 2],
+            'pole'        => ['base' => 20, 'step' => 2]
+        ];
+        foreach ($types as $type => $config) {
+            $defaultSizes = [];
+            for ($z = 8; $z <= 17; $z++) {
+                $defaultSizes[$z] = $config['base'] + ($z - 8) * $config['step'];
+            }
+            $sqlIcon = "SELECT cover, zoom_level, zoom_val FROM wp_windturbind_icon WHERE icon_type = ? LIMIT 1";
+            $stmt = $this->db->prepare($sqlIcon);
+            $stmt->execute([$type]);
+            $iconData = $stmt->fetch(PDO::FETCH_ASSOC);
+            $iconConfig = [
+                'url'   => $iconData['cover'] ?? '',
+                'sizes' => $defaultSizes
+            ];
+            if ($iconData && !empty($iconData['zoom_level'])) {
+                $levels = json_decode($iconData['zoom_level'], true);
+                $vals   = json_decode($iconData['zoom_val'], true);
+                if (is_array($levels)) {
+                    foreach ($levels as $index => $lv) {
+                        if (isset($vals[$index])) {
+                            $iconConfig['sizes'][$lv] = (int)$vals[$index];
+                        }
+                    }
+                }
+            }
+            $master[$type . '_icon'] = $iconConfig;
+        }
+        return $master;
     }
     public function windarea() {
         $sql = "SELECT 
@@ -41,7 +72,7 @@ class MapModel{
             $polygons[]           = $row;
         }
         $hashToGroup = [];
-        $groupId     = 1;
+        $groupId = 1;
         foreach ($polygons as &$p) {
             $hash = $p['coord_hash'];
             if (!$hash) {

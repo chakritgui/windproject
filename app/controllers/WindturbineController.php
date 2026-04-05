@@ -56,4 +56,30 @@ class WindturbineController extends BaseController {
         $result = $this->model->clear();
         $this->json($result);
     }
+    public function get() {
+        $icon_type = $_POST['icon_type'];
+        $this->json(['status'=>true,'data'=>$this->model->get($icon_type)]);
+    }
+    public function save() {
+        $data = [
+            'type_id'       => intval($_POST['type_id'] ?? 0),
+            'icon_type'     => $_POST['icon_type'] ?? 'pole',
+            'ex_cover'      => $_POST['ex_cover'] ?? null,
+            'zoom_settings' => $_POST['zoom_settings'] ?? '[]'
+        ];
+        $result = $this->model->save($data);
+        if ($result === true) {
+            $this->json([
+                'status' => true,
+                'message' => 'save_success'
+            ]);
+        } elseif (is_array($result)) {
+            $this->json($result); 
+        } else {
+            $this->json([
+                'status'  => false,
+                'message' => 'cannot_save'
+            ]);
+        }
+    }
 }

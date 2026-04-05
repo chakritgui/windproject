@@ -200,6 +200,8 @@
             $router->post('/api/windturbine.import', 'WindturbineController@import');
             $router->post('/api/windturbine.updateStatus', 'WindturbineController@updateStatus');
             $router->post('/api/windturbine.clear', 'WindturbineController@clear');
+            $router->post('/api/windturbine.get', 'WindturbineController@get');
+            $router->post('/api/windturbine.save', 'WindturbineController@save');
             $router->post('/api/sort.list', 'SortController@list');
             $router->post('/api/sort.save', 'SortController@save');
         } else {
