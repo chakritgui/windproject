@@ -253,7 +253,7 @@ function openIconSetting(type) {
                 let modal = new bootstrap.Modal(modalEl[0]);
                 modal.show();
                 modalEl.find(".modal-header").html(`
-                    <h5 class="modal-title">${langData['icon_settings'] || 'Icon Settings'} (${type})</h5>
+                    <h5 class="modal-title">${langData['icon_settings'] || 'Icon Settings'}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 `);
                 modalEl.find(".modal-footer").html(`
@@ -262,12 +262,14 @@ function openIconSetting(type) {
                 `);
                 let zoomHtml = '';
                 for (let z = 8; z <= 17; z++) {
-                    let currentSize = savedSettings[z] || (3 + (z - 8) * 2);
+                    let baseSize = (type === 'windturbine') ? 3 : 20;
+                    let defaultSize = baseSize + (z - 8) * 2;
+                    let currentSize = savedSettings[z] || defaultSize;
                     zoomHtml += `
                     <div class="mb-3 zoom-row">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <label class="d-flex align-items-center">
-                                <span class="me-2">${langData['configure_zoom_level'] || 'Configure Zoom Level'} ${z}</span>
+                                <span class="me-2">${langData['configure_zoom_level'] || 'Level'} ${z}</span>
                                 <div class="preview-container" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border-radius: 4px; border: 1px solid #eee;">
                                     <div id="previewDot${z}" style="width: ${currentSize}px; height: ${currentSize}px; background: red; border-radius: 50%;"></div>
                                 </div>
