@@ -42,6 +42,7 @@ body {
     cursor: pointer;
     transition: all .25s ease;
     background: #fafbff;
+    height: 160px;
 }
 .preview-box:hover {
     border-color: #0d6efd;
