@@ -531,43 +531,38 @@ async function fetchExternalWeather(lat, lon) {
     const weatherContainer = document.getElementById('weatherContainer');
     const skeletonItems = ['Temp', 'Humid', 'Wind', 'PM2.5', 'Rain'];
     weatherContainer.innerHTML = skeletonItems.map(() => `
-        <div class="weather-card-rect skeleton-loading" style="background: #e0e0e0; height: 50px; padding: 10px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
-            <div style="width: 30px; height: 30px; background: #ccc; border-radius: 50%;"></div>
-            <div style="flex: 1;">
-                <div style="width: 40%; height: 10px; background: #ccc; margin-bottom: 5px;"></div>
-                <div style="width: 70%; height: 12px; background: #ccc;"></div>
+        <div class="weather-card-rect skeleton-loading" style="background:#e0e0e0;height:50px;padding:10px;border-radius:8px;margin-bottom:10px;display:flex;align-items:center;gap:10px;">
+            <div style="width:30px;height:30px;background:#ccc;border-radius:50%;"></div>
+            <div style="flex:1;">
+                <div style="width:40%;height:10px;background:#ccc;margin-bottom:5px;"></div>
+                <div style="width:70%;height:12px;background:#ccc;"></div>
             </div>
         </div>
     `).join('');
     try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m&air_quality=pm2_5&timezone=auto`;
-        const res = await fetch(url);
+        const res  = await fetch(`${BASE_URL}/api/weather.current?lat=${lat}&lon=${lon}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        if (!data.current) {
-            weatherContainer.innerHTML = '<div style="font-size: 0.8rem; color: gray;">Weather data unavailable</div>';
-            return;
-        }
-        const cur = data.current;
-        const air = data.air_quality || {};
         const items = [
-            { name: 'temp',  val: cur.temperature_2m.toFixed(1), unit: '°C', icon: 'fa-thermometer-half', grad: 'linear-gradient(135deg, #FF512F, #DD2476)', ani: 'ani-temp' },
-            { name: 'humid', val: cur.relative_humidity_2m.toFixed(0), unit: '%', icon: 'fa-tint', grad: 'linear-gradient(135deg, #2193b0, #6dd5ed)', ani: 'ani-rain' },
-            { name: 'wind',  val: cur.wind_speed_10m.toFixed(1), unit: 'km/h', icon: 'fa-wind', grad: 'linear-gradient(135deg, #11998e, #38ef7d)', ani: 'ani-wind' },
-            { name: 'pm2.5', val: air.pm2_5 ? air.pm2_5.toFixed(1) : '-', unit: '', icon: 'fa-smog', grad: 'linear-gradient(135deg, #485563, #29323c)', ani: 'ani-temp' },
-            { name: 'rain',  val: cur.precipitation.toFixed(1), unit: 'mm', icon: 'fa-cloud-showers-heavy', grad: 'linear-gradient(135deg, #4b6cb7, #182848)', ani: 'ani-rain' }
+            { name: 'temp',  val: data.temperature  ?? '-', unit: '°C',  icon: 'fa-thermometer-half',    grad: 'linear-gradient(135deg,#FF512F,#DD2476)', ani: 'ani-temp' },
+            { name: 'humid', val: data.humidity      ?? '-', unit: '%',   icon: 'fa-tint',                grad: 'linear-gradient(135deg,#2193b0,#6dd5ed)', ani: 'ani-rain' },
+            { name: 'wind',  val: data.wind_speed    ?? '-', unit: 'm/s', icon: 'fa-wind',                grad: 'linear-gradient(135deg,#11998e,#38ef7d)', ani: 'ani-wind' },
+            { name: 'pm2.5', val: data.pm25          ?? '-', unit: 'μg',  icon: 'fa-smog',                grad: 'linear-gradient(135deg,#485563,#29323c)', ani: 'ani-temp' },
+            { name: 'rain',  val: data.precipitation ?? '-', unit: 'mm',  icon: 'fa-cloud-showers-heavy', grad: 'linear-gradient(135deg,#4b6cb7,#182848)', ani: 'ani-rain' },
         ];
         weatherContainer.innerHTML = items.map(item => `
-            <div class="weather-card-rect" style="background: ${item.grad}; padding: 10px; border-radius: 8px; color: white; display: flex; align-items: center; gap: 10px; margin-bottom: 10px; animation: fadeIn 0.5s ease-in;">
+            <div class="weather-card-rect" style="background:${item.grad};padding:10px;border-radius:8px;color:white;display:flex;align-items:center;gap:10px;margin-bottom:10px;animation:fadeIn 0.5s ease-in;">
                 <i class="fas ${item.icon} ${item.ani} fa-lg"></i>
                 <div class="info">
-                    <div style="font-size: 0.7rem; opacity: 0.8; text-transform: uppercase;" data-i18n="${item.name}"></div>
-                    <div style="font-weight: bold;">${item.val} ${item.unit}</div>
+                    <div style="font-size:0.7rem;opacity:0.8;text-transform:uppercase;" data-i18n="${item.name}"></div>
+                    <div style="font-weight:bold;">${item.val} ${item.unit}</div>
                 </div>
             </div>
         `).join('');
-    } catch (e) { 
-        console.warn("External Weather Fail", e); 
-        weatherContainer.innerHTML = '<div style="font-size: 0.8rem; color: #ff5e5e;">Connection Error</div>';
+        if (typeof updateText === 'function') updateText(weatherContainer);
+    } catch (e) {
+        console.warn('fetchExternalWeather error:', e);
+        weatherContainer.innerHTML = '<div style="font-size:0.8rem;color:#ff5e5e;">Connection Error</div>';
     }
 }
 $(document).on('click', '.close-page', function(e) {

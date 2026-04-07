@@ -1,5 +1,5 @@
-const OPEN_METEO   = 'https://api.open-meteo.com/v1/forecast';
-const WIND_REFRESH = 60_000;
+const OPEN_METEO    = `${BASE_URL}/api/weather.proxy`;
+const WIND_REFRESH = 1_800_000;
 const MENU_LEVELS = {
     1: { title: 'PROJECT', lang: 'project', endpoint: `${BASE_URL}/api/project.get`, key: 'project_id', label: 'project_name'},
     2: { title: 'WIND MEASUREMENT EQUIPMENT', lang: 'wind_measurement_equipment', endpoint: `${BASE_URL}/api/type.get`, key: 'type_id', label: 'type_name'},

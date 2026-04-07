@@ -113,43 +113,65 @@ async function refreshAllWindData() {
     const entries = Object.entries(poleMarkers);
     if (entries.length === 0) return;
     isRefreshing = true;
+    const BATCH_SIZE = 10;
+    const BATCH_DELAY_MS = 300;
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    async function fetchWithRetry(url, retries = 2) {
+        for (let i = 0; i <= retries; i++) {
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return await res.json();
+            } catch (err) {
+                if (i === retries) throw err;
+                await sleep(1000 * (i + 1));
+            }
+        }
+    }
     try {
-        const lats = entries.map(([, p]) => p.lat).join(',');
-        const lngs = entries.map(([, p]) => p.lng).join(',');
-        const url = `${OPEN_METEO}?latitude=${lats}&longitude=${lngs}` + `&current=wind_speed_100m,wind_direction_100m&wind_speed_unit=ms`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`Open-Meteo HTTP ${res.status}`);
-        const data = await res.json();
-        const results = Array.isArray(data) ? data : [data];
         const windSpeeds = [];
         const unit = getCurrentUnit();
-        entries.forEach(([id, p], i) => {
-            const weather = results[i];
-            if (!weather?.current) return;
-            const speed = weather.current.wind_speed_100m;
-            const dir   = weather.current.wind_direction_100m;
-            windSpeeds.push(speed);
-            const activeColor = getWindColor(speed);
-            const elSpeed = document.getElementById(p.windId);
-            const elArrow = document.getElementById(p.arrowId);
-            if (elSpeed) {
-                elSpeed.dataset.raw = speed;
-                elSpeed.textContent = `${(speed * unit.factor).toFixed(1)} ${unit.label}`;
-                elSpeed.setAttribute('fill', activeColor);
+        for (let i = 0; i < entries.length; i += BATCH_SIZE) {
+            if (i > 0) await sleep(BATCH_DELAY_MS);
+            const batch = entries.slice(i, i + BATCH_SIZE);
+            const lats  = batch.map(([, p]) => p.lat).join(',');
+            const lngs  = batch.map(([, p]) => p.lng).join(',');
+            const url   = `${OPEN_METEO}?latitude=${lats}&longitude=${lngs}`
+                        + `&current=wind_speed_100m,wind_direction_100m&wind_speed_unit=ms`;
+            let data;
+            try {
+                data = await fetchWithRetry(url);
+            } catch (err) {
+                console.warn(`Batch ${i / BATCH_SIZE + 1} failed, skipping:`, err);
+                continue;
             }
-            if (elArrow) {
-                const cx = elArrow.getAttribute('data-cx');
-                const cy = elArrow.getAttribute('data-cy');
-                elArrow.setAttribute('transform', `rotate(${dir - 90}, ${cx}, ${cy})`);
-                elArrow.dataset.dir = dir;
-                const arrowIcon = elArrow.querySelector('text');
-                if (arrowIcon) {
-                    arrowIcon.setAttribute('fill', activeColor);
+            const results = Array.isArray(data) ? data : [data];
+            batch.forEach(([id, p], j) => {
+                const weather = results[j];
+                if (!weather?.current) return;
+                const speed = weather.current.wind_speed_100m;
+                const dir   = weather.current.wind_direction_100m;
+                windSpeeds.push(speed);
+                const activeColor = getWindColor(speed);
+                const elSpeed = document.getElementById(p.windId);
+                const elArrow = document.getElementById(p.arrowId);
+                if (elSpeed) {
+                    elSpeed.dataset.raw = speed;
+                    elSpeed.textContent = `${(speed * unit.factor).toFixed(1)} ${unit.label}`;
+                    elSpeed.setAttribute('fill', activeColor);
                 }
-            }
-        });
+                if (elArrow) {
+                    const cx = elArrow.getAttribute('data-cx');
+                    const cy = elArrow.getAttribute('data-cy');
+                    elArrow.setAttribute('transform', `rotate(${dir - 90}, ${cx}, ${cy})`);
+                    elArrow.dataset.dir = dir;
+                    const arrowIcon = elArrow.querySelector('text');
+                    if (arrowIcon) arrowIcon.setAttribute('fill', activeColor);
+                }
+            });
+        }
         if (windSpeeds.length > 0) {
-            const sum = windSpeeds.reduce((a, b) => a + b, 0);
+            const sum       = windSpeeds.reduce((a, b) => a + b, 0);
             windSummary.max = Math.max(...windSpeeds);
             windSummary.min = Math.min(...windSpeeds);
             windSummary.avg = sum / windSpeeds.length;
