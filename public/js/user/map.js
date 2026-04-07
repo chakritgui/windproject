@@ -113,6 +113,7 @@ async function refreshAllWindData() {
     const entries = Object.entries(poleMarkers);
     if (entries.length === 0) return;
     isRefreshing = true;
+    const windSpeeds = [];
     const BATCH_SIZE = 10;
     const BATCH_DELAY_MS = 300;
     const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -129,7 +130,6 @@ async function refreshAllWindData() {
         }
     }
     try {
-        const windSpeeds = [];
         const unit = getCurrentUnit();
         for (let i = 0; i < entries.length; i += BATCH_SIZE) {
             if (i > 0) await sleep(BATCH_DELAY_MS);
