@@ -60,7 +60,6 @@ function initMap() {
             }
             await loadPoles();
             await loadWindTurbines();
-            initWindUnit();
         } catch (error) {
             console.error("Initialization Error:", error);
         }
@@ -196,6 +195,7 @@ function updateWindDashboard({ max, min, avg }) {
     updateStat('#stat-max-wind', max, 'text-warning');
     updateStat('#stat-min-wind', min, 'text-info');
     updateStat('#stat-avg-wind', avg, 'text-success');
+    initWindUnit();
 }
 let turbineMarkers = {};
 async function loadWindTurbines() {

@@ -467,6 +467,7 @@ function updateWindDashboardUnit(unit) {
     const max = windSummary.max ?? 0;
     const min = windSummary.min ?? 0;
     const avg = windSummary.avg ?? 0;
+    if (max === 0 && min === 0 && avg === 0) return;
     $('.stat-max-wind-val').text((max * unit.factor).toFixed(1));
     $('.stat-min-wind-val').text((min * unit.factor).toFixed(1));
     $('.stat-avg-wind-val').text((avg * unit.factor).toFixed(1));
