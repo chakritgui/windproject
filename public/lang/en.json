@@ -673,5 +673,6 @@
     "login_icon": "Login Icon",
     "auto": "Auto",
     "zoom_scale": "Zoom Scale (Drag)",
-    "auto_scale" : "Auto Scale (Relative)"
+    "auto_scale" : "Auto Scale (Relative)",
+    "example_import" : "Example Import"
 }

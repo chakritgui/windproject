@@ -90,14 +90,6 @@ function initWindturbineTable() {
                 `;
                 $filter.append(btn);
             }
-            if ($filter.find('.clear-windturbine').length === 0) {
-                let btn = `
-                    <button class="btn btn-danger btn-sm clear-windturbine ms-2">
-                        <i class="fa-solid fa-trash-can me-2"></i><span>${langData['clear_data'] || "Clear Data"}</span>
-                    </button>
-                `;
-                $filter.append(btn);
-            }
         },
         drawCallback: function(){
             getTableLang();

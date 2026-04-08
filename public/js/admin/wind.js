@@ -63,7 +63,7 @@ function initWindTable() {
             if ($filter.find('.example-inport').length === 0) {
                 let btn = `
                     <a href="${BASE_URL}/excel/WindImportExample.xlsx" class="btn btn-success btn-sm example-inport ms-2" target="_blank">
-                        <i class="fa-solid fa-download me-2"></i><span>${langData['import_example'] || "Import Example"}</span>
+                        <i class="fa-solid fa-download me-2"></i><span>${langData['example_import'] || "Example Import"}</span>
                     </a>
                 `;
                 $filter.append(btn);
