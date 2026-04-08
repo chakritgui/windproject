@@ -6,6 +6,7 @@ let contentState = {
 };
 let vrViewer = null;
 function openContent(slugFromParam, modeFromParam) {
+    const { lang, type } = contentState;
     injectCss();
     const $modal  = $('#windModal');
     const $dialog = $modal.find('.modal-dialog');
