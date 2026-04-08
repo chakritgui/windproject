@@ -168,7 +168,7 @@ function renderMultimedia(content, lang, baseUrl) {
                 ${content.images360.map(vr => `
                     <div class="mm-thumb" onclick="openVRModal('${baseUrl}/${vr.url}')">
                         <img src="${baseUrl}/${vr.url}" loading="lazy">
-                        <div class="mm-vr-badge"><i class="fa-solid fa-rotate fa-spin"></i> 360°</div>
+                        <div class="mm-vr-badge"><i class="fa-solid fa-rotate fa-spin me-2"></i>360°</div>
                         <div class="mm-thumb-overlay"><i class="fa-solid fa-expand"></i></div>
                     </div>`).join('')}
             </div>

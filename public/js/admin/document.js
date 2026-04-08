@@ -108,7 +108,7 @@ function initDocumentTable() {
             render: function(data, type, row) {
                 let size = data ? (data / (1024 * 1024)).toFixed(2) + " MB" : "-";
                 return `<div class="lh-sm">
-                            <small class="text-muted"><i class="fa-solid fa-database"></i> ${size}</small>
+                            <small class="text-muted"><i class="fa-solid fa-database me-2"></i>${size}</small>
                         </div>`;
             }
         },{ 
@@ -169,7 +169,7 @@ function initDocumentTable() {
             if ($filter.find('.manage-document').length === 0) {
                 let btn = `
                     <button class="btn btn-primary btn-sm manage-document ms-2" data-id="">
-                        <i class="fa-solid fa-plus"></i> <span>${langData['document'] || 'Document'}</span>
+                        <i class="fa-solid fa-plus me-2"></i><span>${langData['document'] || 'Document'}</span>
                     </button>
                 `;
                 $filter.append(btn);

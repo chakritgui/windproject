@@ -111,7 +111,7 @@ function initTypesTable() {
             if ($filter.find('.manage-type[data-id=""]').length === 0) {
                 let btn = `
                     <button class="btn btn-primary btn-sm manage-type" data-id="">
-                        <i class="fa-solid fa-plus"></i> <span>${langData['pole_types'] || 'Wind Measurement Equipment'}</span>
+                        <i class="fa-solid fa-plus me-2"></i><span>${langData['pole_types'] || 'Wind Measurement Equipment'}</span>
                     </button>
                 `;
                 $filter.append(btn);
@@ -119,7 +119,7 @@ function initTypesTable() {
             if ($filter.find('.icon-type').length === 0) {
                 let btn = `
                     <button class="btn btn-info btn-sm icon-type ms-2">
-                        <i class="fa-solid fa-gears"></i> <span>${langData['icon'] || "Icon"}</span>
+                        <i class="fa-solid fa-gears me-2"></i><span>${langData['icon'] || "Icon"}</span>
                     </button>
                 `;
                 $filter.append(btn);
@@ -127,7 +127,7 @@ function initTypesTable() {
             if ($filter.find('.item-order').length === 0) {
                 let btn = `
                     <button class="btn btn-warning btn-sm item-order ms-2" data-type="pole_types">
-                        <i class="fa-solid fa-sort"></i> <span>${langData['sort'] || 'Sort'}</span>
+                        <i class="fa-solid fa-sort me-2"></i><span>${langData['sort'] || 'Sort'}</span>
                     </button>
                 `;
                 $filter.append(btn);

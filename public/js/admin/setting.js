@@ -773,7 +773,7 @@ function initDisclaimerTable() {
             if ($filter.find('.manage-disclaimer').length === 0) {
                 $filter.append(`
                     <button class="btn btn-primary btn-sm manage-disclaimer ms-2" data-id="0">
-                        <i class="fa-solid fa-plus"></i> <span>${langData['version'] || 'Version'}</span>
+                        <i class="fa-solid fa-plus me-2"></i><span>${langData['version'] || 'Version'}</span>
                     </button>
                 `);
             }
@@ -940,7 +940,7 @@ function renderDisclaimerModalContent(modalEl, id, isEdit) {
             </div>
         </div>
         <div class="alert alert-info mt-3 py-2 small border-0">
-            <i class="fa-solid fa-circle-info me-2"></i> ${langData['en_is_primary'] || 'English version is required for activation.'}
+            <i class="fa-solid fa-circle-info me-2"></i>${langData['en_is_primary'] || 'English version is required for activation.'}
         </div>
     `);
     initSummernote();

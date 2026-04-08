@@ -73,7 +73,7 @@ function renderLangStatus(lang, status) {
     const s = map[status] || map.ready;
     return `
         <span class="badge rounded-pill bg-${s.cls}-subtle text-${s.cls} me-1">
-            <i class="fa-solid ${s.icon}"></i> ${lang.toUpperCase()}
+            <i class="fa-solid ${s.icon} me-2"></i>${lang.toUpperCase()}
         </span>
     `;
 }

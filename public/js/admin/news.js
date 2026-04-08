@@ -75,9 +75,9 @@ function initNewsTable() {
             render: (data, type, row) => `
                 ${
                     (data === 'news') ? `
-                        <span class="badge rounded-pill text-bg-primary"><i class="fa-regular fa-newspaper"></i> <span>${langData['news'] || 'News'}</span></span>
+                        <span class="badge rounded-pill text-bg-primary"><i class="fa-regular fa-newspaper me-2"></i><span>${langData['news'] || 'News'}</span></span>
                     ` : `
-                        <span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project"></i> <span>${langData['project'] || 'Project'}</span></span>
+                        <span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project me-2"></i><span>${langData['project'] || 'Project'}</span></span>
                     `
                 }
             `

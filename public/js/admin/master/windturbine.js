@@ -77,7 +77,7 @@ function initWindturbineTable() {
             if ($filter.find('.import-windturbine').length === 0) {
                 let btn = `
                     <button class="btn btn-primary btn-sm import-windturbine ms-2">
-                        <i class="fa-solid fa-plus"></i> <span>${langData['import'] || "Import"}</span>
+                        <i class="fa-solid fa-plus me-2"></i><span>${langData['import'] || "Import"}</span>
                     </button>
                 `;
                 $filter.append(btn);
@@ -85,7 +85,7 @@ function initWindturbineTable() {
             if ($filter.find('.icon-windturbine').length === 0) {
                 let btn = `
                     <button class="btn btn-info btn-sm icon-windturbine ms-2">
-                        <i class="fa-solid fa-gears"></i> <span>${langData['icon'] || "Icon"}</span>
+                        <i class="fa-solid fa-gears me-2"></i><span>${langData['icon'] || "Icon"}</span>
                     </button>
                 `;
                 $filter.append(btn);
@@ -93,7 +93,7 @@ function initWindturbineTable() {
             if ($filter.find('.clear-windturbine').length === 0) {
                 let btn = `
                     <button class="btn btn-danger btn-sm clear-windturbine ms-2">
-                        <i class="fa-solid fa-trash-can"></i> <span>${langData['clear_data'] || "Clear Data"}</span>
+                        <i class="fa-solid fa-trash-can me-2"></i><span>${langData['clear_data'] || "Clear Data"}</span>
                     </button>
                 `;
                 $filter.append(btn);

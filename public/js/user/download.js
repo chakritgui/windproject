@@ -108,7 +108,7 @@ function generateStepHTML(type) {
             ${renderStep(3, 'download_line16', 'download_line17')}`;
     } else if (type === 'ios') {
         steps = `
-            ${renderStep(1, 'download_line18', '', `Click the <strong>Share</strong> button <i class="fa-solid fa-arrow-up-from-bracket mx-1 text-blue"></i> in the browser bar.`)}
+            ${renderStep(1, 'download_line18', '', `Click the <strong>Share</strong> button <i class="fa-solid fa-arrow-up-from-bracket mx-1 text-blue me-2"></i>in the browser bar.`)}
             ${renderStep(2, 'download_line21', 'download_line22')}
             ${renderStep(3, 'download_line23', 'download_line24')}`;
     } else if (type === 'desktop') {

@@ -330,7 +330,7 @@ $(document).on('click', '.history-download', function (e) {
     const $modalEl = $('#windModal');
     $modalEl.find(".modal-header").html(`
         <h6 class="modal-title">
-            <i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="history_download"></span>
+            <i class="fa-solid fa-clock-rotate-left me-2"></i><span data-i18n="history_download"></span>
         </h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
     `);

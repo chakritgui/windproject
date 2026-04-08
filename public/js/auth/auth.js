@@ -247,7 +247,7 @@ async function loadAuthRquest() {
                             <div class="d-flex align-items-center">
                                 <div>
                                     <div class="text-muted extra-small" style="font-size: 0.75rem;">
-                                        <i class="fa-regular fa-calendar-check me-1"></i> ${res.data.created_at}
+                                        <i class="fa-regular fa-calendar-check me-2"></i>${res.data.created_at}
                                     </div>
                                 </div>
                             </div>
@@ -392,7 +392,7 @@ function renderForgotOptions(data) {
             navHtml += `
                 <li class="nav-item">
                     <button class="nav-link ${activeClass} rounded-pill py-2" data-bs-toggle="pill" data-bs-target="#content_${m.id}">
-                        <i class="fa-solid ${m.icon} me-1"></i> <span class="small" data-i18n="${m.name}">${langData[m.name]}</span>
+                        <i class="fa-solid ${m.icon} me-2"></i><span class="small" data-i18n="${m.name}">${langData[m.name]}</span>
                     </button>
                 </li>`;
             if (index === 0) {

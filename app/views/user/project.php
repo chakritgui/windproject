@@ -16,8 +16,7 @@
                 <div class="particle pp-5"></div>
             </div>
             <div class="deco-cluster cluster-tl">
-                <i class="fa-solid fa-diagram-project deco-1"></i> 
-                <i class="fa-solid fa-wind deco-2"></i> 
+                <i class="fa-solid fa-diagram-project deco-1 me-2"></i><i class="fa-solid fa-wind deco-2"></i>
             </div>
             <div class="deco-cluster cluster-br">
                 <i class="fa-solid fa-map-location-dot deco-3"></i>
@@ -41,10 +40,10 @@
                 <div class="header-stats">
                     <div class="view-group">
                         <button class="view-btn active" id="vList" onclick="setView('list')" title="List View">
-                            <i class="fa-solid fa-list"></i> <span data-i18n="list"></span>
+                            <i class="fa-solid fa-list me-2"></i><span data-i18n="list"></span>
                         </button>
                         <button class="view-btn" id="vGrid" onclick="setView('grid')" title="Grid View">
-                            <i class="fa-solid fa-th-large"></i> <span data-i18n="grid"></span>
+                            <i class="fa-solid fa-th-large me-2"></i><span data-i18n="grid"></span>
                         </button>
                     </div>
                     <button class="toolbar-btn" id="sortBtn" onclick="toggleSort()">

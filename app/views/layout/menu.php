@@ -10,7 +10,7 @@
     <ul id="main-sidebar-menu" class="list-unstyled mt-3 flex-grow-1 overflow-auto"></ul>
     <div class="sidebar-footer p-3">
         <a href="<?=BASE_URL?>/logout" class="btn btn-danger w-100">
-            <i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="logout"></span>
+            <i class="fa-solid fa-right-from-bracket me-2"></i><span data-i18n="logout"></span>
         </a>
     </div>
 </div>

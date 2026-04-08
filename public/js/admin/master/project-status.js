@@ -81,7 +81,7 @@ function initProjectStatusTable() {
             if ($filter.find('.manage-sta[data-id=""]').length === 0) {
                 let btn = `
                     <button class="btn btn-primary btn-sm manage-sta ms-2" data-id="">
-                        <i class="fa-solid fa-plus"></i> <span>${langData['status'] || 'Status'}</span>
+                        <i class="fa-solid fa-plus me-2"></i><span>${langData['status'] || 'Status'}</span>
                     </button>
                 `;
                 $filter.append(btn);
@@ -89,7 +89,7 @@ function initProjectStatusTable() {
             if ($filter.find('.item-order').length === 0) {
                 let btn = `
                     <button class="btn btn-warning btn-sm item-order ms-2" data-type="status">
-                        <i class="fa-solid fa-sort"></i> <span>${langData['sort'] || 'Sort'}</span>
+                        <i class="fa-solid fa-sort me-2"></i><span>${langData['sort'] || 'Sort'}</span>
                     </button>
                 `;
                 $filter.append(btn);

@@ -23,27 +23,27 @@
         <div class="card-body">
             <div class="row g-2 mb-3">
                 <div class="col-sm-2">
-                    <p><i class="fa-regular fa-calendar"></i> <span data-i18n="date"></span></p>
+                    <p><i class="fa-regular fa-calendar me-2"></i><span data-i18n="date"></span></p>
                     <input type="text" class="form-control filter" id="filter_date" autocomplete="off">
                 </div>
                 <div class="col-sm-2">
-                    <p><i class="fa-solid fa-folder-tree"></i> <span data-i18n="project"></span></p>
+                    <p><i class="fa-solid fa-folder-tree me-2"></i><span data-i18n="project"></span></p>
                     <select id="filter_project" class="form-select filter"></select>
                 </div>
                 <div class="col-sm-2 col-6">
-                    <p><i class="fa-solid fa-tower-broadcast"></i> <span data-i18n="pole"></span></p>
+                    <p><i class="fa-solid fa-tower-broadcast me-2"></i><span data-i18n="pole"></span></p>
                     <select id="filter_pole" class="form-select filter"></select>
                 </div>
                 <div class="col-sm-2 col-6">
-                    <p><i class="fa-solid fa-tags"></i> <span data-i18n="type"></span></p>
+                    <p><i class="fa-solid fa-tags me-2"></i><span data-i18n="type"></span></p>
                     <select id="filter_type" class="form-select filter"></select>
                 </div>
                 <div class="col-sm-2 col-6">
-                    <p><i class="fa-solid fa-location-dot"></i> <span data-i18n="installation"></span></p>
+                    <p><i class="fa-solid fa-location-dot me-2"></i><span data-i18n="installation"></span></p>
                     <select id="filter_installation" class="form-select filter"></select>
                 </div>
                 <div class="col-sm-2 col-6">
-                    <p><i class="fa-solid fa-text-height"></i> <span data-i18n="level"></span></p>
+                    <p><i class="fa-solid fa-text-height me-2"></i><span data-i18n="level"></span></p>
                     <select id="filter_height" class="form-select filter"></select>
                 </div>
             </div>
@@ -52,7 +52,7 @@
 </div>
 <div class="container-fluid mt-3 mb-5">
     <div class="mb-3">
-        <button class="btn btn-sm btn-primary import-history"><i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="import_history"></button> 
+        <button class="btn btn-sm btn-primary import-history"><i class="fa-solid fa-clock-rotate-left me-2"></i><span data-i18n="import_history"></button> 
         <?php if (isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'administrator'): ?>
             <button class="btn btn-sm btn-danger clear-data">
                 <i class="fa-solid fa-trash-can"></i>

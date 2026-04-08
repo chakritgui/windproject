@@ -46,10 +46,10 @@ function openContent(slugFromParam, modeFromParam) {
             </div>
         </div>
     `);
+    const footerDefault = `Copyright © <img src="${BASE_URL}/public/images/iwind.png" alt="wind" class="footer-logo"> Corporation Limited`;
+    const footer_val = getTranslation(footer, lang, footerDefault);
     $modal.find('.modal-footer').html(`
-        <div class="d-flex justify-content-center align-items-center w-100">
-            ${typeof footer !== 'undefined' ? footer : ''}
-        </div>
+        <div class="d-flex justify-content-center align-items-center w-100">${footer_val}</div>
     `);
     $modal.modal('show');
     const urlParts  = window.location.pathname.split('/');
@@ -181,7 +181,7 @@ function renderGridItems(type, items) {
         const isGallery  = type === 'gallery';
         const badge = isVR
             ? `<div class="cv-vr-badge">
-                   <i class="fa-solid fa-rotate" style="font-size:9px;animation:spin 2s linear infinite;"></i> 360°
+                   <i class="fa-solid fa-rotate me-2" style="font-size:9px;animation:spin 2s linear infinite;"></i>360°
                </div>`
             : '';
         const overlay = `<div class="cv-thumb-overlay">

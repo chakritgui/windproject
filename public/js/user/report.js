@@ -324,8 +324,10 @@ function showReportPWA(data) {
             <h6 class="mb-0" data-i18n="analysis_report"></h6>
         </div>
     `);
+    const footerDefault = `Copyright © <img src="${BASE_URL}/public/images/iwind.png" alt="wind" class="footer-logo"> Corporation Limited`;
+    const footer_val = getTranslation(footer, lang, footerDefault);
     $modal.find(".modal-footer").html(`
-        <div class="d-flex justify-content-center align-items-center w-100">${footer}</div>
+        <div class="d-flex justify-content-center align-items-center w-100">${footer_val}</div>
     `);
     modalBody.html(`
         <div class="container-fluid mt-3 mb-3">

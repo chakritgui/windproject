@@ -83,7 +83,7 @@
                 disclaimer_id: btn.data('id'),
                 version: btn.data('version')
             };
-            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Processing...');
             $.post('<?php echo BASE_URL; ?>/api/accept-disclaimer', data, function(res) {
                 if (res.status === 'success') {
                     window.location.href = '<?php echo BASE_URL; ?>/home';

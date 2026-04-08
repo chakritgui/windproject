@@ -61,7 +61,7 @@
                     </div>
                     <div class="mt-3 pt-3" style="border-top: 1px solid rgba(255,255,255,0.2)">
                         <span class="text-white text-opacity-75 small">
-                            <i class="fa-solid fa-circle-check me-1"></i> <span data-i18n="active"></span>
+                            <i class="fa-solid fa-circle-check me-2"></i><span data-i18n="active"></span>
                         </span>
                     </div>
                 </div>
@@ -81,7 +81,7 @@
                     </div>
                     <div class="mt-3 pt-3" style="border-top: 1px solid rgba(255,255,255,0.2)">
                         <span class="text-white text-opacity-75 small">
-                            <i class="fa-solid fa-circle-dot me-1"></i> <span data-i18n="active"></span>
+                            <i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="active"></span>
                         </span>
                     </div>
                 </div>
@@ -101,7 +101,7 @@
                     </div>
                     <div class="mt-3 pt-3" style="border-top: 1px solid rgba(255,255,255,0.2)">
                         <span class="text-white text-opacity-75 small">
-                            <i class="fa-solid fa-location-dot me-1"></i> <span data-i18n="active"></span>
+                            <i class="fa-solid fa-location-dot me-2"></i><span data-i18n="active"></span>
                         </span>
                     </div>
                 </div>
@@ -142,7 +142,7 @@
         <div class="col-lg-12">
             <div class="card custom-card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold"><i class="fa-solid fa-wind text-info me-2"></i> <span data-i18n="wind_analytics"></span></h5>
+                    <h5 class="mb-0 fw-bold"><i class="fa-solid fa-wind text-info me-2"></i><span data-i18n="wind_analytics"></span></h5>
                     <span class="badge bg-light text-dark rounded-pill border" data-i18n="Real-timeData"></span>
                 </div>
                 <div class="card-body p-4">
@@ -212,7 +212,7 @@
     </div>
     <div class="card custom-card">
         <div class="card-header">
-            <h5 class="mb-0 fw-bold"><i class="fa-solid fa-clock-rotate-left text-info me-2"></i> <span data-i18n="usage_history"></span></h5>
+            <h5 class="mb-0 fw-bold"><i class="fa-solid fa-clock-rotate-left text-info me-2"></i><span data-i18n="usage_history"></span></h5>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive">

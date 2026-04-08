@@ -33,7 +33,7 @@ function initShortcut() {
                     $("#androidIcon").removeClass("obj-required");
                 }
                 if(d.manifestDate) {
-                    $(".shortcut-date").html(`<i class="fa-regular fa-calendar-check"></i> ${d.manifestDate}`);
+                    $(".shortcut-date").html(`<i class="fa-regular fa-calendar-check me-2"></i>${d.manifestDate}`);
                 }
             } else {
                 showError(langData['cannot_load']);

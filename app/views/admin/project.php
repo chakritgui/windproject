@@ -40,18 +40,17 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
         <div>
             <button class="btn btn-sm btn-outline-warning manage-project" data-id="">
-                <i class="fa-solid fa-folder-plus"></i> <span data-i18n="folder"></span>
+                <i class="fa-solid fa-folder-plus me-2"></i><span data-i18n="folder"></span>
             </button>
             <button class="btn btn-sm btn-outline-primary manage-content" data-id="">
-                <i class="fa-solid fa-file-circle-plus"></i> <span data-i18n="content"></span>
+                <i class="fa-solid fa-file-circle-plus me-2"></i><span data-i18n="content"></span>
             </button>
         </div>
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
             <div class="d-flex gap-2">
                 <div class="dropdown">
                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fa-solid fa-sort me-1"></i> 
-                        <span id="selectedSortLabel" data-i18n="newest"></span>
+                        <i class="fa-solid fa-sort me-2"></i><span id="selectedSortLabel" data-i18n="newest"></span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
                         <li>
@@ -75,7 +74,7 @@
     </div>
     <div class="mb-2 text-end">
         <button id="btnSaveSort" class="btn btn-success d-none">
-            <i class="fa-solid fa-floppy-disk"></i> <span data-i18n="save_ordering"></span>
+            <i class="fa-solid fa-floppy-disk me-2"></i><span data-i18n="save_ordering"></span>
         </button>
     </div>
     <div id="listView" class="bg-white rounded table-responsive">

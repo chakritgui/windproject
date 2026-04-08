@@ -55,8 +55,16 @@ function initWindTable() {
             if ($filter.find('.manage-wind').length === 0) {
                 let btn = `
                     <button class="btn btn-primary btn-sm manage-wind ms-2" data-id="">
-                        <i class="fa-solid fa-plus"></i> <span>${langData['import'] || "Import"}</span>
+                        <i class="fa-solid fa-plus me-2"></i><span>${langData['import'] || "Import"}</span>
                     </button>
+                `;
+                $filter.append(btn);
+            }
+            if ($filter.find('.example-inport').length === 0) {
+                let btn = `
+                    <a href="${BASE_URL}/excel/WindImportExample.xlsx" class="btn btn-success btn-sm example-inport ms-2" target="_blank">
+                        <i class="fa-solid fa-download me-2"></i><span>${langData['import_example'] || "Import Example"}</span>
+                    </a>
                 `;
                 $filter.append(btn);
             }

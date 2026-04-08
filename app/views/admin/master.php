@@ -18,47 +18,47 @@
     <ul class="nav nav-pills mb-4" id="mainTabs" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="contracts-tab" data-bs-toggle="pill" data-bs-target="#contracts" data-page="contracts" type="button">
-                <i class="fa-solid fa-file-lines"></i> <span data-i18n="contracts"></span>
+                <i class="fa-solid fa-file-lines me-2"></i><span data-i18n="contracts"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="group-tab" data-bs-toggle="pill" data-bs-target="#groups" data-page="group" type="button">
-                <i class="fa-solid fa-layer-group"></i> <span data-i18n="group"></span>
+                <i class="fa-solid fa-layer-group me-2"></i><span data-i18n="group"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="project-status-tab" data-bs-toggle="pill" data-bs-target="#project-status" data-page="project-status" type="button">
-                <i class="fa-solid fa-circle-dot"></i> <span data-i18n="project_status"></span>
+                <i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="project_status"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="projects-tab" data-bs-toggle="pill" data-bs-target="#projects" data-page="projects" type="button">
-                <i class="fa-solid fa-folder-tree"></i> <span data-i18n="projects"></span>
+                <i class="fa-solid fa-folder-tree me-2"></i><span data-i18n="projects"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="pole-types-tab" data-bs-toggle="pill" data-bs-target="#pole-types" data-page="types" type="button">
-                <i class="fa-solid fa-tags"></i> <span data-i18n="wind_measurement_equipment"></span>
+                <i class="fa-solid fa-tags me-2"></i><span data-i18n="wind_measurement_equipment"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="installation-tab" data-bs-toggle="pill" data-bs-target="#installation-tabs" data-page="installation" type="button">
-                <i class="fa-solid fa-location-dot"></i> <span data-i18n="installation"></span>
+                <i class="fa-solid fa-location-dot me-2"></i><span data-i18n="installation"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="level-tab" data-bs-toggle="pill" data-bs-target="#level" data-page="level" type="button">
-                <i class="fa-solid fa-signal"></i> <span data-i18n="level"></span>
+                <i class="fa-solid fa-signal me-2"></i><span data-i18n="level"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="poles-tab" data-bs-toggle="pill" data-bs-target="#poles" data-page="poles" type="button">
-                <i class="fa-solid fa-tower-broadcast"></i> <span data-i18n="poles"></span>
+                <i class="fa-solid fa-tower-broadcast me-2"></i><span data-i18n="poles"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="windturbine-tab" data-bs-toggle="pill" data-bs-target="#windturbine" data-page="windturbine" type="button">
-                <i class="bi bi-fan"></i> <span data-i18n="windturbine"></span>
+                <i class="bi bi-fan me-2"></i><span data-i18n="windturbine"></span>
             </button>
         </li>
     </ul>
@@ -68,7 +68,7 @@
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2">
-                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <p><i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="status"></span></p>
                             <select id="filter_status" class="form-select filter"></select>
                         </div>
                     </div>
@@ -98,7 +98,7 @@
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2">
-                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <p><i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="status"></span></p>
                             <select id="filter_group_status" class="form-select filter"></select>
                         </div>
                     </div>
@@ -124,7 +124,7 @@
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2">
-                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <p><i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="status"></span></p>
                             <select id="filter_projectstatus_status" class="form-select filter"></select>
                         </div>
                     </div>
@@ -151,19 +151,19 @@
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-file-lines"></i> <span data-i18n="contracts"></span></p>
+                            <p><i class="fa-solid fa-file-lines me-2"></i><span data-i18n="contracts"></span></p>
                             <select id="filter_contract" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="project_status"></span></p>
+                            <p><i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="project_status"></span></p>
                             <select id="filter_project_status" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-12">
-                            <p><i class="fa-solid fa-layer-group"></i></i> <span data-i18n="group"></span></p>
+                            <p><i class="fa-solid fa-layer-group me-2"></i></i><span data-i18n="group"></span></p>
                             <select id="filter_group" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <p><i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="status"></span></p>
                             <select id="filter_p_status" class="form-select filter"></select>
                         </div>
                     </div>
@@ -197,7 +197,7 @@
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2">
-                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <p><i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="status"></span></p>
                             <select id="filter_type_status" class="form-select filter"></select>
                         </div>
                     </div>
@@ -225,15 +225,15 @@
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2">
-                            <p><i class="fa-solid fa-folder-tree"></i> <span data-i18n="projects"></span></p>
+                            <p><i class="fa-solid fa-folder-tree me-2"></i><span data-i18n="projects"></span></p>
                             <select id="filter_installation_project" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-tags"></i> <span data-i18n="type"></span></p>
+                            <p><i class="fa-solid fa-tags me-2"></i><span data-i18n="type"></span></p>
                             <select id="filter_installation_type" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <p><i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="status"></span></p>
                             <select id="filter_installation_status" class="form-select filter"></select>
                         </div>
                     </div>
@@ -262,7 +262,7 @@
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2">
-                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <p><i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="status"></span></p>
                             <select id="filter_level_status" class="form-select filter"></select>
                         </div>
                     </div>
@@ -290,19 +290,19 @@
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-folder-tree"></i> <span data-i18n="projects"></span></p>
+                            <p><i class="fa-solid fa-folder-tree me-2"></i><span data-i18n="projects"></span></p>
                             <select id="filter_pole_project" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-tags"></i> <span data-i18n="type"></span></p>
+                            <p><i class="fa-solid fa-tags me-2"></i><span data-i18n="type"></span></p>
                             <select id="filter_pole_type" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-location-dot"></i> <span data-i18n="installation"></span></p>
+                            <p><i class="fa-solid fa-location-dot me-2"></i><span data-i18n="installation"></span></p>
                             <select id="filter_pole_installation" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <p><i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="status"></span></p>
                             <select id="filter_pole_status" class="form-select filter"></select>
                         </div>
                     </div>
@@ -334,11 +334,11 @@
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-folder-tree"></i> <span data-i18n="projects"></span></p>
+                            <p><i class="fa-solid fa-folder-tree me-2"></i><span data-i18n="projects"></span></p>
                             <select id="filter_windturbine_project" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <p><i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="status"></span></p>
                             <select id="filter_windturbine_status" class="form-select filter"></select>
                         </div>
                     </div>

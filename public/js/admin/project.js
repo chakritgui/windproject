@@ -118,11 +118,11 @@ function renderTable(data, isNewSearch) {
         const statusBody = `<span class="badge rounded-pill bg-${bg}-subtle text-${bg}">${langData[item.status] || item.status}</span>`;
         let typeHtml = '';
         if(item.sub_type === 'news') {
-            typeHtml = `<span class="badge rounded-pill text-bg-primary"><i class="fa-regular fa-newspaper"></i> <span>${langData['news'] || 'News'}</span></span>`;
+            typeHtml = `<span class="badge rounded-pill text-bg-primary"><i class="fa-regular fa-newspaper me-2"></i><span>${langData['news'] || 'News'}</span></span>`;
         } else if(item.sub_type === 'project') {
-            typeHtml = `<span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project"></i> <span>${langData['project'] || 'Project'}</span></span>`;
+            typeHtml = `<span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project me-2"></i><span>${langData['project'] || 'Project'}</span></span>`;
         } else if(item.sub_type === 'document') {
-            typeHtml = `<span class="badge rounded-pill text-bg-danger"><i class="fa-solid fa-folder-open"></i> <span>${langData['document'] || 'Document'}</span></span>`;
+            typeHtml = `<span class="badge rounded-pill text-bg-danger"><i class="fa-solid fa-folder-open me-2"></i><span>${langData['document'] || 'Document'}</span></span>`;
         }
         html += `
             <tr data-index="${globalIndex}" data-id="${item.id}" data-type="${item.type}" style="${item.type === 'content' || item.type === 'document' ? 'cursor:default;' : 'cursor:pointer;'}">
@@ -143,7 +143,7 @@ function renderTable(data, isNewSearch) {
                     <div class="fw-bold">
                         ${folder_name || '-'} ${badge}
                     </div>
-                    <div class="text-muted mt-2 small"><i class="fa-regular fa-calendar"></i> ${item.created_at}</div>
+                    <div class="text-muted mt-2 small"><i class="fa-regular fa-calendar me-2"></i>${item.created_at}</div>
                 </td>
                 <td>
                     ${(item.type === 'content' || item.type === 'document') ? typeHtml : ``}
@@ -262,7 +262,7 @@ function renderBreadcrumb() {
     currentPath.forEach((p, idx) => {
         const isHome = idx === 0;
         const isActive = idx === currentPath.length - 1;
-        const homeIcon = isHome ? '<i class="fa-solid fa-house me-1"></i> ' : '';
+        const homeIcon = isHome ? '<i class="fa-solid fa-house me-2"></i>' : '';
         let displayName = p.name;
         html += `
             <li class="breadcrumb-item ${isActive ? 'active' : ''}">

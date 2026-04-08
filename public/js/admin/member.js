@@ -120,7 +120,7 @@ function initMemberTable() {
             if ($filter.find('.manage-member').length === 0) {
                 let btn = `
                     <button class="btn btn-primary btn-sm manage-member ms-2" data-id="">
-                        <i class="fa-solid fa-plus"></i> <span>${langData['member'] || 'Member'}</span>
+                        <i class="fa-solid fa-plus me-2"></i><span>${langData['member'] || 'Member'}</span>
                     </button>
                 `;
                 $filter.append(btn);
@@ -934,7 +934,7 @@ $(document).on('click', '.manage-request', function () {
         `);
         modalEl.find(".modal-footer").html(`
             <button type="button" class="btn btn-success approved-request" data-id="${id}" data-member="${member_id}">
-                <i class="bi bi-save me-1"></i> ${langData['approved'] || "Confirm Approved"}
+                <i class="bi bi-save me-1 me-2"></i>${langData['approved'] || "Confirm Approved"}
             </button>
             <button type="button" class="btn btn-link text-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
         `);
@@ -1115,7 +1115,7 @@ function initPrivilegesTable() {
             if ($filter.find('.manage-disclaimer').length === 0) {
                 $filter.append(`
                     <button class="btn btn-primary btn-sm manage-privileges ms-2" data-id="0">
-                        <i class="fa-solid fa-plus"></i> <span>${langData['privileges'] || 'Privileges'}</span>
+                        <i class="fa-solid fa-plus me-2"></i><span>${langData['privileges'] || 'Privileges'}</span>
                     </button>
                 `);
             }
@@ -1192,9 +1192,9 @@ function renderMenuList(menus, selectedIds = []) {
             const isChecked = (selectedIds.length === 0) || selectedIds.includes(menu.id.toString()) ? 'checked' : '';
             html += `
             <div class="form-check mb-1 p-2 border-bottom-dashed hover-bg-light">
-                <input class="form-check-input ms-0 me-3" type="checkbox" value="${menu.id}" id="menu_${menu.id}" name="menu_access[]" ${isChecked}>
+                <input class="form-check-input ms-0 me-2" type="checkbox" value="${menu.id}" id="menu_${menu.id}" name="menu_access[]" ${isChecked}>
                 <label class="form-check-label d-flex align-items-center cursor-pointer" for="menu_${menu.id}">
-                    <i class="bi ${menu.icon || 'bi-circle'} fs-5 me-3 text-primary"></i> 
+                    <i class="bi ${menu.icon || 'bi-circle'} fs-5 me-2 text-primary"></i>
                     <div>
                         <div class="fw-bold">${menu.th || (menu.translations && menu.translations.th)}</div>
                         <div class="small text-muted" style="font-size: 0.75rem;">${menu.en || (menu.translations && menu.translations.en)}</div>
@@ -1242,7 +1242,7 @@ $(document).on('click', '.save-config', function() {
             showError('Server Error: ' + status);
         },
         complete: function() {
-            $btn.prop('disabled', false).html('<i class="bi bi-save me-1"></i> ' + (langData['save'] || "บันทึก"));
+            $btn.prop('disabled', false).html('<i class="bi bi-save me-2"></i>' + (langData['save'] || "บันทึก"));
         }
     });
 });

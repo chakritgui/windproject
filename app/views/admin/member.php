@@ -52,15 +52,15 @@
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2">
-                            <p><i class="fa-solid fa-user-gear"></i> <span data-i18n="role"></span></p>
+                            <p><i class="fa-solid fa-user-gear me-2"></i><span data-i18n="role"></span></p>
                             <select id="filter_role" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2">
-                            <p><i class="fa-solid fa-user-shield me-2"></i> <span data-i18n="user_privileges"></span></p>
+                            <p><i class="fa-solid fa-user-shield me-2"></i><span data-i18n="user_privileges"></span></p>
                             <select id="filter_privileges" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2">
-                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <p><i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="status"></span></p>
                             <select id="filter_status" class="form-select filter"></select>
                         </div>
                     </div>
@@ -91,27 +91,27 @@
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2">
-                            <p><i class="fa-regular fa-calendar"></i> <span data-i18n="date"></span></p>
+                            <p><i class="fa-regular fa-calendar me-2"></i><span data-i18n="date"></span></p>
                             <input type="text" class="form-control filter-history" id="filter_history_date" autocomplete="off">
                         </div>
                         <div class="col-sm-2">
-                            <p><i class="fa-solid fa-user"></i> <span data-i18n="member"></span></p>
+                            <p><i class="fa-solid fa-user me-2"></i><span data-i18n="member"></span></p>
                             <select id="filter_history_member" class="form-select filter-history"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-user-gear"></i> <span data-i18n="role"></span></p>
+                            <p><i class="fa-solid fa-user-gear me-2"></i><span data-i18n="role"></span></p>
                             <select id="filter_history_role" class="form-select filter-history"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-arrow-right-to-bracket"></i> <span data-i18n="device"></span></p>
+                            <p><i class="fa-solid fa-arrow-right-to-bracket me-2"></i><span data-i18n="device"></span></p>
                             <select id="filter_history_device" class="form-select filter-history"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-regular fa-window-maximize"></i> <span data-i18n="browsers"></span></p>
+                            <p><i class="fa-regular fa-window-maximize me-2"></i><span data-i18n="browsers"></span></p>
                             <select id="filter_history_browser" class="form-select filter-history"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-regular fa-clock"></i> <span data-i18n="timezone"></span></p>
+                            <p><i class="fa-regular fa-clock me-2"></i><span data-i18n="timezone"></span></p>
                             <select id="filter_history_timezone" class="form-select filter-history"></select>
                         </div>
                     </div>
@@ -143,15 +143,15 @@
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2">
-                            <p><i class="fa-regular fa-calendar"></i> <span data-i18n="date"></span></p>
+                            <p><i class="fa-regular fa-calendar me-2"></i><span data-i18n="date"></span></p>
                             <input type="text" class="form-control filter-request" id="filter_request_date" autocomplete="off">
                         </div>
                         <div class="col-sm-2">
-                            <p><i class="fa-solid fa-user"></i> <span data-i18n="member"></span></p>
+                            <p><i class="fa-solid fa-user me-2"></i><span data-i18n="member"></span></p>
                             <select id="filter_request_member" class="form-select filter-request"></select>
                         </div>
                         <div class="col-sm-2">
-                            <p><i class="fa-solid fa-user-gear"></i> <span data-i18n="role"></span></p>
+                            <p><i class="fa-solid fa-user-gear me-2"></i><span data-i18n="role"></span></p>
                             <select id="filter_request_role" class="form-select filter-request"></select>
                         </div>
                     </div>
@@ -161,15 +161,15 @@
                 <div class="btn-group w-100 shadow-sm" role="group" aria-label="Status selection">
                     <input type="radio" class="btn-check" name="status" id="pending" value="pending" autocomplete="off" checked>
                     <label class="btn btn-outline-warning" for="pending">
-                        <i class="fa-solid fa-hourglass-half"></i> <span data-i18n="pending"></span>
+                        <i class="fa-solid fa-hourglass-half me-2"></i><span data-i18n="pending"></span>
                     </label>
                     <input type="radio" class="btn-check" name="status" id="approved" value="approved" autocomplete="off">
                     <label class="btn btn-outline-success" for="approved">
-                        <i class="fa-solid fa-check"></i> <span data-i18n="approved"></span>
+                        <i class="fa-solid fa-check me-2"></i><span data-i18n="approved"></span>
                     </label>
                     <input type="radio" class="btn-check" name="status" id="rejected" value="rejected" autocomplete="off">
                     <label class="btn btn-outline-danger" for="rejected">
-                        <i class="fa-solid fa-xmark"></i> <span data-i18n="rejected"></span>
+                        <i class="fa-solid fa-xmark me-2"></i><span data-i18n="rejected"></span>
                     </label>
                 </div>
             </div>

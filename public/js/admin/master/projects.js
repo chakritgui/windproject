@@ -74,8 +74,7 @@ function initProjectsTable() {
                 let name = data || "-";
                 return `
                     <div class="d-flex align-items-center">
-                        <i class="fa-solid fa-circle me-2" style="color: ${color}; font-size: 0.8rem;"></i> 
-                        <span>${name.replace(/\r\n|\n/g, '<br />')}</span>
+                        <i class="fa-solid fa-circle me-2" style="color: ${color}; font-size: 0.8rem;"></i><span>${name.replace(/\r\n|\n/g, '<br />')}</span>
                     </div>
                 `;
             }
@@ -149,14 +148,14 @@ function initProjectsTable() {
             });
             if ($filter.find('.manage-project[data-id=""]').length === 0) {
                 let btn = `
-                    <button class="btn btn-primary btn-sm manage-project" data-id=""><i class="fa-solid fa-plus"></i> <span>${langData['project'] || 'Project'}</span></button>
+                    <button class="btn btn-primary btn-sm manage-project" data-id=""><i class="fa-solid fa-plus me-2"></i><span>${langData['project'] || 'Project'}</span></button>
                 `;
                 $filter.append(btn);
             }
             if ($filter.find('.item-order').length === 0) {
                 let btn = `
                     <button class="btn btn-warning btn-sm item-order ms-2" data-type="project">
-                        <i class="fa-solid fa-sort"></i> <span>${langData['sort'] || 'Sort'}</span>
+                        <i class="fa-solid fa-sort me-2"></i><span>${langData['sort'] || 'Sort'}</span>
                     </button>
                 `;
                 $filter.append(btn);

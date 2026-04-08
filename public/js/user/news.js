@@ -69,19 +69,17 @@ function buildAttachments(item) {
     let html = '';
     if (parseInt(item.count_attachment) > 0) {
         html += `<span class="att-badge att-badge-doc">
-            <i class="fa-solid fa-paperclip" style="font-size:9px;"></i>
-            <span data-i18n="document">${t('document')}</span>
+            <i class="fa-solid fa-paperclip me-2" style="font-size:9px;"></i><span data-i18n="document">${t('document')}</span>
         </span>`;
     }
     if (parseInt(item.count_image) > 0) {
         html += `<span class="att-badge att-badge-img">
-            <i class="fa-solid fa-images" style="font-size:9px;"></i>
-            <span data-i18n="image">${t('image')}</span>
+            <i class="fa-solid fa-images me-2" style="font-size:9px;"></i><span data-i18n="image">${t('image')}</span>
         </span>`;
     }
     if (parseInt(item.count_image360) > 0) {
         html += `<span class="att-badge att-badge-vr">
-            <i class="fa-solid fa-vr-cardboard" style="font-size:9px;"></i> VR
+            <i class="fa-solid fa-vr-cardboard me-2" style="font-size:9px;"></i>VR
         </span>`;
     }
     return html;

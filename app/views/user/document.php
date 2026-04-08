@@ -38,10 +38,10 @@
             </div>
             <div class="view-group">
                 <button class="view-btn active" id="vList" onclick="setView('list')" title="List View">
-                    <i class="fa-solid fa-list"></i> <span data-i18n="list"></span>
+                    <i class="fa-solid fa-list me-2"></i><span data-i18n="list"></span>
                 </button>
                 <button class="view-btn" id="vGrid" onclick="setView('grid')" title="Grid View">
-                    <i class="fa-solid fa-th-large"></i> <span data-i18n="grid"></span>
+                    <i class="fa-solid fa-th-large me-2"></i><span data-i18n="grid"></span>
                 </button>
             </div>
             <div class="ms-auto">

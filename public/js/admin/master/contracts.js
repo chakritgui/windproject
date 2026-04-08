@@ -111,7 +111,7 @@ function initContractsTable() {
             if ($filter.find('.manage-contract[data-id=""]').length === 0) {
                 let btn = `
                     <button class="btn btn-primary btn-sm manage-contract ms-2" data-id="">
-                        <i class="fa-solid fa-plus"></i> <span>${langData['contract'] || 'Contract'}</span>
+                        <i class="fa-solid fa-plus me-2"></i><span>${langData['contract'] || 'Contract'}</span>
                     </button>
                 `;
                 $filter.append(btn);
@@ -119,7 +119,7 @@ function initContractsTable() {
             if ($filter.find('.item-order').length === 0) {
                 let btn = `
                     <button class="btn btn-warning btn-sm item-order ms-2" data-type="contract">
-                        <i class="fa-solid fa-sort"></i> <span>${langData['sort'] || 'Sort'}</span>
+                        <i class="fa-solid fa-sort me-2"></i><span>${langData['sort'] || 'Sort'}</span>
                     </button>
                 `;
                 $filter.append(btn);

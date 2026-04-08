@@ -168,11 +168,11 @@ function renderView(data, isNewSearch) {
         }
         let typeHtml = ``;
          if(item.sub_type === 'news') {
-            typeHtml = `<span class="badge rounded-pill text-bg-primary"><i class="fa-regular fa-newspaper"></i> ${langData['news'] || 'News'}</span>`;
+            typeHtml = `<span class="badge rounded-pill text-bg-primary"><i class="fa-regular fa-newspaper me-2"></i>${langData['news'] || 'News'}</span>`;
         } else if(item.sub_type === 'project') {
-            typeHtml = `<span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project"></i> ${langData['project'] || 'Project'}</span>`;
+            typeHtml = `<span class="badge rounded-pill text-bg-warning"><i class="fa-solid fa-diagram-project me-2"></i>${langData['project'] || 'Project'}</span>`;
         } else {
-            typeHtml = `<span class="badge rounded-pill text-bg-danger"><i class="fa-solid fa-folder-open"></i> ${langData['document'] || 'Document'}</span>`;
+            typeHtml = `<span class="badge rounded-pill text-bg-danger"><i class="fa-solid fa-folder-open me-2"></i>${langData['document'] || 'Document'}</span>`;
         }
         let icon = '';
         if(item.sub_type === 'news') {
@@ -202,19 +202,18 @@ function renderView(data, isNewSearch) {
                         </div>
                         ${isContent || item.sub_type === 'document' ? `
                             <div class="small text-muted mt-1">
-                                <i class="fa-regular fa-calendar"></i> ${item.created_at}
+                                <i class="fa-regular fa-calendar me-2"></i>${item.created_at}
                             </div>
                             <div style="position: absolute; top: 10px; right: 10px;">${typeHtml}</div>
                             <div class="mt-2">${badgeHtml}</div>
                             ${(item.sub_type === 'document') ? `
                                 <button class="dl-btn download-btn" data-id="${item.content_id}" data-path="${(item.slug)}" data-file-name="${(item.title || '')}">
-                                    <i class="fa-solid fa-download"></i>
-                                    <span data-i18n="download">${langData['download'] || 'Download'}</span>
+                                    <i class="fa-solid fa-download me-2"></i><span data-i18n="download">${langData['download'] || 'Download'}</span>
                                 </button>    
                             ` : ``}
                         ` : `
                             <div class="small text-muted mt-1">
-                                <i class="fa-regular fa-calendar"></i> ${item.created_at}
+                                <i class="fa-regular fa-calendar me-2"></i>${item.created_at}
                             </div>
                         `}
                     </div>
@@ -241,7 +240,7 @@ function renderView(data, isNewSearch) {
                             </div>
                         ` : ` `}
                         <div class="small text-muted">
-                            <i class="fa-regular fa-calendar"></i> ${item.created_at}
+                            <i class="fa-regular fa-calendar me-2"></i>${item.created_at}
                         </div>
                     </div>
                     <div class="ms-2">

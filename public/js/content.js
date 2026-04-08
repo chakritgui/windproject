@@ -10,9 +10,9 @@ function langTab(lang, d, isDefault = false) {
     const renderTranslateMethod = (method) => {
         if (status === 'wait') return ''; 
         if (method === 'ai') {
-            return `<span class="badge bg-warning-subtle text-warning border border-warning-subtle" title="AI"><i class="fa-solid fa-wand-magic-sparkles"></i> AI</span>`;
+            return `<span class="badge bg-warning-subtle text-warning border border-warning-subtle" title="AI"><i class="fa-solid fa-wand-magic-sparkles me-2"></i>AI</span>`;
         } else if (method === 'self') {
-            return `<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" title="Manual"><i class="fa-solid fa-language"></i> Self</span>`;
+            return `<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" title="Manual"><i class="fa-solid fa-language me-2"></i>Self</span>`;
         }
         return '';
     };

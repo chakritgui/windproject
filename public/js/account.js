@@ -209,8 +209,7 @@ function updateDisplay(fieldName) {
             ${(fieldName === 'password') ? "••••••••••••" : displayValue}
         </span>
         <button class="btn-edit ${permissionKey} ${hideClass}" onclick="editField('${fieldName}')">
-            <i class="fa-solid fa-pen-to-square me-1"></i> 
-            <span data-i18n="edit"></span>
+            <i class="fa-solid fa-pen-to-square me-2"></i><span data-i18n="edit"></span>
         </button>
     `;
     if (typeof updateText === 'function') updateText(valueDiv);
@@ -327,7 +326,7 @@ function loadUsageHistory() {
                         <div class="activity-card premium-card">
                             <div class="activity-header d-flex justify-content-between align-items-center">
                                 <div class="date-badge">
-                                    <i class="fa-regular fa-calendar me-1"></i> ${displayDate}
+                                    <i class="fa-regular fa-calendar me-2"></i>${displayDate}
                                 </div>
                                 ${historyOffset === 0 && index === 0 ? `<span class="status-badge latest" data-i18n="latest">ล่าสุด</span>` : ``}
                             </div>

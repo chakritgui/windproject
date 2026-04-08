@@ -22,12 +22,12 @@
     <ul class="nav nav-pills mb-4" id="mainTabs" role="tablist">
          <li class="nav-item" role="presentation">
             <button class="nav-link active" id="document-tab" data-bs-toggle="pill" data-bs-target="#document_management" data-page="document" type="button">
-                <i class="fa-solid fa-folder-tree"></i> <span data-i18n="document"></span>
+                <i class="fa-solid fa-folder-tree me-2"></i><span data-i18n="document"></span>
             </button>
         </li>
         <li class="nav-item" role="presentation">
             <button class="nav-link" id="history-tab" data-bs-toggle="pill" data-bs-target="#download_history" data-page="history" type="button">
-                <i class="fa-solid fa-clock-rotate-left"></i> <span data-i18n="download_history"></span>
+                <i class="fa-solid fa-clock-rotate-left me-2"></i><span data-i18n="download_history"></span>
             </button>
         </li>
     </ul>
@@ -37,31 +37,31 @@
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2">
-                            <p><i class="fa-regular fa-calendar"></i> <span data-i18n="document_date"></span></p>
+                            <p><i class="fa-regular fa-calendar me-2"></i><span data-i18n="document_date"></span></p>
                             <input type="text" class="form-control filter" id="filter_date" autocomplete="off">
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-file-lines"></i> <span data-i18n="contract"></span></p>
+                            <p><i class="fa-solid fa-file-lines me-2"></i><span data-i18n="contract"></span></p>
                             <select id="filter_contract" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-folder-tree"></i> <span data-i18n="project"></span></p>
+                            <p><i class="fa-solid fa-folder-tree me-2"></i><span data-i18n="project"></span></p>
                             <select id="filter_project" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-tags"></i> <span data-i18n="wind_measurement_equipment"></span></p>
+                            <p><i class="fa-solid fa-tags me-2"></i><span data-i18n="wind_measurement_equipment"></span></p>
                             <select id="filter_type" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6 d-none">
-                            <p><i class="fa-solid fa-location-dot"></i> <span data-i18n="installation"></span></p>
+                            <p><i class="fa-solid fa-location-dot me-2"></i><span data-i18n="installation"></span></p>
                             <select id="filter_installations" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6 d-none">
-                            <p><i class="fa-solid fa-tower-broadcast"></i> <span data-i18n="poles"></span></p>
+                            <p><i class="fa-solid fa-tower-broadcast me-2"></i><span data-i18n="poles"></span></p>
                             <select id="filter_poles" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-circle-dot"></i> <span data-i18n="status"></span></p>
+                            <p><i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="status"></span></p>
                             <select id="filter_status" class="form-select filter"></select>
                         </div>
                     </div>
@@ -89,23 +89,23 @@
                 <div class="card-body">
                     <div class="row g-2 mb-3">
                         <div class="col-sm-2">
-                            <p><i class="fa-regular fa-calendar"></i> <span data-i18n="document_date"></span></p>
+                            <p><i class="fa-regular fa-calendar me-2"></i><span data-i18n="document_date"></span></p>
                             <input type="text" class="form-control filter-history" id="filter_history_date" autocomplete="off">
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-folder-tree"></i> <span data-i18n="document"></span></p>
+                            <p><i class="fa-solid fa-folder-tree me-2"></i><span data-i18n="document"></span></p>
                             <select id="filter_history_document" class="form-select filter-history"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-user"></i> <span data-i18n="member"></span></p>
+                            <p><i class="fa-solid fa-user me-2"></i><span data-i18n="member"></span></p>
                             <select id="filter_history_member" class="form-select filter-history"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-arrow-right-to-bracket"></i> <span data-i18n="device"></span></p>
+                            <p><i class="fa-solid fa-arrow-right-to-bracket me-2"></i><span data-i18n="device"></span></p>
                             <select id="filter_history_device" class="form-select filter-history"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-regular fa-window-maximize"></i> <span data-i18n="browsers"></span></p>
+                            <p><i class="fa-regular fa-window-maximize me-2"></i><span data-i18n="browsers"></span></p>
                             <select id="filter_history_browser" class="form-select filter-history"></select>
                         </div>
                     </div>

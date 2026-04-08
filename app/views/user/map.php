@@ -187,14 +187,14 @@
                     <img src="<?=BASE_URL?>/public/images/wind-thumb.jpg" alt="Satellite view" class="thumb-sat">
                     <div class="mode-check"><i class="fa-solid fa-check"></i></div>
                     <div class="mode-label">
-                        <i class="fa-solid fa-wind"></i> <span data-i18n="wind"></span>
+                        <i class="fa-solid fa-wind me-2"></i><span data-i18n="wind"></span>
                     </div>
                 </div>
                 <div class="map-mode-card" id="mapModeSat" onclick="setMapMode('satellite')">
                     <img src="<?=BASE_URL?>/public/images/satellite-thumb.jpg" alt="Satellite view" class="thumb-sat">
                     <div class="mode-check"><i class="fa-solid fa-check"></i></div>
                     <div class="mode-label">
-                        <i class="fa-solid fa-earth-asia"></i> <span data-i18n="satellite"></span>
+                        <i class="fa-solid fa-earth-asia me-2"></i><span data-i18n="satellite"></span>
                     </div>
                 </div>
             </div>

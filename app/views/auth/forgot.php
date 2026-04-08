@@ -28,11 +28,11 @@
                 <div class="tab-pane fade" id="content_form">
                     <p class="small text-center mb-3" data-i18n="fill_form_request"></p>
                     <div class="mb-2">
-                        <label class="small mb-3 required"><i class="fa-solid fa-envelope"></i> <span data-i18n="username_or_email"></span></label>
+                        <label class="small mb-3 required"><i class="fa-solid fa-envelope me-2"></i><span data-i18n="username_or_email"></span></label>
                         <input type="email" class="form-control obj-required" id="request_email">
                     </div>
                     <div class="mb-3">
-                        <label class="small mb-3 required"><i class="fa-solid fa-file-pen"></i> <span data-i18n="submission"></span></label>
+                        <label class="small mb-3 required"><i class="fa-solid fa-file-pen me-2"></i><span data-i18n="submission"></span></label>
                         <textarea class="form-control obj-required" id="request_remark" rows="4" style="height: 75px;"></textarea>
                     </div>
                     <div class="mb-1 request-result small"></div>
