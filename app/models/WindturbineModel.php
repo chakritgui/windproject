@@ -6,7 +6,7 @@ class WindturbineModel {
     }
     public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 3, $orderDir = 'desc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
-        $sqlTotal = "SELECT COUNT(*) FROM wp_windturbine w {$where}";
+        $sqlTotal = "SELECT COUNT(*) FROM wp_windturbine w LEFT JOIN wp_project p ON p.project_id = w.project_id {$where}";
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = (int)$stmt->fetchColumn();
@@ -59,8 +59,12 @@ class WindturbineModel {
         $where  = " WHERE w.status != 'deleted' ";
         $params = [];
         if (!empty($filters['status'])) {
-            $where .= " AND status = :status";
+            $where .= " AND w.status = :status";
             $params[':status'] = $filters['status'];
+        }
+        if (!empty($filters['project'])) {
+            $where .= " AND w.project_id = :status";
+            $params[':project'] = $filters['project'];
         }
         if (!empty($search)) {
             $where .= " AND type_name LIKE :search ";
