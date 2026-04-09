@@ -82,4 +82,11 @@ class WindturbineController extends BaseController {
             ]);
         }
     }
+    public function filter() {
+        $page = intval($_POST['page'] ?? 0);
+        $limit = intval($_POST['limit'] ?? 10);
+        $searchTerm = $_POST['searchTerm'] ?? '';
+        $type = $_POST['type'] ?? '';
+        $this->json(['status'=>true , 'data' => $this->model->filter($page, $limit, $type, $searchTerm)]);
+    }
 }
