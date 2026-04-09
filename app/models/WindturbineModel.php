@@ -63,7 +63,7 @@ class WindturbineModel {
             $params[':status'] = $filters['status'];
         }
         if (!empty($filters['project'])) {
-            $where .= " AND w.project_id = :status";
+            $where .= " AND w.project_id = :project";
             $params[':project'] = $filters['project'];
         }
         if (!empty($search)) {
