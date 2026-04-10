@@ -15,7 +15,7 @@ function initMap() {
                 fetchJSON(`${BASE_URL}/api/master`),
                 fetchJSON(`${BASE_URL}/api/wind.boundary`)
             ]);
-            const masterData = masterResult.status === 'fulfilled' ? masterResult.value : null;
+            const masterData   = masterResult.status === 'fulfilled' ? masterResult.value : null;
             const windAreaData = windAreaResult.status === 'fulfilled' ? windAreaResult.value : null;
             if (!masterData) {
                 console.error("Master data is required but failed to load.");
@@ -27,39 +27,22 @@ function initMap() {
                 applyMasterSettings(masterData);
                 show_country_line = masterData.show_country_line;
                 country_layers_data = masterData.country_layers_data;
-                const map_viewsVal = localStorage.getItem('map_views') || DEFAULT_MODE;
-                toggleSatellite(map_viewsVal);
-                $('#mapModeWind').toggleClass('active', map_viewsVal === 'wind');
-                $('#mapModeSat').toggleClass('active',   map_viewsVal === 'satellite');
-                const labelsRaw = localStorage.getItem('labels');
-                const labels = labelsRaw !== null ? (labelsRaw === 'true') : (masterData.labels === 'yes');
-                toggleLabel(labels);
-                $('#toggle-label').prop('checked', labels);
-                const windturbineRaw = localStorage.getItem('windturbine');
-                const windturbines = windturbineRaw !== null ? (windturbineRaw === 'true') : windturbine;
-                toggleWindTurbine(windturbines);
-                $('#toggle-windturbine').prop('checked', windturbines);
-                const animationRaw = localStorage.getItem('animation');
-                const animationVal = animationRaw !== null ? (animationRaw === 'true') : animation;
-                toggleAnimation(animationVal);
-                $('#toggle-animation').prop('checked', animationVal);
-                const equipmentRaw = localStorage.getItem('equipment');
-                const equipments = equipmentRaw !== null ? (equipmentRaw === 'true') : equipment;
-                toggleEquipment(equipments);
-                $('#toggle-equipment').prop('checked', equipments);
-                if (show_country_line === 'show' && country_layers_data) {
-                    _drawCountryLines(country_layers_data);
-                }
-                const focus = getLocalBool('focus', false);
-                toggleFocus(focus);
-                $('#toggle-focus').prop('checked', focus);
-                const winds = getLocalBool('winds', true);
-                windOn = winds;
-                $('#toggle-wind-values').prop('checked', winds);
-                toggleWind(winds);
             }
             await loadPoles();
             await loadWindTurbines();
+            const mode = localStorage.getItem('map_views') || DEFAULT_MODE;
+            toggleSatellite(mode);
+            $('#mapModeWind').toggleClass('active', mode === 'wind');
+            $('#mapModeSat').toggleClass('active',  mode === 'satellite');
+            const labels = getLocalBool('labels', masterData?.labels === 'yes');
+            toggleLabel(labels);
+            $('#toggle-label').prop('checked', labels);
+            const animationVal = getLocalBool('animation', animation);
+            toggleAnimation(animationVal);
+            $('#toggle-animation').prop('checked', animationVal);
+            if (show_country_line === 'show' && country_layers_data) {
+                _drawCountryLines(country_layers_data);
+            }
         } catch (error) {
             console.error("Initialization Error:", error);
         }

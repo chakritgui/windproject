@@ -716,25 +716,46 @@ function toggleWindTurbine(isOn) {
 }
 function toggleSatellite(mode) {
     if (!map) return;
-    if (mode === 'satellite') {
+    const isSatellite = mode === 'satellite';
+    if (isSatellite) {
         if (!satelliteLayer) {
-            satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: 'Tiles &copy; Esri',
-                maxZoom: 18
-            });
+            satelliteLayer = L.tileLayer(
+                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                { attribution: 'Tiles &copy; Esri', maxZoom: 18 }
+            );
         }
         if (!map.hasLayer(satelliteLayer)) satelliteLayer.addTo(map);
-        windyAPI?.store.set('overlay', ''); 
+        windyAPI?.store.set('overlay', null);
         windyAPI?.store.set('graticule', false);
-        map.setMaxZoom(18); 
-        if (allHoles.length > 0) toggleHoles(false, allHoles);
+        toggleHoles(false, allHoles);
+        toggleWindTurbine(false);
+        toggleFocus(false);
+        toggleEquipment(false);
+        toggleWind(false);
+        $(".is_wind").addClass("d-none");
     } else {
-        if (satelliteLayer && map.hasLayer(satelliteLayer)) map.removeLayer(satelliteLayer);
-        windyAPI?.store.set('graticule', false);
+        if (satelliteLayer && map.hasLayer(satelliteLayer)) {
+            map.removeLayer(satelliteLayer);
+        }
         windyAPI?.store.set('overlay', 'wind');
-        map.setMaxZoom(11); 
-        if (allHoles.length > 0) toggleHoles(true, allHoles);
+        windyAPI?.store.set('graticule', false);
+        const windturbines = getLocalBool('windturbine', windturbine);
+        const equipments   = getLocalBool('equipment', equipment);
+        const focus        = getLocalBool('focus', false);
+        const winds        = getLocalBool('winds', true);
+        toggleHoles(true, allHoles);
+        toggleWindTurbine(windturbines);
+        toggleEquipment(equipments);
+        toggleFocus(focus);
+        toggleWind(winds);
+        $('#toggle-windturbine').prop('checked', windturbines);
+        $('#toggle-equipment').prop('checked', equipments);
+        $('#toggle-focus').prop('checked', focus);
+        $('#toggle-wind-values').prop('checked', winds);
+        $(".is_wind").removeClass("d-none");
     }
+    map.setMaxZoom(isSatellite ? 18 : 11);
+    map.setZoom(Math.min(map.getZoom(), map.getMaxZoom()));
 }
 function _buildTurbineIcon(size) { 
     const iconUrl = (globalWindturbineIcon && globalWindturbineIcon.url) ? `${BASE_URL}/${globalWindturbineIcon.url}` : '';
