@@ -229,13 +229,13 @@
             $router->post('/api/type.get', 'MapController@type');
             $router->post('/api/installations.get', 'MapController@station');
             $router->post('/api/windturbines.get', 'MapController@windturbines');
-            $router->get('/api/weather.proxy', 'MapController@weatherProxy');
             $router->get('/api/weather.current', 'MapController@weatherCurrent');
             $router->post('/api/poles.stats', 'PoleController@polestats');
             $router->post('/api/poles.val', 'PoleController@poleval');
             $router->post('/api/heght.level', 'PoleController@level');
             $router->post('/api/poles.infos', 'PoleController@info');
             $router->post('/api/project.poles', 'PoleController@polesList');
+            $router->get('/api/wind/latest', 'MapController@getLatestWind');
         }
     }
     $router->post('/api/menu.load', 'MenuController@load');

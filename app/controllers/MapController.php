@@ -58,88 +58,6 @@ class  MapController extends BaseController {
     public function windturbines() {
         $this->json($this->model->windturbines());
     }
-    public function weatherProxy() {
-        $lat    = $_GET['latitude']  ?? '';
-        $lng    = $_GET['longitude'] ?? '';
-        $apiKey = 'bb3dbebb270f08db6036bb5c4d01cc70';
-        if (!$lat || !$lng) {
-            http_response_code(400);
-            echo json_encode(['error' => true, 'reason' => 'Missing coordinates']);
-            return;
-        }
-        $lat = preg_replace('/[^0-9.,\-]/', '', $lat);
-        $lng = preg_replace('/[^0-9.,\-]/', '', $lng);
-        $latArr   = explode(',', $lat);
-        $lngArr   = explode(',', $lng);
-        $CACHE_TTL = 7200;
-        $cacheDir  = sys_get_temp_dir() . '/wind_cache';
-        if (!is_dir($cacheDir)) mkdir($cacheDir, 0755, true);
-        $results    = [];
-        $fetchQueue = [];
-        foreach ($latArr as $i => $la) {
-            $lo        = trim($lngArr[$i]);
-            $la        = trim($la);
-            $cacheKey  = round((float)$la, 2) . '_' . round((float)$lo, 2);
-            $cacheFile = "{$cacheDir}/{$cacheKey}.json";
-            if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $CACHE_TTL) {
-                $results[$i] = json_decode(file_get_contents($cacheFile), true);
-            } else {
-                $results[$i]    = null;
-                $fetchQueue[$i] = ['lat' => $la, 'lng' => $lo, 'cacheFile' => $cacheFile];
-            }
-        }
-        if (!empty($fetchQueue)) {
-            $multiHandle = curl_multi_init();
-            $curlHandles = [];
-            foreach ($fetchQueue as $i => $item) {
-                $url = "https://api.openweathermap.org/data/2.5/weather"
-                    . "?lat={$item['lat']}&lon={$item['lng']}&appid={$apiKey}&units=metric";
-                $ch  = curl_init($url);
-                curl_setopt_array($ch, [
-                    CURLOPT_RETURNTRANSFER => true,
-                    CURLOPT_TIMEOUT        => 10,
-                ]);
-                curl_multi_add_handle($multiHandle, $ch);
-                $curlHandles[$i] = $ch;
-            }
-            $running = null;
-            do {
-                curl_multi_exec($multiHandle, $running);
-                curl_multi_select($multiHandle);
-            } while ($running > 0);
-            foreach ($fetchQueue as $i => $item) {
-                $ch       = $curlHandles[$i];
-                $res      = curl_multi_getcontent($ch);
-                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_multi_remove_handle($multiHandle, $ch);
-                curl_close($ch);
-                if ($httpCode === 200) {
-                    $json   = json_decode($res, true);
-                    $record = [
-                        'current' => [
-                            'wind_speed_100m'     => round($json['wind']['speed'] ?? 0, 2),
-                            'wind_direction_100m' => $json['wind']['deg']          ?? 0,
-                            'wind_gusts_10m'      => round($json['wind']['gust']   ?? 0, 2),
-                        ]
-                    ];
-                    file_put_contents($item['cacheFile'], json_encode($record));
-                    $results[$i] = $record;
-                } elseif ($httpCode === 429 && file_exists($item['cacheFile'])) {
-                    $results[$i] = json_decode(file_get_contents($item['cacheFile']), true);
-                } else {
-                    $results[$i] = ['current' => [
-                        'wind_speed_100m'     => null,
-                        'wind_direction_100m' => null,
-                        'wind_gusts_10m'      => null,
-                    ]];
-                }
-            }
-            curl_multi_close($multiHandle);
-            ksort($results);
-        }
-        header('Content-Type: application/json');
-        echo json_encode(count($results) === 1 ? $results[0] : array_values($results));
-    }
     public function weatherCurrent() {
         $lat = $_GET['lat'] ?? '';
         $lon = $_GET['lon'] ?? '';
@@ -201,5 +119,21 @@ class  MapController extends BaseController {
         $json = json_encode($result);
         file_put_contents($cacheFile, $json);
         echo $json;
+    }
+    public function getLatestWind() {
+        header('Content-Type: application/json');
+        try {
+            $data = $this->model->getLatestWind();
+            echo json_encode([
+                'status' => true,
+                'data' => $data
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 }

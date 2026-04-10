@@ -304,4 +304,22 @@ class MapModel{
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    public function getLatestWind() {
+        $sql = "SELECT station_id,wind_speed_100m,wind_direction_100m,wind_speed_120m,wind_direction_120m,calculated_150m,calculated_200m FROM wp_wind_data";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $result = [];
+        foreach ($rows as $row) {
+            $result[$row['station_id']] = [
+                'wind_speed_100m' => (float)$row['wind_speed_100m'],
+                'wind_direction_100m' => (float)$row['wind_direction_100m'],
+                'wind_speed_120m' => (float)$row['wind_speed_120m'],
+                'wind_direction_120m' => (float)$row['wind_direction_120m'],
+                'calculated_150m' => (float)$row['calculated_150m'],
+                'calculated_200m' => (float)$row['calculated_200m'],
+            ];
+        }
+        return $result;
+    }
 }

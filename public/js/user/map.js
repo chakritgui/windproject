@@ -112,65 +112,37 @@ async function refreshAllWindData() {
     const entries = Object.entries(poleMarkers);
     if (entries.length === 0) return;
     isRefreshing = true;
-    const windSpeeds = [];
-    const BATCH_SIZE = 20;
-    const BATCH_DELAY_MS = 800;
-    const sleep = ms => new Promise(r => setTimeout(r, ms));
-    async function fetchWithRetry(url, retries = 2) {
-        for (let i = 0; i <= retries; i++) {
-            try {
-                const res = await fetch(url);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return await res.json();
-            } catch (err) {
-                if (i === retries) throw err;
-                await sleep(1000 * (i + 1));
-            }
-        }
-    }
     try {
         const unit = getCurrentUnit();
-        for (let i = 0; i < entries.length; i += BATCH_SIZE) {
-            if (i > 0) await sleep(BATCH_DELAY_MS);
-            const batch = entries.slice(i, i + BATCH_SIZE);
-            const lats  = batch.map(([, p]) => p.lat).join(',');
-            const lngs  = batch.map(([, p]) => p.lng).join(',');
-            const url   = `${OPEN_METEO}?latitude=${lats}&longitude=${lngs}`
-                        + `&current=wind_speed_100m,wind_direction_100m&wind_speed_unit=ms`;
-            let data;
-            try {
-                data = await fetchWithRetry(url);
-            } catch (err) {
-                console.warn(`Batch ${i / BATCH_SIZE + 1} failed, skipping:`, err);
-                continue;
+        const res = await fetch(`${BASE_URL}/api/wind/latest`);
+        const json = await res.json();
+        const data = json.data;
+        const windSpeeds = [];
+        entries.forEach(([id, p]) => {
+            const weather = data[id];
+            if (!weather) return;
+            const speed = parseFloat(weather.wind_speed_100m);
+            const dir   = parseFloat(weather.wind_direction_100m);
+            windSpeeds.push(speed);
+            const activeColor = getWindColor(speed);
+            const elSpeed = document.getElementById(p.windId);
+            const elArrow = document.getElementById(p.arrowId);
+            if (elSpeed) {
+                elSpeed.dataset.raw = speed;
+                elSpeed.textContent = `${(speed * unit.factor).toFixed(1)} ${unit.label}`;
+                elSpeed.setAttribute('fill', activeColor);
             }
-            const results = Array.isArray(data) ? data : [data];
-            batch.forEach(([id, p], j) => {
-                const weather = results[j];
-                if (!weather?.current) return;
-                const speed = weather.current.wind_speed_100m;
-                const dir   = weather.current.wind_direction_100m;
-                windSpeeds.push(speed);
-                const activeColor = getWindColor(speed);
-                const elSpeed = document.getElementById(p.windId);
-                const elArrow = document.getElementById(p.arrowId);
-                if (elSpeed) {
-                    elSpeed.dataset.raw = speed;
-                    elSpeed.textContent = `${(speed * unit.factor).toFixed(1)} ${unit.label}`;
-                    elSpeed.setAttribute('fill', activeColor);
-                }
-                if (elArrow) {
-                    const cx = elArrow.getAttribute('data-cx');
-                    const cy = elArrow.getAttribute('data-cy');
-                    elArrow.setAttribute('transform', `rotate(${dir - 90}, ${cx}, ${cy})`);
-                    elArrow.dataset.dir = dir;
-                    const arrowIcon = elArrow.querySelector('text');
-                    if (arrowIcon) arrowIcon.setAttribute('fill', activeColor);
-                }
-            });
-        }
+            if (elArrow) {
+                const cx = elArrow.getAttribute('data-cx');
+                const cy = elArrow.getAttribute('data-cy');
+                elArrow.setAttribute('transform', `rotate(${dir - 90}, ${cx}, ${cy})`);
+                elArrow.dataset.dir = dir;
+                const arrowIcon = elArrow.querySelector('text');
+                if (arrowIcon) arrowIcon.setAttribute('fill', activeColor);
+            }
+        });
         if (windSpeeds.length > 0) {
-            const sum       = windSpeeds.reduce((a, b) => a + b, 0);
+            const sum = windSpeeds.reduce((a, b) => a + b, 0);
             windSummary.max = Math.max(...windSpeeds);
             windSummary.min = Math.min(...windSpeeds);
             windSummary.avg = sum / windSpeeds.length;
