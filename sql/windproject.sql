@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 05, 2026 at 02:00 PM
+-- Generation Time: Apr 10, 2026 at 10:27 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -859,6 +859,26 @@ CREATE TABLE `wp_windturbine` (
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `wp_wind_data`
+--
+
+CREATE TABLE `wp_wind_data` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `station_id` bigint(20) UNSIGNED NOT NULL,
+  `wind_speed_100m` float DEFAULT NULL,
+  `wind_direction_100m` float DEFAULT NULL,
+  `wind_speed_120m` float DEFAULT NULL,
+  `wind_direction_120m` float DEFAULT NULL,
+  `calculated_150m` float DEFAULT NULL,
+  `calculated_200m` float DEFAULT NULL,
+  `source` varchar(50) DEFAULT 'open-meteo',
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 --
 -- Indexes for dumped tables
 --
@@ -1215,6 +1235,15 @@ ALTER TABLE `wp_windturbine`
   ADD UNIQUE KEY `uniq_project_point` (`project_id`,`windturbine_lat`,`windturbine_lng`);
 
 --
+-- Indexes for table `wp_wind_data`
+--
+ALTER TABLE `wp_wind_data`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_station` (`station_id`),
+  ADD KEY `idx_created_at` (`created_at`),
+  ADD KEY `idx_station_created` (`station_id`,`created_at`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -1499,6 +1528,12 @@ ALTER TABLE `wp_windturbind_icon`
 --
 ALTER TABLE `wp_windturbine`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `wp_wind_data`
+--
+ALTER TABLE `wp_wind_data`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- Constraints for dumped tables

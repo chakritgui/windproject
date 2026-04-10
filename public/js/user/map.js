@@ -504,6 +504,7 @@ async function loadPoles() {
             clearTimeout(_zoomTimer);
             _zoomTimer = setTimeout(() => {
                 resizeLabel();
+                refreshAllWindData();
             }, 80);
         });
     }

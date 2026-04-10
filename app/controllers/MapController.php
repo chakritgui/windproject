@@ -82,12 +82,16 @@ class  MapController extends BaseController {
         $urls = [
             'weather' => "https://api.openweathermap.org/data/2.5/weather?lat={$lat}&lon={$lon}&appid={$apiKey}&units=metric",
             'air'     => "https://api.openweathermap.org/data/2.5/air_pollution?lat={$lat}&lon={$lon}&appid={$apiKey}",
+            'wind'    => "https://api.open-meteo.com/v1/forecast?latitude={$lat}&longitude={$lon}&current=wind_speed_100m,wind_direction_100m&wind_speed_unit=ms"
         ];
         $multi   = curl_multi_init();
         $handles = [];
         foreach ($urls as $key => $url) {
             $ch = curl_init($url);
-            curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10]);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => 10
+            ]);
             curl_multi_add_handle($multi, $ch);
             $handles[$key] = $ch;
         }
@@ -106,14 +110,17 @@ class  MapController extends BaseController {
             curl_close($ch);
         }
         curl_multi_close($multi);
-        $w   = $responses['weather']['code'] === 200 ? json_decode($responses['weather']['body'], true) : null;
-        $air = $responses['air']['code']     === 200 ? json_decode($responses['air']['body'],     true) : null;
+        $w    = $responses['weather']['code'] === 200 ? json_decode($responses['weather']['body'], true) : null;
+        $air  = $responses['air']['code']     === 200 ? json_decode($responses['air']['body'], true)     : null;
+        $wind = $responses['wind']['code']    === 200 ? json_decode($responses['wind']['body'], true)    : null;
+        $windSpeed = $wind['current']['wind_speed_100m'] ?? null;
         $result = [
-            'temperature'  => $w ? round($w['main']['temp'],     1) : null,
-            'humidity'     => $w ? round($w['main']['humidity'], 0) : null,
-            'wind_speed'   => $w ? round($w['wind']['speed'],    1) : null, // m/s
-            'precipitation'=> $w ? round($w['rain']['1h']        ?? 0, 1) : null,
-            'pm25'         => $air ? round($air['list'][0]['components']['pm2_5'] ?? 0, 1) : null,
+            'temperature'   => $w ? round($w['main']['temp'], 1) : null,
+            'humidity'      => $w ? round($w['main']['humidity'], 0) : null,
+            'wind_speed'    => $windSpeed !== null ? round($windSpeed, 1) : null,
+            'wind_direction'=> $wind['current']['wind_direction_100m'] ?? null,
+            'precipitation' => $w ? round($w['rain']['1h'] ?? 0, 1) : null,
+            'pm25'          => $air ? round($air['list'][0]['components']['pm2_5'] ?? 0, 1) : null,
         ];
         header('Content-Type: application/json');
         $json = json_encode($result);

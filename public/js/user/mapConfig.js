@@ -40,13 +40,13 @@ let globalWindturbineIcon = null;
 let globalPoleIcon = null;
 const isMobile = () => window.innerWidth <= 768;
 const WINDY_COLORS = [
-    { ms: 0,  color: '#87CEEB' },
-    { ms: 2,  color: '#2b59c3' },
+    { ms: 0,  color: '#dbeafe' },
+    { ms: 2,  color: '#3b82f6' },
     { ms: 5,  color: '#22c55e' },
-    { ms: 10, color: '#84cc16' },
-    { ms: 15, color: '#eab308' },
-    { ms: 20, color: '#f97316' },
-    { ms: 25, color: '#ef4444' } 
+    { ms: 10, color: '#eab308' },
+    { ms: 15, color: '#f97316' },
+    { ms: 20, color: '#ef4444' },
+    { ms: 25, color: '#7e22ce' }
 ];
 const WIND_UNITS = [
     { key: 'ms',   label: 'm/s',  factor: 1 },

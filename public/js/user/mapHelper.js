@@ -570,6 +570,21 @@ function toggleEquipment(isOn) {
         windOn = false;
     }
 }
+let windInterval = null;
+function startWindAutoRefresh() {
+    if (windInterval) return;
+    windInterval = setInterval(() => {
+        if (windOn && !isRefreshing) {
+            refreshAllWindData();
+        }
+    }, 5 * 60 * 1000); 
+}
+function stopWindAutoRefresh() {
+    if (windInterval) {
+        clearInterval(windInterval);
+        windInterval = null;
+    }
+}
 function _applyWindState(isOn) {
     windOn = isOn;
     if (windyAPI?.store) {
@@ -581,11 +596,10 @@ function _applyWindState(isOn) {
     });
     $('#wind-status-icon').toggleClass('spinning', isOn);
     $('.map-wind-label').stop().fadeTo(300, isOn ? 1 : 0);
-    clearInterval(windRefreshTimer);
-    windRefreshTimer = null;
+    stopWindAutoRefresh();
     if (isOn) {
-        refreshAllWindData();
-        windRefreshTimer = setInterval(refreshAllWindData, WIND_REFRESH);
+        refreshAllWindData(); 
+        startWindAutoRefresh();
     }
 }
 function toggleWind(isOn) {
