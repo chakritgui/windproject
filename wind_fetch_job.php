@@ -3,6 +3,11 @@
     date_default_timezone_set('Asia/Bangkok');
     set_time_limit(0);
     $baseDir = __DIR__;
+    require_once $baseDir . '/vendor/autoload.php';
+    if (file_exists($baseDir . '/.env')) {
+        $dotenv = Dotenv\Dotenv::createImmutable($baseDir);
+        $dotenv->load();
+    }
     require_once $baseDir . '/app/helpers/helpers.php';
     require_once $baseDir . '/config.php';
     require_once $baseDir . '/app/core/Database.php';
