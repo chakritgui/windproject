@@ -113,8 +113,8 @@ async function refreshAllWindData() {
     if (entries.length === 0) return;
     isRefreshing = true;
     const windSpeeds = [];
-    const BATCH_SIZE = 10;
-    const BATCH_DELAY_MS = 300;
+    const BATCH_SIZE = 20;
+    const BATCH_DELAY_MS = 800;
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     async function fetchWithRetry(url, retries = 2) {
         for (let i = 0; i <= retries; i++) {

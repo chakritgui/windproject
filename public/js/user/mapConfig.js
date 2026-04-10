@@ -40,8 +40,8 @@ let globalWindturbineIcon = null;
 let globalPoleIcon = null;
 const isMobile = () => window.innerWidth <= 768;
 const WINDY_COLORS = [
-    { ms: 0,  color: '#324376' },
-    { ms: 2,  color: '#2b59c3' }, 
+    { ms: 0,  color: '#87CEEB' },
+    { ms: 2,  color: '#2b59c3' },
     { ms: 5,  color: '#22c55e' },
     { ms: 10, color: '#84cc16' },
     { ms: 15, color: '#eab308' },
