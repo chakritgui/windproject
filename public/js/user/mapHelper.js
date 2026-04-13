@@ -1,518 +1,24 @@
-async function openPoles(poleId) {
-    const $modal  = $('#windModal');
-    const $dialog = $modal.find('.modal-dialog');
-    const $body   = $modal.find('.modal-body');
-    const $header = $modal.find('.modal-header');
-    const $footer = $modal.find('.modal-footer');
-    $dialog.removeClass('modal-fullscreen');
-    $header.html(`
-        <h5 class="modal-title"></h5>
-        <div class="ms-auto d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-sm poles-ctrl-btn" id="btn-fullscreen" title="Fullscreen">
-                <i class="fa-regular fa-window-maximize"></i>
-            </button>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>`);
-    $body.html(`
-        <div class="poles-skeleton">
-            <div class="sk-cover"></div>
-            <div style="padding:24px 20px">
-                <div class="sk-line" style="width:55%;height:22px;margin-bottom:10px"></div>
-                <div class="sk-line" style="width:28%;height:14px;margin-bottom:24px"></div>
-                <div class="sk-line" style="height:12px;margin-bottom:8px"></div>
-                <div class="sk-line" style="height:12px;margin-bottom:8px"></div>
-                <div class="sk-line" style="width:80%;height:12px"></div>
-            </div>
-        </div>`);
-    $footer.html(`
-        <button type="button" class="poles-btn-primary" onclick="openFilterModal(${poleId})" data-i18n="view_report"></button>
-        <button type="button" class="poles-btn-ghost" data-bs-dismiss="modal" data-i18n="close"></button>`);
-    bootstrap.Modal.getOrCreateInstance($modal[0]).show();
-    $modal.find('#btn-fullscreen').off('click').on('click', function () {
-        $dialog.toggleClass('modal-fullscreen');
-        $(this).find('i').toggleClass('fa-window-maximize fa-window-restore');
-    });
-    try {
-        const res  = await fetch(`${BASE_URL}/api/poles.info`, {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ id: poleId })
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
-        const data = json.poles_id ? json : json.data;
-        if (!data?.poles_id) {
-            $body.html(renderErrorAlert('warning', langData['no_data_found'] || 'No data found'));
-            return;
-        }
-        const lang     = typeof currentLang !== 'undefined' ? currentLang : 'th';
-        const fullBase = BASE_URL.replace(/\/$/, '');
-        const hasContent = !!data.content;
-        const title      = hasContent ? (data.content.title[lang] || data.content.title['th']) : data.installations_name;
-        let bodyContent = '';
-        if (hasContent && data.content?.content) {
-            const co  = data.content.content;
-            const ord = [lang, ...['en', 'lo', 'th'].filter(l => l !== lang)];
-            for (const l of ord) {
-                if (co[l]?.trim()) { bodyContent = co[l]; break; }
-            }
-        }
-        bodyContent = bodyContent.replace(/src="(?!(http|https|\/\/))/g, `src="${fullBase}/`);
-        const bg       = data.project_bg || {};
-        const projBg   = bg.project_background;
-        const opacity  = bg.project_opacity > 0 ? bg.project_opacity / 100 : 1;
-        const fadeVal  = 1 - opacity;
-        const bgStyle  = projBg
-            ? `background-image:linear-gradient(rgba(255,255,255,${fadeVal}),rgba(255,255,255,${fadeVal})),url('${fullBase}/${projBg}');background-size:cover;background-position:top center;background-repeat:no-repeat;`
-            : '';
-        const coverHtml = (hasContent && data.content?.cover && data.content?.cover_display === 'yes')
-            ? `<div class="poles-cover-wrap">
-                   <img src="${fullBase}/${data.content.cover}" alt="cover" loading="lazy" class="poles-cover-img">
-                   <div class="poles-cover-overlay"></div>
-               </div>`
-            : '';
-        const chip = (iconClass, color, labelKey, value) => `
-            <div class="poles-chip">
-                <div class="poles-chip-icon" style="color:${color}"><i class="${iconClass}"></i></div>
-                <div>
-                    <div class="poles-chip-label" data-i18n="${labelKey}"></div>
-                    <div class="poles-chip-value">${value}</div>
-                </div>
-            </div>`;
-        $body.html(`
-        <div class="poles-detail animate__animated animate__fadeIn">
-            <div class="poles-header-card">
-                <div class="poles-header-left">
-                    <div class="poles-avatar"><i class="fas fa-broadcast-tower"></i></div>
-                    <div>
-                        <div class="poles-name">
-                            ${data.installations_name}
-                            <span class="poles-code">#${data.poles_code}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="poles-chips">
-                ${chip('fa-solid fa-diagram-project', '#2d7fc1', 'project',  data.project_name)}
-                ${chip('fa-solid fa-arrows-alt-v',    '#0891b2', 'level',    data.height_name)}
-                ${chip('fa-solid fa-map-marker-alt',  '#059669', 'location', `${data.poles_lat}, ${data.poles_lng}`)}
-            </div>
-            <div class="poles-content-section" style="${bgStyle}">
-                ${data.content_id ? `
-                    ${coverHtml}
-                    ${data.content.presentation?.length ? renderPresentationShow(data.content.presentation) : ''}
-                    <article class="poles-article">
-                        <h4 class="poles-article-title">${title}</h4>
-                        <div class="poles-article-meta">
-                            <i class="fa-regular fa-calendar-check"></i>
-                            ${data.updated_at || data.created_at || ''}
-                        </div>
-                        <div class="poles-article-body article-content">${bodyContent}</div>
-                    </article>
-                    <div class="multimedia-container px-1">${renderMultimedia(data.content, lang, fullBase)}</div>
-                ` : `
-                    ${!projBg ? `
-                        <div class="poles-empty">
-                            <i class="fa-regular fa-file-lines"></i>
-                            <div class="poles-empty-title">${langData['no_content_available'] || 'No content available'}</div>
-                            <div class="poles-empty-sub">${langData['content_nothing_hear'] || "It looks like there's nothing here."}</div>
-                        </div>` : '<div style="padding:40px 0"></div>'}
-                `}
-            </div>
-        </div>`);
-        $header.find('.modal-title').html(`
-            <span class="project-status">
-                <i class="fa-solid fa-circle-dot status-pulse me-2"
-                   style="color:${data.project_status_color || '#ccc'};font-size:0.8em"></i>
-                <span class="fw-bold" style="font-size:0.9rem;color:#444">
-                    ${data.project_status_name || '—'}
-                </span>
-            </span>`);
-        if (typeof updateText === 'function') updateText($body[0]);
-        $body.find('.article-content img').each(function () {
-            const $img = $(this);
-            const src  = $img.attr('src');
-            if (!src) return;
-            $img.removeAttr('width height');
-            let style = ($img.attr('style') || '').replace(/width\s*:\s*[^;]+;?/gi, '').replace(/height\s*:\s*[^;]+;?/gi, '');
-            $img.attr({ style: style.trim(), loading: 'lazy' });
-            if (!$img.parent('a').length) {
-                $img.wrap(`<a href="${src}" data-fancybox="content-images" class="content-img-link"></a>`);
-            }
-            $img.css({ cursor: 'zoom-in', transition: 'opacity 0.2s' }).addClass('hover-opacity');
-        });
-        if (typeof Fancybox !== 'undefined') {
-            Fancybox.bind('[data-fancybox]', {
-                Hash:    false,
-                Toolbar: { display: { left: ['infobar'], right: ['close'] } }
-            });
-        }
-    } catch (err) {
-        console.error('openPoles error:', err);
-        $body.html(renderErrorAlert('danger', langData['cannot_load'] || 'Failed to load data. Please try again later.'));
-    }
-}
-function renderMultimedia(content, lang, baseUrl) {
-    if (!content) return '';
-    let html = '';
-    if (content.images360?.length) {
-        html += `
-        <div class="mm-section">
-            <div class="mm-section-header">
-                <div class="mm-section-icon" style="background:rgba(6,182,212,0.12);color:#0891b2">
-                    <i class="fa-solid fa-street-view"></i>
-                </div>
-                <span>${langData['vr_experience'] || '360° Experience'}</span>
-            </div>
-            <div class="mm-grid">
-                ${content.images360.map(vr => `
-                    <div class="mm-thumb" onclick="openVRModal('${baseUrl}/${vr.url}')">
-                        <img src="${baseUrl}/${vr.url}" loading="lazy">
-                        <div class="mm-vr-badge"><i class="fa-solid fa-rotate fa-spin me-2"></i>360°</div>
-                        <div class="mm-thumb-overlay"><i class="fa-solid fa-expand"></i></div>
-                    </div>`).join('')}
-            </div>
-        </div>`;
-    }
-    if (content.images?.length) {
-        html += `
-        <div class="mm-section">
-            <div class="mm-section-header">
-                <div class="mm-section-icon" style="background:rgba(45,127,193,0.12);color:#2d7fc1">
-                    <i class="fa-solid fa-images"></i>
-                </div>
-                <span>${langData['gallery'] || 'Gallery'}</span>
-            </div>
-            <div class="mm-grid">
-                ${content.images.map(img => `
-                    <a href="${baseUrl}/${img.url}" data-fancybox="pole-gallery" class="mm-thumb">
-                        <img src="${baseUrl}/${img.url}" loading="lazy">
-                        <div class="mm-thumb-overlay"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
-                    </a>`).join('')}
-            </div>
-        </div>`;
-    }
-    if (content.attachments?.length) {
-        html += `
-        <div class="mm-section">
-            <div class="mm-section-header">
-                <div class="mm-section-icon" style="background:rgba(220,38,38,0.10);color:#dc2626">
-                    <i class="fa-solid fa-paperclip"></i>
-                </div>
-                <span>${langData['attachments'] || 'Attachments'}</span>
-            </div>
-            <div class="mm-attachments">
-                ${content.attachments.map(file => {
-                    const isPdf = file.url.toLowerCase().endsWith('.pdf');
-                    const ext   = file.url.split('.').pop().toUpperCase();
-                    return `
-                    <a href="${baseUrl}/${file.url}" download class="mm-att-item">
-                        <div class="mm-att-icon ${isPdf ? 'mm-att-pdf' : 'mm-att-file'}">
-                            <i class="fa-solid ${isPdf ? 'fa-file-pdf' : 'fa-file-lines'}"></i>
-                        </div>
-                        <div class="mm-att-info">
-                            <div class="mm-att-name">${file.name}</div>
-                            <div class="mm-att-ext">${ext} File</div>
-                        </div>
-                        <div class="mm-att-dl"><i class="fa-solid fa-download"></i></div>
-                    </a>`;
-                }).join('')}
-            </div>
-        </div>`;
-    }
-    return html;
-}
-async function openProjectDetail(project_id) {
-    if (!project_id) return;
-    try {
-        const res = await fetch(`${BASE_URL}/api/project.poles`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ project_id })
-        });
-        const data = await res.json();
-        if (!data?.poles?.length) {
-            console.warn('No poles data for project', project_id);
-            return;
-        }
-        document.getElementById('pp-name').textContent = data.project_name || 'Unknown Project';
-        document.getElementById('pp-count').textContent = data.poles.length;
-        const statusColor = data.status_color || '#ccc';
-        const statusName = (data.project_status || 'UNKNOWN').toUpperCase();
-        const dot = document.getElementById('pp-status-dot');
-        const pill = document.getElementById('pp-status');
-        dot.style.backgroundColor = statusColor;
-        pill.style.backgroundColor = statusColor;
-        pill.style.color = '#fff';
-        pill.textContent = statusName;
-        const unit = getCurrentUnit();
-        document.getElementById('pp-body').innerHTML = data.poles.map(p => {
-            const isEven = p.type_id % 2 === 0;
-            const color   = isEven ? '#f5a623' : '#5bb8f5';
-            const color2  = isEven ? '#d4821e' : '#1e90d4';
-            const animName = `wspin_${p.poles_id}`;
-            let iconHtml = '';
-            const iconSize = 40;
-            if (p.type_icon?.trim()) {
-                iconHtml = `<img src="${BASE_URL}/${p.type_icon}" style="width:${iconSize}px; height:${iconSize}px; object-fit:contain; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))" alt="icon">`;
-            } else {
-                const extra = `<line x1="3" y1="32" x2="-5" y2="32" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
-                            <circle cx="-5" cy="32" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>`;
-                iconHtml = `
-                    <svg width="20" height="52" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))">
-                        <circle cx="3" cy="49" r="3.5" fill="rgba(255,255,255,0.85)" stroke="${color}" stroke-width="1.5"/>
-                        <line x1="3" y1="46" x2="3" y2="3"  stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
-                        <line x1="3" y1="5"  x2="15" y2="5"  stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
-                        <line x1="3" y1="14" x2="11" y2="14" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
-                        ${extra}
-                        <circle cx="15" cy="5"  r="2.2" fill="${color}"  stroke="#ffffff" stroke-width="0.8"/>
-                        <circle cx="11" cy="14" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>
-                    </svg>`;
-            }
-            return `
-                <div class="pole-row" onclick="openPoles(${p.poles_id})">
-                    <div class="pole-index" style="width: 45px; display:flex; justify-content:center; align-items:center;">
-                        ${iconHtml}
-                    </div>
-                    <div class="pole-info">
-                        <div class="pole-title">
-                            <strong>${p.type_name || 'N/A'}</strong>
-                            <div class="small">${p.installations_name || 'N/A'}</div>
-                        </div>
-                        <div class="pole-coords"><i class="fa-solid fa-location-dot me-1"></i>${p.lat}° N, ${p.lng}° E</div>
-                        <div class="pole-bar-wrap">
-                            <div class="pole-bar" id="bar-${p.poles_id}" style="width:0%;transition:width 0.6s ease, background-color 0.3s"></div>
-                        </div>
-                    </div>
-                    <div class="pole-wind-box">
-                        <i class="fa-solid fa-location-arrow wind-arrow" id="wind-arrow-${p.poles_id}"></i>
-                        <span class="pole-wind" id="wind-val-${p.poles_id}" data-raw="0">-- <small>${unit.label}</small></span>
-                    </div>
-                </div>`;
-        }).join('');
-        bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('projectCanvas')).show();
-        const lats = data.poles.map(p => p.lat).join(',');
-        const lngs = data.poles.map(p => p.lng).join(',');
-        const weatherRes = await fetch(`${OPEN_METEO}?latitude=${lats}&longitude=${lngs}&current=wind_speed_100m&wind_speed_unit=ms`);
-        const weatherData = await weatherRes.json();
-        const results = Array.isArray(weatherData) ? weatherData : [weatherData];
-        let totalWind = 0;
-        data.poles.forEach((p, i) => {
-            const speed = results[i]?.current?.wind_speed_100m || 0;
-            totalWind += speed;
-            const elWind  = document.getElementById(`wind-val-${p.poles_id}`);
-            const elArrow = document.getElementById(`wind-arrow-${p.poles_id}`);
-            const elBar   = document.getElementById(`bar-${p.poles_id}`);
-            const elRotor = document.getElementById(`rotor-${p.poles_id}`);
-            if (!elWind || !elBar) return;
-            const activeColor  = getWindColor(speed);
-            const displaySpeed = (speed * unit.factor).toFixed(1);
-            elWind.dataset.raw = speed;
-            elWind.style.color = activeColor;
-            elWind.innerHTML = `${displaySpeed} <small>${unit.label}</small>`;
-            if (elArrow) elArrow.style.color = activeColor;
-            const pct = Math.min((speed / 25) * 100, 100);
-            requestAnimationFrame(() => {
-                elBar.style.width = `${pct}%`;
-                elBar.style.backgroundColor = activeColor;
-            });
-            if (elRotor) {
-                const dur = speed > 0 ? Math.max(0.6, 4 - speed * 0.3).toFixed(2) : '2.5';
-                elRotor.style.animationDuration = `${dur}s`;
-            }
-        });
-        const avgSpeed = totalWind / data.poles.length;
-        const avgEl = document.getElementById('pp-avg-wind');
-        if (avgEl) {
-            avgEl.textContent = `${(avgSpeed * unit.factor).toFixed(1)} ${unit.label}`;
-            avgEl.style.color = getWindColor(avgSpeed);
-        }
-    } catch (err) {
-        console.error('openProject error:', err);
-    }
-}
-function updateWindUI() {
-    const unit = getCurrentUnit();
-    updateButtonStyles();
-    const legendUnit = document.getElementById('legend-unit-label');
-    if (legendUnit) legendUnit.textContent = unit.label;
-    const steps = [0, 2, 5, 10, 15, 20, 25];
-    steps.forEach((ms) => {
-        const el = document.getElementById(`legend-${ms}`);
-        if (!el) return;
-        const val = Math.round(ms * unit.factor);
-        el.textContent = (ms === 25) ? `${val}+` : val;
-    });
-    const bar = document.querySelector('.legend-bar');
-    if (bar) {
-        const gradient = WINDY_COLORS.map(c => c.color).join(', ');
-        bar.style.background = `linear-gradient(to right, ${gradient})`;
-    }
-    resizeLabel();
-    if (typeof customPickerMarker !== 'undefined' && customPickerMarker && customPickerMarker.isPopupOpen()) {
-        const popupPane = customPickerMarker.getPopup().getElement();
-        if (popupPane) {
-            const speedValEl = popupPane.querySelector('#picker-wind-value');
-            const speedWrap = popupPane.querySelector('#picker-speed-wrap');
-            const unitLabel = popupPane.querySelector('#picker-unit-label');
-            const arrowG = popupPane.querySelector('#picker-arrow-g');
-            if (speedValEl) {
-                const ms = parseFloat(speedValEl.dataset.raw);
-                const color = getWindColor(ms); 
-                speedValEl.textContent = (ms * unit.factor).toFixed(1);
-                if (speedWrap) speedWrap.style.color = color;
-                if (unitLabel) unitLabel.textContent = unit.label;
-                if (arrowG) {
-                    arrowG.querySelectorAll('line, polygon, circle').forEach(shape => {
-                        const attr = (shape.tagName === 'line') ? 'stroke' : 'fill';
-                        shape.setAttribute(attr, color);
-                    });
-                }
-            }
-            const gustValEl = popupPane.querySelector('#picker-gust-value');
-            const gustWrap = popupPane.querySelector('#picker-gust-wrap');
-            if (gustValEl) {
-                const gMs = parseFloat(gustValEl.dataset.raw);
-                gustValEl.textContent = `${(gMs * unit.factor).toFixed(1)} ${unit.label}`;
-                if (gustWrap) gustWrap.style.color = getWindColor(gMs);
-            }
-        }
-    }
-    if (typeof updateWindDashboardUnit === 'function') {
-        updateWindDashboardUnit(unit);
-    }
-}
-function _getTurbineSize(zoom) {
-    if (globalWindturbineIcon && globalWindturbineIcon.sizes) {
-        return globalWindturbineIcon.sizes[zoom] || 16;
-    }
-    return Math.max(3, Math.min(12, (zoom - 10) * 1.5 + 3));
-}
-function resizeLabel() {
-    const zoom  = map.getZoom();
-    const scale = _calcLabelScale(zoom);
-    let poleSize = 20; 
-    if (globalPoleIcon && globalPoleIcon.sizes && globalPoleIcon.sizes[zoom]) {
-        poleSize = globalPoleIcon.sizes[zoom];
-    }
-    window._usedLabelBoxes = [];
-    const polePoints = Object.values(poleMarkers).map(({ lat, lng }) =>
-        map.latLngToContainerPoint([lat, lng])
-    );
-    Object.values(poleMarkers).forEach(({ marker, labelMarker, lat, lng, windId, arrowId }) => {
-        const pd = marker._poleData;
-        if (!pd) return;
-        marker.setIcon(_buildPoleIcon(pd, poleSize));
-        const pt = map.latLngToContainerPoint([lat, lng]);
-        const otherPts = polePoints.filter(p =>
-            !(Math.abs(p.x - pt.x) < 1 && Math.abs(p.y - pt.y) < 1)
-        );
-        const off = getSmartOffset(lat, lng, window._usedLabelBoxes, map, zoom, otherPts);
-        const anchorX = off.dx >= 0 ? 0 : Math.abs(off.dx);
-        const anchorY = off.dy >= 0 ? 0 : Math.abs(off.dy);
-        const windEl    = document.getElementById(windId);
-        const arrowEl   = document.getElementById(arrowId);
-        const windSpeed = windEl  ? parseFloat(windEl.dataset.raw)  || 0 : 0;
-        const windDir   = arrowEl ? parseFloat(arrowEl.dataset.dir) || 0 : 0;
-        const { svgW, svgH, html } = buildWindLabelSVG({
-            anchorX, anchorY,
-            labelDx: off.dx,
-            labelDy: off.dy,
-            windId, arrowId,
-            windSpeed,
-            windDir,
-            scale
-        });
-        labelMarker.setIcon(L.divIcon({
-            className:  'pole-label-wrap',
-            iconSize:   [svgW, svgH],
-            iconAnchor: [anchorX, anchorY],
-            html
-        }));
-    });
-    if (typeof turbineMarkers !== 'undefined') {
-        const turbineSize = _getTurbineSize(zoom); 
-        const opacity = zoom < 10 ? 0.7 : 1;
-        Object.values(turbineMarkers).forEach(({ marker, turbine }) => {
-            if (!marker) return;
-            const newIcon = _buildTurbineIcon(turbineSize);
-            marker.setIcon(newIcon);
-            marker.setOpacity(opacity);
-        });
-    }
-}
-function setWindUnit(idx) {
-    currentUnitIdx = idx;
-    localStorage.setItem('windUnit', currentUnitIdx);
-    updateWindUI();
-    updateButtonStyles();
-}
-function updateButtonStyles() {
-    const buttons = document.querySelectorAll('.btn-unit-select');
-    buttons.forEach((btn, index) => {
-        if (index === currentUnitIdx) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-}
-function initWindUnit() {
-    updateWindUI();
-}
-function updateWindDashboardUnit(unit) {
-    document.querySelectorAll('.stat-unit-label').forEach(el => {
-        el.textContent = unit.label;
-    });
-    const max = windSummary.max ?? 0;
-    const min = windSummary.min ?? 0;
-    const avg = windSummary.avg ?? 0;
-    if (max === 0 && min === 0 && avg === 0) return;
-    $('.stat-max-wind-val').text((max * unit.factor).toFixed(1));
-    $('.stat-min-wind-val').text((min * unit.factor).toFixed(1));
-    $('.stat-avg-wind-val').text((avg * unit.factor).toFixed(1));
-}
-Fancybox.bind("[data-fancybox='gallery']", {
-    Hash:    false,
-    Thumbs:  { autoStart: false },
-    Toolbar: {
-        display: { left: ['infobar'], middle: [], right: ['iterateZoom', 'close'] }
-    }
-});
+'use strict';
+(function injectPoleStyles() {
+    if (document.getElementById('pole-map-styles')) return;
+    const s = document.createElement('style');
+    s.id = 'pole-map-styles';
+    s.textContent = `
+        .pole-label-wrap svg   { transition: opacity 0.25s ease; }
+        .pole-icon-wrap  svg   { transition: width 0.2s ease, height 0.2s ease; }
+        .leaflet-marker-icon,
+        .leaflet-marker-shadow { transition: transform 0.18s ease, opacity 0.18s ease; }
+    `;
+    document.head.appendChild(s);
+})();
 function getWindColor(ms) {
     for (let i = WINDY_COLORS.length - 1; i >= 0; i--) {
         if (ms >= WINDY_COLORS[i].ms) return WINDY_COLORS[i].color;
     }
     return WINDY_COLORS[0].color;
 }
-let currentUnitIdx = (() => {
-    const saved = localStorage.getItem('windUnit');
-    return saved !== null ? parseInt(saved) : 0;
-})();
 function getCurrentUnit() {
     return WIND_UNITS[currentUnitIdx];
-}
-$('#mapFilter').on('click', function (e) {
-    e.stopPropagation();
-    const firstPanel = $('#menu-level-1');
-    if (firstPanel.is(':visible')) {
-        $('.menu-panel').fadeOut();
-    } else {
-        menuState = {};
-        loadMenuLevel(1);
-    }
-});
-function handleStationClick(lat, lng, id, el) {
-    if (isNaN(lat) || isNaN(lng)) return;
-    $('.station-item').removeClass('selected');
-    $(el).addClass('selected');
-    $('.menu-panel').fadeOut();
-    openPoles(id);
-}
-function selectItem(level, id, el) {
-    $(el).addClass('selected').siblings().removeClass('selected');
-    menuState[MENU_LEVELS[level].key] = id;
-    loadMenuLevel(level + 1);
 }
 function degToCompass(deg) {
     return COMPASS_DIRS[Math.round(deg / 22.5) % 16];
@@ -527,10 +33,334 @@ async function fetchJSON(url, body = {}) {
     const res = await fetch(url, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(body)
+        body:    JSON.stringify(body),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status} — ${url}`);
     return res.json();
+}
+async function fetchWindAtPoint(lat, lng) {
+    try {
+        const url = `${OPEN_METEO}?latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}` + `&current=wind_speed_100m,wind_direction_100m,wind_gusts_10m&wind_speed_unit=ms`;
+        const res  = await fetch(url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        return {
+            speed:     data.current?.wind_speed_100m     ?? null,
+            direction: data.current?.wind_direction_100m ?? null,
+            gusts:     data.current?.wind_gusts_10m      ?? null,
+        };
+    } catch (err) {
+        console.error('fetchWindAtPoint error:', err);
+        return { speed: null, direction: null, gusts: null };
+    }
+}
+function _calcOffsetDist(zoom) {
+    const MIN_ZOOM = 8,  MAX_ZOOM = 19;
+    const MIN_DIST = 42, MAX_DIST = 110;
+    const t    = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
+    const ease = 1 - Math.pow(1 - t, 2);
+    return MIN_DIST + (MAX_DIST - MIN_DIST) * ease;
+}
+function _calcLabelScale(zoom) {
+    const MIN_ZOOM = 8, MAX_ZOOM = maxZoomLevel;
+    const t = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
+    return 0.52 + 0.68 * t;
+}
+function _calcIconSize(zoom) {
+    const MIN_ZOOM = 8,  MAX_ZOOM = maxZoomLevel;
+    const MIN_SIZE = 24, MAX_SIZE = 120;
+    const t    = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
+    const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    return Math.round(MIN_SIZE + (MAX_SIZE - MIN_SIZE) * ease);
+}
+function _getTurbineSize(zoom) {
+    if (globalWindturbineIcon?.sizes) {
+        return globalWindturbineIcon.sizes[zoom] || 16;
+    }
+    return Math.max(3, Math.min(12, (zoom - 10) * 1.5 + 3));
+}
+function getSmartOffset(lat, lng, usedBoxes, map, zoom, polePoints) {
+    const dist  = _calcOffsetDist(zoom);
+    const point = map.latLngToContainerPoint([lat, lng]);
+    const poleBox = {
+        left:   point.x - POLE_LABEL.POLE_EXCL_R,
+        right:  point.x + POLE_LABEL.POLE_EXCL_R,
+        top:    point.y - POLE_LABEL.POLE_EXCL_R * 2,
+        bottom: point.y + POLE_LABEL.POLE_EXCL_R * 0.5,
+    };
+    for (let expansion = 0; expansion < 5; expansion++) {
+        for (const dir of OFFSET_DIRS) {
+            const dx = Math.round(dir.dx * dist + expansion * 30 * Math.sign(dir.dx || 1));
+            const dy = Math.round(dir.dy * dist + expansion * 20 * Math.sign(dir.dy || 1));
+            const labelCX = point.x + dx;
+            const labelCY = point.y + dy;
+            const box = {
+                left:   labelCX - POLE_LABEL.W / 2,
+                right:  labelCX + POLE_LABEL.W / 2,
+                top:    labelCY - POLE_LABEL.H / 2,
+                bottom: labelCY + POLE_LABEL.H / 2,
+            };
+            if (usedBoxes.some(b => _overlaps(box, b))) continue;
+            if (_overlaps(box, poleBox))                 continue;
+            const tooCloseToPole = (polePoints || []).some(p => {
+                const ddx = p.x - labelCX, ddy = p.y - labelCY;
+                return Math.sqrt(ddx * ddx + ddy * ddy) < POLE_LABEL.POLE_EXCL_R * 1.4;
+            });
+            if (tooCloseToPole) continue;
+            usedBoxes.push(box);
+            return { dx, dy };
+        }
+    }
+    const dx = Math.round(dist * 1.6);
+    const dy = Math.round((Math.random() - 0.5) * dist * 0.6);
+    return { dx, dy };
+}
+function _overlaps(a, b) {
+    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
+}
+function buildWindLabelSVG({
+    anchorX, anchorY,
+    labelDx, labelDy,
+    windId, arrowId,
+    windSpeed = 0, windDir = 0,
+    scale = 1,
+}) {
+    const BOX_H   = Math.round(28 * scale);
+    const PADDING = Math.round(10 * scale);
+    const fs1 = Math.max(7,  Math.round(13 * scale));
+    const fs2 = Math.max(6,  Math.round(10 * scale));
+    const fs3 = Math.max(7,  Math.round(10 * scale));
+    const rx   = Math.round(BOX_H / 2);
+    const dotR = Math.max(2.5, 3.5 * scale);
+    const lw   = Math.max(0.8, 1.2 * scale);
+    const unit        = getCurrentUnit();
+    const displayVal  = (windSpeed * unit.factor).toFixed(1);
+    const label       = unit.label;
+    const arrowW  = Math.round(fs3 * 1.2);
+    const textW   = Math.round(displayVal.length * fs1 * 0.62 + label.length * fs2 * 0.6 + 2);
+    const BOX_W   = PADDING + arrowW + Math.round(PADDING * 0.5) + textW + PADDING;
+    const svgW    = Math.abs(labelDx) + BOX_W + 13;
+    const svgH    = Math.abs(labelDy) + BOX_H + 12;
+    const tipX  = anchorX + labelDx;
+    const tipY  = anchorY + labelDy;
+    const boxX  = labelDx >= 0 ? tipX : tipX - BOX_W;
+    const boxY  = tipY - BOX_H / 2;
+    const lineStartX = labelDx >= 0 ? boxX : boxX + BOX_W;
+    const lineStartY = tipY;
+    const arrowCX = boxX + PADDING + Math.round(arrowW / 2);
+    const arrowCY = tipY;
+    const textX   = boxX + PADDING + arrowW + Math.round(PADDING * 0.5);
+    const activeColor = getWindColor(windSpeed);
+    const glowColor   = activeColor;
+    const lgId   = `lg-${windId}`;
+    const shId   = `sh-${windId}`;
+    const glowId = `gw-${windId}`;
+    return {
+        svgW,
+        svgH,
+        html: `
+        <svg width="${svgW}" height="${svgH}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;pointer-events:none;display:block">
+        <defs>
+            <linearGradient id="${lgId}" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stop-color="#1e2228"/>
+                <stop offset="100%" stop-color="#0d0f12"/>
+            </linearGradient>
+            <filter id="${shId}" x="-30%" y="-40%" width="160%" height="180%">
+                <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.55"/>
+            </filter>
+            <filter id="${glowId}" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        <line x1="${anchorX}" y1="${anchorY}" x2="${lineStartX}" y2="${lineStartY}" stroke="rgba(255,255,255,0.18)" stroke-width="${lw}" stroke-dasharray="${Math.round(3*scale)},${Math.round(2.5*scale)}" stroke-linecap="round"/>
+        <circle cx="${anchorX}" cy="${anchorY}" r="${dotR + 2}" fill="${glowColor}" fill-opacity="0.15"/>
+        <circle cx="${anchorX}" cy="${anchorY}" r="${dotR}" fill="${glowColor}" fill-opacity="0.7" stroke="rgba(255,255,255,0.35)" stroke-width="0.8"/>
+        <rect id="rect-${windId}" x="${boxX}" y="${boxY}" width="${BOX_W}" height="${BOX_H}" rx="${rx}" fill="url(#${lgId})" fill-opacity="0.96" stroke="${glowColor}" stroke-width="0.65" stroke-opacity="0.45" filter="url(#${shId})"/>
+        <rect x="${boxX+1}" y="${boxY+1}" width="${BOX_W-2}" height="${Math.round(BOX_H*0.45)}" rx="${rx}" fill="rgba(255,255,255,0.04)"/>
+        <g id="${arrowId}" data-cx="${arrowCX}" data-cy="${arrowCY}" data-dir="${windDir}"
+           transform="rotate(${windDir - 90}, ${arrowCX}, ${arrowCY})">
+            <text x="${arrowCX}" y="${arrowCY}" font-size="${fs3}" fill="${activeColor}" text-anchor="middle" dominant-baseline="central" filter="url(#${glowId})">➤</text>
+        </g>
+        <text id="${windId}" data-raw="${windSpeed}" x="${textX}" y="${arrowCY}" font-size="${fs1}" font-weight="700" fill="${activeColor}" text-anchor="start" dominant-baseline="central" style="paint-order:stroke;stroke:rgba(0,0,0,0.4);stroke-width:1.2px;stroke-linejoin:round">
+            ${displayVal}
+            <tspan class="wind-unit-label" font-weight="400" font-size="${fs2}" dx="${Math.round(2*scale)}">${label}</tspan>
+        </text>
+        </svg>`,
+    };
+}
+function _buildPoleIcon(pole, size = 20) {
+    if (pole.type_icon?.trim()) {
+        return L.icon({
+            iconUrl:     pole.type_icon,
+            iconSize:    [size, size],
+            iconAnchor:  [size / 2, size],
+            popupAnchor: [0, -size],
+        });
+    }
+    const isEven  = pole.type_id % 2 === 0;
+    const color   = isEven ? '#f5a623' : '#5bb8f5';
+    const color2  = isEven ? '#d4821e' : '#1e90d4';
+    const glowCol = isEven ? 'rgba(91,184,245,0.6)' : 'rgba(245,166,35,0.6)';
+    const baseW = 20, baseH = 52;
+    const w = size, h = size * (baseH / baseW);
+    const extraY = 30;
+    const extra = `
+        <line x1="3" y1="${extraY}" x2="-5" y2="${extraY}" stroke="rgba(255,255,255,0.85)" stroke-width="1.3" stroke-linecap="round"/>
+        <circle cx="-5" cy="${extraY}" r="1.8" fill="${color}" stroke="rgba(255,255,255,0.9)" stroke-width="0.7"/>`;
+    return L.divIcon({
+        className:  'pole-icon-wrap',
+        iconSize:   [w, h],
+        iconAnchor: [w * 0.15, h],
+        html: `
+        <svg width="${w}" height="${h}" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;display:block;filter:drop-shadow(0px 2px 2px rgba(0,0,0,0.3))">
+        <defs>
+            <filter id="pglow-${pole.poles_id}" x="-100%" y="-100%" width="300%" height="300%">
+                <feGaussianBlur stdDeviation="1.5" result="blur"/>
+                <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        <ellipse cx="3" cy="49" rx="5" ry="2" fill="${glowCol}" filter="url(#pglow-${pole.poles_id})"/>
+        <circle cx="3" cy="49" r="3.5" fill="rgba(20,22,26,0.9)" stroke="${color}" stroke-width="1.5"/>
+        <line x1="3" y1="46" x2="3" y2="3" stroke="rgba(255,255,255,0.82)" stroke-width="1.7" stroke-linecap="round"/>
+        <line x1="3" y1="5"  x2="15" y2="5" stroke="rgba(255,255,255,0.82)" stroke-width="1.3" stroke-linecap="round"/>
+        <circle cx="15" cy="5"  r="2.5" fill="${color}"  stroke="rgba(255,255,255,0.85)" stroke-width="0.7" filter="url(#pglow-${pole.poles_id})"/>
+        <line x1="3" y1="15" x2="11" y2="15" stroke="rgba(255,255,255,0.82)" stroke-width="1.3" stroke-linecap="round"/>
+        <circle cx="11" cy="15" r="2" fill="${color2}" stroke="rgba(255,255,255,0.85)" stroke-width="0.7"/>
+        ${extra}
+        </svg>`,
+    });
+}
+function _buildTurbineIcon(size) {
+    const iconUrl = globalWindturbineIcon?.url ? `${BASE_URL}/${globalWindturbineIcon.url}` : '';
+    if (iconUrl) {
+        return L.icon({
+            iconUrl,
+            iconSize:    [size, size],
+            iconAnchor:  [size / 2, size / 2],
+            popupAnchor: [0, -size / 2],
+            className:   'turbine-icon',
+        });
+    }
+    return L.divIcon({
+        className:  'turbine-dot',
+        iconSize:   [size, size],
+        iconAnchor: [size / 2, size / 2],
+        html: `<div style="width:${size}px; height:${size}px; background:radial-gradient(circle at 30% 30%, #ef1515, #ef1515); border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>`,
+    });
+}
+function _toFeatureCollection(g) {
+    if (g?.type === 'FeatureCollection') return g;
+    if (g?.type === 'Feature') return { type: 'FeatureCollection', features: [g] };
+    return {
+        type:     'FeatureCollection',
+        features: [{ type: 'Feature', geometry: g, properties: {} }],
+    };
+}
+function _toFeature(g) {
+    return g?.type === 'Feature' ? g : { type: 'Feature', geometry: g, properties: {} };
+}
+function _mergePolygonsToUnion(geoJsonArray) {
+    if (!geoJsonArray?.length) return null;
+    if (geoJsonArray.length === 1) return _toFeatureCollection(geoJsonArray[0]);
+    if (typeof turf === 'undefined') {
+        console.warn('[_mergePolygonsToUnion] turf not loaded');
+        return { type: 'FeatureCollection', features: geoJsonArray.map(_toFeature) };
+    }
+    try {
+        const features = geoJsonArray.flatMap(g => _toFeatureCollection(g).features).filter(f => f?.geometry);
+        if (!features.length) return null;
+        let merged = features[0];
+        for (let i = 1; i < features.length; i++) {
+            try {
+                merged = turf.union(merged, features[i]);
+            } catch (e) {
+                console.warn('[_mergePolygonsToUnion] union failed at index', i, e);
+            }
+        }
+        return merged;
+    } catch (err) {
+        console.error('[_mergePolygonsToUnion] error:', err);
+        return _toFeatureCollection(geoJsonArray[0]);
+    }
+}
+function _mergePolygonsNoOverlap(geoJsonArray) {
+    if (typeof turf === 'undefined') {
+        console.warn('[_mergePolygonsNoOverlap] turf not loaded');
+        return { type: 'FeatureCollection', features: geoJsonArray.map(_toFeature) };
+    }
+    try {
+        const features = geoJsonArray.flatMap(g => _toFeatureCollection(g).features).filter(f => f?.geometry);
+        let accumulated   = null;
+        const resultFeatures = [];
+        features.forEach(feature => {
+            try {
+                const clean = accumulated
+                    ? (turf.difference(feature, accumulated) ?? null)
+                    : feature;
+                if (clean) {
+                    resultFeatures.push(clean);
+                    accumulated = accumulated ? turf.union(accumulated, feature) : feature;
+                }
+            } catch (err) {
+                console.warn('[_mergePolygonsNoOverlap] process feature error', err);
+            }
+        });
+
+        return { type: 'FeatureCollection', features: resultFeatures };
+    } catch (err) {
+        console.error('[_mergePolygonsNoOverlap] error:', err);
+        return { type: 'FeatureCollection', features: geoJsonArray.map(_toFeature) };
+    }
+}
+function isInsidePolygon(latlng, polygonLayer) {
+    let inside = false;
+    polygonLayer.eachLayer(layer => {
+        if (layer.getBounds?.().contains(latlng)) {
+            const lls = layer.getLatLngs?.();
+            if (lls) inside = pointInLatLngs(latlng, lls[0]);
+        }
+    });
+    return inside;
+}
+function pointInLatLngs(point, polygon) {
+    let inside = false;
+    const n = polygon.length;
+    for (let i = 0, j = n - 1; i < n; j = i++) {
+        const xi = polygon[i].lat, yi = polygon[i].lng;
+        const xj = polygon[j].lat, yj = polygon[j].lng;
+        const hit =
+            ((yi > point.lng) !== (yj > point.lng)) &&
+            (point.lat < (xj - xi) * (point.lng - yi) / (yj - yi) + xi);
+        if (hit) inside = !inside;
+    }
+    return inside;
+}
+function clampToPolygon(latlng, polygonLayer) {
+    let closest = null, minDist = Infinity;
+    polygonLayer.eachLayer(layer => {
+        const ring = layer.getLatLngs?.()?.[0];
+        if (!ring) return;
+        for (let i = 0; i < ring.length; i++) {
+            const c = closestPointOnSegment(latlng, ring[i], ring[(i + 1) % ring.length]);
+            const d = map.distance(latlng, c);
+            if (d < minDist) { minDist = d; closest = c; }
+        }
+    });
+    return closest ?? latlng;
+}
+function closestPointOnSegment(p, a, b) {
+    const dx = b.lat - a.lat, dy = b.lng - a.lng;
+    const lenSq = dx * dx + dy * dy;
+    if (lenSq === 0) return a;
+    const t = clamp(((p.lat - a.lat) * dx + (p.lng - a.lng) * dy) / lenSq, 0, 1);
+    return L.latLng(a.lat + t * dx, a.lng + t * dy);
 }
 function hideWindLoading() {
     const el = document.getElementById('wind-loading');
@@ -540,268 +370,13 @@ function hideWindLoading() {
     el.style.opacity       = 0;
     el.addEventListener('transitionend', () => el.remove(), { once: true });
 }
-function toggleAnimation(isOn) {
-    if(isOn) {
-        $("#windy #map-container .leaflet-tile-pane .particles-layer").css("z-index", 500);
-    } else {
-        $("#windy #map-container .leaflet-tile-pane .particles-layer").css("z-index", 0);   
-    }
-}
-function toggleEquipment(isOn) {
-    if (!map || !poleLayerGroup) return;
-    if (isOn) {
-        if (!map.hasLayer(poleLayerGroup)) {
-            poleLayerGroup.addTo(map);
-        }
-        Object.values(poleMarkers).forEach(p => {
-            if (p.marker) p.marker.setOpacity(1);
-            if (p.labelMarker) p.labelMarker.setOpacity(windOn ? 1 : 0);
-        });
-        _applyWindState(isOn);
-        $('#toggle-wind-values').prop('checked', true);
-        $('#wind-status-icon').addClass('spinning');
-    } else {
-        Object.values(poleMarkers).forEach(p => {
-            if (p.marker) p.marker.setOpacity(0);
-            if (p.labelMarker) p.labelMarker.setOpacity(0);
-        });
-        $('#toggle-wind-values').prop('checked', false);
-        $('#wind-status-icon').removeClass('spinning');
-        windOn = false;
-    }
-}
-let windInterval = null;
-function startWindAutoRefresh() {
-    if (windInterval) return;
-    windInterval = setInterval(() => {
-        if (windOn && !isRefreshing) {
-            refreshAllWindData();
-        }
-    }, 5 * 60 * 1000); 
-}
-function stopWindAutoRefresh() {
-    if (windInterval) {
-        clearInterval(windInterval);
-        windInterval = null;
-    }
-}
-function _applyWindState(isOn) {
-    windOn = isOn;
-    if (windyAPI?.store) {
-        windyAPI.store.set('overlay', isOn ? 'wind' : ''); 
-    }
-    Object.values(poleMarkers).forEach(p => {
-        const isPoleVisible = p.marker && p.marker.options.opacity > 0;
-        p.labelMarker?.setOpacity((isOn && isPoleVisible) ? 1 : 0);
-    });
-    $('#wind-status-icon').toggleClass('spinning', isOn);
-    $('.map-wind-label').stop().fadeTo(300, isOn ? 1 : 0);
-    stopWindAutoRefresh();
-    if (isOn) {
-        refreshAllWindData(); 
-        startWindAutoRefresh();
-    }
-}
-function toggleWind(isOn) {
-    const equipmentIsOff = $('#toggle-equipment').prop('checked') === false;
-    if (isOn && equipmentIsOff) {
-        $('#toggle-equipment').prop('checked', true);
-        toggleEquipment(true);
-    }
-    _applyWindState(isOn);
-}
-function toggleFocus(isOn) {
-    focusOn = isOn;
-    if (!map.getPane('focusPane')) {
-        const pane = map.createPane('focusPane');
-        pane.style.zIndex = 450; 
-        pane.style.pointerEvents = 'none';
-    }
-    if (focusMaskLayer) {
-        map.removeLayer(focusMaskLayer);
-        focusMaskLayer = null;
-    }
-    map.eachLayer(layer => {
-        if (layer.options && layer.options.id === 'focus-mask-layer') {
-            map.removeLayer(layer);
-        }
-    });
-    if (isOn && geoDataGlobal) {
-        const world = [[90, -180], [90, 180], [-90, 180], [-90, -180]];
-        const countryHoles = [];
-        geoDataGlobal.features.forEach(feature => {
-            const geometry = feature.geometry;
-            if (geometry.type === 'Polygon') {
-                geometry.coordinates.forEach(ring => {
-                    countryHoles.push(ring.map(c => [c[1], c[0]]));
-                });
-            } else if (geometry.type === 'MultiPolygon') {
-                geometry.coordinates.forEach(polygon => {
-                    polygon.forEach(ring => {
-                        countryHoles.push(ring.map(c => [c[1], c[0]]));
-                    });
-                });
-            }
-        });
-        focusMaskLayer = L.polygon([world, ...countryHoles], {
-            id: 'focus-mask-layer',
-            fillColor: '#161616',
-            fillOpacity: 0.5,
-            stroke: false,
-            interactive: false,
-            pane: 'focusPane',
-            smoothFactor: 1
-        }).addTo(map);
-    }
-}
-function toggleHoles(show, allHoles = []) {
-    if (show) {
-        if (maskLayer) return;
-        const world = [
-            [90, -180],
-            [90, 180],
-            [-90, 180],
-            [-90, -180]
-        ];
-        maskLayer = L.polygon([world, ...allHoles], {
-            fillColor: '#C0C0C0',
-            fillOpacity: 0.75,
-            stroke: false,
-            interactive: false,
-            pane: 'overlayPane',
-            smoothFactor: 0.1,
-            noClip: true
-        }).addTo(map);
-        maskLayer.bringToBack();
-        maskLayer._zoomHandler = () => {
-            maskLayer && maskLayer.bringToBack();
-        };
-        map.on('zoomend', maskLayer._zoomHandler);
-    } else {
-        if (maskLayer) {
-            map.off('zoomend', maskLayer._zoomHandler);
-            map.removeLayer(maskLayer);
-            maskLayer = null;
-        }
-    }
-}
-function toggleLabel(isOn) {
-    if (!labelStyleEl) {
-        labelStyleEl = document.getElementById('hide-labels-style') || (() => {
-            const el = document.createElement('style');
-            el.id = 'hide-labels-style';
-            document.head.appendChild(el);
-            return el;
-        })();
-    }
-    labelStyleEl.innerHTML = isOn ? '' : `
-        .leaflet-label-pane,.windy-layer-labels,.labels-layer {
-            display:none!important;pointer-events:none!important;
-        }
-        canvas.vector-field-layer { display:block!important; }`;
-}
-function toggleWindTurbine(isOn) {
-    Object.values(turbineMarkers).forEach(({ marker }) => {
-        if (!marker) return;
-        if (isOn) {
-            if (!poleLayerGroup.hasLayer(marker)) {
-                marker.addTo(poleLayerGroup);
-            }
-        } else {
-            if (poleLayerGroup.hasLayer(marker)) {
-                poleLayerGroup.removeLayer(marker);
-            }
-        }
-    });
-}
-function toggleSatellite(mode) {
-    if (!map) return;
-    const isSatellite = mode === 'satellite';
-    if (isSatellite) {
-        if (!satelliteLayer) {
-            satelliteLayer = L.tileLayer(
-                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-                { attribution: 'Tiles &copy; Esri', maxZoom: 18 }
-            );
-        }
-        if (!map.hasLayer(satelliteLayer)) satelliteLayer.addTo(map);
-        windyAPI?.store.set('overlay', null);
-        windyAPI?.store.set('graticule', false);
-        toggleHoles(false, allHoles);
-        toggleWindTurbine(false);
-        toggleFocus(false);
-        toggleEquipment(false);
-        toggleWind(false);
-        $(".is_wind").addClass("d-none");
-    } else {
-        if (satelliteLayer && map.hasLayer(satelliteLayer)) {
-            map.removeLayer(satelliteLayer);
-        }
-        windyAPI?.store.set('overlay', 'wind');
-        windyAPI?.store.set('graticule', false);
-        const windturbines = getLocalBool('windturbine', windturbine);
-        const equipments   = getLocalBool('equipment', equipment);
-        const focus        = getLocalBool('focus', false);
-        const winds        = getLocalBool('winds', true);
-        toggleHoles(true, allHoles);
-        toggleWindTurbine(windturbines);
-        toggleEquipment(equipments);
-        toggleFocus(focus);
-        toggleWind(winds);
-        $('#toggle-windturbine').prop('checked', windturbines);
-        $('#toggle-equipment').prop('checked', equipments);
-        $('#toggle-focus').prop('checked', focus);
-        $('#toggle-wind-values').prop('checked', winds);
-        $(".is_wind").removeClass("d-none");
-    }
-    map.setMaxZoom(isSatellite ? 18 : 11);
-    map.setZoom(Math.min(map.getZoom(), map.getMaxZoom()));
-}
-function _buildTurbineIcon(size) { 
-    const iconUrl = (globalWindturbineIcon && globalWindturbineIcon.url) ? `${BASE_URL}/${globalWindturbineIcon.url}` : '';
-    if (iconUrl) {
-        return L.icon({
-            iconUrl: iconUrl,
-            iconSize: [size, size],
-            iconAnchor: [size / 2, size / 2],
-            popupAnchor: [0, -size / 2],
-            className: 'turbine-icon'
-        });
-    }
-    return L.divIcon({
-        className: 'turbine-dot',
-        iconSize: [size, size],
-        iconAnchor: [size / 2, size / 2],
-        html: `<div style="width: ${size}px; height: ${size}px; background: radial-gradient(circle at 30% 30%, #ef1515, #ef1515);  border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`
-    });
-}
-function resetView() {
-    if (!initialBounds) return;
-    const fromCenter  = map.getCenter();
-    const toCenter    = initialBounds.getCenter();
-    const distDeg     = Math.hypot(toCenter.lat - fromCenter.lat, toCenter.lng - fromCenter.lng);
-    const zoomDiff    = Math.abs((map.getZoom() || 10) - map.getBoundsZoom(initialBounds, false, [20, 20]));
-    const rawDuration = 1.2 + distDeg * 2.2 + zoomDiff * 0.18;
-    const duration    = Math.min(3.0, Math.max(1.2, rawDuration));
-    try {
-        if (windyAPI?.map?.stop)  windyAPI.map.stop();
-        if (windyAPI?.store?.set) windyAPI.store.set('overlay', windyAPI.store.get('overlay'));
-    } catch (_) {}
-    map.options.zoomAnimation = false;
-    map.setView(toCenter, map.getBoundsZoom(initialBounds, false, [20, 20]), {
-        animate:       true,
-        duration,
-        easeLinearity: 0.08,
-        noMoveStart:   true,
-    });
-    map.once('moveend', () => {
-        map.options.zoomAnimation = true;
-    });
-}
 function highlightAreaItem(index) {
     document.querySelectorAll('.ap-item').forEach(el => el.classList.remove('active'));
     document.getElementById(`ap-item-${index}`)?.classList.add('active');
 }
 function toggleAreaPanel() {
     document.getElementById('area-panel')?.classList.toggle('collapsed');
+}
+function renderErrorAlert(type, message) {
+    return `<div class="alert alert-${type} m-3" role="alert">${message}</div>`;
 }

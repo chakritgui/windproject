@@ -20,42 +20,53 @@
         echo $line;
         file_put_contents($LOG_FILE, $line, FILE_APPEND);
     }
-    if (file_exists($LOCK_FILE) && (time() - filemtime($LOCK_FILE)) < 300) {
-        logMsg("Another process is running. Exit.");
-        exit;
+    register_shutdown_function(function() use ($LOCK_FILE) {
+        if (file_exists($LOCK_FILE)) {
+            unlink($LOCK_FILE);
+        }
+    });
+    if (file_exists($LOCK_FILE)) {
+        $lastRun = filemtime($LOCK_FILE);
+        if ((time() - $lastRun) < 300) {
+            logMsg("Another process is running (Started at: " . date('H:i:s', $lastRun) . "). Exit.");
+            exit;
+        }
     }
     file_put_contents($LOCK_FILE, time());
     logMsg("Cron Job Started...");
     try {
         $db = Database::getInstance()->pdo;
-        $fetchWindSpeed = new fetchWindSpeed($db);
+        $fetchWindSpeed = new fetchWindSpeed($db); 
         $points = $fetchWindSpeed->getPoints();
         if (empty($points)) {
-            logMsg("No points found.");
-            unlink($LOCK_FILE);
+            logMsg("No points found to process.");
             exit;
         }
-        logMsg("Total points: " . count($points));
+        logMsg("Total points to process: " . count($points));
         $BATCH_SIZE = 20;
         $SLEEP_MS   = 500;
         for ($i = 0; $i < count($points); $i += $BATCH_SIZE) {
-            $batch = array_slice($points, $i, $BATCH_SIZE);
+            $batch = array_slice($points, $i, $BATCH_SIZE);  
             try {
-                $db->beginTransaction();
+                $db->beginTransaction();     
                 $result = $fetchWindSpeed->processBatch($batch);
-                $fetchWindSpeed->saveBatch($result);
-                $db->commit();
-                logMsg("Batch " . ($i / $BATCH_SIZE + 1) . " success (" . count($batch) . " points)");
+                if (!empty($result)) {
+                    $fetchWindSpeed->saveBatch($result);
+                    $db->commit();
+                    logMsg("Batch " . (floor($i / $BATCH_SIZE) + 1) . " success (" . count($result) . " points)");
+                } else {
+                    $db->rollBack();
+                    logMsg("Batch " . (floor($i / $BATCH_SIZE) + 1) . " skipped: No data returned from API");
+                }
             } catch (\Exception $e) {
-                $db->rollBack();
-                logMsg("Batch error: " . $e->getMessage());
+                if ($db->inTransaction()) {
+                    $db->rollBack();
+                }
+                logMsg("Batch Error (Index $i): " . $e->getMessage());
             }
             usleep($SLEEP_MS * 1000);
         }
-        logMsg("Cron Job Completed");
+        logMsg("Cron Job Completed Successfully.");
     } catch (\Exception $e) {
         logMsg("Fatal Error: " . $e->getMessage());
-    }
-    if (file_exists($LOCK_FILE)) {
-        unlink($LOCK_FILE);
     }

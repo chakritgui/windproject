@@ -39,21 +39,41 @@ class fetchWindSpeed {
         }
         return $output;
     }
-    public function saveBatch($rows) {
-        if (empty($rows)) return;
-        $sql = "INSERT INTO wp_wind_data (station_id, wind_speed_100m, wind_direction_100m, calculated_150m, created_at) VALUES ";
-        $values = [];
-        $params = [];
-        foreach ($rows as $i => $r) {
-            $values[] = "(:station_id{$i}, :speed{$i}, :dir{$i}, :speed150{$i}, NOW())";
-            $params[":station_id{$i}"] = $r['station_id'];
-            $params[":speed{$i}"]      = $r['speed'];
-            $params[":dir{$i}"]        = $r['dir'];
-            $params[":speed150{$i}"]   = $r['speed150'];
-        }
-        $sql .= implode(',', $values);
+    public function saveBatch($results) {
+        $sql = "INSERT INTO wp_wind_data (
+                    station_id, 
+                    wind_speed_100m, 
+                    wind_direction_100m, 
+                    wind_speed_120m, 
+                    wind_direction_120m, 
+                    source, 
+                    created_at
+                ) VALUES (
+                    :station_id, 
+                    :ws100, 
+                    :wd100, 
+                    :ws120, 
+                    :wd120, 
+                    :source, 
+                    NOW()
+                ) 
+                ON DUPLICATE KEY UPDATE 
+                    wind_speed_100m = VALUES(wind_speed_100m),
+                    wind_direction_100m = VALUES(wind_direction_100m),
+                    wind_speed_120m = VALUES(wind_speed_120m),
+                    wind_direction_120m = VALUES(wind_direction_120m),
+                    updated_at = NOW()";
         $stmt = $this->db->prepare($sql);
-        $stmt->execute($params);
+        foreach ($results as $row) {
+            $stmt->execute([
+                ':station_id' => $row['station_id'],
+                ':ws100'      => $row['wind_speed_100m'],
+                ':wd100'      => $row['wind_direction_100m'],
+                ':ws120'      => $row['wind_speed_120m'],
+                ':wd120'      => $row['wind_direction_120m'],
+                ':source'     => 'open-meteo'
+            ]);
+        }
     }
     private function fetchWithRetry($url, $maxRetry = 3) {
         for ($i = 0; $i <= $maxRetry; $i++) {

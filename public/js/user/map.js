@@ -3,29 +3,27 @@ function initMap() {
     windyInit(options, async api => {
         const { store, picker, map: windyMap } = api;
         windyAPI = api;
-        map = windyMap;
-        if (typeof restoreMapSettings === 'function') {
-            restoreMapSettings();
-        }
+        map      = windyMap;
+        if (typeof restoreMapSettings === 'function') restoreMapSettings();
         poleLayerGroup = L.layerGroup().addTo(map);
         store.set('overlay', 'wind');
         store.set('level', DEFAULT_LEVEL);
         try {
             const [masterResult, windAreaResult] = await Promise.allSettled([
                 fetchJSON(`${BASE_URL}/api/master`),
-                fetchJSON(`${BASE_URL}/api/wind.boundary`)
+                fetchJSON(`${BASE_URL}/api/wind.boundary`),
             ]);
-            const masterData   = masterResult.status === 'fulfilled' ? masterResult.value : null;
+            const masterData   = masterResult.status   === 'fulfilled' ? masterResult.value   : null;
             const windAreaData = windAreaResult.status === 'fulfilled' ? windAreaResult.value : null;
             if (!masterData) {
-                console.error("Master data is required but failed to load.");
+                console.error('Master data is required but failed to load.');
             }
             if (windAreaData) {
                 await renderWindAreas(picker, windAreaData, masterData);
             }
             if (masterData) {
                 applyMasterSettings(masterData);
-                show_country_line = masterData.show_country_line;
+                show_country_line   = masterData.show_country_line;
                 country_layers_data = masterData.country_layers_data;
             }
             await loadPoles();
@@ -44,34 +42,14 @@ function initMap() {
                 _drawCountryLines(country_layers_data);
             }
         } catch (error) {
-            console.error("Initialization Error:", error);
+            console.error('Initialization Error:', error);
         }
     });
-}
-function _drawCountryLines(rawData) {
-    try {
-        const geoData = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
-        geoDataGlobal = geoData;
-        if (countryLayer) {
-            map.removeLayer(countryLayer);
-        }
-        countryLayer = L.geoJSON(geoData, {
-            style: { 
-                color: '#161616', 
-                weight: 1.5,
-                fillOpacity: 0, 
-                interactive: false 
-            }
-        });
-        countryLayer.addTo(map);
-    } catch (err) {
-        console.error('Error drawing country lines:', err);
-    }
 }
 function applyMasterSettings(master) {
     if (!master?.center_lat || !master?.center_lng) return;
     globalWindturbineIcon = master.windturbine_icon || '';
-    globalPoleIcon = master.pole_icon || '';
+    globalPoleIcon        = master.pole_icon        || '';
     const lat  = parseFloat(master.center_lat);
     const lng  = parseFloat(master.center_lng);
     const zoom = clamp((parseInt(master.zoom_level) || 10) + 1, 1, 13);
@@ -90,6 +68,24 @@ function applyMasterSettings(master) {
         map.setView(adjusted, zoom, { animate: false });
     }
 }
+function _drawCountryLines(rawData) {
+    try {
+        const geoData = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
+        geoDataGlobal = geoData;
+        if (countryLayer) map.removeLayer(countryLayer);
+        countryLayer = L.geoJSON(geoData, {
+            style: {
+                color:       '#161616',
+                weight:      1.5,
+                fillOpacity: 0,
+                interactive: false,
+            },
+        });
+        countryLayer.addTo(map);
+    } catch (err) {
+        console.error('Error drawing country lines:', err);
+    }
+}
 async function refreshAllWindData() {
     if (!windOn || isRefreshing) return;
     const entries = Object.entries(poleMarkers);
@@ -97,7 +93,7 @@ async function refreshAllWindData() {
     isRefreshing = true;
     try {
         const unit = getCurrentUnit();
-        const res = await fetch(`${BASE_URL}/api/wind/latest`);
+        const res  = await fetch(`${BASE_URL}/api/wind/latest`);
         const json = await res.json();
         const data = json.data;
         const windSpeeds = [];
@@ -108,11 +104,11 @@ async function refreshAllWindData() {
             const dir   = parseFloat(weather.wind_direction_100m);
             windSpeeds.push(speed);
             const activeColor = getWindColor(speed);
-            const elSpeed = document.getElementById(p.windId);
-            const elArrow = document.getElementById(p.arrowId);
+            const elSpeed     = document.getElementById(p.windId);
+            const elArrow     = document.getElementById(p.arrowId);
             if (elSpeed) {
-                elSpeed.dataset.raw = speed;
-                elSpeed.textContent = `${(speed * unit.factor).toFixed(1)} ${unit.label}`;
+                elSpeed.dataset.raw  = speed;
+                elSpeed.textContent  = `${(speed * unit.factor).toFixed(1)} ${unit.label}`;
                 elSpeed.setAttribute('fill', activeColor);
             }
             if (elArrow) {
@@ -125,7 +121,7 @@ async function refreshAllWindData() {
             }
         });
         if (windSpeeds.length > 0) {
-            const sum = windSpeeds.reduce((a, b) => a + b, 0);
+            const sum       = windSpeeds.reduce((a, b) => a + b, 0);
             windSummary.max = Math.max(...windSpeeds);
             windSummary.min = Math.min(...windSpeeds);
             windSummary.avg = sum / windSpeeds.length;
@@ -137,9 +133,20 @@ async function refreshAllWindData() {
         isRefreshing = false;
     }
 }
+function startWindAutoRefresh() {
+    if (windInterval) return;
+    windInterval = setInterval(() => {
+        if (windOn && !isRefreshing) refreshAllWindData();
+    }, 5 * 60 * 1000);
+}
+function stopWindAutoRefresh() {
+    if (windInterval) {
+        clearInterval(windInterval);
+        windInterval = null;
+    }
+}
 function updateWindDashboard({ max, min, avg }) {
-    const unit = getCurrentUnit();
-    const { label, factor } = unit;
+    const { label, factor } = getCurrentUnit();
     $('.stat-unit-label').text(label);
     const updateStat = (selectorId, value, defaultClass) => {
         const calculatedValue = (value * factor).toFixed(1);
@@ -152,245 +159,84 @@ function updateWindDashboard({ max, min, avg }) {
     updateStat('#stat-avg-wind', avg, 'text-success');
     initWindUnit();
 }
-let turbineMarkers = {};
-async function loadWindTurbines() {
-    try {
-        const res = await fetchJSON(`${BASE_URL}/api/windturbines.get`);
-        const turbines = Array.isArray(res) ? res : (res.list || []);
-        if (res.icon_config) window.globalWindturbineIcon = res.icon_config;
-        if (!Array.isArray(turbines)) return;
-        Object.values(turbineMarkers).forEach(({ marker }) => {
-            if (marker && poleLayerGroup.hasLayer(marker)) poleLayerGroup.removeLayer(marker);
-        });
-        turbineMarkers = {};
-        const isVisible = localStorage.getItem('windturbine') === 'true';
-        const zoom = map.getZoom();
-        const currentSize = _getTurbineSize(zoom); 
-        const opacity = zoom < 10 ? 0.6 : 1;
-        turbines.forEach((turbine, index) => {
-            const lat = parseFloat(turbine.windturbine_lat);
-            const lng = parseFloat(turbine.windturbine_lng);
-            if (isNaN(lat) || isNaN(lng)) return;
-            const marker = L.marker([lat, lng], {
-                icon: _buildTurbineIcon(currentSize),
-                zIndexOffset: 900,
-                opacity: opacity
-            });
-            marker._turbineData = turbine;
-            if (turbine.windturbine_name) {
-                marker.bindTooltip(turbine.windturbine_name, { permanent: false, direction: 'top' });
-            }
-            turbineMarkers[index] = { marker, turbine };
-            if (isVisible) marker.addTo(poleLayerGroup);
-        });
-        if (!map._turbineZoomBound) {
-            map._turbineZoomBound = true;
-            map.on('zoomend', () => {
-                if (typeof resizeLabel === 'function') resizeLabel();
-            });
-        }
-    } catch (err) {
-        console.error('loadWindTurbines error:', err);
-    }
+function updateWindDashboardUnit(unit) {
+    document.querySelectorAll('.stat-unit-label').forEach(el => {
+        el.textContent = unit.label;
+    });
+    const max = windSummary.max ?? 0;
+    const min = windSummary.min ?? 0;
+    const avg = windSummary.avg ?? 0;
+    if (max === 0 && min === 0 && avg === 0) return;
+    $('.stat-max-wind-val').text((max * unit.factor).toFixed(1));
+    $('.stat-min-wind-val').text((min * unit.factor).toFixed(1));
+    $('.stat-avg-wind-val').text((avg * unit.factor).toFixed(1));
 }
-(function injectPoleStyles() {
-    if (document.getElementById('pole-map-styles')) return;
-    const s = document.createElement('style');
-    s.id = 'pole-map-styles';
-    s.textContent = `
-        .pole-label-wrap svg   { transition: opacity 0.25s ease; }
-        .pole-icon-wrap  svg   { transition: width 0.2s ease, height 0.2s ease; }
-        .leaflet-marker-icon,
-        .leaflet-marker-shadow { transition: transform 0.18s ease, opacity 0.18s ease; }
-    `;
-    document.head.appendChild(s);
-})();
-const POLE_LABEL = {
-    W: 80,
-    H: 26, 
-    POLE_EXCL_R: 28,
-};
-const OFFSET_DIRS = [
-    { dx:  1.00, dy: -0.55 }, 
-    { dx: -1.00, dy: -0.55 },
-    { dx:  1.00, dy:  0.55 },
-    { dx: -1.00, dy:  0.55 },
-    { dx:  0.10, dy: -1.10 },
-    { dx:  0.10, dy:  1.10 },
-    { dx:  1.40, dy:  0.00 },
-    { dx: -1.40, dy:  0.00 },
-];
-function _calcOffsetDist(zoom) {
-    const MIN_ZOOM = 8,  MAX_ZOOM = 19;
-    const MIN_DIST = 42, MAX_DIST = 110;
-    const t = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
-    const ease = 1 - Math.pow(1 - t, 2);
-    return MIN_DIST + (MAX_DIST - MIN_DIST) * ease;
+function setWindUnit(idx) {
+    currentUnitIdx = idx;
+    localStorage.setItem('windUnit', currentUnitIdx);
+    updateWindUI();
+    updateButtonStyles();
 }
-function _calcLabelScale(zoom) {
-    const MIN_ZOOM = 8, MAX_ZOOM = maxZoomLevel;
-    const t = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
-    return 0.52 + 0.68 * t;
-}
-function _calcIconSize(zoom) {
-    const MIN_ZOOM = 8,  MAX_ZOOM = maxZoomLevel;
-    const MIN_SIZE = 24, MAX_SIZE = 120;
-    const t    = Math.max(0, Math.min(1, (zoom - MIN_ZOOM) / (MAX_ZOOM - MIN_ZOOM)));
-    const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-    return Math.round(MIN_SIZE + (MAX_SIZE - MIN_SIZE) * ease);
-}
-function getSmartOffset(lat, lng, usedBoxes, map, zoom, polePoints) {
-    const dist  = _calcOffsetDist(zoom);
-    const point = map.latLngToContainerPoint([lat, lng]);
-    const poleBox = {
-        left:   point.x - POLE_LABEL.POLE_EXCL_R,
-        right:  point.x + POLE_LABEL.POLE_EXCL_R,
-        top:    point.y - POLE_LABEL.POLE_EXCL_R * 2,
-        bottom: point.y + POLE_LABEL.POLE_EXCL_R * 0.5,
-    };
-    for (let expansion = 0; expansion < 5; expansion++) {
-        for (const dir of OFFSET_DIRS) {
-            const dx = Math.round(dir.dx * dist + expansion * 30 * Math.sign(dir.dx || 1));
-            const dy = Math.round(dir.dy * dist + expansion * 20 * Math.sign(dir.dy || 1));
-            const labelCX = point.x + dx;
-            const labelCY = point.y + dy;
-            const box = {
-                left:   labelCX - POLE_LABEL.W / 2,
-                right:  labelCX + POLE_LABEL.W / 2,
-                top:    labelCY - POLE_LABEL.H / 2,
-                bottom: labelCY + POLE_LABEL.H / 2,
-            };
-            if (usedBoxes.some(b => _overlaps(box, b))) continue;
-            if (_overlaps(box, poleBox)) continue;
-            const tooCloseToPole = (polePoints || []).some(p => {
-                const ddx = p.x - labelCX, ddy = p.y - labelCY;
-                return Math.sqrt(ddx * ddx + ddy * ddy) < POLE_LABEL.POLE_EXCL_R * 1.4;
-            });
-            if (tooCloseToPole) continue;
-            usedBoxes.push(box);
-            return { dx, dy };
-        }
-    }
-    const dx = Math.round(dist * 1.6);
-    const dy = Math.round((Math.random() - 0.5) * dist * 0.6);
-    return { dx, dy };
-}
-function _overlaps(a, b) {
-    return !(a.right < b.left || a.left > b.right || a.bottom < b.top || a.top > b.bottom);
-}
-function buildWindLabelSVG({ anchorX, anchorY, labelDx, labelDy, windId, arrowId, windSpeed = 0, windDir = 0, scale = 1 }) {
-    const BOX_H = Math.round(28 * scale);
-    const PADDING = Math.round(10 * scale);
-    const fs1 = Math.max(7,  Math.round(13 * scale));
-    const fs2 = Math.max(6,  Math.round(10 * scale));
-    const fs3 = Math.max(7,  Math.round(10 * scale)); 
-    const rx = Math.round(BOX_H / 2);
-    const dotR = Math.max(2.5, 3.5 * scale);
-    const lw = Math.max(0.8, 1.2 * scale);
-    const unit = getCurrentUnit();
-    const displayVal = (windSpeed * unit.factor).toFixed(1);
-    const label = unit.label;
-    const arrowW = Math.round(fs3 * 1.2);
-    const textW = Math.round(displayVal.length * fs1 * 0.62 + label.length * fs2 * 0.6 + 2);
-    const BOX_W = PADDING + arrowW + Math.round(PADDING * 0.5) + textW + PADDING;
-    const svgW  = Math.abs(labelDx) + BOX_W + 13;
-    const svgH  = Math.abs(labelDy) + BOX_H + 12;
-    const tipX  = anchorX + labelDx;
-    const tipY  = anchorY + labelDy;
-    const boxX  = labelDx >= 0 ? tipX : tipX - BOX_W;
-    const boxY  = tipY - BOX_H / 2;
-    const lineStartX = labelDx >= 0 ? boxX : boxX + BOX_W;
-    const lineStartY = tipY;
-    const arrowCX = boxX + PADDING + Math.round(arrowW / 2);
-    const arrowCY = tipY;
-    const textX   = boxX + PADDING + arrowW + Math.round(PADDING * 0.5);
-    const activeColor  = getWindColor(windSpeed);
-    const glowColor    = activeColor;
-    const lgId   = `lg-${windId}`;
-    const shId   = `sh-${windId}`;
-    const glowId = `gw-${windId}`;
-    return {
-        svgW, svgH,
-        html: `
-            <svg width="${svgW}" height="${svgH}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;pointer-events:none;display:block">
-            <defs>
-                <linearGradient id="${lgId}" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%"   stop-color="#1e2228"/>
-                    <stop offset="100%" stop-color="#0d0f12"/>
-                </linearGradient>
-                <filter id="${shId}" x="-30%" y="-40%" width="160%" height="180%">
-                    <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.55"/>
-                </filter>
-                <filter id="${glowId}" x="-50%" y="-50%" width="200%" height="200%">
-                    <feGaussianBlur stdDeviation="2.5" result="blur"/>
-                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-            </defs>
-            <line x1="${anchorX}" y1="${anchorY}" x2="${lineStartX}" y2="${lineStartY}" stroke="rgba(255,255,255,0.18)" stroke-width="${lw}" stroke-dasharray="${Math.round(3 * scale)},${Math.round(2.5 * scale)}" stroke-linecap="round"/>
-            <circle cx="${anchorX}" cy="${anchorY}" r="${dotR + 2}" fill="${glowColor}" fill-opacity="0.15"/>
-            <circle cx="${anchorX}" cy="${anchorY}" r="${dotR}" fill="${glowColor}" fill-opacity="0.7" stroke="rgba(255,255,255,0.35)" stroke-width="0.8"/>
-            <rect id="rect-${windId}" x="${boxX}" y="${boxY}" width="${BOX_W}" height="${BOX_H}" rx="${rx}" fill="url(#${lgId})" fill-opacity="0.96" stroke="${glowColor}" stroke-width="0.65" stroke-opacity="0.45" filter="url(#${shId})"/>
-            <rect x="${boxX + 1}" y="${boxY + 1}" width="${BOX_W - 2}" height="${Math.round(BOX_H * 0.45)}" rx="${rx}" fill="rgba(255,255,255,0.04)"/>
-            <g id="${arrowId}" data-cx="${arrowCX}" data-cy="${arrowCY}" data-dir="${windDir}" transform="rotate(${windDir - 90}, ${arrowCX}, ${arrowCY})">
-                <text x="${arrowCX}" y="${arrowCY}" font-size="${fs3}" fill="${activeColor}" text-anchor="middle" dominant-baseline="central" filter="url(#${glowId})">➤</text>
-            </g>
-            <text id="${windId}" data-raw="${windSpeed}" x="${textX}" y="${arrowCY}" font-size="${fs1}" font-weight="700" fill="${activeColor}" text-anchor="start" dominant-baseline="central" style="paint-order:stroke; stroke:rgba(0,0,0,0.4); stroke-width:1.2px; stroke-linejoin:round"> 
-                ${displayVal}
-                <tspan class="wind-unit-label" font-weight="400" font-size="${fs2}" dx="${Math.round(2 * scale)}"> 
-                    ${label}
-                </tspan>
-            </text>
-        </svg>`
-    };
-}
-function _buildPoleIcon(pole, size = 20) {
-    if (pole.type_icon?.trim()) {
-        return L.icon({
-            iconUrl:     pole.type_icon,
-            iconSize:    [size, size],
-            iconAnchor:  [size / 2, size],
-            popupAnchor: [0, -size]
-        });
-    }
-    const isEven  = pole.type_id % 2 === 0;
-    const color   = isEven ? '#f5a623' : '#5bb8f5';
-    const color2  = isEven ? '#d4821e' : '#1e90d4';
-    const glowCol = isEven ? 'rgba(91,184,245,0.6)' : 'rgba(245,166,35,0.6)';
-    const baseW = 20;
-    const baseH = 52;
-    const ratio = baseH / baseW;
-    const w = size;
-    const h = size * ratio; 
-    const extraY = 30;
-    const extra = `
-        <line x1="3" y1="${extraY}" x2="-5" y2="${extraY}" stroke="rgba(255,255,255,0.85)" stroke-width="1.3" stroke-linecap="round"/>
-        <circle cx="-5" cy="${extraY}" r="1.8" fill="${color}" stroke="rgba(255,255,255,0.9)" stroke-width="0.7"/>
-    `;
-    return L.divIcon({
-        className:  'pole-icon-wrap',
-        iconSize:   [w, h],
-        iconAnchor: [w * 0.15, h],
-        html: `
-            <svg width="${w}" height="${h}" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg" style="overflow:visible; display:block; filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.3));">
-            <defs>
-                <filter id="pglow-${pole.poles_id}" x="-100%" y="-100%" width="300%" height="300%">
-                    <feGaussianBlur stdDeviation="1.5" result="blur"/>
-                    <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-                </filter>
-            </defs>
-            <ellipse cx="3" cy="49" rx="5" ry="2" fill="${glowCol}" filter="url(#pglow-${pole.poles_id})"/>
-            <circle cx="3" cy="49" r="3.5" fill="rgba(20,22,26,0.9)" stroke="${color}" stroke-width="1.5"/> 
-            <line x1="3" y1="46" x2="3" y2="3" stroke="rgba(255,255,255,0.82)" stroke-width="1.7" stroke-linecap="round"/>  
-            <line x1="3" y1="5" x2="15" y2="5" stroke="rgba(255,255,255,0.82)" stroke-width="1.3" stroke-linecap="round"/>
-            <circle cx="15" cy="5" r="2.5" fill="${color}" stroke="rgba(255,255,255,0.85)" stroke-width="0.7" filter="url(#pglow-${pole.poles_id})"/>
-            <line x1="3" y1="15" x2="11" y2="15" stroke="rgba(255,255,255,0.82)" stroke-width="1.3" stroke-linecap="round"/>
-            <circle cx="11" cy="15" r="2" fill="${color2}" stroke="rgba(255,255,255,0.85)" stroke-width="0.7"/>
-            ${extra}
-        </svg>`
+function updateButtonStyles() {
+    document.querySelectorAll('.btn-unit-select').forEach((btn, index) => {
+        btn.classList.toggle('active', index === currentUnitIdx);
     });
 }
+function initWindUnit() {
+    updateWindUI();
+}
+function updateWindUI() {
+    const unit = getCurrentUnit();
+    updateButtonStyles();
+    const legendUnit = document.getElementById('legend-unit-label');
+    if (legendUnit) legendUnit.textContent = unit.label;
+    [0, 2, 5, 10, 15, 20, 25].forEach(ms => {
+        const el = document.getElementById(`legend-${ms}`);
+        if (!el) return;
+        const val = Math.round(ms * unit.factor);
+        el.textContent = ms === 25 ? `${val}+` : val;
+    });
+    const bar = document.querySelector('.legend-bar');
+    if (bar) {
+        const gradient = WINDY_COLORS.map(c => c.color).join(', ');
+        bar.style.background = `linear-gradient(to right, ${gradient})`;
+    }
+    resizeLabel();
+    if (typeof customPickerMarker !== 'undefined' && customPickerMarker?.isPopupOpen()) {
+        const popupPane = customPickerMarker.getPopup().getElement();
+        if (popupPane) {
+            const speedValEl = popupPane.querySelector('#picker-wind-value');
+            const speedWrap  = popupPane.querySelector('#picker-speed-wrap');
+            const unitLabel  = popupPane.querySelector('#picker-unit-label');
+            const arrowG     = popupPane.querySelector('#picker-arrow-g');
+            if (speedValEl) {
+                const ms    = parseFloat(speedValEl.dataset.raw);
+                const color = getWindColor(ms);
+                speedValEl.textContent = (ms * unit.factor).toFixed(1);
+                if (speedWrap) speedWrap.style.color = color;
+                if (unitLabel) unitLabel.textContent  = unit.label;
+                if (arrowG) {
+                    arrowG.querySelectorAll('line, polygon, circle').forEach(shape => {
+                        const attr = shape.tagName === 'line' ? 'stroke' : 'fill';
+                        shape.setAttribute(attr, color);
+                    });
+                }
+            }
+            const gustValEl = popupPane.querySelector('#picker-gust-value');
+            const gustWrap  = popupPane.querySelector('#picker-gust-wrap');
+            if (gustValEl) {
+                const gMs = parseFloat(gustValEl.dataset.raw);
+                gustValEl.textContent = `${(gMs * unit.factor).toFixed(1)} ${unit.label}`;
+                if (gustWrap) gustWrap.style.color = getWindColor(gMs);
+            }
+        }
+    }
+    if (typeof updateWindDashboardUnit === 'function') {
+        updateWindDashboardUnit(unit);
+    }
+}
 async function loadPoles() {
-    if (poleLayerGroup && poleLayerGroup.getLayers().length > 0) {
+    if (poleLayerGroup?.getLayers().length > 0) {
         if (windOn) refreshAllWindData();
         return;
     }
@@ -424,17 +270,17 @@ async function loadPoles() {
             if (isNaN(lat) || isNaN(lng)) continue;
             if (poleMarkers[pole.poles_id]) continue;
             const marker = L.marker([lat, lng], {
-                icon: _buildPoleIcon(pole, initSize),
-                zIndexOffset: 1000
+                icon:        _buildPoleIcon(pole, initSize),
+                zIndexOffset: 1000,
             }).addTo(poleLayerGroup);
             marker._poleData = pole;
             marker.on('click', () => openPoles(pole.poles_id));
             const windId  = `wind-auto-${pole.poles_id}`;
             const arrowId = `arrow-${pole.poles_id}`;
-            const otherPolePoints = polePoints.filter(p => {
-                const pt = map.latLngToContainerPoint([lat, lng]);
-                return !(Math.abs(p.x - pt.x) < 1 && Math.abs(p.y - pt.y) < 1);
-            });
+            const pt = map.latLngToContainerPoint([lat, lng]);
+            const otherPolePoints = polePoints.filter(p =>
+                !(Math.abs(p.x - pt.x) < 1 && Math.abs(p.y - pt.y) < 1)
+            );
             const off = getSmartOffset(lat, lng, window._usedLabelBoxes, map, map.getZoom(), otherPolePoints);
             const anchorX = off.dx >= 0 ? 0 : Math.abs(off.dx);
             const anchorY = off.dy >= 0 ? 0 : Math.abs(off.dy);
@@ -443,17 +289,17 @@ async function loadPoles() {
                 labelDx: off.dx,
                 labelDy: off.dy,
                 windId, arrowId,
-                scale: initScale
+                scale: initScale,
             });
             const labelMarker = L.marker([lat, lng], {
                 icon: L.divIcon({
                     className:  'pole-label-wrap',
                     iconSize:   [svgW, svgH],
                     iconAnchor: [anchorX, anchorY],
-                    html
+                    html,
                 }),
                 interactive:  false,
-                zIndexOffset: 500
+                zIndexOffset: 500,
             }).addTo(poleLayerGroup);
             if (!windOn) labelMarker.setOpacity(0);
             poleMarkers[pole.poles_id] = { marker, labelMarker, lat, lng, windId, arrowId };
@@ -470,17 +316,11 @@ async function loadPoles() {
         map._poleZoomBound = true;
         let _zoomTimer = null;
         map.on('zoom', () => {
-            const size = _calcIconSize(map.getZoom());
-            const entries = Object.values(poleMarkers);
-            entries.forEach(({ marker }) => {
+            const size    = _calcIconSize(map.getZoom());
+            Object.values(poleMarkers).forEach(({ marker }) => {
                 const pd = marker._poleData;
-                if (!pd) {
-                    console.warn('no _poleData on marker');
-                    return;
-                }
-                const newIcon = _buildPoleIcon(pd, size);
-                marker.setIcon(newIcon);
-                const el = marker.getElement();
+                if (!pd) { console.warn('no _poleData on marker'); return; }
+                marker.setIcon(_buildPoleIcon(pd, size));
             });
         });
         map.on('zoomend', () => {
@@ -490,6 +330,99 @@ async function loadPoles() {
                 refreshAllWindData();
             }, 80);
         });
+    }
+}
+function resizeLabel() {
+    const zoom     = map.getZoom();
+    const scale    = _calcLabelScale(zoom);
+    let   poleSize = 20;
+    if (globalPoleIcon?.sizes?.[zoom]) {
+        poleSize = globalPoleIcon.sizes[zoom];
+    }
+    window._usedLabelBoxes = [];
+    const polePoints = Object.values(poleMarkers).map(({ lat, lng }) =>
+        map.latLngToContainerPoint([lat, lng])
+    );
+    Object.values(poleMarkers).forEach(({ marker, labelMarker, lat, lng, windId, arrowId }) => {
+        const pd = marker._poleData;
+        if (!pd) return;
+        marker.setIcon(_buildPoleIcon(pd, poleSize));
+        const pt         = map.latLngToContainerPoint([lat, lng]);
+        const otherPts   = polePoints.filter(p =>
+            !(Math.abs(p.x - pt.x) < 1 && Math.abs(p.y - pt.y) < 1)
+        );
+        const off        = getSmartOffset(lat, lng, window._usedLabelBoxes, map, zoom, otherPts);
+        const anchorX    = off.dx >= 0 ? 0 : Math.abs(off.dx);
+        const anchorY    = off.dy >= 0 ? 0 : Math.abs(off.dy);
+        const windEl     = document.getElementById(windId);
+        const arrowEl    = document.getElementById(arrowId);
+        const windSpeed  = windEl  ? parseFloat(windEl.dataset.raw)   || 0 : 0;
+        const windDir    = arrowEl ? parseFloat(arrowEl.dataset.dir)  || 0 : 0;
+        const { svgW, svgH, html } = buildWindLabelSVG({
+            anchorX, anchorY,
+            labelDx: off.dx,
+            labelDy: off.dy,
+            windId, arrowId,
+            windSpeed, windDir, scale,
+        });
+        labelMarker.setIcon(L.divIcon({
+            className:  'pole-label-wrap',
+            iconSize:   [svgW, svgH],
+            iconAnchor: [anchorX, anchorY],
+            html,
+        }));
+    });
+    if (typeof turbineMarkers !== 'undefined') {
+        const turbineSize = _getTurbineSize(zoom);
+        const opacity     = zoom < 10 ? 0.7 : 1;
+        Object.values(turbineMarkers).forEach(({ marker }) => {
+            if (!marker) return;
+            marker.setIcon(_buildTurbineIcon(turbineSize));
+            marker.setOpacity(opacity);
+        });
+    }
+}
+async function loadWindTurbines() {
+    try {
+        const res     = await fetchJSON(`${BASE_URL}/api/windturbines.get`);
+        const turbines = Array.isArray(res) ? res : (res.list || []);
+        if (res.icon_config) window.globalWindturbineIcon = res.icon_config;
+        if (!Array.isArray(turbines)) return;
+        Object.values(turbineMarkers).forEach(({ marker }) => {
+            if (marker && poleLayerGroup.hasLayer(marker)) poleLayerGroup.removeLayer(marker);
+        });
+        turbineMarkers = {};
+        const isVisible  = localStorage.getItem('windturbine') === 'true';
+        const zoom       = map.getZoom();
+        const currentSize = _getTurbineSize(zoom);
+        const opacity    = zoom < 10 ? 0.6 : 1;
+        turbines.forEach((turbine, index) => {
+            const lat = parseFloat(turbine.windturbine_lat);
+            const lng = parseFloat(turbine.windturbine_lng);
+            if (isNaN(lat) || isNaN(lng)) return;
+            const marker = L.marker([lat, lng], {
+                icon:        _buildTurbineIcon(currentSize),
+                zIndexOffset: 900,
+                opacity,
+            });
+            marker._turbineData = turbine;
+            if (turbine.windturbine_name) {
+                marker.bindTooltip(turbine.windturbine_name, {
+                    permanent:  false,
+                    direction: 'top',
+                });
+            }
+            turbineMarkers[index] = { marker, turbine };
+            if (isVisible) marker.addTo(poleLayerGroup);
+        });
+        if (!map._turbineZoomBound) {
+            map._turbineZoomBound = true;
+            map.on('zoomend', () => {
+                if (typeof resizeLabel === 'function') resizeLabel();
+            });
+        }
+    } catch (err) {
+        console.error('loadWindTurbines error:', err);
     }
 }
 function handlePickerOpening(latlng, picker, polygonLayer) {
@@ -503,7 +436,7 @@ async function openCustomPicker(latlng) {
     const lng = Number(latlng.lng ?? latlng.lon);
     if (isNaN(lat) || isNaN(lng)) return;
     const pickerIcon = L.divIcon({
-        className: 'popupTop',
+        className:  'popupTop',
         iconSize:   [24, 60],
         iconAnchor: [4, 58],
         html: `
@@ -512,12 +445,16 @@ async function openCustomPicker(latlng) {
             <line x1="4" y1="53" x2="4" y2="4" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
             <line x1="4" y1="6"  x2="18" y2="6" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
             <line x1="4" y1="16" x2="14" y2="16" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
-            <circle cx="18" cy="6" r="2.5" fill="#5bb8f5" stroke="#ffffff" stroke-width="1"/>
-            <circle cx="14" cy="16" r="2" fill="#5bb8f5" stroke="#ffffff" stroke-width="1"/>
+            <circle cx="18" cy="6"  r="2.5" fill="#5bb8f5" stroke="#ffffff" stroke-width="1"/>
+            <circle cx="14" cy="16" r="2"   fill="#5bb8f5" stroke="#ffffff" stroke-width="1"/>
             <line x1="4" y1="4" x2="4" y2="0" stroke="rgba(255,255,255,0.6)" stroke-width="1" stroke-dasharray="2 2"/>
-        </svg>`
+        </svg>`,
     });
-    customPickerMarker = L.marker([lat, lng], { icon: pickerIcon, draggable: true, zIndexOffset: 1000 }).addTo(map);
+    customPickerMarker = L.marker([lat, lng], {
+        icon:        pickerIcon,
+        draggable:   true,
+        zIndexOffset: 1000,
+    }).addTo(map);
     await updateCustomPickerPopup(lat, lng);
     let dragTimer = null;
     customPickerMarker.on('drag', e => {
@@ -547,14 +484,14 @@ async function updateCustomPickerPopup(lat, lng) {
     }
     if (!customPickerMarker.getPopup()) {
         customPickerMarker.bindPopup(content, {
-            pane:        'popupTop',
-            className:   'custom-wind-popup',
-            offset:      L.point(0, -52),
-            closeButton: false,
-            autoClose:   false,
+            pane:         'popupTop',
+            className:    'custom-wind-popup',
+            offset:       L.point(0, -52),
+            closeButton:  false,
+            autoClose:    false,
             closeOnClick: false,
-            maxWidth:    280,
-            minWidth:    210
+            maxWidth:     280,
+            minWidth:     210,
         });
         customPickerMarker.openPopup();
         customPickerMarker.setZIndexOffset(10000);
@@ -564,27 +501,11 @@ async function updateCustomPickerPopup(lat, lng) {
     }
     customPicker = customPickerMarker.getPopup();
 }
-async function fetchWindAtPoint(lat, lng) {
-    try {
-        const url = `${OPEN_METEO}?latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}` + `&current=wind_speed_100m,wind_direction_100m,wind_gusts_10m&wind_speed_unit=ms`;
-        const res  = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        return {
-            speed:     data.current?.wind_speed_100m     ?? null,
-            direction: data.current?.wind_direction_100m ?? null,
-            gusts:     data.current?.wind_gusts_10m      ?? null
-        };
-    } catch (err) {
-        console.error('fetchWindAtPoint error:', err);
-        return { speed: null, direction: null, gusts: null };
-    }
-}
 function buildPickerPopupHTML(lat, lng, { speed, direction, gusts }) {
-    const unit = getCurrentUnit();
-    const compassDir = direction !== null ? degToCompass(direction) : '—';
-    const arrowRotate = direction ?? 0;
-    const speedColor = speed !== null ? getWindColor(speed) : '#aaa';
+    const unit         = getCurrentUnit();
+    const compassDir   = direction !== null ? degToCompass(direction) : '—';
+    const arrowRotate  = direction ?? 0;
+    const speedColor   = speed !== null ? getWindColor(speed) : '#aaa';
     const tickLines = Array.from({ length: 8 }, (_, i) => {
         const a  = (i * 45) * Math.PI / 180;
         const x1 = (36 + 28 * Math.sin(a)).toFixed(1);
@@ -597,7 +518,9 @@ function buildPickerPopupHTML(lat, lng, { speed, direction, gusts }) {
         ? `<div class="cpicker-gust" id="picker-gust-wrap">
                <i class="fa-solid fa-wind" style="font-size:9px"></i>
                <span data-i18n="gusts">${langData['gusts'] || 'Gusts'}</span>
-                <span id="picker-gust-value" data-raw="${gusts}">${(gusts * unit.factor).toFixed(1)} ${unit.label}</span>
+               <span id="picker-gust-value" data-raw="${gusts}">
+                   ${(gusts * unit.factor).toFixed(1)} ${unit.label}
+               </span>
            </div>`
         : '';
     return `
@@ -645,47 +568,6 @@ function closeCustomPicker() {
     }
     customPicker = null;
 }
-function isInsidePolygon(latlng, polygonLayer) {
-    let inside = false;
-    polygonLayer.eachLayer(layer => {
-        if (layer.getBounds?.().contains(latlng)) {
-            const lls = layer.getLatLngs?.();
-            if (lls) inside = pointInLatLngs(latlng, lls[0]);
-        }
-    });
-    return inside;
-}
-function pointInLatLngs(point, polygon) {
-    let inside = false;
-    const n = polygon.length;
-    for (let i = 0, j = n - 1; i < n; j = i++) {
-        const xi = polygon[i].lat, yi = polygon[i].lng;
-        const xj = polygon[j].lat, yj = polygon[j].lng;
-        const hit = ((yi > point.lng) !== (yj > point.lng)) && (point.lat < (xj - xi) * (point.lng - yi) / (yj - yi) + xi);
-        if (hit) inside = !inside;
-    }
-    return inside;
-}
-function clampToPolygon(latlng, polygonLayer) {
-    let closest = null, minDist = Infinity;
-    polygonLayer.eachLayer(layer => {
-        const ring = layer.getLatLngs?.()?.[0];
-        if (!ring) return;
-        for (let i = 0; i < ring.length; i++) {
-            const c = closestPointOnSegment(latlng, ring[i], ring[(i + 1) % ring.length]);
-            const d = map.distance(latlng, c);
-            if (d < minDist) { minDist = d; closest = c; }
-        }
-    });
-    return closest ?? latlng;
-}
-function closestPointOnSegment(p, a, b) {
-    const dx = b.lat - a.lat, dy = b.lng - a.lng;
-    const lenSq = dx * dx + dy * dy;
-    if (lenSq === 0) return a;
-    const t = clamp(((p.lat - a.lat) * dx + (p.lng - a.lng) * dy) / lenSq, 0, 1);
-    return L.latLng(a.lat + t * dx, a.lng + t * dy);
-}
 async function renderWindAreas(picker, areaData, masterData) {
     const { polygons = [] } = areaData;
     if (polygons.length === 0) return;
@@ -695,25 +577,25 @@ async function renderWindAreas(picker, areaData, masterData) {
         }
     });
     isMaskMode = masterData?.polygon_visibility === 'close';
-    const featureGroup = L.featureGroup();
+    const featureGroup  = L.featureGroup();
     const overlapGroups = {};
     polygons.forEach((area, i) => {
         const key = area.overlap_group ?? 'single_' + i;
         if (!overlapGroups[key]) overlapGroups[key] = [];
         overlapGroups[key].push({ index: i, area });
     });
-    Object.entries(overlapGroups).forEach(([groupKey, group]) => {
+    Object.entries(overlapGroups).forEach(([, group]) => {
         const styleGroups = new Map();
         group.forEach(({ index, area }) => {
             if (!area.geo_data) return;
             try {
                 const geoJsonData = JSON.parse(area.geo_data);
                 const styleData   = JSON.parse(area.custom_style || '{}');
-                const styleKey = JSON.stringify({
+                const styleKey    = JSON.stringify({
                     fillColor:   styleData.fillColor   || '#3388ff',
                     fillOpacity: styleData.fillOpacity !== undefined ? parseFloat(styleData.fillOpacity) : 0.2,
-                    color:       styleData.color       || '#3388ff',
-                    weight:      styleData.weight      !== undefined ? parseFloat(styleData.weight) : 2,
+                    color:       styleData.color  || '#3388ff',
+                    weight:      styleData.weight !== undefined ? parseFloat(styleData.weight) : 2,
                 });
                 if (!styleGroups.has(styleKey)) {
                     styleGroups.set(styleKey, { styleData, areas: [] });
@@ -726,43 +608,38 @@ async function renderWindAreas(picker, areaData, masterData) {
         styleGroups.forEach(({ styleData, areas }) => {
             const fillColor   = styleData.fillColor   || '#3388ff';
             const fillOpacity = styleData.fillOpacity !== undefined ? parseFloat(styleData.fillOpacity) : 0.2;
-            const color       = styleData.color       || '#3388ff';
-            const weight      = styleData.weight      || 2;
-            const allGeoJsons = areas.map(a => a.geoJsonData);
-            const unionGeo    = _mergePolygonsToUnion(allGeoJsons);
+            const color  = styleData.color  || '#3388ff';
+            const weight = styleData.weight || 2;
+            const unionGeo = _mergePolygonsToUnion(areas.map(a => a.geoJsonData));
             if (unionGeo) {
                 L.geoJSON(unionGeo, {
                     style: () => ({
-                        fillColor,
-                        fillOpacity,
+                        fillColor, fillOpacity,
                         stroke:      false,
                         interactive: false,
-                    })
+                    }),
                 }).addTo(featureGroup);
             }
             areas.forEach(({ index, geoJsonData, area }, posInGroup) => {
-                const tempLayer = L.geoJSON(geoJsonData);
                 try {
-                    const b = tempLayer.getBounds();
-                    if (b.isValid()) {
-                        areaBounds[index] = b;
-                    }
+                    const b = L.geoJSON(geoJsonData).getBounds();
+                    if (b.isValid()) areaBounds[index] = b;
                 } catch (_) {}
                 const isRepresentative = posInGroup === 0;
                 const strokeLayer = L.geoJSON(geoJsonData, {
                     style: () => ({
                         fill:        true,
-                        fillColor: 'rgba(0,0,0,0)',
+                        fillColor:   'rgba(0,0,0,0)',
                         fillOpacity: 0,
                         color,
-                        weight:      isRepresentative ? weight : 0,  
-                        stroke:      isRepresentative ? (weight !== 0) : false,
+                        weight:      isRepresentative ? weight : 0,
+                        stroke:      isRepresentative ? weight !== 0 : false,
                         opacity:     isRepresentative ? 1 : 0,
                         interactive: true,
                     }),
                 });
                 areaLayers[index] = strokeLayer;
-                strokeLayer.on('click', function (e) {
+                strokeLayer.on('click', e => {
                     highlightAreaItem(index);
                     flyToArea(index, area, true, false, e.latlng);
                 });
@@ -771,9 +648,7 @@ async function renderWindAreas(picker, areaData, masterData) {
                     strokeLayer.eachLayer(layer => {
                         const lls = layer.getLatLngs?.();
                         if (!lls) return;
-                        const rings = Array.isArray(lls[0]) && !(lls[0][0] instanceof L.LatLng)
-                            ? lls.map(inner => inner[0])
-                            : [lls[0]];
+                        const rings = Array.isArray(lls[0]) && !(lls[0][0] instanceof L.LatLng) ? lls.map(inner => inner[0]) : [lls[0]];
                         allHoles.push(...rings);
                     });
                 }
@@ -791,8 +666,8 @@ async function renderWindAreas(picker, areaData, masterData) {
         map.options.minZoom = map.getBoundsZoom(bounds);
         map.setMinZoom(fitZoom);
         map.setMaxBounds(padded);
-        map.on('drag',    () => map.panInsideBounds(padded, { animate: false }));
-        map.on('moveend', () => {
+        map.on('drag',    ()  => map.panInsideBounds(padded, { animate: false }));
+        map.on('moveend', ()  => {
             if (!map._flyToFrame && !padded.contains(map.getCenter())) {
                 map.panInsideBounds(padded, { animate: true });
             }
@@ -800,90 +675,17 @@ async function renderWindAreas(picker, areaData, masterData) {
     }
     buildAreaPanel(polygons);
 }
-function _mergePolygonsToUnion(geoJsonArray) {
-    if (!geoJsonArray?.length) return null;
-    if (geoJsonArray.length === 1) return _toFeatureCollection(geoJsonArray[0]);
-    if (typeof turf === 'undefined') {
-        console.warn('[_mergePolygonsToUnion] turf not loaded');
-        return { type: 'FeatureCollection', features: geoJsonArray.map(g => _toFeature(g)) };
-    }
-    try {
-        const features = geoJsonArray.flatMap(g => _toFeatureCollection(g).features).filter(f => f?.geometry);
-        if (!features.length) return null;
-        let merged = features[0];
-        for (let i = 1; i < features.length; i++) {
-            try {
-                merged = turf.union(merged, features[i]);
-            } catch (e) {
-                console.warn('[_mergePolygonsToUnion] union failed at index', i, e);
-            }
-        }
-        return merged;
-    } catch (err) {
-        console.error('[_mergePolygonsToUnion] error:', err);
-        return _toFeatureCollection(geoJsonArray[0]);
-    }
-}
-function _mergePolygonsNoOverlap(geoJsonArray) {
-    if (typeof turf === 'undefined') {
-        console.warn('[renderWindAreas] Turf.js not loaded');
-        return { type: 'FeatureCollection', features: geoJsonArray.map(g => _toFeature(g)) };
-    }
-    try {
-        const features = geoJsonArray.flatMap(g => {
-            const fc = _toFeatureCollection(g);
-            return fc.features;
-        }).filter(f => f?.geometry);
-        let resultFeatures = [];
-        let accumulated = null;
-        features.forEach((feature, i) => {
-            try {
-                let cleanFeature = feature;
-                if (accumulated) {
-                    try {
-                        cleanFeature = turf.difference(feature, accumulated);
-                    } catch (err) {
-                        console.warn('difference error', err);
-                    }
-                }
-                if (cleanFeature) {
-                    resultFeatures.push(cleanFeature);
-                    accumulated = accumulated ? turf.union(accumulated, feature) : feature;
-                }
-            } catch (err) {
-                console.warn('process feature error', err);
-            }
-        });
-        return {
-            type: 'FeatureCollection',
-            features: resultFeatures
-        };
-    } catch (err) {
-        console.error('[renderWindAreas] _mergePolygonsNoOverlap error:', err);
-        return { type: 'FeatureCollection', features: geoJsonArray.map(g => _toFeature(g)) };
-    }
-}
-function _toFeatureCollection(g) { 
-    if (g?.type === 'FeatureCollection') return g; 
-    if (g?.type === 'Feature') return { type: 'FeatureCollection', features: [g] }; 
-    return { 
-        type: 'FeatureCollection', 
-        features: [{ 
-            type: 'Feature', 
-            geometry: g, 
-            properties: {} 
-        }] 
-    }; 
-}
 function buildAreaPanel(polygons) {
     const list = document.getElementById('ap-list');
     if (!list) return;
     if (!polygons?.length) {
         list.innerHTML = `
-            <div class="p-4 text-center">
-                <i class="fa-solid fa-folder-open d-block mb-2 opacity-20" style="font-size:24px"></i>
-                <div class="small text-muted">${langData['no_data_found'] || 'No data available'}</div>
-            </div>`;
+        <div class="p-4 text-center">
+            <i class="fa-solid fa-folder-open d-block mb-2 opacity-20" style="font-size:24px"></i>
+            <div class="small text-muted">
+                ${langData['no_data_found'] || 'No data available'}
+            </div>
+        </div>`;
         return;
     }
     list.innerHTML = polygons.map((area, i) => {
@@ -913,11 +715,10 @@ function flyToArea(areaIndex, areaObj, openPicker = false, openProject = false, 
         targetBounds = geoLayer.getBounds();
     }
     if (!targetBounds?.isValid()) return;
-    const groupKey   = areaObj?.overlap_group ?? 'single_' + areaIndex;
-    const geoLayer   = areaLayers[areaIndex];
-    const focusZoom  = map.getBoundsZoom(targetBounds, false, [25, 25]);
-    const currentMax = map.options.maxBounds;
-    const needsRelax = currentMax && !currentMax.contains(targetBounds);
+    const geoLayer    = areaLayers[areaIndex];
+    const focusZoom   = map.getBoundsZoom(targetBounds, false, [25, 25]);
+    const currentMax  = map.options.maxBounds;
+    const needsRelax  = currentMax && !currentMax.contains(targetBounds);
     const fromCenter  = map.getCenter();
     const toCenter    = targetBounds.getCenter();
     const distDeg     = Math.hypot(toCenter.lat - fromCenter.lat, toCenter.lng - fromCenter.lng);
@@ -925,20 +726,18 @@ function flyToArea(areaIndex, areaObj, openPicker = false, openProject = false, 
     const rawDuration = 1.2 + distDeg * 2.2 + zoomDiff * 0.18;
     const duration    = Math.min(3.0, Math.max(1.2, rawDuration));
     if (needsRelax) {
-        const relaxed = currentMax.extend(targetBounds).pad(0.08);
-        map.setMaxBounds(relaxed);
+        map.setMaxBounds(currentMax.extend(targetBounds).pad(0.08));
     }
     try {
         if (windyAPI?.map?.stop)  windyAPI.map.stop();
         if (windyAPI?.store?.set) windyAPI.store.set('overlay', windyAPI.store.get('overlay'));
     } catch (_) {}
-    const targetCenter = targetBounds.getCenter();
     map.options.zoomAnimation = false;
-    map.setView(targetCenter, focusZoom, {
-        animate: true,
+    map.setView(targetBounds.getCenter(), focusZoom, {
+        animate:       true,
         duration,
         easeLinearity: 0.08,
-        noMoveStart: true,
+        noMoveStart:   true,
     });
     map.once('moveend', () => {
         map.options.zoomAnimation = true;
@@ -952,9 +751,7 @@ function flyToArea(areaIndex, areaObj, openPicker = false, openProject = false, 
         }
         if (openPicker) {
             const pickerLatLng = clickLatLng || targetBounds.getCenter();
-            setTimeout(() => {
-                handlePickerOpening(pickerLatLng, windyAPI.picker, geoLayer);
-            }, 200);
+            setTimeout(() => handlePickerOpening(pickerLatLng, windyAPI.picker, geoLayer), 200);
         }
         if (openProject) {
             const projectId = areaObj?.project_id;
@@ -962,7 +759,27 @@ function flyToArea(areaIndex, areaObj, openPicker = false, openProject = false, 
         }
     });
 }
-document.getElementById('area-panel-toggle')?.addEventListener('click', toggleAreaPanel);
+function resetView() {
+    if (!initialBounds) return;
+    const fromCenter  = map.getCenter();
+    const toCenter    = initialBounds.getCenter();
+    const distDeg     = Math.hypot(toCenter.lat - fromCenter.lat, toCenter.lng - fromCenter.lng);
+    const targetZoom  = map.getBoundsZoom(initialBounds, false, [20, 20]);
+    const zoomDiff    = Math.abs((map.getZoom() || 10) - targetZoom);
+    const duration    = Math.min(3.0, Math.max(1.2, 1.2 + distDeg * 2.2 + zoomDiff * 0.18));
+    try {
+        if (windyAPI?.map?.stop)  windyAPI.map.stop();
+        if (windyAPI?.store?.set) windyAPI.store.set('overlay', windyAPI.store.get('overlay'));
+    } catch (_) {}
+    map.options.zoomAnimation = false;
+    map.setView(toCenter, targetZoom, {
+        animate:       true,
+        duration,
+        easeLinearity: 0.08,
+        noMoveStart:   true,
+    });
+    map.once('moveend', () => { map.options.zoomAnimation = true; });
+}
 function createMaskLayer(geoData) {
     if (!geoData) return null;
     const world = [[-90, -180], [-90, 180], [90, 180], [90, -180]];
@@ -976,24 +793,208 @@ function createMaskLayer(geoData) {
         }
     });
     return L.polygon([world, ...holes], {
-        color: 'transparent',
-        fillColor: '#000',
+        color:       'transparent',
+        fillColor:   '#000',
         fillOpacity: 0.5,
-        interactive: false
+        interactive: false,
     });
+}
+
+function toggleHoles(show, allHoles = []) {
+    if (show) {
+        if (maskLayer) return;
+        const world = [[90, -180], [90, 180], [-90, 180], [-90, -180]];
+        maskLayer = L.polygon([world, ...allHoles], {
+            fillColor:   '#C0C0C0',
+            fillOpacity: 0.75,
+            stroke:      false,
+            interactive: false,
+            pane:        'overlayPane',
+            smoothFactor: 0.1,
+            noClip:      true,
+        }).addTo(map);
+        maskLayer.bringToBack();
+        maskLayer._zoomHandler = () => maskLayer?.bringToBack();
+        map.on('zoomend', maskLayer._zoomHandler);
+    } else {
+        if (maskLayer) {
+            map.off('zoomend', maskLayer._zoomHandler);
+            map.removeLayer(maskLayer);
+            maskLayer = null;
+        }
+    }
+}
+function toggleFocus(isOn) {
+    focusOn = isOn;
+    if (!map.getPane('focusPane')) {
+        const pane = map.createPane('focusPane');
+        pane.style.zIndex       = 450;
+        pane.style.pointerEvents = 'none';
+    }
+    if (focusMaskLayer) {
+        map.removeLayer(focusMaskLayer);
+        focusMaskLayer = null;
+    }
+    map.eachLayer(layer => {
+        if (layer.options?.id === 'focus-mask-layer') map.removeLayer(layer);
+    });
+    if (isOn && geoDataGlobal) {
+        const world       = [[90, -180], [90, 180], [-90, 180], [-90, -180]];
+        const countryHoles = [];
+        geoDataGlobal.features.forEach(feature => {
+            const geom = feature.geometry;
+            if (geom.type === 'Polygon') {
+                geom.coordinates.forEach(ring => countryHoles.push(ring.map(c => [c[1], c[0]])));
+            } else if (geom.type === 'MultiPolygon') {
+                geom.coordinates.forEach(polygon =>
+                    polygon.forEach(ring => countryHoles.push(ring.map(c => [c[1], c[0]])))
+                );
+            }
+        });
+        focusMaskLayer = L.polygon([world, ...countryHoles], {
+            id:          'focus-mask-layer',
+            fillColor:   '#161616',
+            fillOpacity: 0.5,
+            stroke:      false,
+            interactive: false,
+            pane:        'focusPane',
+            smoothFactor: 1,
+        }).addTo(map);
+    }
+}
+function toggleAnimation(isOn) {
+    $('#windy #map-container .leaflet-tile-pane .particles-layer')
+        .css('z-index', isOn ? 500 : 0);
+}
+function toggleLabel(isOn) {
+    if (!labelStyleEl) {
+        labelStyleEl = document.getElementById('hide-labels-style') || (() => {
+            const el = document.createElement('style');
+            el.id = 'hide-labels-style';
+            document.head.appendChild(el);
+            return el;
+        })();
+    }
+    labelStyleEl.innerHTML = isOn ? '' : `
+        .leaflet-label-pane,.windy-layer-labels,.labels-layer {
+            display:none!important;pointer-events:none!important;
+        }
+        canvas.vector-field-layer { display:block!important; }`;
+}
+function toggleWindTurbine(isOn) {
+    Object.values(turbineMarkers).forEach(({ marker }) => {
+        if (!marker) return;
+        if (isOn) {
+            if (!poleLayerGroup.hasLayer(marker)) marker.addTo(poleLayerGroup);
+        } else {
+            if (poleLayerGroup.hasLayer(marker))  poleLayerGroup.removeLayer(marker);
+        }
+    });
+}
+function toggleEquipment(isOn) {
+    if (!map || !poleLayerGroup) return;
+    if (isOn) {
+        if (!map.hasLayer(poleLayerGroup)) poleLayerGroup.addTo(map);
+        Object.values(poleMarkers).forEach(p => {
+            p.marker?.setOpacity(1);
+            p.labelMarker?.setOpacity(windOn ? 1 : 0);
+        });
+        _applyWindState(isOn);
+        $('#toggle-wind-values').prop('checked', true);
+        $('#wind-status-icon').addClass('spinning');
+    } else {
+        Object.values(poleMarkers).forEach(p => {
+            p.marker?.setOpacity(0);
+            p.labelMarker?.setOpacity(0);
+        });
+        $('#toggle-wind-values').prop('checked', false);
+        $('#wind-status-icon').removeClass('spinning');
+        windOn = false;
+    }
+}
+function _applyWindState(isOn) {
+    windOn = isOn;
+    if (windyAPI?.store) {
+        windyAPI.store.set('overlay', isOn ? 'wind' : '');
+    }
+    Object.values(poleMarkers).forEach(p => {
+        const isPoleVisible = p.marker?.options.opacity > 0;
+        p.labelMarker?.setOpacity(isOn && isPoleVisible ? 1 : 0);
+    });
+    $('#wind-status-icon').toggleClass('spinning', isOn);
+    $('.map-wind-label').stop().fadeTo(300, isOn ? 1 : 0);
+    stopWindAutoRefresh();
+    if (isOn) {
+        refreshAllWindData();
+        startWindAutoRefresh();
+    }
+}
+function toggleWind(isOn) {
+    if (isOn && !$('#toggle-equipment').prop('checked')) {
+        $('#toggle-equipment').prop('checked', true);
+        toggleEquipment(true);
+    }
+    _applyWindState(isOn);
+}
+function toggleSatellite(mode) {
+    if (!map) return;
+    const isSatellite = mode === 'satellite';
+    if (isSatellite) {
+        if (!satelliteLayer) {
+            satelliteLayer = L.tileLayer(
+                'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                { attribution: 'Tiles &copy; Esri', maxZoom: 18 }
+            );
+        }
+        if (!map.hasLayer(satelliteLayer)) satelliteLayer.addTo(map);
+        windyAPI?.store.set('overlay',   null);
+        windyAPI?.store.set('graticule', false);
+        toggleHoles(false, allHoles);
+        toggleWindTurbine(false);
+        toggleFocus(false);
+        toggleEquipment(false);
+        toggleWind(false);
+        $('.is_wind').addClass('d-none');
+    } else {
+        if (satelliteLayer && map.hasLayer(satelliteLayer)) {
+            map.removeLayer(satelliteLayer);
+        }
+        windyAPI?.store.set('overlay',   'wind');
+        windyAPI?.store.set('graticule', false);
+        const windturbines = getLocalBool('windturbine', windturbine);
+        const equipments   = getLocalBool('equipment',   equipment);
+        const focus        = getLocalBool('focus',       false);
+        const winds        = getLocalBool('winds',       true);
+        toggleHoles(true, allHoles);
+        toggleWindTurbine(windturbines);
+        toggleEquipment(equipments);
+        toggleFocus(focus);
+        toggleWind(winds);
+        $('#toggle-windturbine').prop('checked', windturbines);
+        $('#toggle-equipment').prop('checked',   equipments);
+        $('#toggle-focus').prop('checked',       focus);
+        $('#toggle-wind-values').prop('checked', winds);
+        $('.is_wind').removeClass('d-none');
+    }
+    map.setMaxZoom(isSatellite ? 18 : 11);
+    map.setZoom(Math.min(map.getZoom(), map.getMaxZoom()));
 }
 async function loadMenuLevel(level) {
     const cfg = MENU_LEVELS[level];
     if (!cfg) return;
-    for (let i = level; i <= 3; i++) $(`#menu-level-${i}`).removeClass('active').hide().empty();
+    for (let i = level; i <= 3; i++) {
+        $(`#menu-level-${i}`).removeClass('active').hide().empty();
+    }
     const data = await fetchJSON(cfg.endpoint, menuState).catch(() => []);
     if (!data.length) return;
-    let html = `<div class="menu-header" data-i18n="${cfg.lang}">${langData[cfg.lang] || cfg.title}</div>`;
+    let html = `<div class="menu-header" data-i18n="${cfg.lang}">
+        ${langData[cfg.lang] || cfg.title}
+    </div>`;
     data.forEach(item => {
-        const label = item[cfg.label].replace(/\r\n|\n/g, '<br />');
-        let extraInfo = '';
-        if(cfg.title === 'PROJECT') {
-            extraInfo = item.project_status_color ? `<i class="fa-solid fa-circle-dot status-pulse me-2" style="color:${item.project_status_color};margin-right:6px"></i>` : '';
+        const label    = item[cfg.label].replace(/\r\n|\n/g, '<br />');
+        let extraInfo  = '';
+        if (cfg.title === 'PROJECT' && item.project_status_color) {
+            extraInfo = `<i class="fa-solid fa-circle-dot status-pulse me-2" style="color:${item.project_status_color};margin-right:6px"></i>`;
         }
         if (cfg.isLast) {
             html += `<div class="menu-item station-item" onclick="handleStationClick(${item.poles_lat},${item.poles_lng},${item.poles_id},this)">
@@ -1011,11 +1012,402 @@ async function loadMenuLevel(level) {
     panel.html(html).addClass('active').fadeIn();
     if (isMobile()) panel[0].scrollIntoView({ behavior: 'smooth' });
 }
-$(document).on('click', () => $('.menu-panel').fadeOut());
-$('.menu-panel').on('click', e => e.stopPropagation());
+function handleStationClick(lat, lng, id, el) {
+    if (isNaN(lat) || isNaN(lng)) return;
+    $('.station-item').removeClass('selected');
+    $(el).addClass('selected');
+    $('.menu-panel').fadeOut();
+    openPoles(id);
+}
+function selectItem(level, id, el) {
+    $(el).addClass('selected').siblings().removeClass('selected');
+    menuState[MENU_LEVELS[level].key] = id;
+    loadMenuLevel(level + 1);
+}
+async function openPoles(poleId) {
+    const mode = localStorage.getItem('map_views') || 'wind';
+    if(mode === 'satellite') {
+        return;
+    }
+    const $modal  = $('#windModal');
+    const $dialog = $modal.find('.modal-dialog');
+    const $body   = $modal.find('.modal-body');
+    const $header = $modal.find('.modal-header');
+    const $footer = $modal.find('.modal-footer');
+    $dialog.removeClass('modal-fullscreen');
+    $header.html(`
+        <h5 class="modal-title"></h5>
+        <div class="ms-auto d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-sm poles-ctrl-btn" id="btn-fullscreen" title="Fullscreen">
+                <i class="fa-regular fa-window-maximize"></i>
+            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>`);
+    $body.html(`
+        <div class="poles-skeleton">
+            <div class="sk-cover"></div>
+            <div style="padding:24px 20px">
+                <div class="sk-line" style="width:55%;height:22px;margin-bottom:10px"></div>
+                <div class="sk-line" style="width:28%;height:14px;margin-bottom:24px"></div>
+                <div class="sk-line" style="height:12px;margin-bottom:8px"></div>
+                <div class="sk-line" style="height:12px;margin-bottom:8px"></div>
+                <div class="sk-line" style="width:80%;height:12px"></div>
+            </div>
+        </div>`);
+    $footer.html(`
+        <button type="button" class="poles-btn-primary" onclick="openFilterModal(${poleId})" data-i18n="view_report"></button>
+        <button type="button" class="poles-btn-ghost" data-bs-dismiss="modal" data-i18n="close"></button>`);
+    bootstrap.Modal.getOrCreateInstance($modal[0]).show();
+    $modal.find('#btn-fullscreen').off('click').on('click', function () {
+        $dialog.toggleClass('modal-fullscreen');
+        $(this).find('i').toggleClass('fa-window-maximize fa-window-restore');
+    });
+    try {
+        const res  = await fetch(`${BASE_URL}/api/poles.info`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ id: poleId }),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        const data = json.poles_id ? json : json.data;
+        if (!data?.poles_id) {
+            $body.html(renderErrorAlert('warning', langData['no_data_found'] || 'No data found'));
+            return;
+        }
+        const lang     = typeof currentLang !== 'undefined' ? currentLang : 'th';
+        const fullBase = BASE_URL.replace(/\/$/, '');
+        const hasContent = !!data.content;
+        const title      = hasContent ? (data.content.title[lang] || data.content.title['th']) : data.installations_name;
+        let bodyContent = '';
+        if (hasContent && data.content?.content) {
+            const co  = data.content.content;
+            const ord = [lang, ...['en', 'lo', 'th'].filter(l => l !== lang)];
+            for (const l of ord) {
+                if (co[l]?.trim()) { bodyContent = co[l]; break; }
+            }
+        }
+        bodyContent = bodyContent.replace(
+            /src="(?!(http|https|\/\/))/g,
+            `src="${fullBase}/`
+        );
+        const bg       = data.project_bg || {};
+        const projBg   = bg.project_background;
+        const opacity  = bg.project_opacity > 0 ? bg.project_opacity / 100 : 1;
+        const fadeVal  = 1 - opacity;
+        const bgStyle  = projBg ? `background-image:linear-gradient(rgba(255,255,255,${fadeVal}),rgba(255,255,255,${fadeVal})),url('${fullBase}/${projBg}');background-size:cover;background-position:top center;background-repeat:no-repeat;` : '';
+        const coverHtml =
+            hasContent &&
+            data.content?.cover &&
+            data.content?.cover_display === 'yes'
+                ? `<div class="poles-cover-wrap">
+                       <img src="${fullBase}/${data.content.cover}" alt="cover" loading="lazy" class="poles-cover-img">
+                       <div class="poles-cover-overlay"></div>
+                   </div>`
+                : '';
+        const chip = (iconClass, color, labelKey, value) => `
+        <div class="poles-chip">
+            <div class="poles-chip-icon" style="color:${color}">
+                <i class="${iconClass}"></i>
+            </div>
+            <div>
+                <div class="poles-chip-label" data-i18n="${labelKey}"></div>
+                <div class="poles-chip-value">${value}</div>
+            </div>
+        </div>`;
+        $body.html(`
+        <div class="poles-detail animate__animated animate__fadeIn">
+            <div class="poles-header-card">
+                <div class="poles-header-left">
+                    <div class="poles-avatar"><i class="fas fa-broadcast-tower"></i></div>
+                    <div>
+                        <div class="poles-name">
+                            ${data.installations_name}
+                            <span class="poles-code">#${data.poles_code}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="poles-chips">
+                ${chip('fa-solid fa-diagram-project', '#2d7fc1', 'project',  data.project_name)}
+                ${chip('fa-solid fa-arrows-alt-v',    '#0891b2', 'level',    data.height_name)}
+                ${chip('fa-solid fa-map-marker-alt',  '#059669', 'location',
+                    `${data.poles_lat}, ${data.poles_lng}`)}
+            </div>
+            <div class="poles-content-section" style="${bgStyle}">
+                ${data.content_id ? `
+                    ${coverHtml}
+                    ${data.content.presentation?.length
+                        ? renderPresentationShow(data.content.presentation)
+                        : ''}
+                    <article class="poles-article">
+                        <h4 class="poles-article-title">${title}</h4>
+                        <div class="poles-article-meta">
+                            <i class="fa-regular fa-calendar-check"></i>
+                            ${data.updated_at || data.created_at || ''}
+                        </div>
+                        <div class="poles-article-body article-content">${bodyContent}</div>
+                    </article>
+                    <div class="multimedia-container px-1">
+                        ${renderMultimedia(data.content, lang, fullBase)}
+                    </div>
+                ` : `
+                    ${!projBg ? `
+                        <div class="poles-empty">
+                            <i class="fa-regular fa-file-lines"></i>
+                            <div class="poles-empty-title">
+                                ${langData['no_content_available'] || 'No content available'}
+                            </div>
+                            <div class="poles-empty-sub">
+                                ${langData['content_nothing_hear'] || "It looks like there's nothing here."}
+                            </div>
+                        </div>` : '<div style="padding:40px 0"></div>'}
+                `}
+            </div>
+        </div>`);
+        $header.find('.modal-title').html(`
+        <span class="project-status">
+            <i class="fa-solid fa-circle-dot status-pulse me-2" style="color:${data.project_status_color || '#ccc'};font-size:0.8em"></i>
+            <span class="fw-bold" style="font-size:0.9rem;color:#444">
+                ${data.project_status_name || '—'}
+            </span>
+        </span>`);
+        if (typeof updateText === 'function') updateText($body[0]);
+        $body.find('.article-content img').each(function () {
+            const $img = $(this);
+            const src  = $img.attr('src');
+            if (!src) return;
+            $img.removeAttr('width height');
+            let style = ($img.attr('style') || '').replace(/width\s*:\s*[^;]+;?/gi, '').replace(/height\s*:\s*[^;]+;?/gi, '');
+            $img.attr({ style: style.trim(), loading: 'lazy' });
+            if (!$img.parent('a').length) {
+                $img.wrap(`<a href="${src}" data-fancybox="content-images" class="content-img-link"></a>`);
+            }
+            $img.css({ cursor: 'zoom-in', transition: 'opacity 0.2s' }).addClass('hover-opacity');
+        });
+        if (typeof Fancybox !== 'undefined') {
+            Fancybox.bind('[data-fancybox]', {
+                Hash:    false,
+                Toolbar: { display: { left: ['infobar'], right: ['close'] } },
+            });
+        }
+    } catch (err) {
+        console.error('openPoles error:', err);
+        $body.html(renderErrorAlert(
+            'danger',
+            langData['cannot_load'] || 'Failed to load data. Please try again later.'
+        ));
+    }
+}
+function renderMultimedia(content, lang, baseUrl) {
+    if (!content) return '';
+    let html = '';
+    if (content.images360?.length) {
+        html += `
+        <div class="mm-section">
+            <div class="mm-section-header">
+                <div class="mm-section-icon" style="background:rgba(6,182,212,0.12);color:#0891b2">
+                    <i class="fa-solid fa-street-view"></i>
+                </div>
+                <span>${langData['vr_experience'] || '360° Experience'}</span>
+            </div>
+            <div class="mm-grid">
+                ${content.images360.map(vr => `
+                    <div class="mm-thumb" onclick="openVRModal('${baseUrl}/${vr.url}')">
+                        <img src="${baseUrl}/${vr.url}" loading="lazy">
+                        <div class="mm-vr-badge">
+                            <i class="fa-solid fa-rotate fa-spin me-2"></i>360°
+                        </div>
+                        <div class="mm-thumb-overlay">
+                            <i class="fa-solid fa-expand"></i>
+                        </div>
+                    </div>`).join('')}
+            </div>
+        </div>`;
+    }
+    if (content.images?.length) {
+        html += `
+        <div class="mm-section">
+            <div class="mm-section-header">
+                <div class="mm-section-icon" style="background:rgba(45,127,193,0.12);color:#2d7fc1">
+                    <i class="fa-solid fa-images"></i>
+                </div>
+                <span>${langData['gallery'] || 'Gallery'}</span>
+            </div>
+            <div class="mm-grid">
+                ${content.images.map(img => `
+                    <a href="${baseUrl}/${img.url}" data-fancybox="pole-gallery" class="mm-thumb">
+                        <img src="${baseUrl}/${img.url}" loading="lazy">
+                        <div class="mm-thumb-overlay">
+                            <i class="fa-solid fa-magnifying-glass-plus"></i>
+                        </div>
+                    </a>`).join('')}
+            </div>
+        </div>`;
+    }
+    if (content.attachments?.length) {
+        html += `
+        <div class="mm-section">
+            <div class="mm-section-header">
+                <div class="mm-section-icon" style="background:rgba(220,38,38,0.10);color:#dc2626">
+                    <i class="fa-solid fa-paperclip"></i>
+                </div>
+                <span>${langData['attachments'] || 'Attachments'}</span>
+            </div>
+            <div class="mm-attachments">
+                ${content.attachments.map(file => {
+                    const isPdf = file.url.toLowerCase().endsWith('.pdf');
+                    const ext   = file.url.split('.').pop().toUpperCase();
+                    return `
+                    <a href="${baseUrl}/${file.url}" download class="mm-att-item">
+                        <div class="mm-att-icon ${isPdf ? 'mm-att-pdf' : 'mm-att-file'}">
+                            <i class="fa-solid ${isPdf ? 'fa-file-pdf' : 'fa-file-lines'}"></i>
+                        </div>
+                        <div class="mm-att-info">
+                            <div class="mm-att-name">${file.name}</div>
+                            <div class="mm-att-ext">${ext} File</div>
+                        </div>
+                        <div class="mm-att-dl">
+                            <i class="fa-solid fa-download"></i>
+                        </div>
+                    </a>`;
+                }).join('')}
+            </div>
+        </div>`;
+    }
+    return html;
+}
+async function openProjectDetail(project_id) {
+    if (!project_id) return;
+    try {
+        const res = await fetch(`${BASE_URL}/api/project.poles`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ project_id }),
+        });
+        const data = await res.json();
+        if (!data?.poles?.length) {
+            console.warn('No poles data for project', project_id);
+            return;
+        }
+        document.getElementById('pp-name').textContent  = data.project_name || 'Unknown Project';
+        document.getElementById('pp-count').textContent = data.poles.length;
+        const statusColor = data.status_color  || '#ccc';
+        const statusName  = (data.project_status || 'UNKNOWN').toUpperCase();
+        const dot  = document.getElementById('pp-status-dot');
+        const pill = document.getElementById('pp-status');
+        dot.style.backgroundColor  = statusColor;
+        pill.style.backgroundColor = statusColor;
+        pill.style.color           = '#fff';
+        pill.textContent           = statusName;
+        const unit = getCurrentUnit();
+        document.getElementById('pp-body').innerHTML = data.poles.map(p => {
+            const isEven  = p.type_id % 2 === 0;
+            const color   = isEven ? '#f5a623' : '#5bb8f5';
+            const color2  = isEven ? '#d4821e' : '#1e90d4';
+            const iconSize = 40;
+            let iconHtml  = '';
+            if (p.type_icon?.trim()) {
+                iconHtml = `<img src="${BASE_URL}/${p.type_icon}" style="width:${iconSize}px;height:${iconSize}px; object-fit:contain; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))" alt="icon">`;
+            } else {
+                const extra = `
+                    <line x1="3" y1="32" x2="-5" y2="32" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+                    <circle cx="-5" cy="32" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>`;
+                iconHtml = `
+                <svg width="20" height="52" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))">
+                    <circle cx="3" cy="49" r="3.5" fill="rgba(255,255,255,0.85)" stroke="${color}" stroke-width="1.5"/>
+                    <line x1="3" y1="46" x2="3" y2="3" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+                    <line x1="3" y1="5"  x2="15" y2="5" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+                    <line x1="3" y1="14" x2="11" y2="14" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+                    ${extra}
+                    <circle cx="15" cy="5"  r="2.2" fill="${color}"  stroke="#ffffff" stroke-width="0.8"/>
+                    <circle cx="11" cy="14" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>
+                </svg>`;
+            }
+            return `
+            <div class="pole-row" onclick="openPoles(${p.poles_id})">
+                <div class="pole-index" style="width:45px;display:flex; justify-content:center;align-items:center;">
+                    ${iconHtml}
+                </div>
+                <div class="pole-info">
+                    <div class="pole-title">
+                        <strong>${p.type_name || 'N/A'}</strong>
+                        <div class="small">${p.installations_name || 'N/A'}</div>
+                    </div>
+                    <div class="pole-coords">
+                        <i class="fa-solid fa-location-dot me-1"></i>
+                        ${p.lat}° N, ${p.lng}° E
+                    </div>
+                    <div class="pole-bar-wrap">
+                        <div class="pole-bar" id="bar-${p.poles_id}" style="width:0%;transition:width 0.6s ease, background-color 0.3s"></div>
+                    </div>
+                </div>
+                <div class="pole-wind-box">
+                    <i class="fa-solid fa-location-arrow wind-arrow" id="wind-arrow-${p.poles_id}"></i>
+                    <span class="pole-wind" id="wind-val-${p.poles_id}" data-raw="0">
+                        -- <small>${unit.label}</small>
+                    </span>
+                </div>
+            </div>`;
+        }).join('');
+        bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('projectCanvas')).show();
+        const lats = data.poles.map(p => p.lat).join(',');
+        const lngs = data.poles.map(p => p.lng).join(',');
+        const weatherRes  = await fetch(
+            `${OPEN_METEO}?latitude=${lats}&longitude=${lngs}` +
+            `&current=wind_speed_100m&wind_speed_unit=ms`
+        );
+        const weatherData = await weatherRes.json();
+        const results     = Array.isArray(weatherData) ? weatherData : [weatherData];
+        let totalWind = 0;
+        data.poles.forEach((p, i) => {
+            const speed   = results[i]?.current?.wind_speed_100m || 0;
+            totalWind    += speed;
+            const elWind  = document.getElementById(`wind-val-${p.poles_id}`);
+            const elArrow = document.getElementById(`wind-arrow-${p.poles_id}`);
+            const elBar   = document.getElementById(`bar-${p.poles_id}`);
+            const elRotor = document.getElementById(`rotor-${p.poles_id}`);
+            if (!elWind || !elBar) return;
+            const activeColor  = getWindColor(speed);
+            const displaySpeed = (speed * unit.factor).toFixed(1);
+            elWind.dataset.raw = speed;
+            elWind.style.color = activeColor;
+            elWind.innerHTML   = `${displaySpeed} <small>${unit.label}</small>`;
+            if (elArrow) elArrow.style.color = activeColor;
+            const pct = Math.min((speed / 25) * 100, 100);
+            requestAnimationFrame(() => {
+                elBar.style.width           = `${pct}%`;
+                elBar.style.backgroundColor = activeColor;
+            });
+            if (elRotor) {
+                const dur = speed > 0 ? Math.max(0.6, 4 - speed * 0.3).toFixed(2) : '2.5';
+                elRotor.style.animationDuration = `${dur}s`;
+            }
+        });
+        const avgSpeed = totalWind / data.poles.length;
+        const avgEl    = document.getElementById('pp-avg-wind');
+        if (avgEl) {
+            avgEl.textContent = `${(avgSpeed * unit.factor).toFixed(1)} ${unit.label}`;
+            avgEl.style.color = getWindColor(avgSpeed);
+        }
+    } catch (err) {
+        console.error('openProject error:', err);
+    }
+}
+Fancybox.bind("[data-fancybox='gallery']", {
+    Hash:    false,
+    Thumbs:  { autoStart: false },
+    Toolbar: {
+        display: {
+            left:   ['infobar'],
+            middle: [],
+            right:  ['iterateZoom', 'close'],
+        },
+    },
+});
 $(document).ready(function () {
-    const $panel = $('#sideControlPanel');
-    const $fab = $('#fabToggle');
+    const $panel   = $('#sideControlPanel');
+    const $fab     = $('#fabToggle');
     const $overlay = $('#panelOverlay');
     const toggleMobilePanel = (forceState = null) => {
         const open = forceState !== null ? forceState : !$panel.hasClass('mobile-open');
@@ -1032,7 +1424,10 @@ $(document).ready(function () {
     });
     let touchStartY = 0;
     $('.drag-handle').on('touchstart', e => { touchStartY = e.originalEvent.touches[0].clientY; }).on('touchmove', e => {
-        if (e.originalEvent.touches[0].clientY - touchStartY > 50 && $panel.hasClass('mobile-open')) {
+        if (
+            e.originalEvent.touches[0].clientY - touchStartY > 50 &&
+            $panel.hasClass('mobile-open')
+        ) {
             toggleMobilePanel(false);
         }
     });
@@ -1041,66 +1436,57 @@ $(document).ready(function () {
             toggleMobilePanel(false);
         }
     });
-    const togglePanelCollapse = (force = null) => {
-        const collapsed = force !== null ? force : !$panel.hasClass('collapsed');
-        $panel.toggleClass('collapsed', collapsed);
-    };
-    $('#toggleExpandBtn').on('click', () => togglePanelCollapse());
-    const setMapMode = (mode) => {
+    $('#toggleExpandBtn').on('click', () => {
+        $panel.toggleClass('collapsed');
+    });
+    window.setMapMode = mode => {
         $('#mapModeWind').toggleClass('active', mode === 'wind');
         $('#mapModeSat').toggleClass('active',  mode === 'satellite');
         toggleSatellite(mode);
         localStorage.setItem('map_views', mode);
     };
-    window.setMapMode = setMapMode;
-    $('#toggle-wind-values').on('change', function () {
-        const isOn = $(this).is(':checked');
-        toggleWind(isOn);
-        localStorage.setItem('winds', isOn ? 'true' : 'false');
-    });
-    $('#toggle-focus').on('change', function () {
-        const isOn = $(this).is(':checked');
-        toggleFocus(isOn);
-        localStorage.setItem('focus', isOn ? 'true' : 'false');
-    });
-    $('#toggle-label').on('change', function () {
-        const isOn = $(this).is(':checked');
-        toggleLabel(isOn);
-        localStorage.setItem('labels', isOn ? 'true' : 'false');
-    });
-    $('#toggle-windturbine').on('change', function () {
-        const isOn = $(this).is(':checked');
-        toggleWindTurbine(isOn);
-        localStorage.setItem('windturbine', isOn ? 'true' : 'false');
-    });
-    $('#toggle-animation').on('change', function () {
-        const isOn = $(this).is(':checked');
-        toggleAnimation(isOn);
-        localStorage.setItem('animation', isOn ? 'true' : 'false');
-    });
-    $('#toggle-equipment').on('change', function () {
-        const isOn = $(this).is(':checked');
-        toggleEquipment(isOn);
-        localStorage.setItem('equipment', isOn ? 'true' : 'false');
-    });
-    window.restoreMapSettings = function() {
-        const restore = (key, $el, fn) => {
-        const val = localStorage.getItem(key);
-        if (val === null) return;
-        const isOn = val === 'true';
-        $el.prop('checked', isOn);
-        if (typeof map !== 'undefined' && map !== null) {
+    const bindToggle = (selector, key, fn) => {
+        $(selector).on('change', function () {
+            const isOn = $(this).is(':checked');
             fn(isOn);
-        }
+            localStorage.setItem(key, isOn ? 'true' : 'false');
+        });
+    };
+    bindToggle('#toggle-wind-values', 'winds',       toggleWind);
+    bindToggle('#toggle-focus',       'focus',        toggleFocus);
+    bindToggle('#toggle-label',       'labels',       toggleLabel);
+    bindToggle('#toggle-windturbine', 'windturbine',  toggleWindTurbine);
+    bindToggle('#toggle-animation',   'animation',    toggleAnimation);
+    bindToggle('#toggle-equipment',   'equipment',    toggleEquipment);
+    window.restoreMapSettings = function () {
+        const restore = (key, $el, fn) => {
+            const val = localStorage.getItem(key);
+            if (val === null) return;
+            const isOn = val === 'true';
+            $el.prop('checked', isOn);
+            if (typeof map !== 'undefined' && map !== null) fn(isOn);
         };
-        restore('winds', $('#toggle-wind-values'), toggleWind);
-        restore('focus', $('#toggle-focus'), toggleFocus);
-        restore('labels', $('#toggle-label'), toggleLabel);
-        restore('windturbine', $('#toggle-windturbine'), toggleWindTurbine);
-        restore('animation', $('#toggle-animation'), toggleAnimation);
-        restore('equipment', $('#toggle-equipment'), toggleEquipment);
+        restore('winds',       $('#toggle-wind-values'), toggleWind);
+        restore('focus',       $('#toggle-focus'),        toggleFocus);
+        restore('labels',      $('#toggle-label'),        toggleLabel);
+        restore('windturbine', $('#toggle-windturbine'),  toggleWindTurbine);
+        restore('animation',   $('#toggle-animation'),    toggleAnimation);
+        restore('equipment',   $('#toggle-equipment'),    toggleEquipment);
     };
 });
+$(document).on('click', () => $('.menu-panel').fadeOut());
+$('.menu-panel').on('click', e => e.stopPropagation());
+$('#mapFilter').on('click', function (e) {
+    e.stopPropagation();
+    const firstPanel = $('#menu-level-1');
+    if (firstPanel.is(':visible')) {
+        $('.menu-panel').fadeOut();
+    } else {
+        menuState = {};
+        loadMenuLevel(1);
+    }
+});
+document.getElementById('area-panel-toggle')?.addEventListener('click', toggleAreaPanel);
 $(document).ready(function () {
     function bindWindLoadingHide() {
         let attempts = 0;
@@ -1114,6 +1500,8 @@ $(document).ready(function () {
     }
     initMap();
     bindWindLoadingHide();
-    if (!isMobile()) $('#area-panel').removeClass('collapsed').css('opacity', '1');
+    if (!isMobile()) {
+        $('#area-panel').removeClass('collapsed').css('opacity', '1');
+    }
     $('.scrolling').removeClass('d-none');
 });
