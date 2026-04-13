@@ -18,23 +18,30 @@ class fetchWindSpeed {
         $url = "https://api.open-meteo.com/v1/forecast?"
             . "latitude=" . implode(',', $lats)
             . "&longitude=" . implode(',', $lngs)
-            . "&current=wind_speed_100m,wind_direction_100m"
+            . "&current=wind_speed_100m,wind_direction_100m,wind_speed_120m,wind_direction_120m"
             . "&wind_speed_unit=ms";
         $data = $this->fetchWithRetry($url);
         if (!$data) return [];
-        $results = is_array($data) ? $data : [$data];
+        $responses = isset($data[0]) ? $data : [$data];
         $output = [];
         foreach ($batch as $i => $s) {
-            if (!isset($results[$i]['current'])) continue;
-            $speed = $results[$i]['current']['wind_speed_100m'] ?? 0;
-            $dir   = $results[$i]['current']['wind_direction_100m'] ?? 0;
+            if (!isset($responses[$i]['current'])) continue;
+            $current = $responses[$i]['current'];
+            $ws100 = $current['wind_speed_100m'] ?? 0;
+            $wd100 = $current['wind_direction_100m'] ?? 0;
+            $ws120 = $current['wind_speed_120m'] ?? 0;
+            $wd120 = $current['wind_direction_120m'] ?? 0;
             $alpha = 0.14;
-            $speed_150 = $speed * pow((150/100), $alpha);
+            $ws150 = $ws100 * pow((150 / 100), $alpha);
+            $ws200 = $ws100 * pow((200 / 100), $alpha);
             $output[] = [
                 'station_id' => $s['poles_id'],
-                'speed'      => $speed,
-                'dir'        => $dir,
-                'speed150'   => $speed_150
+                'ws100'      => $ws100,
+                'wd100'      => $wd100,
+                'ws120'      => $ws120,
+                'wd120'      => $wd120,
+                'ws150'      => $ws150,
+                'ws200'      => $ws200
             ];
         }
         return $output;
@@ -46,15 +53,21 @@ class fetchWindSpeed {
                     wind_direction_100m, 
                     wind_speed_120m, 
                     wind_direction_120m, 
+                    calculated_150m,
+                    calculated_200m,
                     source, 
-                    created_at
+                    created_at,
+                    updated_at
                 ) VALUES (
                     :station_id, 
                     :ws100, 
                     :wd100, 
                     :ws120, 
                     :wd120, 
+                    :ws150,
+                    :ws200,
                     :source, 
+                    NOW(),
                     NOW()
                 ) 
                 ON DUPLICATE KEY UPDATE 
@@ -62,15 +75,19 @@ class fetchWindSpeed {
                     wind_direction_100m = VALUES(wind_direction_100m),
                     wind_speed_120m = VALUES(wind_speed_120m),
                     wind_direction_120m = VALUES(wind_direction_120m),
+                    calculated_150m = VALUES(calculated_150m),
+                    calculated_200m = VALUES(calculated_200m),
                     updated_at = NOW()";
         $stmt = $this->db->prepare($sql);
         foreach ($results as $row) {
             $stmt->execute([
                 ':station_id' => $row['station_id'],
-                ':ws100'      => $row['wind_speed_100m'],
-                ':wd100'      => $row['wind_direction_100m'],
-                ':ws120'      => $row['wind_speed_120m'],
-                ':wd120'      => $row['wind_direction_120m'],
+                ':ws100'      => $row['ws100'],
+                ':wd100'      => $row['wd100'],
+                ':ws120'      => $row['ws120'],
+                ':wd120'      => $row['wd120'],
+                ':ws150'      => $row['ws150'],
+                ':ws200'      => $row['ws200'],
                 ':source'     => 'open-meteo'
             ]);
         }
@@ -80,7 +97,8 @@ class fetchWindSpeed {
             $ch = curl_init($url);
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT => 10
+                CURLOPT_TIMEOUT => 15,
+                CURLOPT_SSL_VERIFYPEER => false 
             ]);
             $response = curl_exec($ch);
             $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
