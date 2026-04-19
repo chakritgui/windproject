@@ -131,7 +131,7 @@
     </div>
     <div class="scp-body" id="scpBody">
         <div class="scp-section">
-            <div class="control-row is_wind">
+            <div class="control-row">
                 <div class="ctrl-label">
                     <i class="fa-solid fa-fan wind-icon-anim" id="wind-status-icon"></i>
                     <span data-i18n="show_wind_values"></span>
@@ -141,7 +141,7 @@
                     <span class="tog-track"></span>
                 </label>
             </div>
-            <div class="control-row is_wind">
+            <div class="control-row">
                 <div class="ctrl-label">
                     <i class="fa-solid fa-crosshairs"></i>
                     <span data-i18n="focus_mode"></span>
@@ -162,7 +162,7 @@
             </div>
         </div>
         <div class="scp-section">
-            <div class="control-row is_wind">
+            <div class="control-row">
                 <div class="ctrl-label">
                     <i class="fas fa-broadcast-tower"></i>
                     <span data-i18n="wind_measurement_equipment"></span>
@@ -172,7 +172,7 @@
                     <span class="tog-track"></span>
                 </label>
             </div>
-            <div class="control-row is_wind">
+            <div class="control-row">
                 <div class="ctrl-label">
                     <i class="bi bi-fan"></i>
                     <span data-i18n="windturbine"></span>
@@ -221,7 +221,7 @@
                 </div>
             </div>
         </div>
-        <div class="scp-section is_wind">
+        <div class="scp-section wind-legend">
             <div class="control-row" style="margin-bottom:0">
                 <div class="ctrl-label">
                     <i class="fa-solid fa-gauge"></i>
@@ -242,7 +242,7 @@
                 <span id="legend-20">20+</span>
             </div>
         </div>
-        <div class="scp-section is_wind" style="border-bottom:none">
+        <div class="scp-section wind-legend" style="border-bottom:none">
             <div class="mini-card-grid-3">
                 <div class="mini-card">
                     <div class="mini-card-label" data-i18n="max_wind_speed">Max speed</div>

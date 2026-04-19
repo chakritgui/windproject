@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 10, 2026 at 10:27 PM
+-- Generation Time: Apr 19, 2026 at 01:45 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -475,6 +475,7 @@ CREATE TABLE `wp_map_master` (
   `polygon_visibility` enum('open','close') NOT NULL DEFAULT 'close',
   `show_country_line` enum('show','hide') NOT NULL DEFAULT 'hide',
   `country_layers_data` longtext,
+  `mode_settings` text,
   `map_labels` enum('yes','no') NOT NULL DEFAULT 'yes',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
@@ -870,10 +871,34 @@ CREATE TABLE `wp_wind_data` (
   `station_id` bigint(20) UNSIGNED NOT NULL,
   `wind_speed_100m` float DEFAULT NULL,
   `wind_direction_100m` float DEFAULT NULL,
-  `wind_speed_120m` float DEFAULT NULL,
-  `wind_direction_120m` float DEFAULT NULL,
-  `calculated_150m` float DEFAULT NULL,
-  `calculated_200m` float DEFAULT NULL,
+  `wind_speed_950hPa` float DEFAULT NULL,
+  `wind_direction_950hPa` float DEFAULT NULL,
+  `wind_speed_925hPa` float DEFAULT NULL,
+  `wind_direction_925hPa` float DEFAULT NULL,
+  `wind_speed_900hPa` float DEFAULT NULL,
+  `wind_direction_900hPa` float DEFAULT NULL,
+  `wind_speed_850hPa` float DEFAULT NULL,
+  `wind_direction_850hPa` float DEFAULT NULL,
+  `wind_speed_800hPa` float DEFAULT NULL,
+  `wind_direction_800hPa` float DEFAULT NULL,
+  `wind_speed_700hPa` float DEFAULT NULL,
+  `wind_direction_700hPa` float DEFAULT NULL,
+  `wind_speed_600hPa` float DEFAULT NULL,
+  `wind_direction_600hPa` float DEFAULT NULL,
+  `wind_speed_500hPa` float DEFAULT NULL,
+  `wind_direction_500hPa` float DEFAULT NULL,
+  `wind_speed_400hPa` float DEFAULT NULL,
+  `wind_direction_400hPa` float DEFAULT NULL,
+  `wind_speed_300hPa` float DEFAULT NULL,
+  `wind_direction_300hPa` float DEFAULT NULL,
+  `wind_speed_250hPa` float DEFAULT NULL,
+  `wind_direction_250hPa` float DEFAULT NULL,
+  `wind_speed_200hPa` float DEFAULT NULL,
+  `wind_direction_200hPa` float DEFAULT NULL,
+  `wind_speed_150hPa` float DEFAULT NULL,
+  `wind_direction_150hPa` float DEFAULT NULL,
+  `wind_speed_10hPa` float DEFAULT NULL,
+  `wind_direction_10hPa` float DEFAULT NULL,
   `source` varchar(50) DEFAULT 'open-meteo',
   `created_at` datetime NOT NULL,
   `updated_at` datetime DEFAULT NULL

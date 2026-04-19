@@ -29,7 +29,7 @@ function initMap() {
             await loadPoles();
             await loadWindTurbines();
             const mode = localStorage.getItem('map_views') || DEFAULT_MODE;
-            toggleSatellite(mode);
+            toggleMapControls(mode);
             $('#mapModeWind').toggleClass('active', mode === 'wind');
             $('#mapModeSat').toggleClass('active',  mode === 'satellite');
             const labels = getLocalBool('labels', masterData?.labels === 'yes');
@@ -943,7 +943,66 @@ function toggleWind(isOn) {
     }
     _applyWindState(isOn);
 }
-function toggleSatellite(mode) {
+const CONTROL_CONFIG = {
+    opt1: {
+        el: '#toggle-wind-values',
+        fn: toggleWind
+    },
+    opt2: {
+        el: '#toggle-equipment',
+        fn: toggleEquipment
+    },
+    opt3: {
+        el: '#toggle-focus',
+        fn: toggleFocus
+    },
+    opt4: {
+        el: '#toggle-windturbine',
+        fn: toggleWindTurbine
+    },
+    opt5: {
+        el: '#toggle-animation',
+        fn: toggleAnimation
+    },
+    opt6: {
+        el: '#toggle-label',
+        fn: toggleLabel
+    },
+    opt7: {
+        el: '.wind-legend',
+        fn: toggleLegend
+    }
+};
+function toggleLegend(isOn) {
+    $('.wind-legend').toggleClass('d-none', !isOn);
+}
+function applyMapControl(mode, mapControlStr) {
+    if (!mapControlStr) return;
+    let mapControl;
+    try {
+        mapControl = JSON.parse(mapControlStr);
+    } catch (e) {
+        console.error('MAP_CONTROL parse error', e);
+        return;
+    }
+    const config = mapControl[mode];
+    if (!config) return;
+    Object.keys(config).forEach(key => {
+        const optKey = key.replace(/^(wind|sat)-/, ''); 
+        const opt = CONTROL_CONFIG[optKey];
+        if (!opt) return;
+        const enabled = config[key] == 1;
+        const $el = $(opt.el).closest('.control-row');
+        $el.toggleClass('d-none', !enabled);
+        if ($(opt.el).is('input[type="checkbox"]')) {
+            $(opt.el).prop('checked', enabled);
+        }
+        if (typeof opt.fn === 'function') {
+            opt.fn(enabled);
+        }
+    });
+}
+function toggleMapControls(mode) {
     if (!map) return;
     const isSatellite = mode === 'satellite';
     if (isSatellite) {
@@ -953,35 +1012,26 @@ function toggleSatellite(mode) {
                 { attribution: 'Tiles &copy; Esri', maxZoom: 18 }
             );
         }
-        if (!map.hasLayer(satelliteLayer)) satelliteLayer.addTo(map);
-        windyAPI?.store.set('overlay',   null);
+        if (!map.hasLayer(satelliteLayer)) {
+            satelliteLayer.addTo(map);
+        }
+        windyAPI?.store.set('overlay', null);
         windyAPI?.store.set('graticule', false);
-        toggleHoles(false, allHoles);
-        toggleWindTurbine(false);
-        toggleFocus(false);
-        toggleEquipment(false);
-        toggleWind(false);
-        $('.is_wind').addClass('d-none');
     } else {
         if (satelliteLayer && map.hasLayer(satelliteLayer)) {
             map.removeLayer(satelliteLayer);
         }
-        windyAPI?.store.set('overlay',   'wind');
+        windyAPI?.store.set('overlay', 'wind');
         windyAPI?.store.set('graticule', false);
-        const windturbines = getLocalBool('windturbine', windturbine);
-        const equipments   = getLocalBool('equipment',   equipment);
-        const focus        = getLocalBool('focus',       false);
-        const winds        = getLocalBool('winds',       true);
+    }
+    applyMapControl(mode, MAP_CONTROL);
+    $('#mapModeWind, #mapModeSat').removeClass('active');
+    if (isSatellite) {
+        $('#mapModeSat').addClass('active');
+        toggleHoles(false, allHoles);
+    } else {
+        $('#mapModeWind').addClass('active');
         toggleHoles(true, allHoles);
-        toggleWindTurbine(windturbines);
-        toggleEquipment(equipments);
-        toggleFocus(focus);
-        toggleWind(winds);
-        $('#toggle-windturbine').prop('checked', windturbines);
-        $('#toggle-equipment').prop('checked',   equipments);
-        $('#toggle-focus').prop('checked',       focus);
-        $('#toggle-wind-values').prop('checked', winds);
-        $('.is_wind').removeClass('d-none');
     }
     map.setMaxZoom(isSatellite ? 18 : 11);
     map.setZoom(Math.min(map.getZoom(), map.getMaxZoom()));
@@ -1455,7 +1505,7 @@ $(document).ready(function () {
     window.setMapMode = mode => {
         $('#mapModeWind').toggleClass('active', mode === 'wind');
         $('#mapModeSat').toggleClass('active',  mode === 'satellite');
-        toggleSatellite(mode);
+        toggleMapControls(mode);
         localStorage.setItem('map_views', mode);
     };
     const bindToggle = (selector, key, fn) => {
