@@ -33,7 +33,7 @@ class MapSettingModel {
                 ':style'                => $defaultStyle,
                 ':polygon_visibility'   => $payload['map_settings']['polygon_visibility'],
                 ':show_country_line'    => $payload['map_settings']['show_country_line'],
-                ':map_labels'           => $payload['map_labels'] ?? 'hide',
+                ':map_labels'           => $payload['map_labels'] ?? 'no',
                 ':country_layers_data'  => $payload['map_settings']['country_layers_data'],
                 ':mode_settings'        => $modeSettings
             ]);
