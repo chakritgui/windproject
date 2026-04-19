@@ -1444,7 +1444,8 @@ async function openProjectDetail(project_id) {
             elWind.innerHTML   = `${displaySpeed} <small>${unit.label}</small>`;
             if (elArrow) {
                 elArrow.style.color = activeColor;
-                elArrow.style.transform = `rotate(${direction - 90}deg)`;
+                const rotationAdjustment = -45;
+                elArrow.style.transform = `rotate(${direction + rotationAdjustment}deg)`;
             }
             const pct = Math.min((speed / 25) * 100, 100);
             requestAnimationFrame(() => {
