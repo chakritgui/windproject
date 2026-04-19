@@ -29,18 +29,12 @@ function initMap() {
             await loadPoles();
             await loadWindTurbines();
             const mode = localStorage.getItem('map_views') || DEFAULT_MODE;
-            toggleMapControls(mode);
             $('#mapModeWind').toggleClass('active', mode === 'wind');
             $('#mapModeSat').toggleClass('active',  mode === 'satellite');
-            const labels = getLocalBool('labels', masterData?.labels === 'yes');
-            toggleLabel(labels);
-            $('#toggle-label').prop('checked', labels);
-            const animationVal = getLocalBool('animation', animation);
-            toggleAnimation(animationVal);
-            $('#toggle-animation').prop('checked', animationVal);
             if (show_country_line === 'show' && country_layers_data) {
                 _drawCountryLines(country_layers_data);
             }
+            toggleMapControls(mode);
         } catch (error) {
             console.error('Initialization Error:', error);
         }
@@ -806,7 +800,6 @@ function createMaskLayer(geoData) {
         interactive: false,
     });
 }
-
 function toggleHoles(show, allHoles = []) {
     if (show) {
         if (maskLayer) return;
@@ -870,8 +863,7 @@ function toggleFocus(isOn) {
     }
 }
 function toggleAnimation(isOn) {
-    $('#windy #map-container .leaflet-tile-pane .particles-layer')
-        .css('z-index', isOn ? 500 : 0);
+    $('#windy #map-container .leaflet-tile-pane .particles-layer').css('z-index', isOn ? 500 : 0);
 }
 function toggleLabel(isOn) {
     if (!labelStyleEl) {
@@ -987,19 +979,34 @@ function applyMapControl(mode, mapControlStr) {
     }
     const config = mapControl[mode];
     if (!config) return;
+    const localStorageKeyMap = {
+        opt1: 'winds',
+        opt2: 'equipment',
+        opt3: 'focus',
+        opt4: 'windturbine',
+        opt5: 'animation',
+        opt6: 'labels',
+    };
     Object.keys(config).forEach(key => {
-        const optKey = key.replace(/^(wind|sat)-/, ''); 
+        const optKey = key.replace(/^(wind|sat)-/, '');
         const opt = CONTROL_CONFIG[optKey];
         if (!opt) return;
-        const enabled = config[key] == 1;
-        const $el = $(opt.el).closest('.control-row');
-        $el.toggleClass('d-none', !enabled);
+        const serverEnabled = config[key] == 1;
+        $(opt.el).closest('.control-row').toggleClass('d-none', !serverEnabled);
+        if (!serverEnabled) {
+            if ($(opt.el).is('input[type="checkbox"]')) {
+                $(opt.el).prop('checked', false);
+            }
+            if (typeof opt.fn === 'function') opt.fn(false);
+            return;
+        }
+        const lsKey = localStorageKeyMap[optKey];
+        const lsVal = lsKey ? localStorage.getItem(lsKey) : null;
+        const enabled = lsVal !== null ? lsVal === 'true' : true;
         if ($(opt.el).is('input[type="checkbox"]')) {
             $(opt.el).prop('checked', enabled);
         }
-        if (typeof opt.fn === 'function') {
-            opt.fn(enabled);
-        }
+        if (typeof opt.fn === 'function') opt.fn(enabled);
     });
 }
 function toggleMapControls(mode) {
