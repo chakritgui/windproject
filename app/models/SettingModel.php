@@ -479,7 +479,7 @@ class SettingModel {
             $stmt->bindParam(':key', $key, PDO::PARAM_STR);
             $stmt->execute();
             $result = $stmt->fetchColumn();
-            return ($result !== false) ? $result : ''; 
+            return ($result !== false) ? $result : null;
         } catch (PDOException $e) {
             error_log("Error in getSetting Model: " . $e->getMessage());
             return null;

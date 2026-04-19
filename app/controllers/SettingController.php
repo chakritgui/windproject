@@ -153,20 +153,40 @@ class SettingController extends BaseController {
         }
     }
     public function getPublicConfig() {
-        $publicKeys = [
-            'WINDY_KEY',
-        ];
-        $publicData = [];
-        foreach ($publicKeys as $key) {
-            $encryptedValue = $this->model->getSetting($key);
-            if (!empty($encryptedValue)) {
-                $publicData[$key] = decryptToken($encryptedValue);
+        try {
+            $publicKeys = [
+                'WINDY_KEY',
+                'DEFAULT_LEVEL',
+            ];
+            $publicData = [];
+            foreach ($publicKeys as $key) {
+                $value = $this->model->getSetting($key);
+                if (!empty($value)) {
+                    $decrypted = decryptToken($value);
+                    if ($decrypted === false || $decrypted === null) {
+                        $publicData[$key] = $value;
+                    } else {
+                        $publicData[$key] = $decrypted;
+                    }
+                }
             }
+            $response = [
+                'success' => true,
+                'data' => $publicData
+            ];
+            header('Content-Type: application/json');
+            echo json_encode($response);
+            exit;
+
+        } catch (Exception $e) {
+            error_log("getPublicConfig error: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'error' => 'Internal Server Error'
+            ]);
+            exit;
         }
-        $payload = base64_encode(json_encode($publicData));
-        header('Content-Type: application/octet-stream');
-        echo $payload;
-        exit;
     }
     public function saveNotification() {
         $configKeys = ['NOTIFY_EMAIL', 'NOTIFY_PWA'];

@@ -44,18 +44,38 @@
     })();
     (async function initSystem() {
         try {
-            const response = await fetch(`${BASE_URL}/api/configs.get`);
-            const base64Data = await response.text();
-            const config = JSON.parse(atob(base64Data));
-            if (config.WINDY_KEY) {
-                options.key = config.WINDY_KEY;
-                DEFAULT_LEVEL = config.DEFAULT_LEVEL || '100m';
-                await loadScript("https://api.windy.com/assets/map-forecast/libBoot.js");
-                await Promise.all([
-                    loadScript(`<?=asset('public/js/user/map.js')?>`),
-                    loadScript(`<?=asset('public/js/user/report.js')?>`)
-                ]); 
+            const response = await fetch(`${BASE_URL}/api/configs.get`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
             }
+            let result;
+            try {
+                result = await response.json();
+            } catch (e) {
+                throw new Error("Invalid JSON response");
+            }
+            if (!result.success) {
+                throw new Error(result.error || "API returned error");
+            }
+            const config = result.data || {};
+            if (!config.WINDY_KEY) {
+                throw new Error("Missing WINDY_KEY");
+            }
+            options.key = config.WINDY_KEY;
+            DEFAULT_LEVEL = config.DEFAULT_LEVEL || '100m';
+            window.APP_CONFIG = {
+                DEFAULT_LEVEL
+            };
+            await loadScript("https://api.windy.com/assets/map-forecast/libBoot.js");
+            await Promise.all([
+                loadScript(`<?=asset('public/js/user/map.js')?>`),
+                loadScript(`<?=asset('public/js/user/report.js')?>`)
+            ]);
         } catch (err) {
             console.error("Initialization error:", err);
         }

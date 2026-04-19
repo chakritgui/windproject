@@ -93,15 +93,22 @@ async function refreshAllWindData() {
     isRefreshing = true;
     try {
         const unit = getCurrentUnit();
+        const currentLevel = DEFAULT_LEVEL || '100m'; 
         const res  = await fetch(`${BASE_URL}/api/wind/latest`);
         const json = await res.json();
         const data = json.data;
         const windSpeeds = [];
         entries.forEach(([id, p]) => {
-            const weather = data[id];
+            const stationData = data[id];
+            if (!stationData) return;
+            let levelKey = currentLevel;
+            if (levelKey !== '100m' && !levelKey.endsWith('Pa')) {
+                levelKey += 'Pa';
+            }
+            const weather = stationData[levelKey];
             if (!weather) return;
-            const speed = parseFloat(weather.wind_speed_100m);
-            const dir   = parseFloat(weather.wind_direction_100m);
+            const speed = parseFloat(weather.s);
+            const dir   = parseFloat(weather.d); 
             windSpeeds.push(speed);
             const activeColor = getWindColor(speed);
             const elSpeed     = document.getElementById(p.windId);
@@ -1351,44 +1358,50 @@ async function openProjectDetail(project_id) {
             </div>`;
         }).join('');
         bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('projectCanvas')).show();
-        const lats = data.poles.map(p => p.lat).join(',');
-        const lngs = data.poles.map(p => p.lng).join(',');
-        const weatherRes  = await fetch(
-            `${OPEN_METEO}?latitude=${lats}&longitude=${lngs}` +
-            `&current=wind_speed_100m&wind_speed_unit=ms`
-        );
-        const weatherData = await weatherRes.json();
-        const results     = Array.isArray(weatherData) ? weatherData : [weatherData];
         let totalWind = 0;
-        data.poles.forEach((p, i) => {
-            const speed   = results[i]?.current?.wind_speed_100m || 0;
-            totalWind    += speed;
+        let validPolesCount = 0;
+        data.poles.forEach((p) => {
+            const cachedPole = poleMarkers[p.poles_id];
+            let speed = 0;
+            let direction = 0;
+            if (cachedPole) {
+                const elSpeed = document.getElementById(cachedPole.windId);
+                const elArrow = document.getElementById(cachedPole.arrowId);
+                if (elSpeed && elSpeed.dataset.raw) {
+                    speed = parseFloat(elSpeed.dataset.raw);
+                }
+                if (elArrow && elArrow.dataset.dir) {
+                    direction = parseFloat(elArrow.dataset.dir);
+                }
+            }
+            totalWind += speed;
+            validPolesCount++;
             const elWind  = document.getElementById(`wind-val-${p.poles_id}`);
             const elArrow = document.getElementById(`wind-arrow-${p.poles_id}`);
             const elBar   = document.getElementById(`bar-${p.poles_id}`);
-            const elRotor = document.getElementById(`rotor-${p.poles_id}`);
             if (!elWind || !elBar) return;
             const activeColor  = getWindColor(speed);
             const displaySpeed = (speed * unit.factor).toFixed(1);
             elWind.dataset.raw = speed;
             elWind.style.color = activeColor;
             elWind.innerHTML   = `${displaySpeed} <small>${unit.label}</small>`;
-            if (elArrow) elArrow.style.color = activeColor;
+            if (elArrow) {
+                elArrow.style.color = activeColor;
+                elArrow.style.transform = `rotate(${direction - 90}deg)`;
+            }
             const pct = Math.min((speed / 25) * 100, 100);
             requestAnimationFrame(() => {
                 elBar.style.width           = `${pct}%`;
                 elBar.style.backgroundColor = activeColor;
             });
-            if (elRotor) {
-                const dur = speed > 0 ? Math.max(0.6, 4 - speed * 0.3).toFixed(2) : '2.5';
-                elRotor.style.animationDuration = `${dur}s`;
-            }
         });
-        const avgSpeed = totalWind / data.poles.length;
-        const avgEl    = document.getElementById('pp-avg-wind');
-        if (avgEl) {
-            avgEl.textContent = `${(avgSpeed * unit.factor).toFixed(1)} ${unit.label}`;
-            avgEl.style.color = getWindColor(avgSpeed);
+        if (validPolesCount > 0) {
+            const avgSpeed = totalWind / validPolesCount;
+            const avgEl = document.getElementById('pp-avg-wind');
+            if (avgEl) {
+                avgEl.textContent = `${(avgSpeed * unit.factor).toFixed(1)} ${unit.label}`;
+                avgEl.style.color = getWindColor(avgSpeed);
+            }
         }
     } catch (err) {
         console.error('openProject error:', err);

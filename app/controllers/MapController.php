@@ -61,6 +61,11 @@ class  MapController extends BaseController {
     public function weatherCurrent() {
         $lat = $_GET['lat'] ?? '';
         $lon = $_GET['lon'] ?? '';
+        $level = $_GET['level'] ?? '';
+        if(empty($level)) {
+            $level = $this->model->getSetting('DEFAULT_LEVEL');
+        }
+        $suffix = ($level === '100m') ? '100m' : $level . 'Pa';
         if (!$lat || !$lon) {
             http_response_code(400);
             echo json_encode(['error' => true, 'reason' => 'Missing coordinates']);
@@ -82,7 +87,7 @@ class  MapController extends BaseController {
         $urls = [
             'weather' => "https://api.openweathermap.org/data/2.5/weather?lat={$lat}&lon={$lon}&appid={$apiKey}&units=metric",
             'air'     => "https://api.openweathermap.org/data/2.5/air_pollution?lat={$lat}&lon={$lon}&appid={$apiKey}",
-            'wind'    => "https://api.open-meteo.com/v1/forecast?latitude={$lat}&longitude={$lon}&current=wind_speed_100m,wind_direction_100m&wind_speed_unit=ms"
+            'wind'    => "https://api.open-meteo.com/v1/forecast?latitude={$lat}&longitude={$lon}&current=wind_speed_{$suffix},wind_direction_{$suffix}&wind_speed_unit=ms"
         ];
         $multi   = curl_multi_init();
         $handles = [];
@@ -113,12 +118,15 @@ class  MapController extends BaseController {
         $w    = $responses['weather']['code'] === 200 ? json_decode($responses['weather']['body'], true) : null;
         $air  = $responses['air']['code']     === 200 ? json_decode($responses['air']['body'], true)     : null;
         $wind = $responses['wind']['code']    === 200 ? json_decode($responses['wind']['body'], true)    : null;
-        $windSpeed = $wind['current']['wind_speed_100m'] ?? null;
+        $windSpeedKey = "wind_speed_{$suffix}";
+        $windDirKey   = "wind_direction_{$suffix}";
+        $windSpeed = $wind['current'][$windSpeedKey] ?? null;
+        $windDir   = $wind['current'][$windDirKey] ?? null;
         $result = [
             'temperature'   => $w ? round($w['main']['temp'], 1) : null,
             'humidity'      => $w ? round($w['main']['humidity'], 0) : null,
             'wind_speed'    => $windSpeed !== null ? round($windSpeed, 1) : null,
-            'wind_direction'=> $wind['current']['wind_direction_100m'] ?? null,
+            'wind_direction'=> $windDir,
             'precipitation' => $w ? round($w['rain']['1h'] ?? 0, 1) : null,
             'pm25'          => $air ? round($air['list'][0]['components']['pm2_5'] ?? 0, 1) : null,
         ];

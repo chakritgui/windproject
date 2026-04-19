@@ -40,18 +40,17 @@ async function fetchJSON(url, body = {}) {
 }
 async function fetchWindAtPoint(lat, lng) {
     try {
-        const url = `${OPEN_METEO}?latitude=${lat.toFixed(4)}&longitude=${lng.toFixed(4)}` + `&current=wind_speed_100m,wind_direction_100m,wind_gusts_10m&wind_speed_unit=ms`;
-        const res  = await fetch(url);
+        const url = `${BASE_URL}/api/weather.current?lat=${lat}&lon=${lng}&level=${DEFAULT_LEVEL}`;
+        const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         return {
-            speed:     data.current?.wind_speed_100m     ?? null,
-            direction: data.current?.wind_direction_100m ?? null,
-            gusts:     data.current?.wind_gusts_10m      ?? null,
+            speed:     data.wind_speed     ?? null,
+            direction: data.wind_direction ?? null,
         };
     } catch (err) {
         console.error('fetchWindAtPoint error:', err);
-        return { speed: null, direction: null, gusts: null };
+        return { speed: null, direction: null };
     }
 }
 function _calcOffsetDist(zoom) {

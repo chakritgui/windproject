@@ -1,6 +1,11 @@
 <?php
 class fetchWindSpeed {
     private $db;
+    private $levels = [
+        "100m", "950hPa", "925hPa", "900hPa", "850hPa", "800hPa", 
+        "700hPa", "600hPa", "500hPa", "400hPa", "300hPa", "250hPa", 
+        "200hPa", "150hPa", "10hPa"
+    ];
     public function __construct($db) {
         $this->db = $db;
     }
@@ -9,16 +14,20 @@ class fetchWindSpeed {
         return $this->db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
     public function processBatch($batch) {
-        $lats = [];
-        $lngs = [];
+        $lats = []; $lngs = [];
         foreach ($batch as $s) {
             $lats[] = $s['poles_lat'];
             $lngs[] = $s['poles_lng'];
         }
+        $apiParams = [];
+        foreach ($this->levels as $lvl) {
+            $apiParams[] = "wind_speed_{$lvl}";
+            $apiParams[] = "wind_direction_{$lvl}";
+        }
         $url = "https://api.open-meteo.com/v1/forecast?"
             . "latitude=" . implode(',', $lats)
             . "&longitude=" . implode(',', $lngs)
-            . "&current=wind_speed_100m,wind_direction_100m,wind_speed_120m,wind_direction_120m"
+            . "&current=" . implode(',', $apiParams)
             . "&wind_speed_unit=ms";
         $data = $this->fetchWithRetry($url);
         if (!$data) return [];
@@ -27,69 +36,46 @@ class fetchWindSpeed {
         foreach ($batch as $i => $s) {
             if (!isset($responses[$i]['current'])) continue;
             $current = $responses[$i]['current'];
-            $ws100 = $current['wind_speed_100m'] ?? 0;
-            $wd100 = $current['wind_direction_100m'] ?? 0;
-            $ws120 = $current['wind_speed_120m'] ?? 0;
-            $wd120 = $current['wind_direction_120m'] ?? 0;
-            $alpha = 0.14;
-            $ws150 = $ws100 * pow((150 / 100), $alpha);
-            $ws200 = $ws100 * pow((200 / 100), $alpha);
-            $output[] = [
-                'station_id' => $s['poles_id'],
-                'ws100'      => $ws100,
-                'wd100'      => $wd100,
-                'ws120'      => $ws120,
-                'wd120'      => $wd120,
-                'ws150'      => $ws150,
-                'ws200'      => $ws200
-            ];
+            $rowData = ['station_id' => $s['poles_id']];
+            foreach ($this->levels as $lvl) {
+                $speedCol = "wind_speed_{$lvl}";
+                $dirCol = "wind_direction_{$lvl}";
+                $rowData[$speedCol] = $current[$speedCol] ?? 0;
+                $rowData[$dirCol] = $current[$dirCol] ?? 0;
+            }
+            $output[] = $rowData;
         }
         return $output;
     }
     public function saveBatch($results) {
-        $sql = "INSERT INTO wp_wind_data (
-                    station_id, 
-                    wind_speed_100m, 
-                    wind_direction_100m, 
-                    wind_speed_120m, 
-                    wind_direction_120m, 
-                    calculated_150m,
-                    calculated_200m,
-                    source, 
-                    created_at,
-                    updated_at
-                ) VALUES (
-                    :station_id, 
-                    :ws100, 
-                    :wd100, 
-                    :ws120, 
-                    :wd120, 
-                    :ws150,
-                    :ws200,
-                    :source, 
-                    NOW(),
-                    NOW()
-                ) 
-                ON DUPLICATE KEY UPDATE 
-                    wind_speed_100m = VALUES(wind_speed_100m),
-                    wind_direction_100m = VALUES(wind_direction_100m),
-                    wind_speed_120m = VALUES(wind_speed_120m),
-                    wind_direction_120m = VALUES(wind_direction_120m),
-                    calculated_150m = VALUES(calculated_150m),
-                    calculated_200m = VALUES(calculated_200m),
-                    updated_at = NOW()";
+        if (empty($results)) return;
+        $cols = ["station_id", "source", "created_at", "updated_at"];
+        $placeholders = [":station_id", ":source", "NOW()", "NOW()"];
+        $updates = ["updated_at = NOW()"];
+        foreach ($this->levels as $lvl) {
+            $sCol = "wind_speed_{$lvl}";
+            $dCol = "wind_direction_{$lvl}";
+            $cols[] = $sCol;
+            $cols[] = $dCol;
+            $placeholders[] = ":{$sCol}";
+            $placeholders[] = ":{$dCol}";
+            $updates[] = "{$sCol} = VALUES({$sCol})";
+            $updates[] = "{$dCol} = VALUES({$dCol})";
+        }
+        $sql = "INSERT INTO wp_wind_data (" . implode(', ', $cols) . ") VALUES (" . implode(', ', $placeholders) . ") ON DUPLICATE KEY UPDATE " . implode(', ', $updates);
         $stmt = $this->db->prepare($sql);
         foreach ($results as $row) {
-            $stmt->execute([
+            $bindData = [
                 ':station_id' => $row['station_id'],
-                ':ws100'      => $row['ws100'],
-                ':wd100'      => $row['wd100'],
-                ':ws120'      => $row['ws120'],
-                ':wd120'      => $row['wd120'],
-                ':ws150'      => $row['ws150'],
-                ':ws200'      => $row['ws200'],
                 ':source'     => 'open-meteo'
-            ]);
+            ];
+            foreach ($this->levels as $lvl) {
+                $sCol = "wind_speed_{$lvl}";
+                $dCol = "wind_direction_{$lvl}";
+                $bindData[":{$sCol}"] = $row[$sCol];
+                $bindData[":{$dCol}"] = $row[$dCol];
+            }
+            $stmt->execute($bindData);
         }
     }
     private function fetchWithRetry($url, $maxRetry = 3) {
@@ -97,7 +83,7 @@ class fetchWindSpeed {
             $ch = curl_init($url);
             curl_setopt_array($ch, [
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT => 15,
+                CURLOPT_TIMEOUT => 20,
                 CURLOPT_SSL_VERIFYPEER => false 
             ]);
             $response = curl_exec($ch);

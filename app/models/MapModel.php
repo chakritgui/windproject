@@ -305,21 +305,41 @@ class MapModel{
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     public function getLatestWind() {
-        $sql = "SELECT station_id,wind_speed_100m,wind_direction_100m,wind_speed_120m,wind_direction_120m,calculated_150m,calculated_200m FROM wp_wind_data";
+        $levels = [
+            "100m", "950hPa", "925hPa", "900hPa", "850hPa", "800hPa", 
+            "700hPa", "600hPa", "500hPa", "400hPa", "300hPa", "250hPa", 
+            "200hPa", "150hPa", "10hPa"
+        ];
+        $sql = "SELECT * FROM wp_wind_data";
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $result = [];
         foreach ($rows as $row) {
-            $result[$row['station_id']] = [
-                'wind_speed_100m' => (float)$row['wind_speed_100m'],
-                'wind_direction_100m' => (float)$row['wind_direction_100m'],
-                'wind_speed_120m' => (float)$row['wind_speed_120m'],
-                'wind_direction_120m' => (float)$row['wind_direction_120m'],
-                'calculated_150m' => (float)$row['calculated_150m'],
-                'calculated_200m' => (float)$row['calculated_200m'],
-            ];
+            $stationData = [];
+            foreach ($levels as $lvl) {
+                $sCol = "wind_speed_{$lvl}";
+                $dCol = "wind_direction_{$lvl}";
+                $stationData[$lvl] = [
+                    's' => isset($row[$sCol]) ? (float)$row[$sCol] : 0,
+                    'd' => isset($row[$dCol]) ? (float)$row[$dCol] : 0
+                ];
+            }
+            $result[$row['station_id']] = $stationData;
         }
         return $result;
+    }
+    public function getSetting($key) {
+        try {
+            $sql = "SELECT setting_value FROM system_settings WHERE setting_key = :key LIMIT 1";
+            $stmt = $this->db->prepare($sql);
+            $stmt->bindParam(':key', $key, PDO::PARAM_STR);
+            $stmt->execute();
+            $result = $stmt->fetchColumn();
+            return ($result !== false) ? $result : null;
+        } catch (PDOException $e) {
+            error_log("Error in getSetting Model: " . $e->getMessage());
+            return null;
+        }
     }
 }
