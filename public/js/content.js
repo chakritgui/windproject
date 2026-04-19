@@ -163,7 +163,6 @@ function handleRemovedImages(editor) {
                     data: JSON.stringify({ url: src }),
                     contentType: 'application/json'
                 }).done(() => {
-                    console.log('Deleted:', src);
                 });
             }
         });
@@ -186,7 +185,6 @@ function resizeImage(width, context) {
             'height': 'auto'
         });
         context.layoutInfo.editable.trigger('keyup');
-        console.log("Resized to " + width);
     } }
 function initDropdownFix() {
     $(document).on('click', '.note-btn.dropdown-toggle', function (e) {

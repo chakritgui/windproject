@@ -23,6 +23,8 @@ function safeInitMap() {
     }
     initMap();
 }
+const levels = ["100m", "950h", "925h", "900h", "850h", "800h", "700h", "600h", "500h", "400h", "300h", "250h", "200h", "150h", "10h"];
+const labels = ["100m (330ft)", "950hPa (600m)", "925hPa (750m)", "900hPa (900m)","850hPa (1.5km)", "800hPa (2km)", "700hPa (3km)", "600hPa (4.2km)","500hPa (5.5km)", "400hPa (7km)", "300hPa (9km)", "250hPa (10km)","200hPa (11.7km)", "150hPa (13.5km)", "10hPa (30km)"];
 function initMap() {
     if (!$('#map').length) return;
     map = L.map('map').setView([13.7563, 100.5018], 12);
@@ -34,6 +36,13 @@ function initMap() {
     setupEvents();
     applyLockState(true);
     loadMapDataFromServer();
+    $('#heightSlider').on('input change', function() {
+        const index = $(this).val();
+        const selectedValue = levels[index];
+        const displayLabel = labels[index];
+        $('#height-display').text(displayLabel);
+        $('#actual_level').val(selectedValue);
+    });
 }
 function setupDrawControl() {
     drawControl = new L.Control.Draw({
@@ -113,6 +122,30 @@ function loadMapDataFromServer() {
             if (res.status && res.data) {
                 const settings = res.data.map_settings;
                 const savedPolygons = res.data.polygons;
+                const DEFAULT_LEVEL = res.data.DEFAULT_LEVEL || '100m';
+                const levelIndex = levels.indexOf(DEFAULT_LEVEL);
+                if (levelIndex !== -1) {
+                    $('#heightSlider').val(levelIndex);
+                    $('#height-display').text(labels[levelIndex]);
+                    $('#actual_level').val(DEFAULT_LEVEL);
+                }
+                if (settings.mode_settings) {
+                    try {
+                        const modeConfigs = typeof settings.mode_settings === 'string' ? JSON.parse(settings.mode_settings) : settings.mode_settings;
+                        Object.keys(modeConfigs).forEach(mode => {
+                            const options = modeConfigs[mode];
+                            Object.keys(options).forEach(id => {
+                                $(`#${id}`).prop('checked', options[id] === 1);
+                            });
+                            const $container = $(`.mode-container[data-mode="${mode}"]`);
+                            if (typeof updateDependency === 'function') {
+                                updateDependency($parentMode); 
+                            }
+                        });
+                    } catch (e) {
+                        console.error("Error parsing mode settings:", e);
+                    }
+                }
                 if (settings) {
                     const lat = parseFloat(settings.center_lat) || 13.7563;
                     const lng = parseFloat(settings.center_lng) || 100.5018;
@@ -386,7 +419,6 @@ function importMapJSON(input) {
             const parsed = JSON.parse(trimmedInput);
             features = (parsed.type === 'FeatureCollection') ? parsed.features : (Array.isArray(parsed) ? parsed : [parsed]);
         } catch (e) {
-            console.log("Parsing as GeoJSONL...");
             features = trimmedInput.split('\n').filter(line => line.trim() !== "").map(line => {
                 try { return JSON.parse(line); }
                 catch (err) { console.error("Invalid JSON line skipped:", line); return null; }
@@ -442,18 +474,28 @@ function applyLockState(locked) {
     if (map.dragging) map.dragging[action]();
     if (map.scrollWheelZoom) map.scrollWheelZoom[action]();
     if (map.doubleClickZoom) map.doubleClickZoom[action]();
-    $('#statusBadge').html(locked
-        ? '<i class="fa-solid fa-lock text-danger"></i>'
-        : '<i class="fa-solid fa-lock-open text-success"></i>');
+    $('#statusBadge').html(locked ? '<i class="fa-solid fa-lock text-danger"></i>' : '<i class="fa-solid fa-lock-open text-success"></i>');
 }
 async function handleJsonImport(e) {
     const file = e.target.files[0];
     if (!file) return;
+    const fileName = file.name.toLowerCase();
+    const allowedExtensions = ['.json', '.geojson', '.geojsonl'];
+    const isValidExtension = allowedExtensions.some(ext => fileName.endsWith(ext));
+    if (!isValidExtension) {
+        $(e.target).val(''); 
+        showError(langData['support_json'] || "Supports .json, .geojson, and .geojsonl only.");
+        return;
+    }
     const reader = new FileReader();
     reader.onload = ev => {
-        try { importMapJSON(ev.target.result); }
-        catch (err) { showError(langData['invalid_json_file']); }
+        try { 
+            importMapJSON(ev.target.result); 
+        } catch (err) { 
+            showError(langData['invalid_json_file'] || "Error parsing JSON content."); 
+        }
     };
+    reader.onerror = () => showError("Failed to read file.");
     reader.readAsText(file);
 }
 async function handleJsonImports(e) {
@@ -476,9 +518,16 @@ function fitAllLayers() {
 }
 function getMapFullConfigForSave() {
     const center = map.getCenter();
-    const polygonVisibility = document.querySelector('input[name="polygon_visibility"]:checked')?.value || 'close';
-    const show_country_line = document.querySelector('input[name="show_country_line"]:checked')?.value || 'hide';
-    const map_labels = document.querySelector('input[name="map_labels"]:checked')?.value || 'hide';
+    const DEFAULT_LEVEL = $("input[name=DEFAULT_LEVEL]").val() || '100m';
+    const modeConfigs = {};
+    $('.mode-container').each(function() {
+        const modeName = $(this).data('mode');
+        modeConfigs[modeName] = {};
+        $(this).find('input[type="checkbox"]').each(function() {
+            const key = $(this).attr('id'); 
+            modeConfigs[modeName][key] = $(this).is(':checked') ? 1 : 0;
+        });
+    });
     return {
         map_settings: {
             center_lat: center.lat.toFixed(8),
@@ -486,10 +535,12 @@ function getMapFullConfigForSave() {
             zoom_level: map.getZoom(),
             is_locked: isZoomLocked ? 1 : 0,
             default_style: JSON.stringify(currentStyle),
-            polygon_visibility: polygonVisibility,
-            show_country_line: show_country_line,
-            map_labels: map_labels,
-            country_layers_data: countryLayers ? JSON.stringify(countryLayers) : null
+            mode_settings: JSON.stringify(modeConfigs), 
+            polygon_visibility: document.querySelector('input[name="polygon_visibility"]:checked')?.value || 'close',
+            show_country_line: document.querySelector('input[name="show_country_line"]:checked')?.value || 'hide',
+            map_labels: document.querySelector('input[name="map_labels"]:checked')?.value || 'hide',
+            country_layers_data: countryLayers ? JSON.stringify(countryLayers) : null,
+            DEFAULT_LEVEL: DEFAULT_LEVEL
         },
         polygons: polygons.map(p => {
             const currentLayer = polygonLayers[p.poly_id];
@@ -529,3 +580,23 @@ function handleMainSave() {
     });
 }
 $(document).ready(safeInitMap);
+$(document).ready(function() {
+    function updateDependency($container) {
+        const isMasterChecked = $container.find('.master-control').is(':checked');
+        const $dependents = $container.find('.dependent-opt');
+        if (!isMasterChecked) {
+            $dependents.prop('checked', false).prop('disabled', true);
+            $dependents.closest('.form-check').addClass('text-muted');
+        } else {
+            $dependents.prop('disabled', false);
+            $dependents.closest('.form-check').removeClass('text-muted');
+        }
+    }
+    $('.master-control').on('change', function() {
+        const $parentMode = $(this).closest('.mode-container');
+        updateDependency($parentMode);
+    });
+    $('.mode-container').each(function() {
+        updateDependency($(this));
+    });
+});

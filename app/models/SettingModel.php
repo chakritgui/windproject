@@ -333,7 +333,6 @@ class SettingModel {
                 $quality = 80; 
                 if (imagewebp($image, $target, $quality)) {
                     imagedestroy($image);
-                    // 3. อัปเดต Path ใหม่ลง Database
                     $this->updateSetting($settingType, "uploads/website/" . $filename);
                 } else {
                     imagedestroy($image);
@@ -458,11 +457,7 @@ class SettingModel {
         }
     }
     public function saveSystemConfig($configs) {
-        $sql = "INSERT INTO system_settings (setting_key, setting_value, updated_at) 
-                VALUES (?, ?, NOW()) 
-                ON DUPLICATE KEY UPDATE 
-                setting_value = VALUES(setting_value), 
-                updated_at = NOW()";
+        $sql = "INSERT INTO system_settings (setting_key, setting_value, updated_at) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = NOW()";
         try {
             $this->db->beginTransaction();
             $stmt = $this->db->prepare($sql);

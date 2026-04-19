@@ -8,7 +8,22 @@ class MapSettingModel {
         try {
             $this->db->beginTransaction();
             $mapId = 1;
-            $sqlMaster = "REPLACE INTO wp_map_master (map_name, map_id, center_lat, center_lng, zoom_level, default_style, polygon_visibility, show_country_line, map_labels, country_layers_data, created_at, updated_at) VALUES (1, 1, :lat, :lng, :zoom, :style, :polygon_visibility, :show_country_line, :map_labels, :country_layers_data, NOW(), NOW())";
+            $DEFAULT_LEVEL = $payload['map_settings']['DEFAULT_LEVEL'] ?? '100m';
+            $sql = "INSERT INTO system_settings (setting_key, setting_value, updated_at) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value), updated_at = NOW()";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute(['DEFAULT_LEVEL', $DEFAULT_LEVEL]);
+            $modeSettings = $payload['map_settings']['mode_settings'] ?? null;
+            $sqlMaster = "REPLACE INTO wp_map_master (
+                            map_name, map_id, center_lat, center_lng, zoom_level, 
+                            default_style, polygon_visibility, show_country_line, 
+                            map_labels, country_layers_data, mode_settings, 
+                            created_at, updated_at
+                        ) VALUES (
+                            1, 1, :lat, :lng, :zoom, 
+                            :style, :polygon_visibility, :show_country_line, 
+                            :map_labels, :country_layers_data, :mode_settings, 
+                            NOW(), NOW()
+                        )";
             $stmt = $this->db->prepare($sqlMaster);
             $defaultStyle = is_string($payload['map_settings']['default_style']) ? $payload['map_settings']['default_style'] : json_encode($payload['map_settings']['default_style']);
             $stmt->execute([
@@ -18,8 +33,9 @@ class MapSettingModel {
                 ':style'                => $defaultStyle,
                 ':polygon_visibility'   => $payload['map_settings']['polygon_visibility'],
                 ':show_country_line'    => $payload['map_settings']['show_country_line'],
-                ':map_labels'           => $payload['map_settings']['map_labels'],
+                ':map_labels'           => $payload['map_labels'] ?? 'hide',
                 ':country_layers_data'  => $payload['map_settings']['country_layers_data'],
+                ':mode_settings'        => $modeSettings
             ]);
             $sqlClear = "UPDATE wp_map_polygons SET status = 'deleted', updated_at = NOW() WHERE map_id = ?";
             $this->db->prepare($sqlClear)->execute([$mapId]);
@@ -91,12 +107,10 @@ class MapSettingModel {
                         WHEN m.project_id IS NULL OR m.project_id = '' THEN 0
                         ELSE 1
                     END ASC,
-                    
                     CASE 
                         WHEN m.project_id IS NULL OR m.project_id = '' 
                         THEN m.poly_id
                     END ASC,
-                    
                     CASE 
                         WHEN m.project_id IS NOT NULL AND m.project_id != '' 
                         THEN IFNULL(p.item_order, p.project_id)
@@ -104,9 +118,18 @@ class MapSettingModel {
             ");
             $stmt->execute([$mapId]);
             $polygons = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stmtLevel = $this->db->prepare("SELECT setting_value FROM system_settings WHERE setting_key = ?");
+            $stmtLevel->execute(['DEFAULT_LEVEL']);
+            $row = $stmtLevel->fetch(PDO::FETCH_ASSOC);
+            if ($row) {
+                $DEFAULT_LEVEL = $row['setting_value'];
+            } else {
+                $DEFAULT_LEVEL = '100m';
+            }
             return [
                 'map_settings' => $master,
-                'polygons' => $polygons
+                'polygons' => $polygons,
+                'DEFAULT_LEVEL' => $DEFAULT_LEVEL
             ];
         } catch (Exception $e) {
             error_log($e->getMessage());

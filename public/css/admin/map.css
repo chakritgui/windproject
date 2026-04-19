@@ -186,3 +186,10 @@
         width: 100%;
     }
 }
+.slider-label {
+    position: absolute;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    color: #6c757d;
+    top: 8px;
+}

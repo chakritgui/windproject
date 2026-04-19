@@ -414,21 +414,6 @@
                                         <label class="form-label fw-bold" data-i18n="windy_key"></label>
                                         <input type="text" name="WINDY_KEY" class="form-control">
                                     </div>
-                                    <div class="col-md-12 mb-4">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <label class="form-label fw-bold mb-0" data-i18n="height_level">Height Level</label>
-                                            <span id="height-display" class="badge bg-primary">100m</span>
-                                        </div>
-                                        <div class="position-relative px-2">
-                                            <input type="range" class="form-range custom-windy-slider" id="heightSlider" min="0" max="13" step="1" value="0">
-                                            <div class="d-flex justify-content-between mt-2 text-muted" style="font-size: 10px;">
-                                                <span>100m</span>
-                                                <span>500h</span>
-                                                <span>10h</span>
-                                            </div>
-                                        </div>
-                                        <input type="hidden" name="DEFAULT_LEVEL" id="actual_level" value="100m">
-                                    </div>
                                     <div class="col-md-12">
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" id="enableTranslate" name="ENABLE_TRANSLATE" value="1">

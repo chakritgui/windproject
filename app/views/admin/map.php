@@ -77,7 +77,7 @@
             </div>
             <div class="control-panel mt-3" id="stylePanel">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0 fw-bold" data-i18n="country_line"></h5>
+                    <p class="mb-0 fw-bold" data-i18n="country_line"></p>
                 </div>
                 <div class="mb-3">
                     <div class="form-check form-check-inline">
@@ -95,7 +95,7 @@
                     <p class="mt-3" data-i18n="support_json"></p>
                 </div>
                 <div class="d-flex justify-content-between align-items-center mb-3 mt-3">
-                    <h5 class="mb-0 fw-bold" data-i18n="map_labels"></h5>
+                    <p class="mb-0 fw-bold" data-i18n="map_labels"></p>
                 </div>
                 <div class="mb-3">
                     <div class="form-check form-check-inline">
@@ -110,50 +110,126 @@
             </div>
             <div class="control-panel mt-3" id="stylePanel">
                 <div class="row align-items-center g-3">
-                    <div class="col-md-3">
-                        <label class="small fw-bold" data-i18n="area_border_color"></label>
-                        <div class="d-flex gap-2 mt-1">
-                            <input type="color" class="form-control form-control-color" id="fillColor" value="#3388ff">
-                            <input type="color" class="form-control form-control-color" id="borderColor" value="#3388ff">
+                    <div class="col-md-12">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold mb-0" data-i18n="height_level">Height Level</label>
+                            <span id="height-display" class="badge bg-primary">100m</span>
                         </div>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="small fw-bold"><span data-i18n="opacity"></span> (<span id="opacityValue">30%</span>)</label>
-                        <input type="range" class="form-range" id="fillOpacity" min="0" max="100" value="30">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="small fw-bold"><span data-i18n="border_weight"></span> (<span id="weightValue">2px</span>)</label>
-                        <input type="range" class="form-range" id="borderWeight" min="0" max="10" value="2">
-                    </div>
-                    <div class="col-md-3">
-                        <label class="small fw-bold"><span data-i18n="outside_the_polygon">Outside the Polygon</span></label>
-                        <div class="d-flex gap-3 mt-1">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="polygon_visibility" id="maskOpen" value="open">
-                                <label class="form-check-label" for="maskOpen" data-i18n="open">Open</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="polygon_visibility" id="maskClose" value="close" checked>
-                                <label class="form-check-label" for="maskClose" data-i18n="close">Close</label>
+                        <div class="position-relative px-2" style="height: 40px;">
+                            <input type="range" class="form-range custom-windy-slider" id="heightSlider" min="0" max="14" step="1" value="0" style="width: 100%;">
+                            <div class="position-relative w-100" style="font-size: 10px;">
+                                <span class="slider-label" style="left: 0%;">100m</span>
+                                <span class="slider-label" style="left: 21.4%;">900h</span>
+                                <span class="slider-label" style="left: 50%;">500h</span>
+                                <span class="slider-label" style="left: 78.4%;">250h</span>
+                                <span class="slider-label" style="left: 100%;">10h</span>
                             </div>
                         </div>
+                        <input type="hidden" name="DEFAULT_LEVEL" id="actual_level" value="100m">
+                    </div>
+                </div>
+            </div>
+            <div class="control-panel mt-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <p class="mb-0 fw-bold" data-i18n="map_controls"></p>
+                </div>
+                <div class="mode-container mb-4 p-3 border rounded shadow-sm" data-mode="satellite">
+                    <p class="fw-bold border-bottom pb-2 text-primary" data-i18n="satellite"></p>
+                    <div class="options-list mt-2">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input master-control" type="checkbox" id="sat-opt2" checked>
+                            <label class="form-check-label fw-bold" for="sat-opt2" data-i18n="wind_measurement_equipment"></label>
+                        </div>
+                        <div class="ms-4">
+                            <div class="form-check mb-1">
+                                <input class="form-check-input dependent-opt" type="checkbox" id="sat-opt1" checked>
+                                <label class="form-check-label" for="sat-opt1" data-i18n="show_wind_values"></label>
+                            </div>
+                            <div class="form-check mb-1">
+                                <input class="form-check-input dependent-opt" type="checkbox" id="sat-opt7" checked>
+                                <label class="form-check-label" for="sat-opt7" data-i18n="wind_speed"></label>
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                        <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="sat-opt3"><label class="form-check-label" for="sat-opt3" data-i18n="focus_mode"></label></div>
+                        <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="sat-opt4"><label class="form-check-label" for="sat-opt4" data-i18n="windturbine"></label></div>
+                        <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="sat-opt5"><label class="form-check-label" for="sat-opt5" data-i18n="wind_animation"></label></div>
+                        <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="sat-opt6"><label class="form-check-label" for="sat-opt6" data-i18n="show_place_label"></label></div>
+                    </div>
+                </div>
+                <div class="mode-container mb-4 p-3 border rounded shadow-sm" data-mode="wind">
+                    <p class="fw-bold border-bottom pb-2 text-success" data-i18n="wind"></p>
+                    <div class="options-list mt-2">
+                        <div class="form-check mb-2">
+                            <input class="form-check-input master-control" type="checkbox" id="wind-opt2" checked>
+                            <label class="form-check-label fw-bold" for="wind-opt2" data-i18n="wind_measurement_equipment"></label>
+                        </div>
+                        <div class="ms-4">
+                            <div class="form-check mb-1">
+                                <input class="form-check-input dependent-opt" type="checkbox" id="wind-opt1" checked>
+                                <label class="form-check-label" for="wind-opt1" data-i18n="show_wind_values"></label>
+                            </div>
+                            <div class="form-check mb-1">
+                                <input class="form-check-input dependent-opt" type="checkbox" id="wind-opt7" checked>
+                                <label class="form-check-label" for="wind-opt7" data-i18n="wind_speed"></label>
+                            </div>
+                        </div>
+                        <hr class="my-2">
+                        <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="wind-opt3"><label class="form-check-label" for="wind-opt3" data-i18n="focus_mode"></label></div>
+                        <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="wind-opt4"><label class="form-check-label" for="wind-opt4" data-i18n="windturbine"></label></div>
+                        <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="wind-opt5"><label class="form-check-label" for="wind-opt5" data-i18n="wind_animation"></label></div>
+                        <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="wind-opt6"><label class="form-check-label" for="wind-opt6" data-i18n="show_place_label"></label></div>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-lg-4">
-            <div class="control-panel h-100">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="mb-0 fw-bold" data-i18n="map_layers"></h5>
+            <div class="h-100">
+                <div class="control-panel mb-3" id="stylePanel">
+                    <div class="row align-items-center g-3">
+                        <div class="col-md-6">
+                            <label class="small fw-bold" data-i18n="area_border_color"></label>
+                            <div class="d-flex gap-2 mt-1">
+                                <input type="color" class="form-control form-control-color" id="fillColor" value="#3388ff">
+                                <input type="color" class="form-control form-control-color" id="borderColor" value="#3388ff">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small fw-bold"><span data-i18n="opacity"></span> (<span id="opacityValue">30%</span>)</label>
+                            <input type="range" class="form-range" id="fillOpacity" min="0" max="100" value="30">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small fw-bold"><span data-i18n="border_weight"></span> (<span id="weightValue">2px</span>)</label>
+                            <input type="range" class="form-range" id="borderWeight" min="0" max="10" value="2">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="small fw-bold"><span data-i18n="outside_the_polygon">Outside the Polygon</span></label>
+                            <div class="d-flex gap-3 mt-1">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="polygon_visibility" id="maskOpen" value="open">
+                                    <label class="form-check-label" for="maskOpen" data-i18n="open">Open</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="polygon_visibility" id="maskClose" value="close" checked>
+                                    <label class="form-check-label" for="maskClose" data-i18n="close">Close</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="d-grid gap-2 mb-3">
-                    <button id="importJsonBtn" class="btn btn-outline-primary btn-sm">
-                        <span data-i18n="import"></span> JSON
-                    </button>
-                    <input type="file" id="importJsonInput" hidden><input type="file" id="importJsonInput" accept=".json,.geojson" hidden>
-                    <p data-i18n="support_json"></p>
+                <div class="control-panel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0 fw-bold" data-i18n="map_layers"></h5>
+                    </div>
+                    <div class="d-grid gap-2 mb-3">
+                        <button id="importJsonBtn" class="btn btn-outline-primary btn-sm">
+                            <span data-i18n="import"></span> JSON
+                        </button>
+                        <input type="file" id="importJsonInput" hidden><input type="file" id="importJsonInput" accept=".json,.geojson" hidden>
+                        <p data-i18n="support_json"></p>
+                    </div>
+                    <div class="data-list" id="polygonList"></div>
                 </div>
-                <div class="data-list" id="polygonList"></div>
             </div>
         </div>
     </div>

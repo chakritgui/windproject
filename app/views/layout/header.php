@@ -64,11 +64,8 @@
     <?php if (file_exists($manifestFile)) { ?>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js')
-                .then(function(registration) {
-                    console.log('SW Registered with scope:', registration.scope);
-                })
-                .catch(function(error) {
+                navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                }).catch(function(error) {
                     console.error('SW Registration failed:', error);
                 });
             });

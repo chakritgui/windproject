@@ -20,7 +20,6 @@ async function initDownloadPage() {
             const relatedApps = await navigator.getInstalledRelatedApps();
             if (relatedApps.length > 0) isInstalled = true;
         } catch (e) {
-            console.log("Check related apps failed:", e);
         }
     }
     const supportStatus = checkSupport();
