@@ -170,6 +170,8 @@ class SettingController extends BaseController {
                     }
                 }
             }
+            $mapControl = $this->model->getMapControl();
+            $publicData['MAP_CONTROL'] = $mapControl;
             $response = [
                 'success' => true,
                 'data' => $publicData

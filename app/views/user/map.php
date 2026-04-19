@@ -6,6 +6,7 @@
 <script src="<?=asset('public/js/user/mapHelper.js')?>"></script>
 <script>
     let windyAPI, map, poleLayerGroup;
+    let MAP_CONTROL = []
     let DEFAULT_LEVEL = '100m';
     let options = { 
         lat: 16.5, 
@@ -68,6 +69,7 @@
             }
             options.key = config.WINDY_KEY;
             DEFAULT_LEVEL = config.DEFAULT_LEVEL || '100m';
+            MAP_CONTROL = config.MAP_CONTROL || [];
             window.APP_CONFIG = {
                 DEFAULT_LEVEL
             };

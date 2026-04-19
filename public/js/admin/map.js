@@ -538,7 +538,7 @@ function getMapFullConfigForSave() {
             mode_settings: JSON.stringify(modeConfigs), 
             polygon_visibility: document.querySelector('input[name="polygon_visibility"]:checked')?.value || 'close',
             show_country_line: document.querySelector('input[name="show_country_line"]:checked')?.value || 'hide',
-            map_labels: document.querySelector('input[name="map_labels"]:checked')?.value || 'hide',
+            map_labels: document.querySelector('input[name="map_labels"]:checked')?.value || 'no',
             country_layers_data: countryLayers ? JSON.stringify(countryLayers) : null,
             DEFAULT_LEVEL: DEFAULT_LEVEL
         },

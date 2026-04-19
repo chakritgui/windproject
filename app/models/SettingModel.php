@@ -485,6 +485,18 @@ class SettingModel {
             return null;
         }
     }
+    public function getMapControl() {
+        try {
+            $sql = "SELECT mode_settings FROM wp_map_master WHERE map_id = 1 LIMIT 1";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->fetchColumn();
+            return ($result !== false) ? $result : null;
+        } catch (PDOException $e) {
+            error_log("Error in getMapControl Model: " . $e->getMessage());
+            return null;
+        }
+    }
     public function updateSystemConfig($data) {
         try {
             $this->db->beginTransaction();
