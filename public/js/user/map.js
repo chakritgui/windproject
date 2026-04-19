@@ -1356,12 +1356,12 @@ async function openProjectDetail(project_id) {
             body:    JSON.stringify({ project_id }),
         });
         const data = await res.json();
-        if (!data?.poles?.length) {
-            console.warn('No poles data for project', project_id);
+        if (!data) {
+            console.warn('No project data for project', project_id);
             return;
         }
         document.getElementById('pp-name').textContent  = data.project_name || 'Unknown Project';
-        document.getElementById('pp-count').textContent = data.poles.length;
+        document.getElementById('pp-count').textContent = data.poles?.length ?? 0;
         const statusColor = data.status_color  || '#ccc';
         const statusName  = (data.project_status || 'UNKNOWN').toUpperCase();
         const dot  = document.getElementById('pp-status-dot');
@@ -1371,14 +1371,31 @@ async function openProjectDetail(project_id) {
         pill.style.color           = '#fff';
         pill.textContent           = statusName;
         const unit = getCurrentUnit();
-        document.getElementById('pp-body').innerHTML = data.poles.map(p => {
+        const ppBody = document.getElementById('pp-body');
+        if (!data.poles?.length) {
+            ppBody.innerHTML = `
+            <div class="pp-empty-state">
+                <div class="pp-empty-icon">
+                    <i class="fa-solid fa-tower-broadcast"></i>
+                </div>
+                <div class="pp-empty-title">
+                    ${langData['no_poles_found'] || 'No monitoring stations found'}
+                </div>
+                <div class="pp-empty-sub">
+                    ${langData['no_poles_desc'] || 'This project has no stations assigned yet.'}
+                </div>
+            </div>`;
+            bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('projectCanvas')).show();
+            return;
+        }
+        ppBody.innerHTML = data.poles.map(p => {
             const isEven  = p.type_id % 2 === 0;
             const color   = isEven ? '#f5a623' : '#5bb8f5';
             const color2  = isEven ? '#d4821e' : '#1e90d4';
             const iconSize = 40;
             let iconHtml  = '';
             if (p.type_icon?.trim()) {
-                iconHtml = `<img src="${BASE_URL}/${p.type_icon}" style="width:${iconSize}px;height:${iconSize}px; object-fit:contain; filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))" alt="icon">`;
+                iconHtml = `<img src="${BASE_URL}/${p.type_icon}" style="width:${iconSize}px;height:${iconSize}px;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))" alt="icon">`;
             } else {
                 const extra = `
                     <line x1="3" y1="32" x2="-5" y2="32" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
@@ -1396,7 +1413,7 @@ async function openProjectDetail(project_id) {
             }
             return `
             <div class="pole-row" onclick="openPoles(${p.poles_id})">
-                <div class="pole-index" style="width:45px;display:flex; justify-content:center;align-items:center;">
+                <div class="pole-index" style="width:45px;display:flex;justify-content:center;align-items:center;">
                     ${iconHtml}
                 </div>
                 <div class="pole-info">
@@ -1430,12 +1447,8 @@ async function openProjectDetail(project_id) {
             if (cachedPole) {
                 const elSpeed = document.getElementById(cachedPole.windId);
                 const elArrow = document.getElementById(cachedPole.arrowId);
-                if (elSpeed && elSpeed.dataset.raw) {
-                    speed = parseFloat(elSpeed.dataset.raw);
-                }
-                if (elArrow && elArrow.dataset.dir) {
-                    direction = parseFloat(elArrow.dataset.dir);
-                }
+                if (elSpeed && elSpeed.dataset.raw) speed     = parseFloat(elSpeed.dataset.raw);
+                if (elArrow && elArrow.dataset.dir)  direction = parseFloat(elArrow.dataset.dir);
             }
             totalWind += speed;
             validPolesCount++;
@@ -1449,9 +1462,8 @@ async function openProjectDetail(project_id) {
             elWind.style.color = activeColor;
             elWind.innerHTML   = `${displaySpeed} <small>${unit.label}</small>`;
             if (elArrow) {
-                elArrow.style.color = activeColor;
-                const rotationAdjustment = -45;
-                elArrow.style.transform = `rotate(${direction + rotationAdjustment}deg)`;
+                elArrow.style.color     = activeColor;
+                elArrow.style.transform = `rotate(${direction - 45}deg)`;
             }
             const pct = Math.min((speed / 25) * 100, 100);
             requestAnimationFrame(() => {

@@ -674,5 +674,7 @@
     "auto": "Auto",
     "zoom_scale": "Zoom Scale (Drag)",
     "auto_scale" : "Auto Scale (Relative)",
-    "example_import" : "Example Import"
+    "example_import" : "Example Import",
+    "no_poles_found" : "No monitoring stations found",
+    "no_poles_desc" : "This project has no stations assigned yet."
 }
