@@ -309,7 +309,11 @@ async function loadPoles() {
         if (currentIndex < totalPoles) {
             setTimeout(renderChunk, 1);
         } else {
-            if (windOn) refreshAllWindData();
+            if (typeof applyRestoredState === 'function') {
+                applyRestoredState();
+            } else if (windOn) {
+                refreshAllWindData();
+            }
         }
     }
     renderChunk();
@@ -901,6 +905,7 @@ function toggleEquipment(isOn) {
         _applyWindState(isOn);
         $('#toggle-wind-values').prop('checked', true);
         $('#wind-status-icon').addClass('spinning');
+        localStorage.setItem('winds', 'true');
     } else {
         Object.values(poleMarkers).forEach(p => {
             p.marker?.setOpacity(0);
@@ -909,6 +914,7 @@ function toggleEquipment(isOn) {
         $('#toggle-wind-values').prop('checked', false);
         $('#wind-status-icon').removeClass('spinning');
         windOn = false;
+        localStorage.setItem('winds', 'false');
     }
 }
 function _applyWindState(isOn) {
@@ -1530,19 +1536,31 @@ $(document).ready(function () {
     bindToggle('#toggle-animation',   'animation',    toggleAnimation);
     bindToggle('#toggle-equipment',   'equipment',    toggleEquipment);
     window.restoreMapSettings = function () {
-        const restore = (key, $el, fn) => {
+        const restoreCheckbox = (key, $el) => {
             const val = localStorage.getItem(key);
             if (val === null) return;
-            const isOn = val === 'true';
-            $el.prop('checked', isOn);
-            if (typeof map !== 'undefined' && map !== null) fn(isOn);
+            $el.prop('checked', val === 'true');
         };
-        restore('winds',       $('#toggle-wind-values'), toggleWind);
-        restore('focus',       $('#toggle-focus'),        toggleFocus);
-        restore('labels',      $('#toggle-label'),        toggleLabel);
-        restore('windturbine', $('#toggle-windturbine'),  toggleWindTurbine);
-        restore('animation',   $('#toggle-animation'),    toggleAnimation);
-        restore('equipment',   $('#toggle-equipment'),    toggleEquipment);
+        restoreCheckbox('winds',       $('#toggle-wind-values'));
+        restoreCheckbox('focus',       $('#toggle-focus'));
+        restoreCheckbox('labels',      $('#toggle-label'));
+        restoreCheckbox('windturbine', $('#toggle-windturbine'));
+        restoreCheckbox('animation',   $('#toggle-animation'));
+        restoreCheckbox('equipment',   $('#toggle-equipment'));
+    };
+    window.applyRestoredState = function () {
+        const applyOne = (key, $el, fn) => {
+            const val = localStorage.getItem(key);
+            const isOn = val !== null ? val === 'true' : true;
+            $el.prop('checked', isOn);
+            fn(isOn);
+        };
+        applyOne('equipment',   $('#toggle-equipment'),    toggleEquipment);
+        applyOne('winds',       $('#toggle-wind-values'),  toggleWind);
+        applyOne('focus',       $('#toggle-focus'),         toggleFocus);
+        applyOne('labels',      $('#toggle-label'),         toggleLabel);
+        applyOne('windturbine', $('#toggle-windturbine'),   toggleWindTurbine);
+        applyOne('animation',   $('#toggle-animation'),     toggleAnimation);
     };
 });
 $(document).on('click', () => $('.menu-panel').fadeOut());
