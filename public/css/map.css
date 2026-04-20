@@ -401,7 +401,6 @@ header .nav-link:hover {
     margin: 0 auto;
 }
 .poles-header-card {
-    display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;

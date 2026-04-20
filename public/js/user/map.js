@@ -1118,6 +1118,29 @@ async function openPoles(poleId) {
                 <div class="sk-line" style="width:80%;height:12px"></div>
             </div>
         </div>`);
+    const pm = poleMarkers[poleId];
+    let windBadgeHtml = '';
+    if (pm) {
+        const elSpeed = document.getElementById(pm.windId);
+        const elArrow = document.getElementById(pm.arrowId);
+        const rawSpeed = elSpeed ? parseFloat(elSpeed.dataset.raw) : null;
+        const unit = getCurrentUnit();
+        const dir = elArrow ? parseFloat(elArrow.dataset.dir) : null;
+        if (rawSpeed !== null && !isNaN(rawSpeed)) {
+            const displaySpeed = (rawSpeed * unit.factor).toFixed(1);
+            const color = getWindColor(rawSpeed);
+            const arrowRotate = (!isNaN(dir)) ? `transform: rotate(${dir}deg);` : '';
+            windBadgeHtml = `
+                <div style="display:flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0">
+                    <span style="display:inline-flex;align-items:center;justify-content:center; width:20px;height:20px;transform:rotate(${dir}deg); color:${color};font-size:15px;transition:transform 0.3s">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </span>
+                    <span style="font-size:0.88rem;font-weight:600;color:${color};white-space:nowrap">
+                        ${displaySpeed} ${unit.label}
+                    </span>
+                </div>`;
+        }
+    }
     $footer.html(`
         <button type="button" class="poles-btn-primary" onclick="openFilterModal(${poleId})" data-i18n="view_report"></button>
         <button type="button" class="poles-btn-ghost" data-bs-dismiss="modal" data-i18n="close"></button>`);
@@ -1190,6 +1213,7 @@ async function openPoles(poleId) {
                             <span class="poles-code">#${data.poles_code}</span>
                         </div>
                     </div>
+                    ${windBadgeHtml}
                 </div>
             </div>
             <div class="poles-chips">
