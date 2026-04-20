@@ -112,6 +112,7 @@ class  MapController extends BaseController {
         $windDirKey   = "wind_direction_{$suffix}";
         $windSpeed = $wind['current'][$windSpeedKey] ?? null;
         $windDir   = $wind['current'][$windDirKey] ?? null;
+        print_r($wind['current']);
         $result = [
             'temperature'   => $w ? round($w['main']['temp'], 1) : null,
             'humidity'      => $w ? round($w['main']['humidity'], 0) : null,
