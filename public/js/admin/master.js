@@ -260,6 +260,7 @@ function openIconSetting(type) {
                     <button type="button" class="btn btn-primary btn-save-icon">Save</button>
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
                 `);
+                const savedColor = turbineData.icon_color || '#ff0000';
                 let zoomHtml = '';
                 for (let z = 8; z <= 17; z++) {
                     let baseSize = (type === 'windturbine') ? 3 : 20;
@@ -271,7 +272,11 @@ function openIconSetting(type) {
                             <label class="d-flex align-items-center">
                                 <span class="me-2">${langData['configure_zoom_level'] || 'Level'} ${z}</span>
                                 <div class="preview-container" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border-radius: 4px; border: 1px solid #eee;">
-                                    <div id="previewDot${z}" style="width: ${currentSize}px; height: ${currentSize}px; background: red; border-radius: 50%;"></div>
+                                    <div id="previewDot${z}" class="preview-dot-colored"
+                                        style="width:${currentSize}px;height:${currentSize}px;
+                                            background:${type === 'windturbine' ? savedColor : 'red'};
+                                            border-radius:50%">
+                                    </div>
                                 </div>
                             </label>
                             <span><b class="zoom-value" id="zoomVal${z}">${currentSize}</b> px</span>
@@ -283,11 +288,30 @@ function openIconSetting(type) {
                     ? `<div class="mb-4">${renderCover(turbineData, 'icon')}</div>
                        <input type="hidden" id="ex_cover" value="${turbineData.cover || ''}">`
                     : `<input type="hidden" id="ex_cover" value="">`;
+                const colorSection = (type === 'windturbine') ? `
+                    <div class="mb-3 p-3" style="background:#f8f9fa;border-radius:8px;border:1px solid #eee">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <label class="fw-bold small">${langData['icon_color'] || 'Icon Color'}</label>
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <input type="color" id="iconColorPicker" value="${savedColor}"
+                                    style="width:36px;height:32px;padding:2px;border:1px solid #ddd;border-radius:6px;cursor:pointer">
+                                <input type="text" id="iconColorHex" value="${savedColor}" maxlength="7"
+                                    style="width:80px;font-size:12px;font-family:monospace;padding:5px 8px;border:1px solid #ddd;border-radius:6px">
+                                <div id="iconColorPreview" style="width:26px;height:26px;border-radius:50%;background:${savedColor};border:1px solid #ddd;flex-shrink:0"></div>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:7px;flex-wrap:wrap" id="colorPresets">
+                            ${['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6','#6b7280','#ffffff','#1e293b'].map(c => `<div class="color-preset-dot" data-color="${c}" style="width:26px;height:26px;border-radius:50%;background:${c}; border:2px solid ${c === savedColor ? '#333' : 'transparent'}; cursor:pointer;transition:transform 0.15s" onmouseover="this.style.transform='scale(1.15)'" onmouseout="this.style.transform='scale(1)'"></div>`).join('')}
+                        </div>
+                    </div>
+                    <input type="hidden" id="icon_color" value="${savedColor}">
+                ` : '';
                 const autoScaleLabel = langData['auto_scale'] || 'Auto Scale (Relative)';
                 modalEl.find(".modal-body").html(`
                     <input type="hidden" id="icon_type" value="${type}">
                     <div class="container-fluid">
                         ${coverSection}
+                        ${colorSection}
                         <div class="d-flex justify-content-between mb-2 mt-3">
                             <label class="fw-bold">${langData['zoom_scale'] || 'Zoom Scale (Drag)'}</label>
                             <div class="d-flex gap-2">
@@ -303,8 +327,28 @@ function openIconSetting(type) {
                         </div>
                     </div>
                 `);
+                if (type === 'windturbine') {
+                    if (typeof initCoverUpload === 'function') initCoverUpload();
+                    function _applyColor(hex) {
+                        $('#icon_color').val(hex);
+                        $('#iconColorPicker').val(hex);
+                        $('#iconColorHex').val(hex);
+                        $('#iconColorPreview').css('background', hex);
+                        modalEl.find('#zoomSliderBox .preview-dot-colored').css('background', hex);
+                        modalEl.find('.color-preset-dot').css('border-color', 'transparent');
+                        modalEl.find(`.color-preset-dot[data-color="${hex}"]`).css('border-color', '#333');
+                    }
+                    modalEl.find('#iconColorPicker').on('input', function() {
+                        _applyColor(this.value);
+                    });
+                    modalEl.find('#iconColorHex').on('input', function() {
+                        if (/^#[0-9a-fA-F]{6}$/.test(this.value)) _applyColor(this.value);
+                    });
+                    modalEl.on('click', '.color-preset-dot', function() {
+                        _applyColor($(this).data('color'));
+                    });
+                }
                 if(type === 'windturbine' && typeof initCoverUpload === 'function') initCoverUpload();
-
             } else {
                 showError(langData['cannot_load']);
             }
@@ -361,6 +405,7 @@ $(document).on('click', '.btn-save-icon', function () {
     const formData = new FormData();
     formData.append("ex_cover", $("#ex_cover").val() || "");
     formData.append("icon_type", type);
+    formData.append("icon_color", $('#icon_color').val() || null);
     formData.append("zoom_settings", JSON.stringify(zoomData));
     if (type === 'windturbine') {
         const fileInput = $("#cover")[0];

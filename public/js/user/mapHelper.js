@@ -239,6 +239,7 @@ function _buildPoleIcon(pole, size = 20) {
 }
 function _buildTurbineIcon(size) {
     const iconUrl = globalWindturbineIcon?.url ? `${BASE_URL}/${globalWindturbineIcon.url}` : '';
+    const iconColor = globalWindturbineIcon?.color || '#ef1515';
     if (iconUrl) {
         return L.icon({
             iconUrl,
@@ -252,7 +253,7 @@ function _buildTurbineIcon(size) {
         className:  'turbine-dot',
         iconSize:   [size, size],
         iconAnchor: [size / 2, size / 2],
-        html: `<div style="width:${size}px; height:${size}px; background:radial-gradient(circle at 30% 30%, #ef1515, #ef1515); border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>`,
+        html: `<div style="width:${size}px; height:${size}px; background:radial-gradient(circle at 30% 30%, ${iconColor}, ${iconColor}); border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>`,
     });
 }
 function _toFeatureCollection(g) {

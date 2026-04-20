@@ -301,6 +301,7 @@ class WindturbineModel {
         try {
             $map_id = 1; 
             $icon_type = $_POST['icon_type'] ?? '';
+            $icon_color = $_POST['icon_color'] ?? null;
             $zoom_raw = $_POST['zoom_settings'] ?? '[]';
             $zoom_settings = json_decode($zoom_raw, true);
             if (!is_array($zoom_settings)) $zoom_settings = [];
@@ -312,11 +313,11 @@ class WindturbineModel {
             $existing_row = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($existing_row) {
                 $target_id = $existing_row['id'];
-                $sql = "UPDATE wp_windturbind_icon SET cover = ?, zoom_level = ?, zoom_val = ?, updated_at = NOW() WHERE id = ?";
-                $this->db->prepare($sql)->execute([$final_cover, $zoom_levels_json, $zoom_vals_json, $target_id]);
+                $sql = "UPDATE wp_windturbind_icon SET cover = ?, zoom_level = ?, zoom_val = ?, updated_at = NOW(), icon_color = ? WHERE id = ?";
+                $this->db->prepare($sql)->execute([$final_cover, $zoom_levels_json, $zoom_vals_json, $icon_color, $target_id]);
             } else {
-                $sql = "INSERT INTO wp_windturbind_icon (map_id, icon_type, cover, zoom_level, zoom_val, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())";
-                $this->db->prepare($sql)->execute([$map_id, $icon_type, $final_cover, $zoom_levels_json, $zoom_vals_json]);
+                $sql = "INSERT INTO wp_windturbind_icon (map_id, icon_type, cover, zoom_level, zoom_val, created_at, updated_at, icon_color) VALUES (?, ?, ?, ?, ?, NOW(), NOW(), ?)";
+                $this->db->prepare($sql)->execute([$map_id, $icon_type, $final_cover, $zoom_levels_json, $zoom_vals_json, $icon_color]);
                 $target_id = $this->db->lastInsertId();
             }
             if($icon_type === 'windturbine') {

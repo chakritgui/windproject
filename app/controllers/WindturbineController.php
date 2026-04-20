@@ -65,6 +65,7 @@ class WindturbineController extends BaseController {
             'type_id'       => intval($_POST['type_id'] ?? 0),
             'icon_type'     => $_POST['icon_type'] ?? 'pole',
             'ex_cover'      => $_POST['ex_cover'] ?? null,
+            'icon_color'      => $_POST['icon_color'] ?? null,
             'zoom_settings' => $_POST['zoom_settings'] ?? '[]'
         ];
         $result = $this->model->save($data);

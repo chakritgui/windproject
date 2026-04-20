@@ -16,12 +16,13 @@ class MapModel{
             for ($z = 8; $z <= 17; $z++) {
                 $defaultSizes[$z] = $config['base'] + ($z - 8) * $config['step'];
             }
-            $sqlIcon = "SELECT cover, zoom_level, zoom_val FROM wp_windturbind_icon WHERE icon_type = ? LIMIT 1";
+            $sqlIcon = "SELECT cover, zoom_level, zoom_val, icon_color FROM wp_windturbind_icon WHERE icon_type = ? LIMIT 1";
             $stmt = $this->db->prepare($sqlIcon);
             $stmt->execute([$type]);
             $iconData = $stmt->fetch(PDO::FETCH_ASSOC);
             $iconConfig = [
                 'url'   => $iconData['cover'] ?? '',
+                'color'   => $iconData['icon_color'] ?? '',
                 'sizes' => $defaultSizes
             ];
             if ($iconData && !empty($iconData['zoom_level'])) {
