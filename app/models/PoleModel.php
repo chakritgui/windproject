@@ -162,12 +162,22 @@ class PoleModel {
                     t.type_id, 
                     t.type_name, 
                     i.installations_name,
-                    t.type_icon
+                    t.type_icon,
+                    CASE
+                        WHEN p.project_status_id is not null and p.project_status_id <> '' and p.project_status_id > 0 THEN sp.project_status_name
+                        ELSE s.project_status_name
+                    END AS poles_status_name,
+                    CASE
+                        WHEN p.project_status_id is not null and p.project_status_id <> '' and p.project_status_id > 0 THEN sp.project_status_color
+                        ELSE s.project_status_color
+                    END AS poles_status_color
                 FROM wp_poles p
                 LEFT JOIN wp_type t ON t.type_id = p.type_id
                 LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
-                WHERE p.project_id = :project_id 
-                AND p.status = 'online'
+                LEFT JOIN wp_project pj ON pj.project_id = p.project_id
+                LEFT JOIN wp_project_status s on s.project_status_id = pj.project_status_id
+                LEFT JOIN wp_project_status sp on sp.project_status_id = p.project_status_id
+                WHERE p.project_id = :project_id AND p.status = 'online'
                 ORDER BY IFNULL(p.item_order, p.poles_id) ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['project_id' => $project_id]);

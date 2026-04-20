@@ -1092,16 +1092,16 @@ function handleStationClick(lat, lng, id, el) {
     $('.station-item').removeClass('selected');
     $(el).addClass('selected');
     $('.menu-panel').fadeOut();
-    openPoles(id);
+    openPoles(id, 'station');
 }
 function selectItem(level, id, el) {
     $(el).addClass('selected').siblings().removeClass('selected');
     menuState[MENU_LEVELS[level].key] = id;
     loadMenuLevel(level + 1);
 }
-async function openPoles(poleId) {
-    const mode = localStorage.getItem('map_views') || 'wind';
-    if(mode === 'satellite') {
+async function openPoles(poleId, target = 'equipment') {
+    const isEquipmentOpen = $('#toggle-equipment').prop('checked');
+    if (!isEquipmentOpen && target === 'equipment') {
         return;
     }
     const $modal  = $('#windModal');
@@ -1448,11 +1448,21 @@ async function openProjectDetail(project_id) {
                 <div class="pole-info">
                     <div class="pole-title">
                         <strong>${p.type_name || 'N/A'}</strong>
+                        <div>
+                            <small class="project-status">
+                                <i class="fa-solid fa-circle-dot status-pulse me-2" style="color:${p.poles_status_color || '#3388ff'};font-size:0.8em"></i>
+                                <span class="fw-bold" style="color:${p.poles_status_color || '#3388ff'};">
+                                    ${p.poles_status_name || '-'}
+                                </span>
+                            </small>
+                        </div>
                         <div class="small">${p.installations_name || 'N/A'}</div>
                     </div>
                     <div class="pole-coords">
-                        <i class="fa-solid fa-location-dot me-1"></i>
-                        ${p.lat}° N, ${p.lng}° E
+                        <small>
+                            <i class="fa-solid fa-location-dot me-1"></i>
+                            ${p.lat}° N, ${p.lng}° E
+                        </small>
                     </div>
                     <div class="pole-bar-wrap">
                         <div class="pole-bar" id="bar-${p.poles_id}" style="width:0%;transition:width 0.6s ease, background-color 0.3s"></div>
