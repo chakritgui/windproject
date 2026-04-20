@@ -65,7 +65,7 @@ class  MapController extends BaseController {
         if(empty($level)) {
             $level = $this->model->getSetting('DEFAULT_LEVEL');
         }
-        echo $suffix = ($level === '100m') ? '100m' : $level . 'Pa';
+        $suffix = ($level === '100m') ? '100m' : $level . 'Pa';
         if (!$lat || !$lon) {
             http_response_code(400);
             echo json_encode(['error' => true, 'reason' => 'Missing coordinates']);
@@ -73,23 +73,12 @@ class  MapController extends BaseController {
         }
         $lat = preg_replace('/[^0-9.\-]/', '', $lat);
         $lon = preg_replace('/[^0-9.\-]/', '', $lon);
-        // $CACHE_TTL = 1800;
-        // $cacheDir  = sys_get_temp_dir() . '/weather_current_cache';
-        // if (!is_dir($cacheDir)) mkdir($cacheDir, 0755, true);
-        // $cacheKey  = round((float)$lat, 2) . '_' . round((float)$lon, 2);
-        // $cacheFile = "{$cacheDir}/{$cacheKey}.json";
-        // if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $CACHE_TTL) {
-        //     header('Content-Type: application/json');
-        //     echo file_get_contents($cacheFile);
-        //     return;
-        // }
         $apiKey = 'bb3dbebb270f08db6036bb5c4d01cc70';
         $urls = [
             'weather' => "https://api.openweathermap.org/data/2.5/weather?lat={$lat}&lon={$lon}&appid={$apiKey}&units=metric",
             'air'     => "https://api.openweathermap.org/data/2.5/air_pollution?lat={$lat}&lon={$lon}&appid={$apiKey}",
             'wind'    => "https://api.open-meteo.com/v1/forecast?latitude={$lat}&longitude={$lon}&current=wind_speed_{$suffix},wind_direction_{$suffix}&wind_speed_unit=ms"
         ];
-        echo "https://api.open-meteo.com/v1/forecast?latitude={$lat}&longitude={$lon}&current=wind_speed_{$suffix},wind_direction_{$suffix}&wind_speed_unit=ms";
         $multi   = curl_multi_init();
         $handles = [];
         foreach ($urls as $key => $url) {
@@ -133,7 +122,6 @@ class  MapController extends BaseController {
         ];
         header('Content-Type: application/json');
         $json = json_encode($result);
-        // file_put_contents($cacheFile, $json);
         echo $json;
     }
     public function getLatestWind() {
