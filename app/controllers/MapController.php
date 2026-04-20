@@ -73,16 +73,16 @@ class  MapController extends BaseController {
         }
         $lat = preg_replace('/[^0-9.\-]/', '', $lat);
         $lon = preg_replace('/[^0-9.\-]/', '', $lon);
-        $CACHE_TTL = 1800;
-        $cacheDir  = sys_get_temp_dir() . '/weather_current_cache';
-        if (!is_dir($cacheDir)) mkdir($cacheDir, 0755, true);
-        $cacheKey  = round((float)$lat, 2) . '_' . round((float)$lon, 2);
-        $cacheFile = "{$cacheDir}/{$cacheKey}.json";
-        if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $CACHE_TTL) {
-            header('Content-Type: application/json');
-            echo file_get_contents($cacheFile);
-            return;
-        }
+        // $CACHE_TTL = 1800;
+        // $cacheDir  = sys_get_temp_dir() . '/weather_current_cache';
+        // if (!is_dir($cacheDir)) mkdir($cacheDir, 0755, true);
+        // $cacheKey  = round((float)$lat, 2) . '_' . round((float)$lon, 2);
+        // $cacheFile = "{$cacheDir}/{$cacheKey}.json";
+        // if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $CACHE_TTL) {
+        //     header('Content-Type: application/json');
+        //     echo file_get_contents($cacheFile);
+        //     return;
+        // }
         $apiKey = 'bb3dbebb270f08db6036bb5c4d01cc70';
         $urls = [
             'weather' => "https://api.openweathermap.org/data/2.5/weather?lat={$lat}&lon={$lon}&appid={$apiKey}&units=metric",
@@ -133,7 +133,7 @@ class  MapController extends BaseController {
         ];
         header('Content-Type: application/json');
         $json = json_encode($result);
-        file_put_contents($cacheFile, $json);
+        // file_put_contents($cacheFile, $json);
         echo $json;
     }
     public function getLatestWind() {
