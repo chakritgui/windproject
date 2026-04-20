@@ -639,7 +639,7 @@
     "presentation": "Presentation",
     "avg_wind_speed": "Avg wind speed",
     "initializing": "Initializing",
-    "gusts": "Gusts",
+    "gusts": "Gust Wind Speed",
     "map_controls": "Map Controls",
     "show_wind_values": "Show wind speed",
     "focus_mode": "Focus mode",

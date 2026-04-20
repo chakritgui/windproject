@@ -440,24 +440,8 @@ async function openCustomPicker(latlng) {
     const lat = Number(latlng.lat);
     const lng = Number(latlng.lng ?? latlng.lon);
     if (isNaN(lat) || isNaN(lng)) return;
-    const pickerIcon = L.divIcon({
-        className:  'popupTop',
-        iconSize:   [24, 60],
-        iconAnchor: [4, 58],
-        html: `
-        <svg width="24" height="60" viewBox="0 0 24 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.5))">
-            <circle cx="4" cy="57" r="4" fill="rgba(255,255,255,0.9)" stroke="#1a2535" stroke-width="1.5"/>
-            <line x1="4" y1="53" x2="4" y2="4" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
-            <line x1="4" y1="6"  x2="18" y2="6" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
-            <line x1="4" y1="16" x2="14" y2="16" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
-            <circle cx="18" cy="6"  r="2.5" fill="#5bb8f5" stroke="#ffffff" stroke-width="1"/>
-            <circle cx="14" cy="16" r="2"   fill="#5bb8f5" stroke="#ffffff" stroke-width="1"/>
-            <line x1="4" y1="4" x2="4" y2="0" stroke="rgba(255,255,255,0.6)" stroke-width="1" stroke-dasharray="2 2"/>
-        </svg>`,
-    });
     customPickerMarker = L.marker([lat, lng], {
-        icon:        pickerIcon,
-        draggable:   true,
+        draggable: true,
         zIndexOffset: 1000,
     }).addTo(map);
     await updateCustomPickerPopup(lat, lng);
@@ -481,30 +465,40 @@ async function openCustomPicker(latlng) {
 }
 async function updateCustomPickerPopup(lat, lng) {
     const windData = await fetchWindAtPoint(lat, lng);
-    const content  = buildPickerPopupHTML(lat, lng, windData);
+    const speedColor = windData.speed !== null ? getWindColor(windData.speed) : '#ffffff';
+    const pickerIcon = L.divIcon({
+        className: 'popupTop',
+        iconSize: [24, 60],
+        iconAnchor: [4, 58],
+        html: `
+        <svg width="24" height="60" viewBox="0 0 24 60" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;">
+            <line x1="4" y1="54" x2="4" y2="0" stroke="rgba(255,255,255,0.7)" stroke-width="0.5" stroke-dasharray="3 2"/>
+            <circle cx="4" cy="57" r="5" fill="${speedColor}" stroke="rgba(255,255,255,0.7)" stroke-width="1"/>
+        </svg>`,
+    });
     if (!customPickerMarker) return;
+    customPickerMarker.setIcon(pickerIcon);
+    const content = buildPickerPopupHTML(lat, lng, windData);
     if (!map.getPane('popupTop')) {
         map.createPane('popupTop');
         map.getPane('popupTop').style.zIndex = 1000;
     }
     if (!customPickerMarker.getPopup()) {
         customPickerMarker.bindPopup(content, {
-            pane:         'popupTop',
-            className:    'custom-wind-popup',
-            offset:       L.point(0, -52),
-            closeButton:  false,
-            autoClose:    false,
+            pane: 'popupTop',
+            className: 'custom-wind-popup',
+            offset: L.point(0, -45),
+            closeButton: false,
+            autoClose: false,
             closeOnClick: false,
-            maxWidth:     280,
-            minWidth:     210,
+            maxWidth: 280,
+            minWidth: 210,
         });
         customPickerMarker.openPopup();
         customPickerMarker.setZIndexOffset(10000);
-        customPickerMarker.getPopup().on('remove', closeCustomPicker);
     } else {
-        customPickerMarker.getPopup().setContent(content);
+        customPickerMarker.setPopupContent(content);
     }
-    customPicker = customPickerMarker.getPopup();
 }
 function buildPickerPopupHTML(lat, lng, { speed, direction, gusts }) {
     const unit         = getCurrentUnit();

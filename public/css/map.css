@@ -797,7 +797,6 @@ header .nav-link:hover {
 .cpicker-gust {
     font-size:   11px;
     color:       rgba(255, 255, 255, 0.38);
-    display:     flex;
     align-items: center;
     gap:         4px;
     margin-top:  2px;

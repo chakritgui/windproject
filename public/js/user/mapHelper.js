@@ -47,10 +47,11 @@ async function fetchWindAtPoint(lat, lng) {
         return {
             speed:     data.wind_speed     ?? null,
             direction: data.wind_direction ?? null,
+            gusts: data.wind_gusts ?? null,
         };
     } catch (err) {
         console.error('fetchWindAtPoint error:', err);
-        return { speed: null, direction: null };
+        return { speed: null, direction: null, gusts: null };
     }
 }
 function _calcOffsetDist(zoom) {

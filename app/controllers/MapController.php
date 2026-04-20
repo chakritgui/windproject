@@ -65,7 +65,12 @@ class  MapController extends BaseController {
         if(empty($level)) {
             $level = $this->model->getSetting('DEFAULT_LEVEL');
         }
-        $suffix = ($level === '100m') ? '100m' : $level . 'Pa';
+        if ($level === '100m') {
+            $suffix = '100m';
+        } else {
+            $numericLevel = preg_replace('/[^0-9]/', '', $level);
+            $suffix = $numericLevel . 'hPa'; 
+        }
         if (!$lat || !$lon) {
             http_response_code(400);
             echo json_encode(['error' => true, 'reason' => 'Missing coordinates']);
@@ -77,7 +82,7 @@ class  MapController extends BaseController {
         $urls = [
             'weather' => "https://api.openweathermap.org/data/2.5/weather?lat={$lat}&lon={$lon}&appid={$apiKey}&units=metric",
             'air'     => "https://api.openweathermap.org/data/2.5/air_pollution?lat={$lat}&lon={$lon}&appid={$apiKey}",
-            'wind'    => "https://api.open-meteo.com/v1/forecast?latitude={$lat}&longitude={$lon}&current=wind_speed_{$suffix},wind_direction_{$suffix}&wind_speed_unit=ms"
+            'wind'    => "https://api.open-meteo.com/v1/forecast?latitude={$lat}&longitude={$lon}&current=wind_speed_{$suffix},wind_direction_{$suffix},wind_gusts_10m&wind_speed_unit=ms"
         ];
         $multi   = curl_multi_init();
         $handles = [];
@@ -110,20 +115,19 @@ class  MapController extends BaseController {
         $wind = $responses['wind']['code']    === 200 ? json_decode($responses['wind']['body'], true)    : null;
         $windSpeedKey = "wind_speed_{$suffix}";
         $windDirKey   = "wind_direction_{$suffix}";
-        $windSpeed = $wind['current'][$windSpeedKey] ?? null;
-        $windDir   = $wind['current'][$windDirKey] ?? null;
-        print_r($wind['current']);
+        $windGustKey  = "wind_gusts_10m";
+        $windData  = $wind['current'] ?? null;
         $result = [
-            'temperature'   => $w ? round($w['main']['temp'], 1) : null,
-            'humidity'      => $w ? round($w['main']['humidity'], 0) : null,
-            'wind_speed'    => $windSpeed !== null ? round($windSpeed, 1) : null,
-            'wind_direction'=> $windDir,
-            'precipitation' => $w ? round($w['rain']['1h'] ?? 0, 1) : null,
-            'pm25'          => $air ? round($air['list'][0]['components']['pm2_5'] ?? 0, 1) : null,
+            'temperature'    => $w ? round($w['main']['temp'], 1) : null,
+            'humidity'       => $w ? round($w['main']['humidity'], 0) : null,
+            'wind_speed'     => isset($windData[$windSpeedKey]) ? round($windData[$windSpeedKey], 1) : null,
+            'wind_direction' => $windData[$windDirKey] ?? null,
+            'wind_gusts'     => isset($windData[$windGustKey]) ? round($windData[$windGustKey], 1) : null,
+            'precipitation'  => $w ? round($w['rain']['1h'] ?? 0, 1) : null,
+            'pm25'           => $air ? round($air['list'][0]['components']['pm2_5'] ?? 0, 1) : null,
         ];
         header('Content-Type: application/json');
-        $json = json_encode($result);
-        echo $json;
+        echo json_encode($result);
     }
     public function getLatestWind() {
         header('Content-Type: application/json');
