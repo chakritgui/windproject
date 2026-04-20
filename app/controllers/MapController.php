@@ -65,7 +65,7 @@ class  MapController extends BaseController {
         if(empty($level)) {
             $level = $this->model->getSetting('DEFAULT_LEVEL');
         }
-        $suffix = ($level === '100m') ? '100m' : $level . 'Pa';
+        echo $suffix = ($level === '100m') ? '100m' : $level . 'Pa';
         if (!$lat || !$lon) {
             http_response_code(400);
             echo json_encode(['error' => true, 'reason' => 'Missing coordinates']);
