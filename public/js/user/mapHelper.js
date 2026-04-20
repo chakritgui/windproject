@@ -380,3 +380,32 @@ function toggleAreaPanel() {
 function renderErrorAlert(type, message) {
     return `<div class="alert alert-${type} m-3" role="alert">${message}</div>`;
 }
+function toggleAreaFill(enabled) {
+    localStorage.setItem('area_fill', enabled);
+    map.eachLayer(fg => {
+        if (!(fg instanceof L.FeatureGroup)) return;
+        fg.eachLayer(gj => {
+            if (!(gj instanceof L.GeoJSON)) return;
+            gj.eachLayer(l => {
+                if (!l.options.stroke && l.options._origFillOpacity != null) {
+                    l.setStyle({ fillOpacity: enabled ? l.options._origFillOpacity : 0 });
+                }
+            });
+        });
+    });
+}
+
+function toggleAreaStroke(enabled) {
+    localStorage.setItem('area_stroke', enabled);
+    Object.values(areaLayers).forEach(gj => {
+        gj.eachLayer(l => {
+            const origW = l.options._origWeight ?? l.options.weight;
+            if (l.options._origWeight == null) l.options._origWeight = origW;
+            l.setStyle({
+                weight:  enabled ? origW : 0,
+                stroke:  enabled,
+                opacity: enabled ? 1 : 0,
+            });
+        });
+    });
+}

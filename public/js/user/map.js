@@ -616,6 +616,7 @@ async function renderWindAreas(picker, areaData, masterData) {
                         fillColor, fillOpacity,
                         stroke:      false,
                         interactive: false,
+                        _origFillOpacity: fillOpacity,
                     }),
                 }).addTo(featureGroup);
             }
@@ -963,7 +964,15 @@ const CONTROL_CONFIG = {
     opt7: {
         el: '.wind-legend',
         fn: toggleLegend
-    }
+    },
+    opt8: {
+        el: '#toggle-area-fill', 
+        fn: (enabled) => toggleAreaFill(enabled),
+    },
+    opt9: {
+        el: '#toggle-area-stroke',
+        fn: (enabled) => toggleAreaStroke(enabled),
+    },
 };
 function toggleLegend(isOn) {
     $('.wind-legend').toggleClass('d-none', !isOn);
@@ -986,6 +995,8 @@ function applyMapControl(mode, mapControlStr) {
         opt4: 'windturbine',
         opt5: 'animation',
         opt6: 'labels',
+        opt8: 'area_fill',
+        opt9: 'area_stroke',
     };
     Object.keys(config).forEach(key => {
         const optKey = key.replace(/^(wind|sat)-/, '');

@@ -345,6 +345,7 @@
     "area_border_color": "Area / Border Color",
     "opacity": "Opacity",
     "border_weight": "Border Weight",
+    "border": "Border",
     "save_all_changes": "Save All Changes",
     "change": "Save Changes",
     "map_layers": "Map Layers",

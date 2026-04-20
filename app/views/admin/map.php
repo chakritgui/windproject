@@ -155,6 +155,8 @@
                         <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="sat-opt4"><label class="form-check-label" for="sat-opt4" data-i18n="windturbine"></label></div>
                         <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="sat-opt5"><label class="form-check-label" for="sat-opt5" data-i18n="wind_animation"></label></div>
                         <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="sat-opt6"><label class="form-check-label" for="sat-opt6" data-i18n="show_place_label"></label></div>
+                        <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="sat-opt8"><label class="form-check-label" for="sat-opt8" data-i18n="area"></label></div>
+                        <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="sat-opt9"><label class="form-check-label" for="sat-opt9" data-i18n="border"></label></div>
                     </div>
                 </div>
                 <div class="mode-container mb-4 p-3 border rounded shadow-sm" data-mode="wind">
@@ -179,6 +181,8 @@
                         <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="wind-opt4"><label class="form-check-label" for="wind-opt4" data-i18n="windturbine"></label></div>
                         <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="wind-opt5"><label class="form-check-label" for="wind-opt5" data-i18n="wind_animation"></label></div>
                         <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="wind-opt6"><label class="form-check-label" for="wind-opt6" data-i18n="show_place_label"></label></div>
+                        <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="wind-opt8"><label class="form-check-label" for="wind-opt8" data-i18n="area"></label></div>
+                        <div class="form-check mb-1"><input class="form-check-input" type="checkbox" id="wind-opt9"><label class="form-check-label" for="wind-opt9" data-i18n="border"></label></div>
                     </div>
                 </div>
             </div>
