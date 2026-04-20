@@ -677,5 +677,6 @@
     "auto_scale" : "Auto Scale (Relative)",
     "example_import" : "Example Import",
     "no_poles_found" : "No monitoring stations found",
-    "no_poles_desc" : "This project has no stations assigned yet."
+    "no_poles_desc" : "This project has no stations assigned yet.",
+    "pole_status" : "Poles Status"
 }

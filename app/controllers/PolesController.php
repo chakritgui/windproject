@@ -12,6 +12,7 @@ class PolesController extends BaseController {
             'project'=> $_POST['project'] ?? '',
             'type'=> $_POST['type'] ?? '',
             'installation'=> $_POST['installation'] ?? '',
+            'project_status'=> $_POST['project_status'] ?? '',
         ];
         $search = $_POST['search']['value'] ?? '';
         $orderDir    = 'asc';
@@ -51,11 +52,12 @@ class PolesController extends BaseController {
     }
     public function save() {
         $data = [
-            'poles_id'     => (int)($_POST['poles_id'] ?? 0),
-            'poles_code'   => trim($_POST['poles_code'] ?? ''),
-            'latitude'     => $_POST['latitude'] ?? null,
-            'longitude'    => $_POST['longitude'] ?? null,
-            'project'      => (int)($_POST['project'] ?? 0),
+            'poles_id' => (int)($_POST['poles_id'] ?? 0),
+            'poles_code' => trim($_POST['poles_code'] ?? ''),
+            'latitude' => $_POST['latitude'] ?? null,
+            'longitude' => $_POST['longitude'] ?? null,
+            'project' => (int)($_POST['project'] ?? 0),
+            'project_status' => $_POST['project_status'] ?? null,
             'type'         => (int)($_POST['type'] ?? 0),
             'installation' => (int)($_POST['installation'] ?? 0),
             'status'       => $_POST['status'] ?? 'inactive'

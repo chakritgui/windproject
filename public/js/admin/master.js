@@ -57,6 +57,7 @@ function initTable() {
             initSelect2Remote('#filter_pole_type', `${BASE_URL}/api/poles.filter`, { type: 'type' });
             initSelect2Remote('#filter_pole_installation', `${BASE_URL}/api/poles.filter`, { type: 'installation' });
             initSelect2Remote('#filter_pole_status', `${BASE_URL}/api/poles.filter`, { type: 'status' });
+            initSelect2Remote('#filter_pole_project_status', `${BASE_URL}/api/projects.filter`, { type: 'project_status' });
             $(".filter").on("change", () => initPolesTable());
             initPolesTable();
             break;

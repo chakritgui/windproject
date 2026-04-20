@@ -10,6 +10,7 @@ class PolesModel {
         $sqlTotal = "SELECT COUNT(*)
             FROM wp_poles p
             LEFT JOIN wp_project pj ON pj.project_id = p.project_id
+            LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id
             LEFT JOIN wp_type t ON t.type_id = p.type_id
             LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
             {$where}
@@ -27,11 +28,12 @@ class PolesModel {
             1 => "p.poles_code",
             2 => "t.type_name",
             3 => "pj.project_name",
-            4 => "p.poles_lat",
-            5 => "p.poles_lng",
-            6 => "i.installations_name",
-            7 => "p.created_at",
-            8 => "p.status"
+            4 => "p.project_name",
+            5 => "p.poles_lat",
+            6 => "p.poles_lng",
+            7 => "i.installations_name",
+            8 => "p.created_at",
+            9 => "p.status"
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -55,9 +57,12 @@ class PolesModel {
                     iTh.status as th_status,
                     p.created_at,
                     p.poles_source,
-                    p.item_order
+                    p.item_order,
+                    s.project_status_name,
+                    s.project_status_color
                 FROM wp_poles p
                 LEFT JOIN wp_project pj ON pj.project_id = p.project_id
+                LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id
                 LEFT JOIN wp_type t ON t.type_id = p.type_id
                 LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
                 LEFT JOIN wp_content c ON c.content_id = p.content_id
@@ -103,6 +108,10 @@ class PolesModel {
             $where .= " AND p.status = :status";
             $params[':status'] = $filters['status'];
         }
+        if (!empty($filters['project_status'])) {
+            $where .= " AND s.project_status_id = :project_status";
+            $params[':project_status'] = $filters['project_status'];
+        }
         if (!empty($filters['project'])) {
             $where .= " AND pj.project_id = :project";
             $params[':project'] = (int)$filters['project'];
@@ -141,9 +150,11 @@ class PolesModel {
                 t.type_id,
                 t.type_name,
                 i.installations_id,
-                i.installations_name
+                i.installations_name,
+                s.project_status_id, s.project_status_name
             FROM wp_poles p
             LEFT JOIN wp_project pj ON pj.project_id = p.project_id
+            LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id
             LEFT JOIN wp_type t ON t.type_id = p.type_id
             LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
             WHERE p.poles_id = :id
@@ -167,6 +178,7 @@ class PolesModel {
                         poles_lat = :lat,
                         poles_lng = :lng,
                         project_id = :project,
+                        project_status_id = :project_status,
                         type_id = :type,
                         installations_id = :installation,
                         status = :status,
@@ -180,6 +192,7 @@ class PolesModel {
                         poles_lat,
                         poles_lng,
                         project_id,
+                        project_status_id,
                         type_id,
                         installations_id,
                         status,
@@ -191,6 +204,7 @@ class PolesModel {
                         :lat,
                         :lng,
                         :project,
+                        :project_status,
                         :type,
                         :installation,
                         :status,
@@ -208,6 +222,7 @@ class PolesModel {
             $stmt->bindValue(':lat', $data['latitude']);
             $stmt->bindValue(':lng', $data['longitude']);
             $stmt->bindValue(':project', (int)$data['project'], PDO::PARAM_INT);
+            $stmt->bindValue(':project_status', $data['project_status']);
             $stmt->bindValue(':type', (int)$data['type'], PDO::PARAM_INT);
             $stmt->bindValue(':installation', (int)$data['installation'], PDO::PARAM_INT);
             $stmt->bindValue(':status', $data['status']);

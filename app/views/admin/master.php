@@ -294,6 +294,10 @@
                             <select id="filter_pole_project" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
+                            <p><i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="pole_status"></span></p>
+                            <select id="filter_pole_project_status" class="form-select filter"></select>
+                        </div>
+                        <div class="col-sm-2 col-6">
                             <p><i class="fa-solid fa-tags me-2"></i><span data-i18n="type"></span></p>
                             <select id="filter_pole_type" class="form-select filter"></select>
                         </div>
@@ -316,6 +320,7 @@
                             <th data-i18n="pole_code"></th>
                             <th data-i18n="type"></th>
                             <th data-i18n="project"></th>
+                            <th data-i18n="pole_status"></th>
                             <th data-i18n="latitude"></th>
                             <th data-i18n="longitude"></th>
                             <th data-i18n="installation"></th>

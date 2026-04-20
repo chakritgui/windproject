@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 19, 2026 at 01:45 PM
+-- Generation Time: Apr 20, 2026 at 08:25 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -680,6 +680,7 @@ CREATE TABLE `wp_poles` (
   `poles_id` bigint(20) NOT NULL,
   `poles_code` varchar(255) DEFAULT NULL,
   `project_id` bigint(20) NOT NULL,
+  `project_status_id` bigint(20) DEFAULT NULL,
   `type_id` bigint(20) NOT NULL,
   `installations_id` bigint(20) DEFAULT NULL,
   `poles_lat` decimal(10,7) DEFAULT NULL,
@@ -840,6 +841,7 @@ CREATE TABLE `wp_windturbind_icon` (
   `cover` longtext,
   `zoom_level` longtext,
   `zoom_val` longtext,
+  `icon_color` longtext,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

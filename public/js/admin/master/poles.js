@@ -21,6 +21,7 @@ function initPolesTable() {
                 d.project = $('#filter_pole_project').val();
                 d.type = $('#filter_pole_type').val();
                 d.installation = $('#filter_pole_installation').val();
+                d.project_status = $('#filter_pole_project_status').val();
             }
         },
         columns: [{
@@ -39,6 +40,18 @@ function initPolesTable() {
         },{ 
             data: "project_name",
             orderable: true, 
+        },{ 
+            data: 'project_status_name',
+            orderable: true,
+            render: function (data, type, row) {
+                let color = row.project_status_color || '#3b82f6';
+                let name = data || "-";
+                return `
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-circle me-2" style="color: ${color}; font-size: 0.8rem;"></i><span>${name.replace(/\r\n|\n/g, '<br />')}</span>
+                    </div>
+                `;
+            }
         },{ 
             data: "poles_lat",
             orderable: true,
@@ -218,9 +231,13 @@ $(document).on('click', '.manage-pole', function() {
                         <input type="text" class="form-control obj-required" id="poles_code" maxlength="255">
                     </div>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-12 mb-3">
                             <label class="mb-2 required">${langData['project'] || 'Project'}</label>
                             <select id="project" class="form-select obj-required"></select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="mb-2">${langData['pole_status'] || 'Poles Status'}</label>
+                            <select id="project_status" class="form-select"></select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="mb-2 required">${langData['type'] || 'Type'}</label>
@@ -252,6 +269,7 @@ $(document).on('click', '.manage-pole', function() {
                 initSelect2Remote('#project', `${BASE_URL}/api/poles.filter`, { type: 'project' });
                 initSelect2Remote('#type', `${BASE_URL}/api/poles.filter`, { type: 'type' });
                 initSelect2Remote('#installation', `${BASE_URL}/api/poles.filter`, { type: 'installation' });
+                initSelect2Remote('#project_status', `${BASE_URL}/api/projects.filter`, { type: 'project_status' });
                 if (poleData) {
                     $("#poles_code").val(poleData.poles_code);
                     $("#latitude").val(poleData.poles_lat);
@@ -272,6 +290,10 @@ $(document).on('click', '.manage-pole', function() {
                         let statusName = poleData.status.charAt(0).toUpperCase() + poleData.status.slice(1);
                         var newOptionStatus = new Option(statusName, poleData.status, true, true);
                         $('#status').append(newOptionStatus).trigger('change');
+                    }
+                    if (poleData.project_status_name) {
+                        var newOptionStatus = new Option(poleData.project_status_name, poleData.project_status_id, true, true);
+                        $('#project_status').append(newOptionStatus).trigger('change');
                     }
                 } else {
                     var newOptionStatus = new Option('Online', 'online', true, true);
@@ -313,6 +335,7 @@ function savePole() {
     formData.append("latitude", $("#latitude").val() || "");
     formData.append("longitude", $("#longitude").val() || "");
     formData.append("project", $("#project").val());
+    formData.append("project_status", $("#project_status").val());
     formData.append("type", $("#type").val());
     formData.append("installation", $("#installation").val());
     formData.append("status", $("#status").val());
