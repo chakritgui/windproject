@@ -110,6 +110,7 @@ class  MapController extends BaseController {
             curl_close($ch);
         }
         curl_multi_close($multi);
+        print_r($responses);
         $w    = $responses['weather']['code'] === 200 ? json_decode($responses['weather']['body'], true) : null;
         $air  = $responses['air']['code']     === 200 ? json_decode($responses['air']['body'], true)     : null;
         $wind = $responses['wind']['code']    === 200 ? json_decode($responses['wind']['body'], true)    : null;
