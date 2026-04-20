@@ -89,6 +89,7 @@ class  MapController extends BaseController {
             'air'     => "https://api.openweathermap.org/data/2.5/air_pollution?lat={$lat}&lon={$lon}&appid={$apiKey}",
             'wind'    => "https://api.open-meteo.com/v1/forecast?latitude={$lat}&longitude={$lon}&current=wind_speed_{$suffix},wind_direction_{$suffix}&wind_speed_unit=ms"
         ];
+        echo "https://api.open-meteo.com/v1/forecast?latitude={$lat}&longitude={$lon}&current=wind_speed_{$suffix},wind_direction_{$suffix}&wind_speed_unit=ms";
         $multi   = curl_multi_init();
         $handles = [];
         foreach ($urls as $key => $url) {
