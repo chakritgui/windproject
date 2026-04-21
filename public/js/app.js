@@ -13,6 +13,11 @@ const langInfo = {
     en: { flag: 'gb', label: 'EN', full: 'English' },
     th: { flag: 'th', label: 'TH', full: 'ไทย' }
 };
+const WIND_UNITS = [
+    { key: 'ms',   label: 'm/s',  factor: 1        },
+    { key: 'kmh',  label: 'km/h', factor: 3.6      },
+    { key: 'knot', label: 'kt',   factor: 1.94384  },
+];
 const VAPID_PUBLIC_KEY = 'BJyu1v7EXRhdUr1MnfK3sAjxitbj2wxpO5YZlQVbz1abX-fnNQwWU0-RHR791cmfoCg-6H7cuvGBa6ctsERVnho';
 $(document).ready(initApp);
 async function initApp() {

@@ -528,6 +528,7 @@ async function updateHeaderInfo() {
     } catch (e) { console.error("Header Error:", e); }
 }
 async function fetchExternalWeather(lat, lon) {
+    const windUnit = WIND_UNITS[parseInt(localStorage.getItem('windUnit') || '0')];
     const weatherContainer = document.getElementById('weatherContainer');
     const skeletonItems = ['Temp', 'Humid', 'Wind', 'PM2.5', 'Rain'];
     weatherContainer.innerHTML = skeletonItems.map(() => `
@@ -546,7 +547,7 @@ async function fetchExternalWeather(lat, lon) {
         const items = [
             { name: 'temp',  val: data.temperature  ?? '-', unit: '°C',  icon: 'fa-thermometer-half',    grad: 'linear-gradient(135deg,#FF512F,#DD2476)', ani: 'ani-temp' },
             { name: 'humid', val: data.humidity      ?? '-', unit: '%',   icon: 'fa-tint',                grad: 'linear-gradient(135deg,#2193b0,#6dd5ed)', ani: 'ani-rain' },
-            { name: 'wind',  val: data.wind_speed    ?? '-', unit: 'm/s', icon: 'fa-wind',                grad: 'linear-gradient(135deg,#11998e,#38ef7d)', ani: 'ani-wind' },
+            { name: 'wind',  val: data.wind_speed != null ? (data.wind_speed * windUnit.factor).toFixed(1) : '-', unit: windUnit.label, icon: 'fa-wind',                grad: 'linear-gradient(135deg,#11998e,#38ef7d)', ani: 'ani-wind' },
             { name: 'pm2.5', val: data.pm25          ?? '-', unit: 'μg',  icon: 'fa-smog',                grad: 'linear-gradient(135deg,#485563,#29323c)', ani: 'ani-temp' },
             { name: 'rain',  val: data.precipitation ?? '-', unit: 'mm',  icon: 'fa-cloud-showers-heavy', grad: 'linear-gradient(135deg,#4b6cb7,#182848)', ani: 'ani-rain' },
         ];

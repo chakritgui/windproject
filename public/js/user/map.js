@@ -356,13 +356,13 @@ function resizeLabel() {
         const otherPts   = polePoints.filter(p =>
             !(Math.abs(p.x - pt.x) < 1 && Math.abs(p.y - pt.y) < 1)
         );
-        const off        = getSmartOffset(lat, lng, window._usedLabelBoxes, map, zoom, otherPts);
-        const anchorX    = off.dx >= 0 ? 0 : Math.abs(off.dx);
-        const anchorY    = off.dy >= 0 ? 0 : Math.abs(off.dy);
-        const windEl     = document.getElementById(windId);
-        const arrowEl    = document.getElementById(arrowId);
-        const windSpeed  = windEl  ? parseFloat(windEl.dataset.raw)   || 0 : 0;
-        const windDir    = arrowEl ? parseFloat(arrowEl.dataset.dir)  || 0 : 0;
+        const off = getSmartOffset(lat, lng, window._usedLabelBoxes, map, zoom, otherPts);
+        const anchorX = off.dx >= 0 ? 0 : Math.abs(off.dx);
+        const anchorY = off.dy >= 0 ? 0 : Math.abs(off.dy);
+        const windEl = document.getElementById(windId);
+        const arrowEl = document.getElementById(arrowId);
+        const windSpeed = windEl  ? parseFloat(windEl.dataset.raw)   || 0 : 0;
+        const windDir = arrowEl ? parseFloat(arrowEl.dataset.dir)  || 0 : 0;
         const { svgW, svgH, html } = buildWindLabelSVG({
             anchorX, anchorY,
             labelDx: off.dx,
@@ -371,15 +371,15 @@ function resizeLabel() {
             windSpeed, windDir, scale,
         });
         labelMarker.setIcon(L.divIcon({
-            className:  'pole-label-wrap',
-            iconSize:   [svgW, svgH],
+            className: 'pole-label-wrap',
+            iconSize: [svgW, svgH],
             iconAnchor: [anchorX, anchorY],
             html,
         }));
     });
     if (typeof turbineMarkers !== 'undefined') {
         const turbineSize = _getTurbineSize(zoom);
-        const opacity     = zoom < 10 ? 0.7 : 1;
+        const opacity = zoom < 10 ? 0.7 : 1;
         Object.values(turbineMarkers).forEach(({ marker }) => {
             if (!marker) return;
             marker.setIcon(_buildTurbineIcon(turbineSize));
@@ -514,7 +514,7 @@ function buildPickerPopupHTML(lat, lng, { speed, direction, gusts }) {
         return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>`;
     }).join('');
     const gustHtml = gusts !== null
-        ? `<div class="cpicker-gust" id="picker-gust-wrap">
+        ? `<div class="cpicker-gust" id="picker-gust-wrap" style="color: ${getWindColor((gusts * unit.factor))};">
                <i class="fa-solid fa-wind" style="font-size:9px"></i>
                <span data-i18n="gusts">${langData['gusts'] || 'Gusts'}</span>
                <span id="picker-gust-value" data-raw="${gusts}">

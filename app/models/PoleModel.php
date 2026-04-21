@@ -118,6 +118,7 @@ class PoleModel {
         $stmt2 = $this->db->prepare($sqlHeight);
         $stmt2->execute([':height_id' => $height_id]);
         $heightInfo = $stmt2->fetch(PDO::FETCH_ASSOC);
+        
         return [
             'pole'   => $poleInfo,
             'height'  => $heightInfo,

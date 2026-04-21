@@ -33,11 +33,6 @@ const WINDY_COLORS = [
     { ms: 20, color: '#ef4444' },
     { ms: 25, color: '#7e22ce' },
 ];
-const WIND_UNITS = [
-    { key: 'ms',   label: 'm/s',  factor: 1        },
-    { key: 'kmh',  label: 'km/h', factor: 3.6      },
-    { key: 'knot', label: 'kt',   factor: 1.94384  },
-];
 const COMPASS_DIRS = [
     'N','NNE','NE','ENE','E','ESE','SE','SSE',
     'S','SSW','SW','WSW','W','WNW','NW','NNW',
