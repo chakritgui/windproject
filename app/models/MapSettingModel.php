@@ -40,40 +40,29 @@ class MapSettingModel {
             $sqlClear = "UPDATE wp_map_polygons SET status = 'deleted', updated_at = NOW() WHERE map_id = ?";
             $this->db->prepare($sqlClear)->execute([$mapId]);
             if (!empty($payload['polygons'])) {
-                $stmtFind = $this->db->prepare("SELECT project_id FROM wp_project WHERE project_name = ? LIMIT 1");
-                $stmtInsertProj = $this->db->prepare("INSERT INTO wp_project (project_name, created_at, updated_at) VALUES (?, NOW(), NOW())");
-                $sqlPoly = "INSERT INTO wp_map_polygons (map_id, project_id, area_name, custom_style, geo_data, status, created_at, updated_at) 
-                            VALUES (:map_id, :project_id, :name, :style, :geo, 'active', NOW(), NOW())
+                $sqlPoly = "INSERT INTO wp_map_polygons 
+                                (poly_id, map_id, project_id, area_name, custom_style, geo_data, status, created_at, updated_at) 
+                            VALUES 
+                                (:poly_id, :map_id, :project_id, :name, :style, :geo, 'active', NOW(), NOW())
                             ON DUPLICATE KEY UPDATE 
-                            project_id = VALUES(project_id),
-                            custom_style = VALUES(custom_style), 
-                            geo_data = VALUES(geo_data),
-                            status = 'active',
-                            updated_at = NOW()";
+                                project_id    = VALUES(project_id),
+                                area_name     = VALUES(area_name),
+                                custom_style  = VALUES(custom_style), 
+                                geo_data      = VALUES(geo_data),
+                                status        = 'active',
+                                updated_at    = NOW()";
                 $stmtPoly = $this->db->prepare($sqlPoly);
                 foreach ($payload['polygons'] as $poly) {
-                    $projectId = null;
-                    $areaName = trim($poly['area_name']);
-                    if (!empty($poly['project_id'])) {
-                        $projectId = $poly['project_id'];
-                    } elseif (!empty($areaName)) {
-                        $stmtFind->execute([$areaName]);
-                        $project = $stmtFind->fetch(PDO::FETCH_ASSOC);
-                        if ($project) {
-                            $projectId = $project['project_id'];
-                        } else {
-                            $stmtInsertProj->execute([$areaName]);
-                            $projectId = $this->db->lastInsertId();
-                        }
-                    }
+                    $projectId = !empty($poly['project_id']) ? (int)$poly['project_id'] : null;
                     $styleData = is_string($poly['custom_style']) ? $poly['custom_style'] : json_encode($poly['custom_style']);
-                    $geoData = is_string($poly['geo_data']) ? $poly['geo_data'] : json_encode($poly['geo_data']);
+                    $geoData   = is_string($poly['geo_data'])     ? $poly['geo_data']     : json_encode($poly['geo_data']);
                     $stmtPoly->execute([
+                        ':poly_id'    => $poly['poly_id'],
                         ':map_id'     => $mapId,
                         ':project_id' => $projectId,
-                        ':name'       => $areaName, 
-                        ':style'      => $styleData, 
-                        ':geo'        => $geoData 
+                        ':name'       => trim($poly['area_name']),
+                        ':style'      => $styleData,
+                        ':geo'        => $geoData,
                     ]);
                 }
             }

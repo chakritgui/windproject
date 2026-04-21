@@ -71,6 +71,10 @@ class  MapController extends BaseController {
             $numericLevel = preg_replace('/[^0-9]/', '', $level);
             $suffix = $numericLevel . 'hPa'; 
         }
+        $windParams = "wind_speed_{$suffix},wind_direction_{$suffix},wind_gusts_10m";
+        if ($suffix !== '100m') {
+            $windParams .= ",wind_speed_10m";
+        }
         if (!$lat || !$lon) {
             http_response_code(400);
             echo json_encode(['error' => true, 'reason' => 'Missing coordinates']);
@@ -92,7 +96,7 @@ class  MapController extends BaseController {
         $urls = [
             'weather' => "https://api.openweathermap.org/data/2.5/weather?lat={$lat}&lon={$lon}&appid={$apiKey}&units=metric",
             'air'     => "https://api.openweathermap.org/data/2.5/air_pollution?lat={$lat}&lon={$lon}&appid={$apiKey}",
-            'wind'    => "https://api.open-meteo.com/v1/forecast?latitude={$lat}&longitude={$lon}&current=wind_speed_{$suffix},wind_direction_{$suffix},wind_gusts_10m&wind_speed_unit=ms"
+            'wind'    => "https://api.open-meteo.com/v1/forecast?latitude={$lat}&longitude={$lon}&current={$windParams}&wind_speed_unit=ms"
         ];
         $multi   = curl_multi_init();
         $handles = [];
@@ -126,13 +130,27 @@ class  MapController extends BaseController {
         $windData     = $wind['current'] ?? null;
         $windSpeedKey = "wind_speed_{$suffix}";
         $windDirKey   = "wind_direction_{$suffix}";
-        $windGustKey  = "wind_gusts_10m";
+        $windSpeedAtLevel = isset($windData[$windSpeedKey]) ? round($windData[$windSpeedKey], 1) 
+                : ($w['wind']['speed'] ?? null);
+        if ($suffix === '100m') {
+            $windGusts = isset($windData['wind_gusts_10m']) ? round($windData['wind_gusts_10m'], 1) : ($w['wind']['gust'] ?? null);
+        } else {
+            $gust10m   = $windData['wind_gusts_10m']  ?? null;
+            $speed10m  = $windData['wind_speed_10m']  ?? null;
+            if ($gust10m && $speed10m && $speed10m > 0) {
+                $gustRatio = $gust10m / $speed10m;
+                $gustRatio = min($gustRatio, 2.0);
+                $windGusts = round($windSpeedAtLevel * $gustRatio, 1);
+            } else {
+                $windGusts = $windSpeedAtLevel;
+            }
+        }
         $result = [
             'temperature'    => $w ? round($w['main']['temp'], 1) : null,
             'humidity'       => $w ? round($w['main']['humidity'], 0) : null,
             'wind_speed'     => isset($windData[$windSpeedKey]) ? round($windData[$windSpeedKey], 1) : ($w['wind']['speed'] ?? null),
             'wind_direction' => $windData[$windDirKey] ?? ($w['wind']['deg'] ?? null),
-            'wind_gusts'     => isset($windData[$windGustKey]) ? round($windData[$windGustKey], 1) : ($w['wind']['gust'] ?? null),
+            'wind_gusts'     => $windGusts,
             'precipitation'  => $w ? round($w['rain']['1h'] ?? 0, 1) : null,
             'pm25'           => $air ? round($air['list'][0]['components']['pm2_5'] ?? 0, 1) : null,
         ];

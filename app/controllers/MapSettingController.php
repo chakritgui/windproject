@@ -22,11 +22,21 @@ class MapSettingController extends BaseController {
     public function load() {
         $data = $this->model->getMapData(1);
         if ($data) {
-            $data['map_settings']['default_style'] = json_decode($data['map_settings']['default_style']);
-            foreach ($data['polygons'] as &$poly) {
-                $poly['area_style'] = json_decode($poly['area_style']);
-                $poly['geo_data'] = json_decode($poly['geo_data']);
+            if (is_string($data['map_settings']['default_style'])) {
+                $data['map_settings']['default_style'] = json_decode($data['map_settings']['default_style'], true);
             }
+            if (is_string($data['map_settings']['mode_settings'])) {
+                $data['map_settings']['mode_settings'] = json_decode($data['map_settings']['mode_settings'], true);
+            }
+            foreach ($data['polygons'] as &$poly) {
+                if (is_string($poly['custom_style'])) {
+                    $poly['custom_style'] = json_decode($poly['custom_style'], true);
+                }
+                if (is_string($poly['geo_data'])) {
+                    $poly['geo_data'] = json_decode($poly['geo_data'], true);
+                }
+            }
+            unset($poly);
             echo json_encode(['status' => true, 'data' => $data]);
         } else {
             echo json_encode(['status' => false, 'message' => 'Data not found']);

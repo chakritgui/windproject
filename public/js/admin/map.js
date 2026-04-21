@@ -131,15 +131,20 @@ function loadMapDataFromServer() {
                 }
                 if (settings.mode_settings) {
                     try {
-                        const modeConfigs = typeof settings.mode_settings === 'string' ? JSON.parse(settings.mode_settings) : settings.mode_settings;
+                        const modeConfigs = typeof settings.mode_settings === 'string'
+                            ? JSON.parse(settings.mode_settings) : settings.mode_settings;
                         Object.keys(modeConfigs).forEach(mode => {
                             const options = modeConfigs[mode];
                             Object.keys(options).forEach(id => {
                                 $(`#${id}`).prop('checked', options[id] === 1);
                             });
                             const $container = $(`.mode-container[data-mode="${mode}"]`);
-                            if (typeof updateDependency === 'function') {
-                                updateDependency($parentMode); 
+                            if ($container.length) {
+                                const isMasterChecked = $container.find('.master-control').is(':checked');
+                                $container.find('.dependent-opt')
+                                    .prop('disabled', !isMasterChecked)
+                                    .closest('.form-check')
+                                    .toggleClass('text-muted', !isMasterChecked);
                             }
                         });
                     } catch (e) {
@@ -518,7 +523,7 @@ function fitAllLayers() {
 }
 function getMapFullConfigForSave() {
     const center = map.getCenter();
-    const DEFAULT_LEVEL = $("input[name=DEFAULT_LEVEL]").val() || '100m';
+    const DEFAULT_LEVEL = $('#actual_level').val() || '100m';
     const modeConfigs = {};
     $('.mode-container').each(function() {
         const modeName = $(this).data('mode');
