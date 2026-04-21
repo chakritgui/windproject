@@ -1141,14 +1141,28 @@ async function openPoles(poleId, target = 'equipment') {
             const displaySpeed = (rawSpeed * unit.factor).toFixed(1);
             const color = getWindColor(rawSpeed);
             const arrowRotate = (!isNaN(dir)) ? `transform: rotate(${dir}deg);` : '';
+            function isLightColor(hex) {
+                const c = hex.replace('#', '');
+                const r = parseInt(c.substr(0,2),16);
+                const g = parseInt(c.substr(2,2),16);
+                const b = parseInt(c.substr(4,2),16);
+                return (r*299 + g*587 + b*114) / 1000 > 155;
+            }
+            const textColor   = isLightColor(color) ? '#1a1a1a' : '#ffffff';
+            const iconBg      = isLightColor(color) ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.25)';
             windBadgeHtml = `
-                <div style="display:flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0">
-                    <span style="display:inline-flex;align-items:center;justify-content:center; width:20px;height:20px;transform:rotate(${dir}deg); color:${color};font-size:15px;transition:transform 0.3s">
+                <div style="display:flex;align-items:center;gap:10px; margin-left:auto;flex-shrink:0; background:${color}; border-radius:999px; padding:6px 14px 6px 6px; box-shadow:0 4px 16px ${color}99, 0 1px 4px rgba(0,0,0,0.18);">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;background:${iconBg};border-radius:50%;transform:rotate(${dir}deg);color:${textColor};font-size:15px;transition:transform 0.3s;flex-shrink:0;">
                         <i class="fa-solid fa-arrow-up"></i>
                     </span>
-                    <span style="font-size:0.88rem;font-weight:600;color:${color};white-space:nowrap">
-                        ${displaySpeed} ${unit.label}
-                    </span>
+                    <div style="display:flex;flex-direction:column;line-height:1.2;">
+                        <span style="font-size:1.05rem;font-weight:800;color:${textColor};white-space:nowrap;">
+                            ${displaySpeed} <span style="font-size:0.75rem;font-weight:600;opacity:0.85">${unit.label}</span>
+                        </span>
+                        <span style="font-size:0.62rem;font-weight:600;color:${textColor};opacity:0.75;white-space:nowrap;letter-spacing:0.06em;text-transform:uppercase;">
+                            ${langData['wind_speed'] || 'Wind Speed'}
+                        </span>
+                    </div>
                 </div>`;
         }
     }
