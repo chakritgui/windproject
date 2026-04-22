@@ -1,6 +1,11 @@
 <?php
 class PolesModel {
     private $db;
+    private $levels = [
+        "100m", "950hPa", "925hPa", "900hPa", "850hPa", "800hPa", 
+        "700hPa", "600hPa", "500hPa", "400hPa", "300hPa", "250hPa", 
+        "200hPa", "150hPa", "10hPa"
+    ];
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -196,11 +201,21 @@ class PolesModel {
     public function save($data) {
         $poles_id = !empty($data['poles_id']) ? (int)$data['poles_id'] : null;
         $poles_code = trim($data['poles_code'] ?? '');
+        $should_trigger_api = false;
         if ($this->isDuplicatePole($poles_code, $poles_id)) {
             return ['status' => false, 'message' => 'already_pole'];
         }
         try {
             if ($poles_id) {
+                $stmt_check = $this->db->prepare("SELECT poles_lat, poles_lng FROM wp_poles WHERE poles_id = :id");
+                $stmt_check->execute([':id' => $poles_id]);
+                $current = $stmt_check->fetch(PDO::FETCH_OBJ);
+                if ($current) {
+                    if ((float)$current->poles_lat != (float)$data['latitude'] || 
+                        (float)$current->poles_lng != (float)$data['longitude']) {
+                        $should_trigger_api = true;
+                    }
+                }
                 $sql = "UPDATE wp_poles SET 
                             poles_code = :code, poles_lat = :lat, poles_lng = :lng,
                             project_id = :project, project_status_id = :project_status,
@@ -209,6 +224,7 @@ class PolesModel {
                             poles_source = 'manual', default_color = :default_color
                         WHERE poles_id = :id";
             } else {
+                $should_trigger_api = true;
                 $sql = "INSERT INTO wp_poles (
                             poles_code, poles_lat, poles_lng, project_id,
                             project_status_id, type_id, installations_id,
@@ -238,11 +254,18 @@ class PolesModel {
                 $poles_id = (int)$this->db->lastInsertId();
             }
             $ex_cover = $data['ex_cover'] ?? '';
-            if (!$ex_cover) {
-                $this->handleFileDelete($poles_id);
-            }
+            if (!$ex_cover) { $this->handleFileDelete($poles_id); }
             if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
                 $this->handleFileUpload($poles_id, $_FILES['cover']);
+            }
+            if ($should_trigger_api) {
+                try {
+                    require_once 'app/helpers/fetchWindSpeed.php';
+                    $fetcher = new fetchWindSpeed($this->db);
+                    $fetcher->processSinglePoint($poles_id, $data['latitude'], $data['longitude']);
+                } catch (Exception $e) {
+                    error_log("API Single Update Error: " . $e->getMessage());
+                }
             }
             return ['status' => true, 'message' => 'success', 'id' => $poles_id];
         } catch (Exception $e) {

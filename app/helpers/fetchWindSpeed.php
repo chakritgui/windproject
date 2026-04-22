@@ -100,4 +100,28 @@ class fetchWindSpeed {
         }
         return null;
     }
+    public function processSinglePoint($poles_id, $lat, $lng) {
+        $apiParams = [];
+        foreach ($this->levels as $lvl) {
+            $apiParams[] = "wind_speed_{$lvl}";
+            $apiParams[] = "wind_direction_{$lvl}";
+        }
+        $url = "https://api.open-meteo.com/v1/forecast?"
+            . "latitude=" . $lat
+            . "&longitude=" . $lng
+            . "&current=" . implode(',', $apiParams)
+            . "&wind_speed_unit=ms";
+        $data = $this->fetchWithRetry($url);
+        if (!$data || !isset($data['current'])) return false;
+        $current = $data['current'];
+        $rowData = ['station_id' => $poles_id];
+        foreach ($this->levels as $lvl) {
+            $speedCol = "wind_speed_{$lvl}";
+            $dirCol = "wind_direction_{$lvl}";
+            $rowData[$speedCol] = $current[$speedCol] ?? 0;
+            $rowData[$dirCol] = $current[$dirCol] ?? 0;
+        }
+        $this->saveBatch([$rowData]);
+        return true;
+    }
 }
