@@ -229,7 +229,9 @@
             $router->post('/api/type.get', 'MapController@type');
             $router->post('/api/installations.get', 'MapController@station');
             $router->post('/api/windturbines.get', 'MapController@windturbines');
+            $router->get('/api/wind.current', 'MapController@weatherWind');
             $router->get('/api/weather.current', 'MapController@weatherCurrent');
+            $router->get('/api/weather.wind', 'MapController@weatherWindFromDB');
             $router->post('/api/poles.stats', 'PoleController@polestats');
             $router->post('/api/poles.val', 'PoleController@poleval');
             $router->post('/api/heght.level', 'PoleController@level');

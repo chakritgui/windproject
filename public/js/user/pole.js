@@ -541,15 +541,19 @@ async function fetchExternalWeather(lat, lon) {
         </div>
     `).join('');
     try {
-        const res  = await fetch(`${BASE_URL}/api/weather.current?lat=${lat}&lon=${lon}`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
+        const [weatherRes, dbWindRes] = await Promise.allSettled([
+            fetch(`${BASE_URL}/api/weather.current?lat=${lat}&lon=${lon}`),
+            fetch(`${BASE_URL}/api/weather.wind?station_id=${reportState.poles_id}`)
+        ]);
+        const data    = weatherRes.status === 'fulfilled' && weatherRes.value.ok ? await weatherRes.value.json() : {};
+        const dbWind  = dbWindRes.status  === 'fulfilled' && dbWindRes.value.ok  ? await dbWindRes.value.json()  : null;
+        const windVal = dbWind?.wind_speed != null ? (dbWind.wind_speed * windUnit.factor).toFixed(1) : (data.wind_speed  != null ? (data.wind_speed * windUnit.factor).toFixed(1) : '-');
         const items = [
-            { name: 'temp',  val: data.temperature  ?? '-', unit: '°C',  icon: 'fa-thermometer-half',    grad: 'linear-gradient(135deg,#FF512F,#DD2476)', ani: 'ani-temp' },
-            { name: 'humid', val: data.humidity      ?? '-', unit: '%',   icon: 'fa-tint',                grad: 'linear-gradient(135deg,#2193b0,#6dd5ed)', ani: 'ani-rain' },
-            { name: 'wind',  val: data.wind_speed != null ? (data.wind_speed * windUnit.factor).toFixed(1) : '-', unit: windUnit.label, icon: 'fa-wind',                grad: 'linear-gradient(135deg,#11998e,#38ef7d)', ani: 'ani-wind' },
-            { name: 'pm2.5', val: data.pm25          ?? '-', unit: 'μg',  icon: 'fa-smog',                grad: 'linear-gradient(135deg,#485563,#29323c)', ani: 'ani-temp' },
-            { name: 'rain',  val: data.precipitation ?? '-', unit: 'mm',  icon: 'fa-cloud-showers-heavy', grad: 'linear-gradient(135deg,#4b6cb7,#182848)', ani: 'ani-rain' },
+            { name: 'temp',  val: data.temperature ?? '-', unit: '°C', icon: 'fa-thermometer-half', grad: 'linear-gradient(135deg,#FF512F,#DD2476)', ani: 'ani-temp' },
+            { name: 'humid', val: data.humidity ?? '-', unit: '%', icon: 'fa-tint', grad: 'linear-gradient(135deg,#2193b0,#6dd5ed)', ani: 'ani-rain' },
+            { name: 'wind',  val: windVal, unit: windUnit.label, icon: 'fa-wind', grad: 'linear-gradient(135deg,#11998e,#38ef7d)', ani: 'ani-wind' },
+            { name: 'pm2.5', val: data.pm25 ?? '-', unit: 'μg', icon: 'fa-smog', grad: 'linear-gradient(135deg,#485563,#29323c)', ani: 'ani-temp' },
+            { name: 'rain',  val: data.precipitation  ?? '-', unit: 'mm', icon: 'fa-cloud-showers-heavy', grad: 'linear-gradient(135deg,#4b6cb7,#182848)', ani: 'ani-rain' },
         ];
         weatherContainer.innerHTML = items.map(item => `
             <div class="weather-card-rect" style="background:${item.grad};padding:10px;border-radius:8px;color:white;display:flex;align-items:center;gap:10px;margin-bottom:10px;animation:fadeIn 0.5s ease-in;">

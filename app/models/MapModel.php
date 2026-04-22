@@ -353,4 +353,15 @@ class MapModel{
             return null;
         }
     }
+    public function getLatestWindByStation(int $stationId, string $speedCol, string $dirCol): ?array {
+        $sql = "SELECT `{$speedCol}`, `{$dirCol}`
+                FROM wp_wind_data
+                WHERE station_id = :station_id
+                ORDER BY id DESC
+                LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([':station_id' => $stationId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+    }
 }

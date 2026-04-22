@@ -40,7 +40,7 @@ async function fetchJSON(url, body = {}) {
 }
 async function fetchWindAtPoint(lat, lng) {
     try {
-        const url = `${BASE_URL}/api/weather.current?lat=${lat}&lon=${lng}&level=${DEFAULT_LEVEL}`;
+        const url = `${BASE_URL}/api/wind.current?lat=${lat}&lon=${lng}&level=${DEFAULT_LEVEL}`;
         const res = await fetch(url);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
