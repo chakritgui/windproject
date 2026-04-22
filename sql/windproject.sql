@@ -1,13 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 4.8.0
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 20, 2026 at 08:25 PM
+-- Generation Time: Apr 22, 2026 at 08:59 PM
 -- Server version: 10.1.31-MariaDB
--- PHP Version: 8.0.30
+-- PHP Version: 5.6.35
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+SET AUTOCOMMIT = 0;
 START TRANSACTION;
 SET time_zone = "+00:00";
 
@@ -679,6 +680,8 @@ CREATE TABLE `wp_password_reset_settings` (
 CREATE TABLE `wp_poles` (
   `poles_id` bigint(20) NOT NULL,
   `poles_code` varchar(255) DEFAULT NULL,
+  `poles_icon` longtext,
+  `default_color` varchar(255) DEFAULT NULL,
   `project_id` bigint(20) NOT NULL,
   `project_status_id` bigint(20) DEFAULT NULL,
   `type_id` bigint(20) NOT NULL,
@@ -787,6 +790,7 @@ CREATE TABLE `wp_type` (
   `type_name` varchar(255) NOT NULL,
   `type_name_display` varchar(255) DEFAULT NULL,
   `type_icon` longtext,
+  `default_color` varchar(255) NOT NULL DEFAULT '#d4821e',
   `status` enum('active','inactive','deleted') NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
@@ -1278,7 +1282,7 @@ ALTER TABLE `wp_wind_data`
 -- AUTO_INCREMENT for table `email_queue`
 --
 ALTER TABLE `email_queue`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT for table `push_subscriptions`
@@ -1290,19 +1294,19 @@ ALTER TABLE `push_subscriptions`
 -- AUTO_INCREMENT for table `pwa_notification_queue`
 --
 ALTER TABLE `pwa_notification_queue`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `system_settings`
 --
 ALTER TABLE `system_settings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `translate_usage_log`
 --
 ALTER TABLE `translate_usage_log`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=340;
 
 --
 -- AUTO_INCREMENT for table `translate_usage_summary`
@@ -1314,253 +1318,253 @@ ALTER TABLE `translate_usage_summary`
 -- AUTO_INCREMENT for table `wind_staging`
 --
 ALTER TABLE `wind_staging`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107137;
 
 --
 -- AUTO_INCREMENT for table `wp_content`
 --
 ALTER TABLE `wp_content`
-  MODIFY `content_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `content_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
 
 --
 -- AUTO_INCREMENT for table `wp_content_folder`
 --
 ALTER TABLE `wp_content_folder`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `wp_content_item`
 --
 ALTER TABLE `wp_content_item`
-  MODIFY `item_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `item_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=191;
 
 --
 -- AUTO_INCREMENT for table `wp_content_media`
 --
 ALTER TABLE `wp_content_media`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=194;
 
 --
 -- AUTO_INCREMENT for table `wp_contract`
 --
 ALTER TABLE `wp_contract`
-  MODIFY `contract_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `contract_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `wp_disclaimers`
 --
 ALTER TABLE `wp_disclaimers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `wp_disclaimer_translations`
 --
 ALTER TABLE `wp_disclaimer_translations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `wp_documents`
 --
 ALTER TABLE `wp_documents`
-  MODIFY `document_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `document_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `wp_documents_download_logs`
 --
 ALTER TABLE `wp_documents_download_logs`
-  MODIFY `logs_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `logs_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `wp_document_folder`
 --
 ALTER TABLE `wp_document_folder`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `wp_edit_permissions`
 --
 ALTER TABLE `wp_edit_permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `wp_folder`
 --
 ALTER TABLE `wp_folder`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
 
 --
 -- AUTO_INCREMENT for table `wp_height`
 --
 ALTER TABLE `wp_height`
-  MODIFY `height_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `height_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `wp_height_levels`
 --
 ALTER TABLE `wp_height_levels`
-  MODIFY `levels_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `levels_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `wp_imports`
 --
 ALTER TABLE `wp_imports`
-  MODIFY `imports_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `imports_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `wp_installations`
 --
 ALTER TABLE `wp_installations`
-  MODIFY `installations_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `installations_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `wp_login_logs`
 --
 ALTER TABLE `wp_login_logs`
-  MODIFY `logs_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `logs_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=423;
 
 --
 -- AUTO_INCREMENT for table `wp_map_master`
 --
 ALTER TABLE `wp_map_master`
-  MODIFY `map_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `map_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `wp_map_polygons`
 --
 ALTER TABLE `wp_map_polygons`
-  MODIFY `poly_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `poly_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `wp_members`
 --
 ALTER TABLE `wp_members`
-  MODIFY `member_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `member_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `wp_members_language`
 --
 ALTER TABLE `wp_members_language`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `wp_members_privileges`
 --
 ALTER TABLE `wp_members_privileges`
-  MODIFY `privileges_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `privileges_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `wp_members_privileges_config`
 --
 ALTER TABLE `wp_members_privileges_config`
-  MODIFY `config_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `config_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `wp_menus`
 --
 ALTER TABLE `wp_menus`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `wp_menu_translations`
 --
 ALTER TABLE `wp_menu_translations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `wp_notification_targets`
 --
 ALTER TABLE `wp_notification_targets`
-  MODIFY `targets_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `targets_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
 
 --
 -- AUTO_INCREMENT for table `wp_password_resets`
 --
 ALTER TABLE `wp_password_resets`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `wp_password_reset_requests`
 --
 ALTER TABLE `wp_password_reset_requests`
-  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `wp_password_reset_settings`
 --
 ALTER TABLE `wp_password_reset_settings`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `wp_poles`
 --
 ALTER TABLE `wp_poles`
-  MODIFY `poles_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `poles_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `wp_project`
 --
 ALTER TABLE `wp_project`
-  MODIFY `project_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `project_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `wp_project_group`
 --
 ALTER TABLE `wp_project_group`
-  MODIFY `project_group_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `project_group_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `wp_project_pole_type`
 --
 ALTER TABLE `wp_project_pole_type`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `wp_project_status`
 --
 ALTER TABLE `wp_project_status`
-  MODIFY `project_status_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `project_status_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `wp_setting`
 --
 ALTER TABLE `wp_setting`
-  MODIFY `setting_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `setting_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `wp_type`
 --
 ALTER TABLE `wp_type`
-  MODIFY `type_id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `type_id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `wp_user_disclaimer_accepts`
 --
 ALTER TABLE `wp_user_disclaimer_accepts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `wp_winds`
 --
 ALTER TABLE `wp_winds`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107137;
 
 --
 -- AUTO_INCREMENT for table `wp_windturbind_icon`
 --
 ALTER TABLE `wp_windturbind_icon`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `wp_windturbine`
 --
 ALTER TABLE `wp_windturbine`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
 
 --
 -- AUTO_INCREMENT for table `wp_wind_data`
 --
 ALTER TABLE `wp_wind_data`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Constraints for dumped tables
