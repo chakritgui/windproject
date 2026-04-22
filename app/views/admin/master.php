@@ -209,7 +209,7 @@
                         <tr>
                             <th data-i18n="no"></th>
                             <th data-i18n="icon"></th>
-                            <th data-i18n="type_name"></th>
+                            <th data-i18n="wind_measurement_equipment"></th>
                             <th data-i18n="display"></th>
                             <th data-i18n="create_at"></th>
                             <th data-i18n="status"></th>
@@ -229,7 +229,7 @@
                             <select id="filter_installation_project" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-tags me-2"></i><span data-i18n="type"></span></p>
+                            <p><i class="fa-solid fa-tags me-2"></i><span data-i18n="wind_measurement_equipment"></span></p>
                             <select id="filter_installation_type" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
@@ -245,7 +245,7 @@
                         <tr>
                             <th data-i18n="no"></th>
                             <th data-i18n="project"></th>
-                            <th data-i18n="type"></th>
+                            <th data-i18n="wind_measurement_equipment"></th>
                             <th data-i18n="installation"></th>
                             <th data-i18n="display"></th>
                             <th data-i18n="create_at"></th>
@@ -298,7 +298,7 @@
                             <select id="filter_pole_project_status" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
-                            <p><i class="fa-solid fa-tags me-2"></i><span data-i18n="type"></span></p>
+                            <p><i class="fa-solid fa-tags me-2"></i><span data-i18n="wind_measurement_equipment"></span></p>
                             <select id="filter_pole_type" class="form-select filter"></select>
                         </div>
                         <div class="col-sm-2 col-6">
@@ -319,7 +319,7 @@
                             <th data-i18n="no"></th>
                             <th data-i18n="icon"></th>
                             <th data-i18n="pole_code"></th>
-                            <th data-i18n="type"></th>
+                            <th data-i18n="wind_measurement_equipment"></th>
                             <th data-i18n="project"></th>
                             <th data-i18n="pole_status"></th>
                             <th data-i18n="latitude"></th>

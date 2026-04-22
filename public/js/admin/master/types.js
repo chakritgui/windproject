@@ -49,7 +49,7 @@ function initTypesTable() {
                     `;
                 }
                 return `
-                    <img src="${BASE_URL}/${data}" style="height:60px; border-radius:6px; object-fit:cover;" loading="lazy">
+                    <img src="${BASE_URL}/${data}" style="height:60px; border-radius:6px; object-fit:contain;" loading="lazy">
                 `;
             }
         },{ 
