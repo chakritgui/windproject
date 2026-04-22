@@ -193,18 +193,16 @@ function buildWindLabelSVG({
     };
 }
 function _buildPoleIcon(pole, size = 20) {
-    if (pole.type_icon?.trim()) {
+    if (pole.poles_icon?.trim()) {
         return L.icon({
-            iconUrl:     pole.type_icon,
+            iconUrl:     pole.poles_icon,
             iconSize:    [size, size],
             iconAnchor:  [size / 2, size],
             popupAnchor: [0, -size],
         });
     }
-    const isEven  = pole.type_id % 2 === 0;
-    const color   = isEven ? '#f5a623' : '#5bb8f5';
-    const color2  = isEven ? '#d4821e' : '#1e90d4';
-    const glowCol = isEven ? 'rgba(91,184,245,0.6)' : 'rgba(245,166,35,0.6)';
+    const color   = pole.default_color || '#f5a623';
+    const glowCol = 'rgba(0,0,0,0.6)';
     const baseW = 20, baseH = 52;
     const w = size, h = size * (baseH / baseW);
     const extraY = 30;
@@ -232,7 +230,7 @@ function _buildPoleIcon(pole, size = 20) {
         <line x1="3" y1="5"  x2="15" y2="5" stroke="rgba(255,255,255,0.82)" stroke-width="1.3" stroke-linecap="round"/>
         <circle cx="15" cy="5"  r="2.5" fill="${color}"  stroke="rgba(255,255,255,0.85)" stroke-width="0.7" filter="url(#pglow-${pole.poles_id})"/>
         <line x1="3" y1="15" x2="11" y2="15" stroke="rgba(255,255,255,0.82)" stroke-width="1.3" stroke-linecap="round"/>
-        <circle cx="11" cy="15" r="2" fill="${color2}" stroke="rgba(255,255,255,0.85)" stroke-width="0.7"/>
+        <circle cx="11" cy="15" r="2" fill="${color}" stroke="rgba(255,255,255,0.85)" stroke-width="0.7"/>
         ${extra}
         </svg>`,
     });

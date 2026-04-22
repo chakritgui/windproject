@@ -171,7 +171,14 @@ class PoleModel {
                     t.type_id, 
                     t.type_name, 
                     i.installations_name,
-                    t.type_icon,
+                    CASE
+                        WHEN p.poles_icon is null or p.poles_icon = '' THEN t.type_icon
+                        ELSE p.poles_icon
+                    END as poles_icon,
+                    CASE
+                        WHEN p.default_color is null or p.default_color = '' THEN t.default_color
+                        ELSE p.default_color
+                    END as default_color,
                     CASE
                         WHEN p.project_status_id is not null and p.project_status_id <> '' and p.project_status_id > 0 THEN sp.project_status_name
                         ELSE s.project_status_name

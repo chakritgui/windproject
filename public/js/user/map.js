@@ -1431,17 +1431,15 @@ async function openProjectDetail(project_id) {
             return;
         }
         ppBody.innerHTML = data.poles.map(p => {
-            const isEven  = p.type_id % 2 === 0;
-            const color   = isEven ? '#f5a623' : '#5bb8f5';
-            const color2  = isEven ? '#d4821e' : '#1e90d4';
+            const color   = p.default_color || '#f5a623';
             const iconSize = 40;
             let iconHtml  = '';
-            if (p.type_icon?.trim()) {
-                iconHtml = `<img src="${BASE_URL}/${p.type_icon}" style="width:${iconSize}px;height:${iconSize}px;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))" alt="icon">`;
+            if (p.poles_icon?.trim()) {
+                iconHtml = `<img src="${BASE_URL}/${p.poles_icon}" style="width:${iconSize}px;height:${iconSize}px;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))" alt="icon">`;
             } else {
                 const extra = `
                     <line x1="3" y1="32" x2="-5" y2="32" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
-                    <circle cx="-5" cy="32" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>`;
+                    <circle cx="-5" cy="32" r="1.8" fill="${color}" stroke="#ffffff" stroke-width="0.8"/>`;
                 iconHtml = `
                 <svg width="20" height="52" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))">
                     <circle cx="3" cy="49" r="3.5" fill="rgba(255,255,255,0.85)" stroke="${color}" stroke-width="1.5"/>
@@ -1450,7 +1448,7 @@ async function openProjectDetail(project_id) {
                     <line x1="3" y1="14" x2="11" y2="14" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
                     ${extra}
                     <circle cx="15" cy="5"  r="2.2" fill="${color}"  stroke="#ffffff" stroke-width="0.8"/>
-                    <circle cx="11" cy="14" r="1.8" fill="${color2}" stroke="#ffffff" stroke-width="0.8"/>
+                    <circle cx="11" cy="14" r="1.8" fill="${color}" stroke="#ffffff" stroke-width="0.8"/>
                 </svg>`;
             }
             return `

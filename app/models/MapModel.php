@@ -119,7 +119,21 @@ class MapModel{
         return $coords;
     }
     public function poleslocation() {
-        $sql = "SELECT p.*, t.type_id, t.type_name, l.installations_name, t.type_icon FROM wp_poles p INNER JOIN wp_type t ON t.type_id = p.type_id INNER JOIN wp_installations l ON l.installations_id = p.installations_id WHERE p.status = 'online'";
+        $sql = "SELECT 
+            p.*, t.type_id, t.type_name, l.installations_name, 
+            CASE
+                WHEN p.poles_icon is null or p.poles_icon = '' THEN t.type_icon
+                ELSE p.poles_icon
+            END as poles_icon,
+            CASE
+                WHEN p.default_color is null or p.default_color = '' THEN t.default_color
+                ELSE p.default_color
+            END as default_color
+        FROM 
+            wp_poles p 
+        INNER JOIN wp_type t ON t.type_id = p.type_id 
+        INNER JOIN wp_installations l ON l.installations_id = p.installations_id 
+        WHERE p.status = 'online'";
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
