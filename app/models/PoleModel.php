@@ -104,12 +104,21 @@ class PoleModel {
         $dateEnd   = DateTime::createFromFormat('d/m/Y', $params['end']) ?: new DateTime($params['end']);
         $interval = $dateStart->diff($dateEnd);
         $total_days = $interval->days + 1;
-        $sqlPole = "SELECT p.*, t.type_name, l.installations_name, pj.project_name, s.project_status_name, s.project_status_color
+        $sqlPole = "SELECT p.*, t.type_name, l.installations_name, pj.project_name, 
+                    CASE
+                        WHEN p.project_status_id is not null and p.project_status_id <> '' and p.project_status_id > 0 THEN sp.project_status_name
+                            ELSE s.project_status_name
+                        END AS project_status_name,
+                        CASE
+                            WHEN p.project_status_id is not null and p.project_status_id <> '' and p.project_status_id > 0 THEN sp.project_status_color
+                            ELSE s.project_status_color
+                        END AS project_status_color
                     FROM wp_poles p 
                     LEFT JOIN wp_type t on t.type_id = p.type_id 
                     LEFT JOIN wp_installations l on l.installations_id = p.installations_id
                     LEFT JOIN wp_project pj on pj.project_id = p.project_id
                     LEFT JOIN wp_project_status s on s.project_status_id = pj.project_status_id
+                    LEFT JOIN wp_project_status sp on sp.project_status_id = p.project_status_id
                     WHERE p.poles_id = :poles_id";
         $stmt1 = $this->db->prepare($sqlPole);
         $stmt1->execute([':poles_id' => $poles_id]);
@@ -118,7 +127,6 @@ class PoleModel {
         $stmt2 = $this->db->prepare($sqlHeight);
         $stmt2->execute([':height_id' => $height_id]);
         $heightInfo = $stmt2->fetch(PDO::FETCH_ASSOC);
-        
         return [
             'pole'   => $poleInfo,
             'height'  => $heightInfo,
