@@ -31,9 +31,22 @@ function initTypesTable() {
             data: "type_icon",
             orderable: false,
             searchable: false,
-            render: function(data){
+            className: 'text-center',
+            render: function (data, type, row) {
                 if (!data) {
-                    return `<img src="${BASE_URL}/public/images/noimage.jpg" style="height:60px; border-radius:6px; object-fit:cover;" loading="lazy">`;
+                    let color = row.default_color || '#d4821e';
+                    return `
+                        <svg width="20" height="52" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))">
+                            <circle cx="3" cy="49" r="3.5" fill="rgba(255,255,255,0.85)" stroke="${color}" stroke-width="1.5"/>
+                            <line x1="3" y1="46" x2="3" y2="3" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+                            <line x1="3" y1="5"  x2="15" y2="5" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+                            <line x1="3" y1="14" x2="11" y2="14" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+                            <line x1="3" y1="32" x2="-5" y2="32" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+                            <circle cx="-5" cy="32" r="1.8" fill="${color}" stroke="#ffffff" stroke-width="0.8"/>
+                            <circle cx="15" cy="5"  r="2.2" fill="${color}"  stroke="#ffffff" stroke-width="0.8"/>
+                            <circle cx="11" cy="14" r="1.8" fill="${color}" stroke="#ffffff" stroke-width="0.8"/>
+                        </svg>
+                    `;
                 }
                 return `
                     <img src="${BASE_URL}/${data}" style="height:60px; border-radius:6px; object-fit:cover;" loading="lazy">
@@ -195,6 +208,10 @@ $(document).on('click', '.manage-type', function() {
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
+                            <label class="mb-2 required">${langData['color'] || 'Color'}</label>
+                            <input type="color" class="form-control obj-required" id="default_color" value="${typeData.default_color}">
+                        </div>
+                        <div class="col-md-6 mb-3">
                             <label class="mb-2 required">${langData['status'] || 'Status'}</label>
                             <select id="status" class="form-select obj-required"></select>
                         </div>
@@ -209,8 +226,8 @@ $(document).on('click', '.manage-type', function() {
                         var newOptionStatus = new Option(statusName, typeData.status, true, true);
                         $('#status').append(newOptionStatus).trigger('change');
                     }
-                    initCoverUpload();
                 }
+                initCoverUpload();
             } else {
                 showError(langData['cannot_load']);
             }
@@ -247,6 +264,7 @@ function saveType() {
     formData.append("type_name_display", $("#type_name_display").val() || "");
     formData.append("status", $("#status").val());
     formData.append("ex_cover", $("#ex_cover").val());
+    formData.append("default_color", $("#default_color").val() || "#f5a623");
     const cover = $("#cover")[0].files[0] || null;
     if (cover) {
         formData.append("cover", cover);

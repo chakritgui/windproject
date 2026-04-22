@@ -25,15 +25,15 @@ class PolesModel {
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
             0 => "p.item_order",
-            1 => "p.poles_code",
-            2 => "t.type_name",
-            3 => "pj.project_name",
-            4 => "p.project_name",
-            5 => "p.poles_lat",
-            6 => "p.poles_lng",
-            7 => "i.installations_name",
-            8 => "p.created_at",
-            9 => "p.status"
+            2 => "p.poles_code",
+            3 => "t.type_name",
+            4 => "pj.project_name",
+            5 => "p.project_name",
+            6 => "p.poles_lat",
+            7 => "p.poles_lng",
+            8 => "i.installations_name",
+            9 => "p.created_at",
+            10 => "p.status"
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -59,7 +59,15 @@ class PolesModel {
                     p.poles_source,
                     p.item_order,
                     s.project_status_name,
-                    s.project_status_color
+                    s.project_status_color,
+                    CASE
+                        WHEN p.poles_icon is null or p.poles_icon = '' THEN t.type_icon
+                        ELSE p.poles_icon
+                    END as poles_icon,
+                    CASE
+                        WHEN p.default_color is null or p.default_color = '' THEN t.default_color
+                        ELSE p.default_color
+                    END as default_color
                 FROM wp_poles p
                 LEFT JOIN wp_project pj ON pj.project_id = p.project_id
                 LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id
@@ -136,89 +144,85 @@ class PolesModel {
         return [$where, $params];
     }
     public function get($id) {
-        if (!$id) {
-            return null;
+        $default = [
+            'poles_id' => null,
+            'poles_code' => null,
+            'poles_lat' => null,
+            'poles_lng' => null,
+            'status' => null,
+            'project_id' => null,
+            'project_name' => null,
+            'type_id' => null,
+            'type_name' => null,
+            'installations_id' => null,
+            'installations_name' => null,
+            'project_status_id' => null,
+            'project_status_name' => null,
+            'default_color' => null,
+            'cover' => null
+        ];
+        if (empty($id)) {
+            return $default;
         }
         $sql = "SELECT
-                p.poles_id,
-                p.poles_code,
-                p.poles_lat,
-                p.poles_lng,
-                p.status,
-                pj.project_id,
-                pj.project_name,
-                t.type_id,
-                t.type_name,
-                i.installations_id,
-                i.installations_name,
-                s.project_status_id, s.project_status_name
-            FROM wp_poles p
-            LEFT JOIN wp_project pj ON pj.project_id = p.project_id
-            LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id
-            LEFT JOIN wp_type t ON t.type_id = p.type_id
-            LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
-            WHERE p.poles_id = :id
-        ";
+                    p.poles_id,
+                    p.poles_code,
+                    p.poles_lat,
+                    p.poles_lng,
+                    p.status,
+                    pj.project_id,
+                    pj.project_name,
+                    t.type_id,
+                    t.type_name,
+                    i.installations_id,
+                    i.installations_name,
+                    s.project_status_id,
+                    s.project_status_name,
+                    p.default_color,
+                    p.poles_icon as cover
+                FROM wp_poles p
+                LEFT JOIN wp_project pj ON pj.project_id = p.project_id
+                LEFT JOIN wp_project_status s ON s.project_status_id = p.project_status_id
+                LEFT JOIN wp_type t ON t.type_id = p.type_id
+                LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
+                WHERE p.poles_id = :id
+            ";
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
         $stmt->execute();
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ?: $default;
     }
     public function save($data) {
-        if ($this->isDuplicatePole(trim($data['poles_code']), (int)$data['poles_id'])) {
-            return [
-                'status'  => false,
-                'message' => 'already_pole'
-            ];
+        $poles_id = !empty($data['poles_id']) ? (int)$data['poles_id'] : null;
+        $poles_code = trim($data['poles_code'] ?? '');
+        if ($this->isDuplicatePole($poles_code, $poles_id)) {
+            return ['status' => false, 'message' => 'already_pole'];
         }
         try {
-            if (!empty($data['poles_id'])) {
-                $sql = "UPDATE wp_poles SET
-                        poles_code = :code,
-                        poles_lat = :lat,
-                        poles_lng = :lng,
-                        project_id = :project,
-                        project_status_id = :project_status,
-                        type_id = :type,
-                        installations_id = :installation,
-                        status = :status,
-                        updated_at = NOW(),
-                        poles_source = 'manual'
-                    WHERE poles_id = :id
-                ";
+            if ($poles_id) {
+                $sql = "UPDATE wp_poles SET 
+                            poles_code = :code, poles_lat = :lat, poles_lng = :lng,
+                            project_id = :project, project_status_id = :project_status,
+                            type_id = :type, installations_id = :installation,
+                            status = :status, updated_at = NOW(),
+                            poles_source = 'manual', default_color = :default_color
+                        WHERE poles_id = :id";
             } else {
                 $sql = "INSERT INTO wp_poles (
-                        poles_code,
-                        poles_lat,
-                        poles_lng,
-                        project_id,
-                        project_status_id,
-                        type_id,
-                        installations_id,
-                        status,
-                        created_at,
-                        updated_at,
-                        poles_source
-                    ) VALUES (
-                        :code,
-                        :lat,
-                        :lng,
-                        :project,
-                        :project_status,
-                        :type,
-                        :installation,
-                        :status,
-                        NOW(),
-                        NOW(),
-                        'manual'
-                    )
-                ";
+                            poles_code, poles_lat, poles_lng, project_id,
+                            project_status_id, type_id, installations_id,
+                            status, created_at, updated_at, poles_source, default_color
+                        ) VALUES (
+                            :code, :lat, :lng, :project, :project_status,
+                            :type, :installation, :status, NOW(), NOW(), 'manual', :default_color
+                        )";
             }
             $stmt = $this->db->prepare($sql);
-            if (!empty($data['poles_id'])) {
-                $stmt->bindValue(':id', (int)$data['poles_id'], PDO::PARAM_INT);
+            if ($poles_id) {
+                $stmt->bindValue(':id', $poles_id, PDO::PARAM_INT);
             }
-            $stmt->bindValue(':code', trim($data['poles_code']));
+            $stmt->bindValue(':code', $poles_code);
             $stmt->bindValue(':lat', $data['latitude']);
             $stmt->bindValue(':lng', $data['longitude']);
             $stmt->bindValue(':project', (int)$data['project'], PDO::PARAM_INT);
@@ -226,10 +230,105 @@ class PolesModel {
             $stmt->bindValue(':type', (int)$data['type'], PDO::PARAM_INT);
             $stmt->bindValue(':installation', (int)$data['installation'], PDO::PARAM_INT);
             $stmt->bindValue(':status', $data['status']);
-            return $stmt->execute();
+            $stmt->bindValue(':default_color', $data['default_color']);
+            if (!$stmt->execute()) {
+                return ['status' => false, 'message' => 'save_failed'];
+            }
+            if (!$poles_id) {
+                $poles_id = (int)$this->db->lastInsertId();
+            }
+            $ex_cover = $data['ex_cover'] ?? '';
+            if (!$ex_cover) {
+                $this->handleFileDelete($poles_id);
+            }
+            if (isset($_FILES['cover']) && $_FILES['cover']['error'] === UPLOAD_ERR_OK) {
+                $this->handleFileUpload($poles_id, $_FILES['cover']);
+            }
+            return ['status' => true, 'message' => 'success', 'id' => $poles_id];
         } catch (Exception $e) {
+            error_log("Save Pole Error: " . $e->getMessage());
+            return ['status' => false, 'message' => 'system_error' . $e->getMessage()];
+        }
+    }
+    private function handleFileUpload($poles_id, $file) {
+        $this->handleFileDelete($poles_id);  
+        $dir = "uploads/poles/";
+        $baseDir = dirname(__DIR__, 2) . '/' . $dir;
+        if (!is_dir($baseDir)) mkdir($baseDir, 0755, true);
+        $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $image = false;
+        switch ($ext) {
+            case 'jpeg':
+            case 'jpg':  $image = @imagecreatefromjpeg($file['tmp_name']); break;
+            case 'png':   $image = @imagecreatefrompng($file['tmp_name']);  break;
+            case 'gif':   $image = @imagecreatefromgif($file['tmp_name']);  break;
+            case 'webp':  $image = @imagecreatefromwebp($file['tmp_name']); break;
+        }
+        if ($image) {
+            $newName = $poles_id . "_" . time() . ".webp";
+            $targetFull = $baseDir . $newName;
+            $dbPath = $dir . $newName;
+            $quality = 85;
+            do {
+                ob_start();
+                imagewebp($image, null, $quality);
+                $imageData = ob_get_contents();
+                ob_end_clean();
+                if (strlen($imageData) <= 1048576 || $quality <= 20) {
+                    break;
+                }
+                $quality -= 10;
+            } while ($quality > 10);
+            if (file_put_contents($targetFull, $imageData)) {
+                $this->db->prepare("UPDATE wp_poles SET poles_icon=? WHERE poles_id =?")->execute([$dbPath, $poles_id]);
+            }
+            imagedestroy($image);
+
+        } else {
+            $newName = $poles_id . "_" . time() . "." . $ext;
+            $targetFull = $baseDir . $newName;
+            $dbPath = $dir . $newName;
+            if (move_uploaded_file($file['tmp_name'], $targetFull)) {
+                $this->db->prepare("UPDATE wp_poles SET poles_icon=? WHERE poles_id =?")->execute([$dbPath, $poles_id]);
+            }
+        }
+    }
+    private function handleFileDelete($poles_id){
+        $stmt = $this->db->prepare("SELECT poles_icon FROM wp_poles WHERE poles_id = ?");
+        $stmt->execute([$poles_id]);
+        $old = $stmt->fetchColumn();
+        if (!$old) {
+            return;
+        }
+        $basePath = realpath(dirname(__DIR__, 2));
+        if ($basePath === false) {
+            error_log("Base path not found");
+            return;
+        }
+        $old = ltrim($old, '/');
+        if (strpos($old, '..') !== false) {
+            error_log("Invalid file path: " . $old);
+            return;
+        }
+        $oldPath = $basePath . '/' . $old;
+        if (!file_exists($oldPath)) {
+            error_log("File not found: " . $oldPath);
+            return;
+        }
+        if (!is_file($oldPath)) {
+            error_log("Not a file: " . $oldPath);
+            return;
+        }
+        $this->db->beginTransaction();
+        try {
+            if (!unlink($oldPath)) {
+                throw new Exception("Cannot delete file: " . $oldPath);
+            }
+            $this->db->prepare("UPDATE wp_poles SET poles_icon = NULL WHERE poles_id = ?")->execute([$poles_id]);
+            $this->db->commit();
+        } catch (Exception $e) {
+            $this->db->rollBack();
             error_log($e->getMessage());
-            return false;
         }
     }
     public function delete($id) {

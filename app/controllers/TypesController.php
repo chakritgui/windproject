@@ -53,7 +53,8 @@ class TypesController extends BaseController {
             'type_name_display' => $_POST['type_name_display'] ?? '',
             'cover' => $_FILES['cover'] ?? null,
             'ex_cover' => $_POST['ex_cover'] ?? null,
-            'status' => $_POST['status'] ?? ''
+            'status' => $_POST['status'] ?? '',
+            'default_color' => $_POST['default_color'] ?? ''
         ];
         $result = $this->model->save($data);
         if ($result === true) {

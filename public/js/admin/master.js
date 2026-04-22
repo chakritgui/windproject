@@ -110,79 +110,92 @@ function orderItem(type, title) {
         <button type="button" class="btn btn-primary me-2 save-order-item">${langData['save'] || "Save"}</button>
         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
     `);
-    let table = ``;
-    switch(type) {
-        case 'poles':
-            table = `
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th width="50px">${langData['sort'] || "Sort"}</th>
-                            <th data-i18n="pole_code"></th>
-                            <th data-i18n="type"></th>
-                            <th data-i18n="project"></th>
-                            <th data-i18n="installation"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="sortable-list">
-                        <tr><td colspan="5" class="text-center">Loading...</td></tr>
-                    </tbody>
-                </table>
-            `;
-            break;
-        default: 
-            table = `
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th width="50px">${langData['sort'] || "Sort"}</th>
-                            <th>${langData[type] || title}</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sortable-list">
-                        <tr><td colspan="2" class="text-center">Loading...</td></tr>
-                    </tbody>
-                </table>
-            `;
-    }
-    modalEl.find(".modal-body").html(table);
+    modalEl.find(".modal-body").html('<div class="text-center p-5"><div class="spinner-border text-primary"></div></div>');
     $.ajax({
         url: `${BASE_URL}/api/sort.list`,
         method: 'POST',
         data: { type: type },
         dataType: 'json',
         success: function(res) {
-            if(res.status && res.data){
+            if (res.status && res.data) {
                 let html = '';
-                res.data.forEach((item, index) => {
-                    switch(type) {
-                        case 'poles':
+                if (type === 'poles') {
+                    let grouped = {};
+                    res.data.forEach(item => {
+                        if (!grouped[item.project_name]) {
+                            grouped[item.project_name] = [];
+                        }
+                        grouped[item.project_name].push(item);
+                    });
+                    html = `
+                        <table class="table table-bordered mb-0">
+                            <thead>
+                                <tr>
+                                    <th width="50px">${langData['sort'] || "Sort"}</th>
+                                    <th>${langData['pole_code'] || "Code"}</th>
+                                    <th>${langData['type'] || "Type"}</th>
+                                    <th>${langData['installation'] || "Installation"}</th>
+                                </tr>
+                            </thead>`;
+                    for (let projectName in grouped) {
+                        html += `
+                            <tbody class="table-light">
+                                <tr>
+                                    <td colspan="4" class="fw-bold text-primary bg-light">
+                                        <i class="fas fa-project-diagram me-2"></i>${projectName}
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tbody class="sortable-project-group" data-project="${projectName}">`;
+                        grouped[projectName].forEach(item => {
                             html += `
                                 <tr data-id="${item.poles_id}" style="cursor: move;">
-                                    <td class="text-center"><i class="fas fa-grip-lines"></i></td>
+                                    <td class="text-center"><i class="fas fa-grip-lines text-muted"></i></td>
                                     <td>${item.poles_code}</td>
                                     <td>${item.type_name}</td>
-                                    <td>${item.project_name}</td>
                                     <td>${item.installations_name}</td>
-                                </tr>
-                            `;
-                            break;
-                        default: 
-                        html += `
-                            <tr data-id="${item.item_id}" style="cursor: move;">
-                                <td class="text-center"><i class="fas fa-grip-lines"></i></td>
-                                <td>
-                                    ${item.item_name}
-                                </td>
-                            </tr>
-                        `;
+                                </tr>`;
+                        });
+                        html += `</tbody>`;
                     }
-                });
-                $('#sortable-list').html(html);
-                new Sortable(document.getElementById('sortable-list'), {
-                    animation: 150,
-                    ghostClass: 'bg-light'
-                });
+                    html += `</table>`;
+                    modalEl.find(".modal-body").html(html);
+                    modalEl.find('.sortable-project-group').each(function() {
+                        new Sortable(this, {
+                            group: {
+                                name: 'group-' + $(this).data('project'),
+                                put: false,
+                                pull: false
+                            },
+                            animation: 150,
+                            ghostClass: 'bg-info-subtle'
+                        });
+                    });
+                } else {
+                    let rows = '';
+                    res.data.forEach((item) => {
+                        rows += `
+                            <tr data-id="${item.item_id || item.poles_id}" style="cursor: move;">
+                                <td class="text-center" width="50px"><i class="fas fa-grip-lines"></i></td>
+                                <td>${item.item_name || item.poles_code}</td>
+                            </tr>`;
+                    });
+                    html = `
+                        <table class="table table-bordered mb-0">
+                            <thead>
+                                <tr>
+                                    <th>${langData['sort'] || "Sort"}</th>
+                                    <th>${langData[type] || title}</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sortable-list-default">${rows}</tbody>
+                        </table>`;
+                    modalEl.find(".modal-body").html(html);
+                    new Sortable(document.getElementById('sortable-list-default'), {
+                        animation: 150,
+                        ghostClass: 'bg-info-subtle'
+                    });
+                }
             } else {
                 showError(langData['cannot_load']);
             }
@@ -190,9 +203,14 @@ function orderItem(type, title) {
     });
     modalEl.off('click', '.save-order-item').on('click', '.save-order-item', function() {
         let orderData = [];
-        $('#sortable-list tr').each(function(index) {
-            orderData.push($(this).data('id'));
+        let targetSelector = (type === 'poles') ? '.sortable-project-group tr' : '#sortable-list-default tr';
+        $(targetSelector).each(function() {
+            let id = $(this).data('id');
+            if (id) orderData.push(id);
         });
+        if (orderData.length === 0) return;
+        let btn = $(this);
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
         $.ajax({
             url: `${BASE_URL}/api/sort.save`,
             method: 'POST',
@@ -201,35 +219,22 @@ function orderItem(type, title) {
                 order: orderData
             },
             success: function(res) {
-                if(res.status) {
+                btn.prop('disabled', false).text(langData['save'] || "Save");
+                if (res.status) {
                     showSuccess(langData['save_success'] || "Saved!");
                     modal.hide();
-                    switch(type) {
-                        case 'contract':
-                            initContractsTable();
-                            break;
-                        case 'project':
-                            initProjectsTable();
-                            break;
-                        case 'pole_types':
-                            initTypesTable();
-                            break;
-                        case 'installation':
-                            initInstallationsTable();
-                            break;
-                        case 'level':
-                            initLevelTable();
-                            break;
-                        case 'poles':
-                            initPolesTable();
-                            break;
-                        case 'group':
-                            initGroupTable();
-                            break;
-                        case 'project_status':
-                            initProjectStatusTable();
-                            break;
-                    }
+                    const tableMaps = {
+                        'contract': typeof initContractsTable === 'function' ? initContractsTable : null,
+                        'project': typeof initProjectsTable === 'function' ? initProjectsTable : null,
+                        'pole_types': typeof initTypesTable === 'function' ? initTypesTable : null,
+                        'installation': typeof initInstallationsTable === 'function' ? initInstallationsTable : null,
+                        'level': typeof initLevelTable === 'function' ? initLevelTable : null,
+                        'poles': typeof initPolesTable === 'function' ? initPolesTable : null,
+                        'group': typeof initGroupTable === 'function' ? initGroupTable : null,
+                        'project_status': typeof initProjectStatusTable === 'function' ? initProjectStatusTable : null
+                    };
+                    
+                    if (tableMaps[type]) tableMaps[type]();
                 }
             }
         });

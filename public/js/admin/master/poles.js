@@ -32,6 +32,31 @@ function initPolesTable() {
                 return meta.row + meta.settings._iDisplayStart + 1;
             }
         },{ 
+            data: "poles_icon",
+            orderable: false,
+            searchable: false,
+            className: 'text-center',
+            render: function (data, type, row) {
+                if (!data) {
+                    let color = row.default_color || '#d4821e';
+                    return `
+                        <svg width="20" height="52" viewBox="0 0 20 52" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.5))">
+                            <circle cx="3" cy="49" r="3.5" fill="rgba(255,255,255,0.85)" stroke="${color}" stroke-width="1.5"/>
+                            <line x1="3" y1="46" x2="3" y2="3" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+                            <line x1="3" y1="5"  x2="15" y2="5" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+                            <line x1="3" y1="14" x2="11" y2="14" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+                            <line x1="3" y1="32" x2="-5" y2="32" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+                            <circle cx="-5" cy="32" r="1.8" fill="${color}" stroke="#ffffff" stroke-width="0.8"/>
+                            <circle cx="15" cy="5"  r="2.2" fill="${color}"  stroke="#ffffff" stroke-width="0.8"/>
+                            <circle cx="11" cy="14" r="1.8" fill="${color}" stroke="#ffffff" stroke-width="0.8"/>
+                        </svg>
+                    `;
+                }
+                return `
+                    <img src="${BASE_URL}/${data}" style="height:60px; border-radius:6px; object-fit:cover;" loading="lazy">
+                `;
+            }
+        },{ 
             data: "poles_code",
             orderable: true, 
         },{ 
@@ -226,6 +251,7 @@ $(document).on('click', '.manage-pole', function() {
                 `);
                 modalEl.find(".modal-body").html(`
                     <input type="hidden" name="poles_id" id="poles_id" value="${poles_id ?? ''}">
+                    ${renderCover(poleData, 'poles_icon')}
                     <div class="mb-3">
                         <label class="mb-2 required">${langData['pole_code'] || 'Pole Code'}</label>
                         <input type="text" class="form-control obj-required" id="poles_code" maxlength="255">
@@ -264,7 +290,34 @@ $(document).on('click', '.manage-pole', function() {
                             <select id="status" class="form-select obj-required"></select>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="mb-2">${langData['color'] || 'Color'}</label>
+                            <div class="d-flex gap-2 mb-2">
+                                <button type="button" id="btn-no-color" class="btn btn-sm btn-secondary flex-fill">${langData['no_color_used']|| 'No color used.'}</button>
+                                <button type="button" id="btn-use-color" class="btn btn-sm btn-outline-secondary flex-fill">${langData['color_used']|| 'Color used.'}</button>
+                            </div>
+                            <div id="color-picker-wrapper" style="display:none;">
+                                <input type="color" class="form-control form-control-color w-100" id="default_color" value="#f5a623">
+                            </div>
+                        </div>
+                    </div>
                 `);
+                function setColorMode(useColor) {
+                    if (useColor) {
+                        $('#btn-use-color').removeClass('btn-outline-secondary').addClass('btn-secondary');
+                        $('#btn-no-color').removeClass('btn-secondary').addClass('btn-outline-secondary');
+                        $('#color-picker-wrapper').show();
+                        $('#default_color').addClass('obj-required');
+                    } else {
+                        $('#btn-no-color').removeClass('btn-outline-secondary').addClass('btn-secondary');
+                        $('#btn-use-color').removeClass('btn-secondary').addClass('btn-outline-secondary');
+                        $('#color-picker-wrapper').hide();
+                        $('#default_color').removeClass('obj-required');
+                    }
+                }
+                modalEl.on('click', '#btn-no-color', function() { setColorMode(false); });
+                modalEl.on('click', '#btn-use-color', function() { setColorMode(true); });
                 initSelect2Remote('#status', `${BASE_URL}/api/poles.filter`, { type: 'status' });
                 initSelect2Remote('#project', `${BASE_URL}/api/poles.filter`, { type: 'project' });
                 initSelect2Remote('#type', `${BASE_URL}/api/poles.filter`, { type: 'type' });
@@ -274,6 +327,12 @@ $(document).on('click', '.manage-pole', function() {
                     $("#poles_code").val(poleData.poles_code);
                     $("#latitude").val(poleData.poles_lat);
                     $("#longitude").val(poleData.poles_lng);
+                    if (poleData.default_color) {
+                        $("#default_color").val(poleData.default_color);
+                        setColorMode(true);
+                    } else {
+                        setColorMode(false);
+                    }
                     if (poleData.project_name) {
                         var newOptionStatus = new Option(poleData.project_name, poleData.project_id, true, true);
                         $('#project').append(newOptionStatus).trigger('change');
@@ -296,9 +355,11 @@ $(document).on('click', '.manage-pole', function() {
                         $('#project_status').append(newOptionStatus).trigger('change');
                     }
                 } else {
+                    setColorMode(false);
                     var newOptionStatus = new Option('Online', 'online', true, true);
                     $('#status').append(newOptionStatus).trigger('change');
                 }
+                initCoverUpload();
             } else {
                 showError(langData['cannot_load']);
             }
@@ -339,6 +400,12 @@ function savePole() {
     formData.append("type", $("#type").val());
     formData.append("installation", $("#installation").val());
     formData.append("status", $("#status").val());
+    formData.append("default_color", $('#color-picker-wrapper').is(':visible') ? $("#default_color").val() : "");
+    formData.append("ex_cover", $("#ex_cover").val());
+    const cover = $("#cover")[0].files[0] || null;
+    if (cover) {
+        formData.append("cover", cover);
+    }
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `

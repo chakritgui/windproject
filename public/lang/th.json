@@ -678,5 +678,7 @@
     "example_import" : "ตัวอย่างการนำเข้า",
     "no_poles_found" : "ไม่พบสถานีตรวจวัดใดๆ",
     "no_poles_desc" : "โครงการนี้ยังไม่ได้กำหนดสถานีใดๆ",
-    "pole_status" : "สถานะเสา"
+    "pole_status" : "สถานะเสา",
+    "no_color_used" : "ไม่ใช้สี",
+    "color_used" : "ใช้สี"
 }

@@ -58,9 +58,12 @@ class PolesController extends BaseController {
             'longitude' => $_POST['longitude'] ?? null,
             'project' => (int)($_POST['project'] ?? 0),
             'project_status' => $_POST['project_status'] ?? null,
+            'default_color' => $_POST['default_color'] ?? null,
             'type'         => (int)($_POST['type'] ?? 0),
             'installation' => (int)($_POST['installation'] ?? 0),
-            'status'       => $_POST['status'] ?? 'inactive'
+            'status'       => $_POST['status'] ?? 'inactive',
+            'cover' => $_FILES['cover'] ?? null,
+            'ex_cover' => $_POST['ex_cover'] ?? null,
         ];
         $result = $this->model->save($data);
         if ($result === true) {

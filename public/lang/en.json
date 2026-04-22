@@ -678,5 +678,7 @@
     "example_import" : "Example Import",
     "no_poles_found" : "No monitoring stations found",
     "no_poles_desc" : "This project has no stations assigned yet.",
-    "pole_status" : "Poles Status"
+    "pole_status" : "Poles Status",
+    "no_color_used" : "No color used.",
+    "color_used" : "Color used."
 }

@@ -317,6 +317,7 @@
                     <thead>
                         <tr>
                             <th data-i18n="no"></th>
+                            <th data-i18n="icon"></th>
                             <th data-i18n="pole_code"></th>
                             <th data-i18n="type"></th>
                             <th data-i18n="project"></th>

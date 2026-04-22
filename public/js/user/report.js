@@ -116,7 +116,6 @@ async function openFilterModal(poles_id, startDate = '', endDate = '', height_id
                 </div>
                 <div class="fm-chips">
                     ${chip('fa-solid fa-diagram-project', '#2d7fc1', 'project',           data.project_name)}
-                    ${chip('fa-solid fa-arrows-alt-v',    '#0891b2', 'level',             data.height_name)}
                     ${chip('fa-solid fa-map-marker-alt',  '#059669', 'location',          `${data.poles_lat}, ${data.poles_lng}`)}
                     ${chip('fa-regular fa-calendar',      '#d97706', 'monitoring_period', `${data.start_date} – ${data.end_date}`)}
                 </div>

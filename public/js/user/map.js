@@ -1243,7 +1243,6 @@ async function openPoles(poleId, target = 'equipment') {
             </div>
             <div class="poles-chips">
                 ${chip('fa-solid fa-diagram-project', '#2d7fc1', 'project',  data.project_name)}
-                ${chip('fa-solid fa-arrows-alt-v',    '#0891b2', 'level',    data.height_name)}
                 ${chip('fa-solid fa-map-marker-alt',  '#059669', 'location',
                     `${data.poles_lat}, ${data.poles_lng}`)}
             </div>

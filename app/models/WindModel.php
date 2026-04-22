@@ -411,10 +411,26 @@ class WindModel{
                     $params[':search'] = "%{$searchTerm}%";
                 }
                 $join = "LEFT JOIN wp_height_levels l ON l.height_id = h.height_id";
-                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_height h {$join} {$where}");
+                $stmtCount = $this->db->prepare("SELECT COUNT(*) AS total FROM wp_height h {$join} {$where}");
                 $stmtCount->execute($params);
-                $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
-                $sql = "SELECT l.levels_id AS id, CONCAT(h.height_name,' ',l.height_levels) AS text FROM wp_height h {$join} {$where} ORDER BY h.height_id ASC, l.levels_id ASC LIMIT :limit OFFSET :offset";
+                $totalRow = $stmtCount->fetch(PDO::FETCH_OBJ);
+                $totalCount = $totalRow ? $totalRow->total : 0;
+                $sql = "SELECT 
+                            l.levels_id AS id, 
+                            CONCAT(h.height_name, ' ', l.height_levels) AS text 
+                        FROM wp_height h 
+                        {$join} 
+                        {$where} 
+                        ORDER BY h.height_id ASC, l.levels_id ASC 
+                        LIMIT :limit OFFSET :offset";
+                $stmt = $this->db->prepare($sql);
+                if ($searchTerm !== '') {
+                    $stmt->bindValue(':search', "%{$searchTerm}%", PDO::PARAM_STR);
+                }
+                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+                $stmt->execute();
+                $results = $stmt->fetchAll(PDO::FETCH_OBJ);
                 break;
             default:
                 return ['items' => [], 'total_count' => 0];

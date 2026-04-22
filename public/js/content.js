@@ -855,7 +855,7 @@ function renderCover(d, type = '') {
             <button type="button" id="btnRemoveCover" class="btn btn-sm btn-outline-danger mt-2 ${d.cover ? '' : 'd-none'}">${langData['remove'] || 'Remove'}</button>
         </div>
         <input type="hidden" id="ex_cover" value="${d.cover ? d.cover : ''}">
-        ${(type !== 'poles' && type !== 'folder' && type !== 'icon') ? `
+        ${(type !== 'poles' && type !== 'folder' && type !== 'icon' && type !== 'poles_icon') ? `
             <div class="mb-3">
                 <label class="form-label fw-bold" data-i18n="display_the_cover"></label>
                 <div class="mb-3">

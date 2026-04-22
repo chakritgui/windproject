@@ -29,7 +29,8 @@ class TypesModel {
                 type_icon,
                 status,
                 created_at,
-                item_order
+                item_order,
+                default_color
             FROM wp_type
             {$where}
             ORDER BY {$order} {$orderDir}
@@ -111,7 +112,8 @@ class TypesModel {
                 'type_name' => '',
                 'type_name_display' => '',
                 'cover' => '',
-                'status' => 'active'
+                'status' => 'active',
+                'default_color' => '#f5a623'
             ];
         } else {
             $sql = "SELECT *, type_icon as cover FROM wp_type WHERE type_id  = ?";
@@ -126,6 +128,7 @@ class TypesModel {
         $type_name = $data['type_name'] ?? '';
         $type_name_display = $data['type_name_display'] ?? '';
         $ex_cover = $data['ex_cover'] ?? '';
+        $default_color = $data['default_color'] ?? '';
         if ($this->isDuplicateContractName($type_name, $type_id)) {
             return [
                 'status'  => false,
@@ -135,7 +138,7 @@ class TypesModel {
         $status = $data['status'] ?? '';
         $pdo = $this->db;
         if ($type_id) {
-            $sql = "UPDATE wp_type SET type_name = :type_name, type_name_display = :type_name_display, status = :status, updated_at = NOW() WHERE type_id = :type_id";
+            $sql = "UPDATE wp_type SET type_name = :type_name, type_name_display = :type_name_display, status = :status, updated_at = NOW(), default_color = :default_color WHERE type_id = :type_id";
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':type_id', (int)$type_id, PDO::PARAM_INT);
         } else {
@@ -144,19 +147,22 @@ class TypesModel {
                 type_name_display,
                 status,
                 created_at,
-                updated_at
+                updated_at,
+                default_color
             ) VALUES (
                 :type_name,
                 :type_name_display,
                 :status,
                 NOW(),
-                NOW()
+                NOW(),
+                :default_color
             )";
             $stmt = $pdo->prepare($sql);
         }
         $stmt->bindValue(':type_name', $type_name);
         $stmt->bindValue(':type_name_display', $type_name_display);
         $stmt->bindValue(':status', $status);
+        $stmt->bindValue(':default_color', $default_color);
         $result = $stmt->execute();
         if (!$type_id) $type_id = $pdo->lastInsertId();
         if(!$ex_cover) {
