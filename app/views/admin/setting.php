@@ -156,7 +156,7 @@
                         <label class="form-label fw-bold" data-i18n="preview"></label>
                         <div class="preview-container">
                             <div class="marquee-wrapper">
-                                <span id="previewText" data-i18n="scrolling_text"></span>
+                                <span id="previewText"></span>
                             </div>
                         </div>
                     </div>
