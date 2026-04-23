@@ -1523,12 +1523,17 @@ async function openProjectDetail(project_id) {
                 elBar.style.backgroundColor = activeColor;
             });
         });
+        const avgEl = document.getElementById('pp-avg-wind');
         if (validPolesCount > 0) {
             const avgSpeed = totalWind / validPolesCount;
-            const avgEl = document.getElementById('pp-avg-wind');
             if (avgEl) {
                 avgEl.textContent = `${(avgSpeed * unit.factor).toFixed(1)} ${unit.label}`;
                 avgEl.style.color = getWindColor(avgSpeed);
+            }
+        } else {
+            if (avgEl) {
+                avgEl.textContent = `0.0 ${unit.label}`;
+                avgEl.style.color = ''; 
             }
         }
     } catch (err) {
