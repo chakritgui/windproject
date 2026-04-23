@@ -1406,17 +1406,24 @@ async function openProjectDetail(project_id) {
         }
         document.getElementById('pp-name').textContent  = data.project_name || 'Unknown Project';
         document.getElementById('pp-count').textContent = data.poles?.length ?? 0;
+        const avgEl = document.getElementById('pp-avg-wind');
+        const unit  = getCurrentUnit();
+        const ppBody = document.getElementById('pp-body');
         const statusColor = data.status_color  || '#ccc';
         const statusName  = (data.project_status || 'UNKNOWN').toUpperCase();
         const dot  = document.getElementById('pp-status-dot');
         const pill = document.getElementById('pp-status');
-        dot.style.backgroundColor  = statusColor;
-        pill.style.backgroundColor = statusColor;
-        pill.style.color           = '#fff';
-        pill.textContent           = statusName;
-        const unit = getCurrentUnit();
-        const ppBody = document.getElementById('pp-body');
+        if (dot) dot.style.backgroundColor = statusColor;
+        if (pill) {
+            pill.style.backgroundColor = statusColor;
+            pill.style.color = '#fff';
+            pill.textContent = statusName;
+        }
         if (!data.poles?.length) {
+            if (avgEl) {
+                avgEl.textContent = `0.0 ${unit.label}`;
+                avgEl.style.color = '';
+            }
             ppBody.innerHTML = `
             <div class="pp-empty-state">
                 <div class="pp-empty-icon">
@@ -1430,12 +1437,12 @@ async function openProjectDetail(project_id) {
                 </div>
             </div>`;
             bootstrap.Offcanvas.getOrCreateInstance(document.getElementById('projectCanvas')).show();
-            return;
+            return; 
         }
         ppBody.innerHTML = data.poles.map(p => {
-            const color   = p.default_color || '#f5a623';
+            const color = p.default_color || '#f5a623';
             const iconSize = 40;
-            let iconHtml  = '';
+            let iconHtml = '';
             if (p.poles_icon?.trim()) {
                 iconHtml = `<img src="${BASE_URL}/${p.poles_icon}" style="width:${iconSize}px;height:${iconSize}px;object-fit:contain;filter:drop-shadow(0 2px 3px rgba(0,0,0,0.3))" alt="icon">`;
             } else {
@@ -1499,39 +1506,37 @@ async function openProjectDetail(project_id) {
             if (cachedPole) {
                 const elSpeed = document.getElementById(cachedPole.windId);
                 const elArrow = document.getElementById(cachedPole.arrowId);
-                if (elSpeed && elSpeed.dataset.raw) speed     = parseFloat(elSpeed.dataset.raw);
-                if (elArrow && elArrow.dataset.dir)  direction = parseFloat(elArrow.dataset.dir);
+                if (elSpeed && elSpeed.dataset.raw) speed = parseFloat(elSpeed.dataset.raw);
+                if (elArrow && elArrow.dataset.dir) direction = parseFloat(elArrow.dataset.dir);
             }
             totalWind += speed;
             validPolesCount++;
             const elWind  = document.getElementById(`wind-val-${p.poles_id}`);
             const elArrow = document.getElementById(`wind-arrow-${p.poles_id}`);
             const elBar   = document.getElementById(`bar-${p.poles_id}`);
-            if (!elWind || !elBar) return;
-            const activeColor  = getWindColor(speed);
-            const displaySpeed = (speed * unit.factor).toFixed(1);
-            elWind.dataset.raw = speed;
-            elWind.style.color = activeColor;
-            elWind.innerHTML   = `${displaySpeed} <small>${unit.label}</small>`;
-            if (elArrow) {
-                elArrow.style.color     = activeColor;
-                elArrow.style.transform = `rotate(${direction - 45}deg)`;
+            if (elWind && elBar) {
+                const activeColor  = getWindColor(speed);
+                const displaySpeed = (speed * unit.factor).toFixed(1);
+                elWind.dataset.raw = speed;
+                elWind.style.color = activeColor;
+                elWind.innerHTML   = `${displaySpeed} <small>${unit.label}</small>`;
+                if (elArrow) {
+                    elArrow.style.color     = activeColor;
+                    elArrow.style.transform = `rotate(${direction - 45}deg)`;
+                }
+                const pct = Math.min((speed / 25) * 100, 100);
+                requestAnimationFrame(() => {
+                    elBar.style.width           = `${pct}%`;
+                    elBar.style.backgroundColor = activeColor;
+                });
             }
-            const pct = Math.min((speed / 25) * 100, 100);
-            requestAnimationFrame(() => {
-                elBar.style.width           = `${pct}%`;
-                elBar.style.backgroundColor = activeColor;
-            });
         });
-        const avgEl = document.getElementById('pp-avg-wind');
-        if (validPolesCount > 0) {
-            const avgSpeed = totalWind / validPolesCount;
-            if (avgEl) {
+        if (avgEl) {
+            if (validPolesCount > 0) {
+                const avgSpeed = totalWind / validPolesCount;
                 avgEl.textContent = `${(avgSpeed * unit.factor).toFixed(1)} ${unit.label}`;
                 avgEl.style.color = getWindColor(avgSpeed);
-            }
-        } else {
-            if (avgEl) {
+            } else {
                 avgEl.textContent = `0.0 ${unit.label}`;
                 avgEl.style.color = ''; 
             }
