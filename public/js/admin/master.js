@@ -117,143 +117,89 @@ function orderItem(type, title) {
         data: { type: type },
         dataType: 'json',
         success: function(res) {
-            if (res.status && res.data) {
-                let html = '';
-                if (type === 'poles') {
-                    let grouped = {};
-                    res.data.forEach(item => {
-                        if (!grouped[item.project_name]) {
-                            grouped[item.project_name] = [];
-                        }
-                        grouped[item.project_name].push(item);
-                    });
-                    html = `
-                        <table class="table table-bordered mb-0">
+            if (!res.status || !res.data) {
+                showError(langData['cannot_load'] || "Error loading data");
+                return;
+            }
+            let html = '';
+            const isGroupedType = (type === 'poles' || type === 'installation');
+            if (isGroupedType) {
+                let grouped = {};
+                res.data.forEach(item => {
+                    let groupKey = item.project_name || 'Unassigned';
+                    if (!grouped[groupKey]) grouped[groupKey] = [];
+                    grouped[groupKey].push(item);
+                });
+                html = `<table class="table table-bordered mb-0">
                             <thead>
                                 <tr>
                                     <th width="50px">${langData['sort'] || "Sort"}</th>
-                                    <th>${langData['pole_code'] || "Code"}</th>
-                                    <th>${langData['type'] || "Type"}</th>
-                                    <th>${langData['installation'] || "Installation"}</th>
+                                    ${type === 'poles' 
+                                        ? `<th>${langData['pole_code'] || "Code"}</th><th>${langData['type'] || "Type"}</th><th>${langData['installation'] || "Installation"}</th>`
+                                        : `<th>${langData['installation'] || "Installation"}</th><th>${langData['project'] || "Project"}</th>`
+                                    }
                                 </tr>
                             </thead>`;
-                    for (let projectName in grouped) {
+                for (let projectName in grouped) {
+                    html += `
+                        <tbody class="table-light">
+                            <tr>
+                                <td colspan="${type === 'poles' ? 4 : 3}" class="fw-bold text-primary bg-light">
+                                    <i class="fas fa-project-diagram me-2"></i>${projectName}
+                                </td>
+                            </tr>
+                        </tbody>
+                        <tbody class="sortable-group" data-project="${projectName}">`;
+                    grouped[projectName].forEach(item => {
+                        let id = (type === 'poles') ? item.poles_id : item.item_id;
                         html += `
-                            <tbody class="table-light">
-                                <tr>
-                                    <td colspan="4" class="fw-bold text-primary bg-light">
-                                        <i class="fas fa-project-diagram me-2"></i>${projectName}
-                                    </td>
-                                </tr>
-                            </tbody>
-                            <tbody class="sortable-project-group" data-project="${projectName}">`;
-                        grouped[projectName].forEach(item => {
-                            html += `
-                                <tr data-id="${item.poles_id}" style="cursor: move;">
-                                    <td class="text-center"><i class="fas fa-grip-lines text-muted"></i></td>
-                                    <td>${item.poles_code}</td>
-                                    <td>${item.type_name}</td>
-                                    <td>${item.installations_name}</td>
-                                </tr>`;
-                        });
-                        html += `</tbody>`;
-                    }
-                    html += `</table>`;
-                    modalEl.find(".modal-body").html(html);
-                    modalEl.find('.sortable-project-group').each(function() {
-                        new Sortable(this, {
-                            group: {
-                                name: 'group-' + $(this).data('project'),
-                                put: false,
-                                pull: false
-                            },
-                            animation: 150,
-                            ghostClass: 'bg-info-subtle'
-                        });
-                    });
-                } else if(type === 'installation') {
-                    let grouped = {};
-                    res.data.forEach(item => {
-                        if (!grouped[item.project_name]) {
-                            grouped[item.project_name] = [];
-                        }
-                        grouped[item.project_name].push(item);
-                    });
-                    html = `
-                        <table class="table table-bordered mb-0">
-                            <thead>
-                                <tr>
-                                    <th width="50px">${langData['sort'] || "Sort"}</th>
-                                    <th>${langData['installation'] || "Installation"}</th>
-                                    <th>${langData['project'] || "Project"}</th>
-                                </tr>
-                            </thead>`;
-                    for (let projectName in grouped) {
-                        html += `
-                            <tbody class="table-light">
-                                <tr>
-                                    <td colspan="3" class="fw-bold text-primary bg-light">
-                                        <i class="fas fa-project-diagram me-2"></i>${projectName}
-                                    </td>
-                                </tr>
-                            </tbody>
-                            <tbody class="sortable-project-group" data-project="${projectName}">`;
-                        grouped[projectName].forEach(item => {
-                            html += `
-                                <tr data-id="${item.item_id}" style="cursor: move;">
-                                    <td class="text-center"><i class="fas fa-grip-lines text-muted"></i></td>
-                                    <td>${item.item_name}</td>
-                                    <td>${item.project_name}</td>
-                                </tr>`;
-                        });
-                        html += `</tbody>`;
-                    }
-                    html += `</table>`;
-                    modalEl.find(".modal-body").html(html);
-                    modalEl.find('.sortable-project-group').each(function() {
-                        new Sortable(this, {
-                            group: {
-                                name: 'group-' + $(this).data('project'),
-                                put: false,
-                                pull: false
-                            },
-                            animation: 150,
-                            ghostClass: 'bg-info-subtle'
-                        });
-                    });
-                } else {
-                    let rows = '';
-                    res.data.forEach((item) => {
-                        rows += `
-                            <tr data-id="${item.item_id}" style="cursor: move;">
-                                <td class="text-center" width="50px"><i class="fas fa-grip-lines"></i></td>
-                                <td>${item.item_name || item.poles_code}</td>
+                            <tr data-id="${id}" style="cursor: move;">
+                                <td class="text-center"><i class="fas fa-grip-lines text-muted"></i></td>
+                                ${type === 'poles' 
+                                    ? `<td>${item.poles_code}</td><td>${item.type_name}</td><td>${item.installations_name}</td>`
+                                    : `<td>${item.item_name}</td><td>${item.project_name}</td>`
+                                }
                             </tr>`;
                     });
-                    html = `
-                        <table class="table table-bordered mb-0">
+                    html += `</tbody>`;
+                }
+                html += `</table>`;
+                modalEl.find(".modal-body").html(html);
+                modalEl.find('.sortable-group').each(function() {
+                    new Sortable(this, {
+                        group: { name: 'shared', put: false, pull: false },
+                        animation: 150,
+                        ghostClass: 'bg-info-subtle'
+                    });
+                });
+            } else {
+                let rows = res.data.map(item => `
+                    <tr data-id="${item.item_id || item.poles_id}" style="cursor: move;">
+                        <td class="text-center" width="50px"><i class="fas fa-grip-lines text-muted"></i></td>
+                        <td>${item.item_name || item.poles_code}</td>
+                    </tr>
+                `).join('');
+                html = `<table class="table table-bordered mb-0">
                             <thead>
                                 <tr>
-                                    <th>${langData['sort'] || "Sort"}</th>
+                                    <th width="50px">${langData['sort'] || "Sort"}</th>
                                     <th>${langData[type] || title}</th>
                                 </tr>
                             </thead>
                             <tbody id="sortable-list-default">${rows}</tbody>
                         </table>`;
-                    modalEl.find(".modal-body").html(html);
-                    new Sortable(document.getElementById('sortable-list-default'), {
-                        animation: 150,
-                        ghostClass: 'bg-info-subtle'
-                    });
-                }
-            } else {
-                showError(langData['cannot_load']);
+                modalEl.find(".modal-body").html(html);
+                new Sortable(document.getElementById('sortable-list-default'), {
+                    animation: 150,
+                    ghostClass: 'bg-info-subtle'
+                });
             }
-        }
+        },
+        error: function() { showError("Network Error"); }
     });
     modalEl.off('click', '.save-order-item').on('click', '.save-order-item', function() {
         let orderData = [];
-        let targetSelector = (type === 'poles') ? '.sortable-project-group tr' : '#sortable-list-default tr';
+        let targetSelector = (type === 'poles' || type === 'installation') ? '.sortable-group tr' : '#sortable-list-default tr';
         $(targetSelector).each(function() {
             let id = $(this).data('id');
             if (id) orderData.push(id);
@@ -264,28 +210,33 @@ function orderItem(type, title) {
         $.ajax({
             url: `${BASE_URL}/api/sort.save`,
             method: 'POST',
-            data: { 
-                type: type,
-                order: orderData
-            },
+            data: { type: type, order: orderData },
             success: function(res) {
                 btn.prop('disabled', false).text(langData['save'] || "Save");
                 if (res.status) {
                     showSuccess(langData['save_success'] || "Saved!");
                     modal.hide();
                     const tableMaps = {
-                        'contract': typeof initContractsTable === 'function' ? initContractsTable : null,
-                        'project': typeof initProjectsTable === 'function' ? initProjectsTable : null,
-                        'pole_types': typeof initTypesTable === 'function' ? initTypesTable : null,
-                        'installation': typeof initInstallationsTable === 'function' ? initInstallationsTable : null,
-                        'level': typeof initLevelTable === 'function' ? initLevelTable : null,
-                        'poles': typeof initPolesTable === 'function' ? initPolesTable : null,
-                        'group': typeof initGroupTable === 'function' ? initGroupTable : null,
-                        'project_status': typeof initProjectStatusTable === 'function' ? initProjectStatusTable : null
+                        'contract': 'initContractsTable',
+                        'project': 'initProjectsTable',
+                        'pole_types': 'initTypesTable',
+                        'installation': 'initInstallationsTable',
+                        'level': 'initLevelTable',
+                        'poles': 'initPolesTable',
+                        'group': 'initGroupTable',
+                        'project_status': 'initProjectStatusTable'
                     };
-                    
-                    if (tableMaps[type]) tableMaps[type]();
+                    let funcName = tableMaps[type];
+                    if (funcName && typeof window[funcName] === 'function') {
+                        window[funcName]();
+                    }
+                } else {
+                    showError(res.message || "Save failed");
                 }
+            },
+            error: function() {
+                btn.prop('disabled', false).text(langData['save'] || "Save");
+                showError("Network Error");
             }
         });
     });
