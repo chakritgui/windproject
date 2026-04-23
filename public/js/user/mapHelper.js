@@ -380,7 +380,6 @@ function renderErrorAlert(type, message) {
     return `<div class="alert alert-${type} m-3" role="alert">${message}</div>`;
 }
 function toggleAreaFill(enabled) {
-    localStorage.setItem('area_fill', enabled);
     map.eachLayer(fg => {
         if (!(fg instanceof L.FeatureGroup)) return;
         fg.eachLayer(gj => {
@@ -395,7 +394,6 @@ function toggleAreaFill(enabled) {
 }
 
 function toggleAreaStroke(enabled) {
-    localStorage.setItem('area_stroke', enabled);
     Object.values(areaLayers).forEach(gj => {
         gj.eachLayer(l => {
             const origW = l.options._origWeight ?? l.options.weight;

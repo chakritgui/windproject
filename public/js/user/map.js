@@ -995,8 +995,6 @@ function applyMapControl(mode, mapControlStr) {
         opt4: 'windturbine',
         opt5: 'animation',
         opt6: 'labels',
-        opt8: 'area_fill',
-        opt9: 'area_stroke',
     };
     Object.keys(config).forEach(key => {
         const optKey = key.replace(/^(wind|sat)-/, '');
@@ -1011,9 +1009,14 @@ function applyMapControl(mode, mapControlStr) {
             if (typeof opt.fn === 'function') opt.fn(false);
             return;
         }
-        const lsKey = localStorageKeyMap[optKey];
-        const lsVal = lsKey ? localStorage.getItem(lsKey) : null;
-        const enabled = lsVal !== null ? lsVal === 'true' : true;
+        let enabled;
+        if (optKey === 'opt8' || optKey === 'opt9') {
+            enabled = serverEnabled;
+        } else {
+            const lsKey = localStorageKeyMap[optKey];
+            const lsVal = lsKey ? localStorage.getItem(lsKey) : null;
+            enabled = lsVal !== null ? lsVal === 'true' : true;
+        }
         if ($(opt.el).is('input[type="checkbox"]')) {
             $(opt.el).prop('checked', enabled);
         }
