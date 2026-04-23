@@ -680,5 +680,6 @@
     "no_poles_desc" : "โครงการนี้ยังไม่ได้กำหนดสถานีใดๆ",
     "pole_status" : "สถานะเสา",
     "no_color_used" : "ไม่ใช้สี",
-    "color_used" : "ใช้สี"
+    "color_used" : "ใช้สี",
+    "scrolling_speed": "ความเร็วการเลื่อน (วินาที)"
 }

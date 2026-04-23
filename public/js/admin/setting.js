@@ -113,6 +113,7 @@ const settingHandlers = {
     scrolling_en: v => $('#scrolling_en').html(v),
     scrolling_lo: v => $('#scrolling_lo').html(v),
     scrolling_th: v => $('#scrolling_th').html(v),
+    speedRange: v => $('#speedRange').val(v),
     site_assessment_en: v => $('#site_assessment_en').html(v),
     site_assessment_lo: v => $('#site_assessment_lo').html(v),
     site_assessment_th: v => $('#site_assessment_th').html(v),
@@ -120,9 +121,32 @@ const settingHandlers = {
     language_default: v => setLanguagesDefaultFromDB(v),
     language_content: v => setLanguagesContentFromDB(v)
 };
+function refreshScrollingPreview() {
+    const inputIds = ['#scrolling_en', '#scrolling_lo', '#scrolling_th'];
+    const $speedRange = $('#speedRange');
+    const $speedValue = $('#speedValue');
+    const $previewText = $('#previewText');
+    const $marqueeWrapper = $('.marquee-wrapper');
+    let firstContent = "";
+    $.each(inputIds, function(index, id) {
+        let val = $(id).text().trim(); 
+        if (val !== "") {
+            firstContent = val;
+            return false;
+        }
+    });
+    $previewText.text(firstContent || "กรุณากรอกข้อความเพื่อดูตัวอย่าง...");
+    const speed = $speedRange.val() || 10;
+    $speedValue.text(speed);
+    $marqueeWrapper.css('animation-duration', speed + 's');
+}
 function applySetting(item) {
     if (!item.setting_value) return;
     settingHandlers[item.setting_type]?.(item.setting_value);
+    refreshScrollingPreview();
+    const inputSelectors = '#scrolling_en, #scrolling_lo, #scrolling_th';
+    $(document).on('input', inputSelectors, refreshScrollingPreview);
+    $(document).on('input', '#speedRange', refreshScrollingPreview);
 }
 function renderImage(previewId, path) {
     $(`#${previewId}`).html(`
@@ -295,6 +319,7 @@ $(document).on('click', '.save-information', function () {
     fd.append('nameEn', $('#nameEn').val());
     fd.append('nameLo', $('#nameLo').val());
     fd.append('nameTh', $('#nameTh').val());
+    fd.append('speedRange', $('#speedRange').val());
     fd.append('footer_en', $('#footer_en').html());
     fd.append('footer_lo', $('#footer_lo').html());
     fd.append('footer_th', $('#footer_th').html());

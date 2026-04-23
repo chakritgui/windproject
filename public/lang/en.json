@@ -680,5 +680,6 @@
     "no_poles_desc" : "This project has no stations assigned yet.",
     "pole_status" : "Poles Status",
     "no_color_used" : "No color used.",
-    "color_used" : "Color used."
+    "color_used" : "Color used.",
+    "scrolling_speed": "Scrolling speed (seconds)"
 }

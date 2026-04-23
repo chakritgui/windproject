@@ -18,6 +18,7 @@ class SettingController extends BaseController {
             'site_assessment_en' => $_POST['site_assessment_en'] ?? '',
             'site_assessment_lo' => $_POST['site_assessment_lo'] ?? '',
             'site_assessment_th' => $_POST['site_assessment_th'] ?? '',
+            'speedRange' => $_POST['speedRange'] ?? 10,
             'logoInput' => $_FILES['logoInput'] ?? null,
             'iconInput' => $_FILES['iconInput'] ?? null,
             'loginIconInput' => $_FILES['loginIconInput'] ?? null,

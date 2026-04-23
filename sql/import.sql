@@ -35,6 +35,7 @@ INSERT INTO `wp_setting`
 ('language_content', NULL, NOW(), NOW()),
 ('infography', NULL, NOW(), NOW());
 ('login_icon', NULL, NOW(), NOW());
+('speedRange', NULL, NOW(), NOW());
 
 INSERT INTO `wp_folder`
 (`id`, `name`, `slug`, `type`, `level`, `parent_id`, `ref_id`, `content_id`, `status`, `created_at`, `updated_at`) VALUES

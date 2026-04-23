@@ -50,7 +50,9 @@ class MapModel{
                     m.custom_style, 
                     IFNULL(s.project_status_color, '') AS area_status_color, 
                     p.project_id,
-                    m.poly_id
+                    m.poly_id,
+                    m.area_visible,
+                    m.project_visible
                 FROM wp_map_polygons m 
                 LEFT JOIN wp_project p ON p.project_id = m.project_id 
                 LEFT JOIN wp_project_status s ON s.project_status_id = p.project_status_id 

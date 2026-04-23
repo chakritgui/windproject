@@ -6,6 +6,7 @@ let website = { en: '', lo: '', th: '' };
 let footer = { en: '', lo: '', th: '' };
 let site_assessment = { en: '', lo: '', th: '' };
 let scrolling = { en: '', lo: '', th: '' };
+let scrolloing_speed = 10;
 let logo, icon;
 let date_format = 'DD/MM/YYYY';
 const langInfo = {
@@ -659,6 +660,7 @@ function handleSettingItem(item) {
         case 'scrolling_en': scrolling.en = val; break;
         case 'scrolling_lo': scrolling.lo = val; break;
         case 'scrolling_th': scrolling.th = val; break;
+        case 'speedRange': scrolloing_speed = val; break;
         case 'language':
             let languages = (val && val.trim() !== "") ? val : 'en';
             let langArray = languages.split(',').map(s => s.trim());
@@ -698,9 +700,11 @@ function applyLanguage(lang, root = document) {
             $('.project-info').html(site_assessment_val);
         }
         const scrolling_val = getTranslation(scrolling, lang, '');
+        const $marqueeWrapper = $('.scrolling-text');
         if(scrolling_val) {
             $(".scrolling").removeClass("d-none");
-            $('.scrolling-text').html(scrolling_val);
+            $marqueeWrapper.html(scrolling_val);
+            $(".scrolling-container").css('animation-duration', scrolloing_speed + 's');
         }
     }
 }

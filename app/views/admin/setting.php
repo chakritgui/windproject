@@ -143,6 +143,23 @@
                             <div contenteditable="true" class="form-control" id="scrolling_th" style="height: 75px; border: 1px solid #ccc; padding: 10px; font-size: 12px;"></div>
                         </div>
                     </div>
+                    <div class="row mt-4 align-items-center">
+                        <div class="col-md-12">
+                            <label class="form-label">
+                                <i class="fa-solid fa-gauge-high text-info me-1"></i> <span data-i18n="scrolling_speed"></span>: 
+                                <span id="speedValue" class="fw-bold">10</span>s
+                            </label>
+                            <input type="range" class="form-range" id="speedRange" min="2" max="60" step="1" value="10">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="form-label fw-bold" data-i18n="preview"></label>
+                        <div class="preview-container">
+                            <div class="marquee-wrapper">
+                                <span id="previewText" data-i18n="scrolling_text"></span>
+                            </div>
+                        </div>
+                    </div>
                     <h6 class="card-title mt-4"><i class="fa-solid fa-align-left text-primary me-2"></i><span data-i18n="footer"></span></h6>
                     <small class="text-muted d-block mb-2">
                         <i class="fa-solid fa-lightbulb text-warning me-1"></i>

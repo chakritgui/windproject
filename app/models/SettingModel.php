@@ -19,7 +19,8 @@ class SettingModel {
                 'scrolling_th' => $data['scrolling_th'] ?? null,
                 'site_assessment_en' => $data['site_assessment_en'] ?? null,
                 'site_assessment_lo' => $data['site_assessment_lo'] ?? null,
-                'site_assessment_th' => $data['site_assessment_th'] ?? null
+                'site_assessment_th' => $data['site_assessment_th'] ?? null,
+                'speedRange' => $data['speedRange'] ?? 10
             ));
             $this->uploadAndSave('logoInput', 'logo');
             $this->uploadAndSave('iconInput', 'icon');
