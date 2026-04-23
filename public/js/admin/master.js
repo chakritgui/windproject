@@ -171,11 +171,61 @@ function orderItem(type, title) {
                             ghostClass: 'bg-info-subtle'
                         });
                     });
+                } else if(type === 'installation') {
+                    let grouped = {};
+                    res.data.forEach(item => {
+                        if (!grouped[item.project_name]) {
+                            grouped[item.project_name] = [];
+                        }
+                        grouped[item.project_name].push(item);
+                    });
+                    html = `
+                        <table class="table table-bordered mb-0">
+                            <thead>
+                                <tr>
+                                    <th width="50px">${langData['sort'] || "Sort"}</th>
+                                    <th>${langData['installation'] || "Installation"}</th>
+                                    <th>${langData['project'] || "Project"}</th>
+                                </tr>
+                            </thead>`;
+                    for (let projectName in grouped) {
+                        html += `
+                            <tbody class="table-light">
+                                <tr>
+                                    <td colspan="3" class="fw-bold text-primary bg-light">
+                                        <i class="fas fa-project-diagram me-2"></i>${projectName}
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tbody class="sortable-project-group" data-project="${projectName}">`;
+                        grouped[projectName].forEach(item => {
+                            html += `
+                                <tr data-id="${item.item_id}" style="cursor: move;">
+                                    <td class="text-center"><i class="fas fa-grip-lines text-muted"></i></td>
+                                    <td>${item.item_name}</td>
+                                    <td>${item.project_name}</td>
+                                </tr>`;
+                        });
+                        html += `</tbody>`;
+                    }
+                    html += `</table>`;
+                    modalEl.find(".modal-body").html(html);
+                    modalEl.find('.sortable-project-group').each(function() {
+                        new Sortable(this, {
+                            group: {
+                                name: 'group-' + $(this).data('project'),
+                                put: false,
+                                pull: false
+                            },
+                            animation: 150,
+                            ghostClass: 'bg-info-subtle'
+                        });
+                    });
                 } else {
                     let rows = '';
                     res.data.forEach((item) => {
                         rows += `
-                            <tr data-id="${item.item_id || item.poles_id}" style="cursor: move;">
+                            <tr data-id="${item.item_id}" style="cursor: move;">
                                 <td class="text-center" width="50px"><i class="fas fa-grip-lines"></i></td>
                                 <td>${item.item_name || item.poles_code}</td>
                             </tr>`;

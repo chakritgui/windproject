@@ -29,10 +29,12 @@ class SortModel {
                 break;
             case 'installation':
                 $sql = "SELECT 
-                    installations_id as item_id,
-                    installations_name as item_name
-                    FROM wp_installations
-                    WHERE status <> 'deleted' ORDER BY ifnull(item_order, installations_id) ASC";
+                    i.installations_id as item_id,
+                    i.installations_name as item_name,
+                    pj.project_name
+                    FROM wp_installations i
+                    LEFT JOIN wp_project pj ON pj.project_id = i.project_id
+                    WHERE i.status <> 'deleted' ORDER BY ifnull(pj.item_order, pj.project_id) ASC,ifnull(i.item_order, i.installations_id) ASC";
                 break;
             case 'level':
                 $sql = "SELECT 
@@ -52,7 +54,7 @@ class SortModel {
                 LEFT JOIN wp_project pj ON pj.project_id = p.project_id
                 LEFT JOIN wp_type t ON t.type_id = p.type_id
                 LEFT JOIN wp_installations i ON i.installations_id = p.installations_id
-                WHERE p.status <> 'deleted' ORDER BY ifnull(p.item_order, p.poles_id) ASC";
+                WHERE p.status <> 'deleted' ORDER BY ifnull(pj.item_order, pj.project_id) ASC, ifnull(p.item_order, p.poles_id) ASC";
                 break;
             case 'group':
                 $sql = "SELECT 
