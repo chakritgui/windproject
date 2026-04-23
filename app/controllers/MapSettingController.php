@@ -42,4 +42,38 @@ class MapSettingController extends BaseController {
             echo json_encode(['status' => false, 'message' => 'Data not found']);
         }
     }
+    public function list(){
+        $start = intval($_POST['start'] ?? 0);
+        $length= intval($_POST['length'] ?? 10);
+        $search = $_POST['search']['value'] ?? '';
+        $orderDir    = 'asc';
+        if (!empty($_POST['order'][0])) {
+            $colIndex   = intval($_POST['order'][0]['column']);
+            $orderDir   = $_POST['order'][0]['dir'] === 'desc' ? 'desc' : 'asc';
+        }
+        $res = $this->model->list(
+            $start,
+            $length,
+            $search,
+            $colIndex,
+            $orderDir
+        );
+        $this->json([
+            "draw" => intval($_POST['draw'] ?? 1),
+            "recordsTotal" => $res['total'],
+            "recordsFiltered" => $res['total'],
+            "data" => $res['data']
+        ]);
+    }
+    public function update() {
+        $id = intval($_POST['id'] ?? 0);
+        $type = $_POST['type'] ?? 'area';
+        $status = $_POST['status'] ?? 'yes';
+        $result = $this->model->update($id, $type, $status);
+        if ($result === true) {
+            echo json_encode(['status' => true]);
+        } else {
+            echo json_encode(['status' => false, 'message' => $result]);
+        }
+    }
 }

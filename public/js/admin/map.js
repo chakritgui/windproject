@@ -605,3 +605,121 @@ $(document).ready(function() {
         updateDependency($(this));
     });
 });
+$('.nav-display').on('click', function () {
+    initBoundarys();
+});
+let tb_display;
+function initBoundarys() {
+    let oldPage = 0;
+    if ($.fn.DataTable.isDataTable('#tb_display')) {
+        oldPage = $('#tb_display').DataTable().page();
+        $('#tb_display').DataTable().destroy();
+    }
+    if ($.fn.DataTable.isDataTable('#tb_display')) {
+        $('#tb_display').DataTable().ajax.reload(null, false);
+        return;
+    }
+    tb_display = $('#tb_display').DataTable({
+        processing: true,
+        serverSide: true,
+        order: [[0, 'asc']],
+        ajax: { 
+            url: `${BASE_URL}/api/map.list`, 
+            type: "POST",
+        },
+        columns: [{
+            data: "item_order", 
+            orderable: false,
+            searchable: false,
+            render: function (data, type, row, meta) {
+                return meta.row + meta.settings._iDisplayStart + 1;
+            }
+        },{ 
+            data: "area_name",
+            orderable: true,
+        },{ 
+            data: "project_name",
+            orderable: true,
+            render: function (data, type, row) {
+                if (data) {
+                    return data.replace(/\r\n|\n/g, '<br />');
+                }
+                return data;
+            }
+        },{ 
+            data: 'area_visible',
+            orderable: true,
+            render: function (data, type, row) {
+                const isChecked = (data === 'yes') ? 'checked' : '';
+                const rowId = row.poly_id;
+                return `
+                    <div class="form-check form-switch">
+                        <input class="form-check-input update-switch" type="checkbox" role="switch" id="area_visible_${rowId}" data-id="${rowId}" data-type="area" ${isChecked} style="cursor: pointer;">
+                        <label class="form-check-label ms-2 small text-muted" for="area_visible_${rowId}"></label>
+                    </div>
+                `;
+            }
+        },{ 
+            data: "project_visible",
+            orderable: true,
+            render: function (data, type, row) {
+                const isChecked = (data === 'yes') ? 'checked' : '';
+                const rowId = row.poly_id;
+                return `
+                    <div class="form-check form-switch">
+                        <input class="form-check-input update-switch" type="checkbox" role="switch" id="project_visible_${rowId}" data-id="${rowId}" data-type="project" ${isChecked} style="cursor: pointer;">
+                        <label class="form-check-label ms-2 small text-muted" for="project_visible_${rowId}"></label>
+                    </div>
+                `;
+            }
+        }],
+        pageLength: pageLength,
+        lengthMenu: lengthMenu,
+        stateLoadParams: function (settings, data) {
+            data.start = oldPage;
+            data.length = pageLength; 
+        },
+        language: getTableLang(),
+        initComplete: function() {
+            var self = this.api();
+            var $filter = $('#tb_display_filter');
+            var input = $filter.find('input').unbind(); 
+            input.bind('keypress', function(e) {
+                if (e.keyCode == 13) {
+                    self.search(input.val()).draw();
+                }
+            });
+        },
+        drawCallback: function(){
+            getTableLang();
+        }
+    });
+}
+$(document).on("change", ".update-switch", function() {
+    let id = $(this).data("id");
+    let type = $(this).data("type");
+    let newStatus = $(this).is(":checked") ? 'yes' : 'no';
+    $.ajax({
+        url: `${BASE_URL}/api/map.update`,
+        method: 'POST',
+        data: { id: id, type: type, status: newStatus },
+        dataType: 'json',
+        success: function(res) {    
+            if(res.status === true){
+                showSuccess(langData['saved_successfully'] || 'Saved successfully');
+                if (typeof initBoundarys === "function") initBoundarys();
+            } else {
+                showError((langData['cannot_save'] || 'Error: ') + ' ' + (langData[res.message] || 'Unknown error'));
+            }
+        },
+        error: function(){
+            Swal.close();
+            let msg = langData['cannot_save'];
+            try {
+                let res = JSON.parse(xhr.responseText);
+                if (res.message) msg += ": " + res.message;
+            } catch (e) {}
+            showError(msg);
+        }
+    });
+});

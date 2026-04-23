@@ -385,23 +385,31 @@ function toggleAreaFill(enabled) {
         fg.eachLayer(gj => {
             if (!(gj instanceof L.GeoJSON)) return;
             gj.eachLayer(l => {
-                if (!l.options.stroke && l.options._origFillOpacity != null) {
-                    l.setStyle({ fillOpacity: enabled ? l.options._origFillOpacity : 0 });
+                if (typeof l.setStyle === 'function') {
+                    if (l.options._origFillOpacity === undefined) {
+                        l.options._origFillOpacity = l.options.fillOpacity || 0.2;
+                    }
+                    l.setStyle({ 
+                        fillOpacity: enabled ? l.options._origFillOpacity : 0 
+                    });
                 }
             });
         });
     });
 }
-
 function toggleAreaStroke(enabled) {
     Object.values(areaLayers).forEach(gj => {
         gj.eachLayer(l => {
-            const origW = l.options._origWeight ?? l.options.weight;
-            if (l.options._origWeight == null) l.options._origWeight = origW;
+            if (l.options._origWeight === undefined) {
+                l.options._origWeight = l.options.weight ?? 2;
+            }
+            if (l.options._origOpacity === undefined) {
+                l.options._origOpacity = l.options.opacity ?? 1;
+            }
             l.setStyle({
-                weight:  enabled ? origW : 0,
                 stroke:  enabled,
-                opacity: enabled ? 1 : 0,
+                weight:  enabled ? l.options._origWeight : 0,
+                opacity: enabled ? l.options._origOpacity : 0
             });
         });
     });

@@ -136,6 +136,8 @@
             $router->post('/api/disclaimer.delete', 'SettingController@deleteDisclaimer');
             $router->post('/api/map.save', 'MapSettingController@save');
             $router->get('/api/map.load', 'MapSettingController@load');
+            $router->post('/api/map.list', 'MapSettingController@list');
+            $router->post('/api/map.update', 'MapSettingController@update');
             $router->post('/api/settings.menu', 'SettingController@menu');
             $router->post('/api/settings.save_single_menu', 'SettingController@saveSingleMenu');
             $router->post('/api/settings.update_order', 'SettingController@updateOrder');

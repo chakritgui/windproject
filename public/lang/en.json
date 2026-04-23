@@ -125,6 +125,7 @@
     "configure_zoom_level": "Configure Zoom Level",
     "set_boundary": "Click “Set Boundary” and adjust the map zoom to specify the desired area.",
     "set_the_boundary": "Set Boundary",
+    "boundary": "Boundary",
     "current_zoom": "Current Zoom",
     "zoom_limits": "Zoom Limits",
     "area_list": "Area List",
@@ -681,5 +682,7 @@
     "pole_status" : "Poles Status",
     "no_color_used" : "No color used.",
     "color_used" : "Color used.",
-    "scrolling_speed": "Scrolling speed (seconds)"
+    "scrolling_speed": "Scrolling speed (seconds)",
+    "display_boundary": "Display Boundary",
+    "show_on_menu": "Show on Menu"
 }

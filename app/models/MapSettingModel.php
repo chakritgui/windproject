@@ -125,4 +125,74 @@ class MapSettingModel {
             return null;
         }
     }
+    public function list($start = 0, $length = 10, $search = '', $colIndex = 0, $orderDir = 'asc') {
+        list($where, $params) = $this->buildListWhere($search);
+        $sqlTotal = "SELECT COUNT(*) FROM wp_map_polygons m LEFT JOIN wp_project p on p.project_id = m.project_id  {$where}";
+        $stmt = $this->db->prepare($sqlTotal);
+        $stmt->execute($params);
+        $total = (int)$stmt->fetchColumn();
+        $order = 'p.item_order';
+        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
+        $orderMap = [
+            0 => "p.item_order",
+            1 => "m.area_name",
+            2 => "p.project_name",
+            3 => "m.area_visible",
+            4 => "m.project_visible",
+        ];
+        if (isset($orderMap[$colIndex])) {
+            $order = $orderMap[$colIndex];
+        }
+        $sql = "SELECT
+                m.poly_id, 
+                m.area_name,
+                m.area_visible,
+                m.project_visible,
+                p.project_id, 
+                p.project_name, 
+                p.project_name_display,
+                p.item_order
+            FROM wp_map_polygons m
+            LEFT JOIN wp_project p on p.project_id = m.project_id 
+            {$where}
+            ORDER BY {$order} {$orderDir}
+        ";
+        if ($length != -1) {
+            $sql .= " LIMIT :start, :length";
+        }
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
+        if ($length != -1) {
+            $stmt->bindValue(':start', (int)$start, PDO::PARAM_INT);
+            $stmt->bindValue(':length', (int)$length, PDO::PARAM_INT);
+        }
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return [
+            'total' => $total,
+            'data'  => $rows
+        ];
+    }
+    private function buildListWhere($search) {
+        $where  = " WHERE m.status != 'deleted' ";
+        $params = [];
+        if (!empty($search)) {
+            $where .= " AND (m.area_name LIKE :search or p.project_name LIKE :search)";
+            $params[':search'] = "%{$search}%";
+            $params[':search'] = "%{$search}%";
+        }
+        return [$where, $params];
+    }
+    public function update($id, $type, $status) {
+        $column = $type === 'area' ? 'area_visible' : 'project_visible';
+        $sql = "UPDATE wp_map_polygons SET {$column} = :status WHERE poly_id = :id";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            ':status' => $status,
+            ':id' => $id
+        ]);
+        return true;
+    }
 }
