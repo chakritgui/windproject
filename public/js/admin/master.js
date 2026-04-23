@@ -136,7 +136,7 @@ function orderItem(type, title) {
                                     <th width="50px">${langData['sort'] || "Sort"}</th>
                                     ${type === 'poles' 
                                         ? `<th>${langData['pole_code'] || "Code"}</th><th>${langData['type'] || "Type"}</th><th>${langData['installation'] || "Installation"}</th>`
-                                        : `<th>${langData['installation'] || "Installation"}</th><th>${langData['project'] || "Project"}</th>`
+                                        : `<th>${langData['installation'] || "Installation"}</th>`
                                     }
                                 </tr>
                             </thead>`;
@@ -144,7 +144,7 @@ function orderItem(type, title) {
                     html += `
                         <tbody class="table-light">
                             <tr>
-                                <td colspan="${type === 'poles' ? 4 : 3}" class="fw-bold text-primary bg-light">
+                                <td colspan="${type === 'poles' ? 4 : 2}" class="fw-bold text-primary bg-light">
                                     <i class="fas fa-project-diagram me-2"></i>${projectName}
                                 </td>
                             </tr>
@@ -157,7 +157,7 @@ function orderItem(type, title) {
                                 <td class="text-center"><i class="fas fa-grip-lines text-muted"></i></td>
                                 ${type === 'poles' 
                                     ? `<td>${item.poles_code}</td><td>${item.type_name}</td><td>${item.installations_name}</td>`
-                                    : `<td>${item.item_name}</td><td>${item.project_name}</td>`
+                                    : `<td>${item.item_name}</td>`
                                 }
                             </tr>`;
                     });
