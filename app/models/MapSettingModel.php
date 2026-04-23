@@ -127,7 +127,7 @@ class MapSettingModel {
     }
     public function list($start = 0, $length = 10, $search = '', $colIndex = 0, $orderDir = 'asc') {
         list($where, $params) = $this->buildListWhere($search);
-        $sqlTotal = "SELECT COUNT(*) FROM wp_map_polygons m LEFT JOIN wp_project p on p.project_id = m.project_id  {$where}";
+        $sqlTotal = "SELECT COUNT(*) FROM wp_map_polygons m LEFT JOIN wp_project p on p.project_id = m.project_id LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id {$where}";
         $stmt = $this->db->prepare($sqlTotal);
         $stmt->execute($params);
         $total = (int)$stmt->fetchColumn();
@@ -136,9 +136,10 @@ class MapSettingModel {
         $orderMap = [
             0 => "p.item_order",
             1 => "m.area_name",
-            2 => "p.project_name",
-            3 => "m.area_visible",
-            4 => "m.project_visible",
+            2 => "p.project_status_name",
+            3 => "p.project_name",
+            4 => "m.area_visible",
+            5 => "m.project_visible",
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -151,9 +152,12 @@ class MapSettingModel {
                 p.project_id, 
                 p.project_name, 
                 p.project_name_display,
-                p.item_order
+                p.item_order,
+                s.project_status_name,
+                s.project_status_color
             FROM wp_map_polygons m
             LEFT JOIN wp_project p on p.project_id = m.project_id 
+            LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id
             {$where}
             ORDER BY {$order} {$orderDir}
         ";

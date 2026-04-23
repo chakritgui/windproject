@@ -647,6 +647,18 @@ function initBoundarys() {
                 return data;
             }
         },{ 
+            data: "project_status_name",
+            orderable: true,
+            render: function (data, type, row) {
+                let color = row.project_status_color || '#3b82f6';
+                let name = data || "-";
+                return `
+                    <div class="d-flex align-items-center">
+                        <i class="fa-solid fa-circle me-2" style="color: ${color}; font-size: 0.8rem;"></i><span>${name.replace(/\r\n|\n/g, '<br />')}</span>
+                    </div>
+                `;
+            }
+        },{ 
             data: 'area_visible',
             orderable: true,
             render: function (data, type, row) {

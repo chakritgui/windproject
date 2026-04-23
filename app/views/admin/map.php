@@ -259,6 +259,7 @@
                         <th></th>
                         <th data-i18n="boundary"></th>
                         <th data-i18n="project"></th>
+                        <th data-i18n="project_status"></th>
                         <th data-i18n="display_boundary"></th>
                         <th data-i18n="show_on_menu"></th>
                     </tr>
