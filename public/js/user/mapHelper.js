@@ -203,7 +203,7 @@ function _buildPoleIcon(pole, size = 20) {
     }
     const color   = pole.default_color || '#f5a623';
     const glowCol = 'rgba(0,0,0,0.6)';
-    const baseW = 20, baseH = 52;
+    const baseW = 20, baseH = 42;
     const w = size, h = size * (baseH / baseW);
     const extraY = 30;
     const extra = `
