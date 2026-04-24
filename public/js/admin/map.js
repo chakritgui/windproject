@@ -67,21 +67,6 @@ function setupEvents() {
         currentStyle.weight = parseInt(e.target.value, 10);
         $('#weightValue').text(e.target.value + 'px');
     });
-    $('#noFill').on('change', function () {
-        const checked = $(this).is(':checked');
-        if (checked) {
-            currentStyle.fillOpacity = 0;
-            $('#fillOpacity').prop('disabled', true);
-            $('#fillColor').prop('disabled', true);
-            $('#opacityValue').text('0%');
-        } else {
-            const val = parseFloat($('#fillOpacity').val()) || 30;
-            currentStyle.fillOpacity = val / 100;
-            $('#fillOpacity').prop('disabled', false);
-            $('#fillColor').prop('disabled', false);
-            $('#opacityValue').text(Math.round(val) + '%');
-        }
-    });
     $('#noBorder').on('change', function () {
         const checked = $(this).is(':checked');
         if (checked) {
@@ -201,12 +186,6 @@ function updateControlPanelUI() {
     $('#opacityValue').text(Math.round(currentStyle.fillOpacity * 100) + '%');
     $('#borderWeight').val(currentStyle.weight);
     $('#weightValue').text(currentStyle.weight + 'px');
-    const noFill = currentStyle.fillOpacity === 0;
-    const noBorder = currentStyle.weight === 0;
-    $('#noFill').prop('checked', noFill);
-    $('#fillOpacity, #fillColor').prop('disabled', noFill);
-    $('#noBorder').prop('checked', noBorder);
-    $('#borderWeight, #borderColor').prop('disabled', noBorder);
 }
 function onDrawCreated(e) {
     const poly_id = Date.now();
