@@ -208,7 +208,7 @@
                         </div>
                         <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
                             <div class="mini-chart-container p-2 bg-white rounded shadow-sm">
-                                <small class="text-muted d-block text-center"><span data-i18n="pressure"></span> (%)</small>
+                                <small class="text-muted d-block text-center"><span data-i18n="turbulence_intensity"></span> (%)</small>
                                 <div style="height: 120px;"><canvas id="chart-turbulence"></canvas></div>
                             </div>
                         </div>
