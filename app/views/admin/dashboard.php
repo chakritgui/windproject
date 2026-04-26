@@ -200,9 +200,16 @@
                                 <div style="height: 120px;"><canvas id="chart-pressure"></canvas></div>
                             </div>
                         </div>
-                        <div class="col-xl-4 col-md-8 col-sm-12 mb-3"> <div class="mini-chart-container p-2 bg-white rounded shadow-sm">
-                                <small class="text-muted d-block text-center"><span data-i18n="air_density"></span> (kg/m³)</small>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="mini-chart-container p-2 bg-white rounded shadow-sm">
+                                <small class="text-muted d-block text-center"><span data-i18n="pressure"></span> (kg/m³)</small>
                                 <div style="height: 120px;"><canvas id="chart-density"></canvas></div>
+                            </div>
+                        </div>
+                        <div class="col-xl-2 col-md-4 col-sm-6 mb-3">
+                            <div class="mini-chart-container p-2 bg-white rounded shadow-sm">
+                                <small class="text-muted d-block text-center"><span data-i18n="pressure"></span> (%)</small>
+                                <div style="height: 120px;"><canvas id="chart-turbulence"></canvas></div>
                             </div>
                         </div>
                     </div>

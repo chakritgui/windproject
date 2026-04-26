@@ -43,6 +43,7 @@ function loadWindData() {
         createChart('chart-humidity', 'Hum', labels, data.map(i => i.humidity), '#4cc9f0', false);
         createChart('chart-pressure', 'Pres', labels, data.map(i => i.pressure), '#2ec4b6', false);
         createChart('chart-density', 'Dens', labels, data.map(i => i.density), '#7209b7', false);
+        createChart('chart-turbulence', 'Turbulence', labels, data.map(i => i.gust), '#f72585', false);
     });
 }
 function createChart(canvasId, label, labels, dataValues, color, isMain) {

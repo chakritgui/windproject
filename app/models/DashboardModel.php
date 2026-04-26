@@ -33,7 +33,7 @@ class DashboardModel {
         $stmtMax->execute();
         $latestTime = $stmtMax->fetchColumn();
         if (!$latestTime) return [];
-        $sql = "SELECT MIN(wind_datetime) as target_time, AVG(wind_speed) as avg_speed, AVG(wind_direction) as avg_direction, AVG(air_density) as avg_density, AVG(pressure) as avg_pressure, AVG(humidity) as avg_humidity, AVG(temperature) as avg_temp FROM wp_winds WHERE status = 'active' AND wind_datetime BETWEEN DATE_SUB(:latest, INTERVAL 24 HOUR) AND :latest_end GROUP BY (UNIX_TIMESTAMP(wind_datetime) DIV 300) ORDER BY target_time ASC";
+        $sql = "SELECT MIN(wind_datetime) as target_time, AVG(wind_speed) as avg_speed, AVG(wind_direction) as avg_direction, AVG(air_density) as avg_density, AVG(pressure) as avg_pressure, AVG(humidity) as avg_humidity, AVG(temperature) as avg_temp, AVG(turbulence_intensity) as avg_turbulence FROM wp_winds WHERE status = 'active' AND wind_datetime BETWEEN DATE_SUB(:latest, INTERVAL 24 HOUR) AND :latest_end GROUP BY (UNIX_TIMESTAMP(wind_datetime) DIV 300) ORDER BY target_time ASC";
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['latest' => $latestTime, 'latest_end' => $latestTime]);
         $chartData = [];
@@ -45,7 +45,8 @@ class DashboardModel {
                 'density' => round((float)$row['avg_density'], 2),
                 'pressure' => round((float)$row['avg_pressure'], 2),
                 'humidity' => round((float)$row['avg_humidity'], 2),
-                'temp' => round((float)$row['avg_temp'], 2)
+                'temp' => round((float)$row['avg_temp'], 2),
+                'turbulence' => round((float)$row['avg_turbulence'], 2),
             ];
         }
         return $chartData;
