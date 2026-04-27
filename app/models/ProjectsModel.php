@@ -314,7 +314,7 @@ class ProjectsModel {
         return $stmt->execute();
     }
     private function isDuplicateProjectName($project_name, $project_id = null) {
-        $sql = "SELECT COUNT(*) FROM wp_project WHERE project_name = :project_name";
+        $sql = "SELECT COUNT(*) FROM wp_project WHERE project_name = :project_name and status <> 'deleted'";
         if ($project_id) {
             $sql .= " AND project_id != :project_id";
         }
