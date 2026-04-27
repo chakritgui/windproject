@@ -380,6 +380,7 @@ class PolesModel {
                 'total_count' => count($staticData)
             ];
         }
+        $whereClauses[] = "status <> 'deleted'";
         switch ($type) {
             case 'project':
                 $table = "wp_project";
