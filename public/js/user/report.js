@@ -324,6 +324,7 @@ function showReportPWA(data) {
         </div>
     `);
     const footerDefault = `Copyright © <img src="${BASE_URL}/public/images/iwind.png" alt="wind" class="footer-logo"> Corporation Limited`;
+    const lang = typeof currentLang !== 'undefined' ? currentLang : 'th';
     const footer_val = getTranslation(footer, lang, footerDefault);
     $modal.find(".modal-footer").html(`
         <div class="d-flex justify-content-center align-items-center w-100">${footer_val}</div>
