@@ -293,7 +293,7 @@ class ProjectsModel {
         } else {
             $sql = "INSERT INTO wp_project (
                         contract_id, project_code, project_name, project_name_display, 
-                        project_start, project_end, project_status_id, project_group_id, 
+                        project_start, project_end, project_status_id, project_group_id, status,
                         created_at, updated_at
                     ) VALUES (
                         :contract_id, :project_code, :project_name, :project_name_display, 
