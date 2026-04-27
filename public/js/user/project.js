@@ -5,7 +5,6 @@ let state = {
     level: 1,
     refId: null,
     path: [{ id: null, slug: null, name: 'PSTG PROJECT', level: 1}],
-    sort: 'desc',
     offset: 0,
     isLoading: false,
     isFull: false,
@@ -27,14 +26,6 @@ $(document).ready(function () {
     setupObservers();
     initEventListeners();
 });
-function toggleSort() {
-    state.sort = state.sort === 'desc' ? 'asc' : 'desc';
-    const label = document.getElementById('sortLabel');
-    if (label) {
-        label.textContent =  state.sort === 'desc' ? (typeof langData !== 'undefined' ? langData['newest'] : 'Newest') : (typeof langData !== 'undefined' ? langData['oldest'] : 'เก่าสุด');
-    }
-    fetchFolders(true);
-}
 function initEventListeners() {
     $('#listView').on('click', '.fetchFolder', function () {
         const index = $(this).data('index');
@@ -83,7 +74,6 @@ function fetchFolders(isNewSearch = false) {
             start: state.offset,
             length: LIMIT,
             path: state.path.map(p => p.slug).filter(Boolean),
-            currentSort: state.sort
         },
         dataType: 'json',
         success: function (res) {

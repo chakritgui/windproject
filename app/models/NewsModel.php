@@ -51,10 +51,10 @@ class NewsModel {
         $sql = "SELECT 
                     n.content_id, n.publish_at, n.created_at, n.status, MAX(n.content_view) AS content_view, n.cover as cover_image,
                     iEn.content_subject AS subject_en, iLo.content_subject AS subject_lo, iTh.content_subject AS subject_th,
-                    SUM(CASE WHEN m.file_type = 'attachment' THEN 1 ELSE 0 END) as count_attachment,
-                    SUM(CASE WHEN m.file_type = 'image' THEN 1 ELSE 0 END) as count_image,
-                    SUM(CASE WHEN m.file_type = 'image360' THEN 1 ELSE 0 END) as count_image360,
-                    SUM(CASE WHEN m.file_type = 'presentation' THEN 1 ELSE 0 END) as count_presentation,
+                    IFNULL(SUM(CASE WHEN m.file_type = 'attachment' THEN 1 ELSE 0 END), 0) as count_attachment,
+                    IFNULL(SUM(CASE WHEN m.file_type = 'image' THEN 1 ELSE 0 END), 0) as count_image,
+                    IFNULL(SUM(CASE WHEN m.file_type = 'image360' THEN 1 ELSE 0 END), 0) as count_image360,
+                    IFNULL(SUM(CASE WHEN m.file_type = 'presentation' THEN 1 ELSE 0 END), 0) as count_presentation,
                     n.content_slug, (SELECT GROUP_CONCAT(folder_id) FROM wp_content_folder WHERE content_id = n.content_id AND status = 'active') as all_folder_ids, n.folder_show_admin, n.folder_show_user, n.type,
                     f.parent_id as dynamic_parent_id 
                 FROM wp_content n

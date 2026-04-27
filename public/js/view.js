@@ -27,7 +27,7 @@ function openContent(slugFromParam, modeFromParam) {
         <div id="contentArea" style="opacity:0;transition:opacity 0.4s ease;">
             <div id="contentCover"></div>
             <div class="cv-title" id="contentTitle"></div>
-            <div class="cv-meta">
+            <div class="cv-meta d-none">
                 <i class="fa-regular fa-calendar-check"></i>
                 <span id="contentDate"></span>
             </div>

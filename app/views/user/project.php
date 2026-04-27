@@ -46,10 +46,6 @@
                             <i class="fa-solid fa-th-large me-2"></i><span data-i18n="grid"></span>
                         </button>
                     </div>
-                    <button class="toolbar-btn" id="sortBtn" onclick="toggleSort()">
-                        <i class="fa-solid fa-sort"></i>
-                        <span id="sortLabel" data-i18n="newest"></span>
-                    </button>
                 </div>
             </div>
         </div>

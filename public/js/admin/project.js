@@ -7,17 +7,6 @@ let limit = 20;
 let isLoading = false;
 let isFull = false;
 let currentSearch = '';
-let currentSort = 'desc';
-$(document).on('click', '.sort-option', function() {
-    const sortValue = $(this).data('sort');
-    const label = $(this).data('label');
-    currentSort = sortValue;
-    $('#selectedSortLabel').text(langData[label]);
-    offset = 1;
-    isFull = true;
-    $('#listViewBody').empty();
-    initProject(); 
-});
 function updateURL() {
     const slugString = currentPath.filter(p => p.slug) .map(p => p.slug).join('/');
     const newURL = `${BASE_URL}/project/${slugString}`;
@@ -59,7 +48,6 @@ function fetchFolders(isNewSearch = false) {
             start: offset,
             length: limit,
             search: { value: currentSearch },
-            order: currentSort
         },
         dataType: 'json',
         success: function(res) {
@@ -124,6 +112,23 @@ function renderTable(data, isNewSearch) {
         } else if(item.sub_type === 'document') {
             typeHtml = `<span class="badge rounded-pill text-bg-danger"><i class="fa-solid fa-folder-open me-2"></i><span>${langData['document'] || 'Document'}</span></span>`;
         }
+        let badges = '';
+        if (parseInt(item.count_attachment) > 0)
+            badges += `<span class="badge rounded-pill bg-danger-subtle text-danger me-1">
+                <i class="fa-solid fa-file-pdf me-1"></i>${langData['document'] || 'Doc'}
+            </span>`;
+        if (parseInt(item.count_image) > 0)
+            badges += `<span class="badge rounded-pill bg-primary-subtle text-primary me-1">
+                <i class="fa-solid fa-images me-1"></i>${langData['image'] || 'Img'}
+            </span>`;
+        if (parseInt(item.count_image360) > 0)
+            badges += `<span class="badge rounded-pill bg-success-subtle text-success me-1">
+                <i class="fa-solid fa-vr-cardboard me-1"></i>VR
+            </span>`;
+        if (parseInt(item.count_presentation) > 0)
+            badges += `<span class="badge rounded-pill bg-success-subtle text-success me-1">
+                <i class="fa-solid fa-photo-film me-1"></i>${langData['presentation'] || 'Presentation'}
+            </span>`;
         html += `
             <tr data-index="${globalIndex}" data-id="${item.id}" data-type="${item.type}" style="${item.type === 'content' || item.type === 'document' ? 'cursor:default;' : 'cursor:pointer;'}">
                 <td>
@@ -140,10 +145,10 @@ function renderTable(data, isNewSearch) {
                     </div>
                 </td>
                 <td>
-                    <div class="fw-bold">
+                    <div class="fw-bold mb-2">
                         ${folder_name || '-'} ${badge}
                     </div>
-                    <div class="text-muted mt-2 small"><i class="fa-regular fa-calendar me-2"></i>${item.created_at}</div>
+                    ${badges}
                 </td>
                 <td>
                     ${(item.type === 'content' || item.type === 'document') ? typeHtml : ``}

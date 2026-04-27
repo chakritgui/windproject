@@ -48,23 +48,6 @@
         </div>
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
             <div class="d-flex gap-2">
-                <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fa-solid fa-sort me-2"></i><span id="selectedSortLabel" data-i18n="newest"></span>
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="sortDropdown">
-                        <li>
-                            <a class="dropdown-item sort-option" href="javascript:void(0)" data-sort="desc" data-label="newest">
-                                <i class="fa-solid fa-arrow-down-9-1 me-2"></i><span data-i18n="newest"></span>
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item sort-option" href="javascript:void(0)" data-sort="asc" data-label="oldest">
-                                <i class="fa-solid fa-arrow-up-1-9 me-2"></i><span data-i18n="oldest"></span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
                 <div class="position-relative" style="min-width: 250px;">
                     <i class="fa-solid fa-magnifying-glass position-absolute text-muted" style="top: 10px; left: 12px;"></i>
                     <input type="text" id="txtSearch" class="form-control form-control-sm ps-5" autocomplete="off" placeholder="Search...">

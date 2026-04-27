@@ -4,7 +4,7 @@ class ProjectModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function get($start = 0, $length = 20, $filters = [], $search = '', $order = 'desc') {
+    public function get($start = 0, $length = 20, $filters = [], $search = '') {
         list($mainWhere, $mainParams) = $this->buildListWhere($filters);
         $sql = "SELECT 
                 f.id, f.name as folder_name, f.level, f.parent_id, f.created_at, f.type, f.content_id, c.content_slug, 
@@ -27,18 +27,23 @@ class ProjectModel {
                     WHEN f.type = 'folder' or f.type = 'content' THEN f.slug
                     WHEN f.type = 'document' and f.sub_type = 'document' then d.document_path
                     ELSE ''
-                END as slug
+                END as slug,
+                IFNULL(SUM(CASE WHEN m.file_type = 'attachment' THEN 1 ELSE 0 END), 0) as count_attachment,
+                IFNULL(SUM(CASE WHEN m.file_type = 'image' THEN 1 ELSE 0 END), 0) as count_image,
+                IFNULL(SUM(CASE WHEN m.file_type = 'image360' THEN 1 ELSE 0 END), 0) as count_image360,
+                IFNULL(SUM(CASE WHEN m.file_type = 'presentation' THEN 1 ELSE 0 END), 0) as count_presentation
             FROM wp_folder f 
             LEFT JOIN wp_content c on c.content_id = f.content_id and (f.sub_type = 'news' or f.sub_type = 'project')
             LEFT JOIN wp_documents d on d.document_id = f.content_id and f.sub_type = 'document'
             LEFT JOIN wp_content_item iEn ON iEn.content_id = c.content_id AND iEn.content_lang='en'
             LEFT JOIN wp_content_item iLo ON iLo.content_id = c.content_id AND iLo.content_lang='lo'
             LEFT JOIN wp_content_item iTh ON iTh.content_id = c.content_id AND iTh.content_lang='th'
+            LEFT JOIN wp_content_media m ON m.content_id = c.content_id AND m.status = 'active'
             {$mainWhere} 
+            GROUP BY f.id
             ORDER BY 
                 (CASE WHEN f.type = 'folder' THEN 0 ELSE 1 END) ASC,
-                (CASE WHEN f.type = 'folder' THEN ifnull(f.folder_order, f.id) END) ASC,
-                (CASE WHEN f.type != 'folder' THEN f.id END) {$order}";
+                (CASE WHEN f.type = 'folder' THEN ifnull(f.folder_order, f.id) END) ASC";
         $stmt = $this->db->prepare($sql);
         foreach ($mainParams as $k => $v) { $stmt->bindValue($k, $v); }
         $stmt->execute();
@@ -50,6 +55,7 @@ class ProjectModel {
         foreach ($folderRows as $row) {
             if (!empty($search) && stripos($row['folder_name'], $search) === false) continue;
             $item = $row;
+            $item['created_at'] = !empty($item['created_at']) ? convertTimeZone($item['created_at'], 'd/m/Y H:i:s') : '';
             $item['child_count'] = $this->countChildren($row['id'], $row['level']);
             $item['settings'] = $settings;
             $finalItems[] = $item;
