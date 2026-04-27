@@ -119,7 +119,7 @@ function initMemberTable() {
             let self = this.api();
             if ($filter.find('.manage-member').length === 0) {
                 let btn = `
-                    <button class="btn btn-primary btn-sm manage-member ms-2" data-id="">
+                    <button class="btn btn-primary btn-sm manage-member ms-1" data-id="">
                         <i class="fa-solid fa-plus me-2"></i><span>${langData['member'] || 'Member'}</span>
                     </button>
                 `;
@@ -1114,7 +1114,7 @@ function initPrivilegesTable() {
             let $filter = $('#tb_privileges_filter');
             if ($filter.find('.manage-disclaimer').length === 0) {
                 $filter.append(`
-                    <button class="btn btn-primary btn-sm manage-privileges ms-2" data-id="0">
+                    <button class="btn btn-primary btn-sm manage-privileges ms-1" data-id="0">
                         <i class="fa-solid fa-plus me-2"></i><span>${langData['privileges'] || 'Privileges'}</span>
                     </button>
                 `);

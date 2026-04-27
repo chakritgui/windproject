@@ -168,7 +168,7 @@ function initDocumentTable() {
             let $filter = $('#tb_document_filter');
             if ($filter.find('.manage-document').length === 0) {
                 let btn = `
-                    <button class="btn btn-primary btn-sm manage-document ms-2" data-id="">
+                    <button class="btn btn-primary btn-sm manage-document ms-1" data-id="">
                         <i class="fa-solid fa-plus me-2"></i><span>${langData['document'] || 'Document'}</span>
                     </button>
                 `;

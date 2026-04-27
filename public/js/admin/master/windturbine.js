@@ -42,7 +42,7 @@ function initWindturbineTable() {
                 return `
                     <div class="form-check form-switch">
                         <input class="form-check-input update-status-switch" type="checkbox" role="switch" id="switch_${rowId}" data-id="${rowId}" ${isChecked} style="cursor: pointer;">
-                        <label class="form-check-label ms-2 small text-muted" for="switch_${rowId}"></label>
+                        <label class="form-check-label ms-1 small text-muted" for="switch_${rowId}"></label>
                     </div>
                 `;
             }
@@ -76,7 +76,7 @@ function initWindturbineTable() {
             });
             if ($filter.find('.import-windturbine').length === 0) {
                 let btn = `
-                    <button class="btn btn-primary btn-sm import-windturbine ms-2">
+                    <button class="btn btn-primary btn-sm import-windturbine ms-1">
                         <i class="fa-solid fa-plus me-2"></i><span>${langData['import'] || "Import"}</span>
                     </button>
                 `;
@@ -84,7 +84,7 @@ function initWindturbineTable() {
             }
             if ($filter.find('.icon-windturbine').length === 0) {
                 let btn = `
-                    <button class="btn btn-info btn-sm icon-windturbine ms-2">
+                    <button class="btn btn-info btn-sm icon-windturbine ms-1">
                         <i class="fa-solid fa-gears me-2"></i><span>${langData['icon'] || "Icon"}</span>
                     </button>
                 `;

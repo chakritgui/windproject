@@ -646,7 +646,7 @@ function initBoundarys() {
                 return `
                     <div class="form-check form-switch">
                         <input class="form-check-input update-switch" type="checkbox" role="switch" id="area_visible_${rowId}" data-id="${rowId}" data-type="area" ${isChecked} style="cursor: pointer;">
-                        <label class="form-check-label ms-2 small text-muted" for="area_visible_${rowId}"></label>
+                        <label class="form-check-label ms-1 small text-muted" for="area_visible_${rowId}"></label>
                     </div>
                 `;
             }
@@ -659,7 +659,7 @@ function initBoundarys() {
                 return `
                     <div class="form-check form-switch">
                         <input class="form-check-input update-switch" type="checkbox" role="switch" id="project_visible_${rowId}" data-id="${rowId}" data-type="project" ${isChecked} style="cursor: pointer;">
-                        <label class="form-check-label ms-2 small text-muted" for="project_visible_${rowId}"></label>
+                        <label class="form-check-label ms-1 small text-muted" for="project_visible_${rowId}"></label>
                     </div>
                 `;
             }

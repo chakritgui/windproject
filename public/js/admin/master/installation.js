@@ -109,7 +109,7 @@ function initInstallationsTable() {
             });
             if ($filter.find('.manage-installation[data-id=""]').length === 0) {
                 let btn = `
-                    <button class="btn btn-primary btn-sm manage-installation" data-id="">
+                    <button class="btn btn-primary btn-sm manage-installation ms-1" data-id="">
                         <i class="fa-solid fa-plus me-2"></i><span>${langData['installation'] || 'Installation'}</span>
                     </button>
                 `;
@@ -117,7 +117,7 @@ function initInstallationsTable() {
             }
             if ($filter.find('.item-order').length === 0) {
                 let btn = `
-                    <button class="btn btn-warning btn-sm item-order ms-2" data-type="installation">
+                    <button class="btn btn-warning btn-sm item-order ms-1" data-type="installation">
                         <i class="fa-solid fa-sort me-2"></i><span>${langData['sort'] || 'Sort'}</span>
                     </button>
                 `;

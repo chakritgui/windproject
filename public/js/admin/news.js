@@ -180,7 +180,7 @@ function initNewsTable() {
             const api = this.api();
             const $filter = $('#tb_news_filter');
             if (!$filter.find('.btn-add-news').length) {
-                $filter.append(`<button class="btn btn-primary btn-sm manage-news ms-2 btn-add-news" data-id=""><i class="fa-solid fa-plus me-2"></i>${langData['news'] || 'News'}</button>`);
+                $filter.append(`<button class="btn btn-primary btn-sm manage-news ms-1 btn-add-news" data-id=""><i class="fa-solid fa-plus me-2"></i>${langData['news'] || 'News'}</button>`);
             }
             $filter.find('input').unbind().bind('keypress', function(e) {
                 if (e.keyCode == 13) api.search(this.value).draw();

@@ -351,14 +351,12 @@
                 </div>
             </div>
             <div class="mb-3">
-                <a href="${BASE_URL}/excel/WindImportExample.xlsx" class="btn btn-success btn-sm example-inport ms-2" target="_blank">
+                <a href="${BASE_URL}/excel/WindImportExample.xlsx" class="btn btn-success btn-sm example-inport ms-1" target="_blank">
                     <i class="fa-solid fa-download me-2"></i><span data-i18n="example_import"></span>
                 </a>
-                <?php if (isset($_SESSION['user']['role']) && $_SESSION['user']['role'] === 'administrator'): ?>
-                    <button class="btn btn-danger btn-sm clear-windturbine ms-2">
-                        <i class="fa-solid fa-trash-can me-2"></i><span><span data-i18n="clear_data"></span></span>
-                    </button>
-                <?php endif; ?>
+                <button class="btn btn-danger btn-sm clear-windturbine ms-1">
+                    <i class="fa-solid fa-trash-can me-2"></i><span><span data-i18n="clear_data"></span></span>
+                </button>
             </div>
             <div class="table-responsive">
                 <table class="table table-striped table-hover" id="tb_windturbine">

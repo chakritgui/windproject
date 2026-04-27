@@ -772,7 +772,7 @@ function initDisclaimerTable() {
             let $filter = $('#tb_disclaimer_filter');
             if ($filter.find('.manage-disclaimer').length === 0) {
                 $filter.append(`
-                    <button class="btn btn-primary btn-sm manage-disclaimer ms-2" data-id="0">
+                    <button class="btn btn-primary btn-sm manage-disclaimer ms-1" data-id="0">
                         <i class="fa-solid fa-plus me-2"></i><span>${langData['version'] || 'Version'}</span>
                     </button>
                 `);

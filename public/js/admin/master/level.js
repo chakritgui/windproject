@@ -107,7 +107,7 @@ function initLevelTable() {
             });
             if ($filter.find('.manage-level[data-id=""]').length === 0) {
                 let btn = `
-                    <button class="btn btn-primary btn-sm manage-level ms-2" data-id="">
+                    <button class="btn btn-primary btn-sm manage-level ms-1" data-id="">
                         <i class="fa-solid fa-plus me-2"></i><span>${langData['level'] || 'Level'}</span>
                     </button>
                 `;
@@ -115,7 +115,7 @@ function initLevelTable() {
             }
             if ($filter.find('.item-order').length === 0) {
                 let btn = `
-                    <button class="btn btn-warning btn-sm item-order ms-2" data-type="level">
+                    <button class="btn btn-warning btn-sm item-order ms-1" data-type="level">
                         <i class="fa-solid fa-sort me-2"></i><span>${langData['sort'] || 'Sort'}</span>
                     </button>
                 `;

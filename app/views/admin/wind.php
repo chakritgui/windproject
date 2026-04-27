@@ -52,8 +52,8 @@
 </div>
 <div class="container-fluid mt-3 mb-5">
     <div class="mb-3">
-        <button class="btn btn-sm btn-primary import-history"><i class="fa-solid fa-clock-rotate-left me-2"></i><span data-i18n="import_history"></button> 
-        <button class="btn btn-sm btn-danger clear-data"><i class="fa-solid fa-trash-can me-2"></i><span data-i18n="clear_data"></span></button>
+        <button class="btn btn-sm btn-primary import-history ms-1"><i class="fa-solid fa-clock-rotate-left me-2"></i><span data-i18n="import_history"></button> 
+        <button class="btn btn-sm btn-danger clear-data ms-1"><i class="fa-solid fa-trash-can me-2"></i><span data-i18n="clear_data"></span></button>
     </div>
     <div class="table-responsive">
         <table class="table table-striped table-hover" id="tb_wind">

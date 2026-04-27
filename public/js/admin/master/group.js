@@ -89,7 +89,7 @@ function initGroupTable() {
             });
             if ($filter.find('.manage-group[data-id=""]').length === 0) {
                 let btn = `
-                    <button class="btn btn-primary btn-sm manage-group ms-2" data-id="">
+                    <button class="btn btn-primary btn-sm manage-group ms-1" data-id="">
                         <i class="fa-solid fa-plus me-2"></i><span>${langData['group'] || 'group'}</span>
                     </button>
                 `;
@@ -97,7 +97,7 @@ function initGroupTable() {
             }
             if ($filter.find('.item-order').length === 0) {
                 let btn = `
-                    <button class="btn btn-warning btn-sm item-order ms-2" data-type="group">
+                    <button class="btn btn-warning btn-sm item-order ms-1" data-type="group">
                         <i class="fa-solid fa-sort me-2"></i><span>${langData['sort'] || 'Sort'}</span>
                     </button>
                 `;
