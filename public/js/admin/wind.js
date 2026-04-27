@@ -41,6 +41,17 @@ function initWindTable() {
             { data: "humidity", orderable: true },
             { data: "temperature", orderable: true },
             { data: "turbulence_intensity", orderable: true },
+            {
+                data: null,
+                orderable: false,
+                render: function(row){
+                    return `
+                        <div class="btn-group border rounded-3 bg-white">
+                            <button class="btn py-1 text-danger border-start delete-wind" data-id="${row.id}"><i class="fa-regular fa-trash-can"></i></button>
+                        </div>
+                    `;
+                }
+            },
         ],
         pageLength: pageLength,
         lengthMenu: lengthMenu,
@@ -279,26 +290,111 @@ function importWindData() {
     }
 }
 $(document).on('click', '.clear-data', function() {
-    showConfirm(langData['confirm'], langData['confirm_clear'], function(){
+    let modalEl = $('#windModal');
+    let modal = new bootstrap.Modal(modalEl[0]);
+    modal.show();
+    modalEl.find(".modal-header").html(`
+        <h5 class="modal-title">${langData['clear_data'] || "Clear Data"}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    `);
+    modalEl.find(".modal-footer").html(`
+        <button type="submit" class="btn btn-danger me-2 confirm-clear-data">${langData['clear_data'] || "Clear Data"}</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">${langData['close'] || "Close"}</button>
+    `);
+    modalEl.find(".modal-body").html(`
+        <div class="row">
+            <div class="col-md-6 mb-3"><label class="mb-2">${langData['date']}</label><input type="text" class="form-control filter" id="date" autocomplete="off"></div>
+            <div class="col-md-6 mb-3"><label class="mb-2">${langData['project']}</label><select id="project" class="form-select"></select></div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3"><label class="mb-2">${langData['wind_measurement_equipment']}</label><select id="type" class="form-select"></select></div>
+            <div class="col-md-6 mb-3"><label class="mb-2">${langData['installation']}</label><select id="installation" class="form-select"></select></div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3"><label class="mb-2">${langData['height_level']}</label><select id="height_level" class="form-select"></select></div>
+            <div class="col-md-6 mb-3"><label class="mb-2">${langData['poles']}</label><select id="pole" class="form-select"></select></div>
+        </div>    
+    `);
+    initDateRangePicker('#date', "");
+    initSelect2Remote('#project', `${BASE_URL}/api/wind.filter`, { type: 'project' });
+    initSelect2Remote('#pole', `${BASE_URL}/api/wind.filter`, { type: 'pole' });
+    initSelect2Remote('#type', `${BASE_URL}/api/wind.filter`, { type: 'type' });
+    initSelect2Remote('#installation', `${BASE_URL}/api/wind.filter`, { type: 'installation' });
+    initSelect2Remote('#height_level', `${BASE_URL}/api/wind.filter`, { type: 'height' });
+});
+$(document).on('click', '.confirm-clear-data', function() {
+    let payload = {
+        date: $('#date').val(),
+        project_id: $('#project').val(),
+        type_id: $('#type').val(),
+        installation_id: $('#installation').val(),
+        height_level: $('#height_level').val(),
+        pole_id: $('#pole').val()
+    };
+    $.ajax({
+        url: `${BASE_URL}/api/wind.count_clear`,
+        method: 'POST',
+        dataType: 'json',
+        data: payload,
+        success: function(res) {
+            if(res.status === true) {
+                let confirmMsg = `Found ${res.count} records. Do you want to clear them?`;
+                showConfirm(langData['confirm'], confirmMsg, function(){
+                    clearData(payload);
+                });
+            } else {
+                showError(res.message || langData['cannot_check_data']);
+            }
+        }
+    });
+});
+function clearData(filterData) {
+    $.ajax({
+        url: `${BASE_URL}/api/wind.clear`,
+        method: 'POST',
+        dataType: 'json',
+        data: filterData,
+        success: function(res) {
+            if(res.status === true){
+                showSuccess(langData['clear_successfully']);
+                var modalEl = document.getElementById('windModal');
+                var modal = bootstrap.Modal.getInstance(modalEl); 
+                if (modal) {
+                    modal.hide();
+                }
+                initWindTable();
+            } else {
+                showError(langData['cannot_clear']);
+            }   
+        },
+        error: function (xhr, status, error) {
+            let msg = langData['cannot_clear'];
+            try {
+                let res = JSON.parse(xhr.responseText);
+                if (res.message) msg += ": " + res.message;
+            } catch (e) {}
+            showError(msg);
+        }
+    });
+}
+$(document).on('click', '.delete-wind', function() {
+    let id = $(this).data("id");
+    showConfirm(langData['confirm'], langData['confirm_delete'], function(){
         $.ajax({
-            url: `${BASE_URL}/api/wind.clear`,
+            url: `${BASE_URL}/api/wind.delete`,
             method: 'POST',
+            data: { id: id },
             dataType: 'json',
             success: function(res) {
                 if(res.status === true){
-                    showSuccess(langData['clear_successfully']);
+                    showSuccess(langData['deleted_successfully']);
                     initWindTable();
                 } else {
-                    showError(langData['cannot_clear']);
+                    showError(langData['cannot_delete']);
                 }   
             },
-            error: function (xhr, status, error) {
-                let msg = langData['cannot_clear'];
-                try {
-                    let res = JSON.parse(xhr.responseText);
-                    if (res.message) msg += ": " + res.message;
-                } catch (e) {}
-                showError(msg);
+            error: function(){
+                showError(langData['cannot_delete']);
             }
         });
     });

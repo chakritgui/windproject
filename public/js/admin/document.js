@@ -317,7 +317,7 @@ function renderModalContent(modalEl, document_id, isEdit, d) {
             <div class="col-md-6 mb-3"><label class="mb-2">${langData['installation']}</label><select id="installation" class="form-select"></select></div>
         </div>
         <div class="row">
-            <div class="col-md-6 mb-3"><label class="mb-2">${langData['pole']}</label><select id="pole" class="form-select"></select></div>
+            <div class="col-md-6 mb-3"><label class="mb-2">${langData['poles']}</label><select id="pole" class="form-select"></select></div>
             <div class="col-md-6 mb-3">
                 <label class="mb-2 required">${langData['status'] || 'Status'}</label>
                 <select id="status" class="form-select obj-required"></select>

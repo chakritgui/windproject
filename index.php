@@ -117,6 +117,8 @@
             $router->post('/api/wind.clear', 'WindController@clear');
             $router->post('/api/wind.history', 'WindController@history');
             $router->post('/api/wind.filter', 'WindController@filter');
+            $router->post('/api/wind.delete', 'WindController@delete');
+            $router->post('/api/wind.count_clear', 'WindController@count_clear');
             $router->post('/api/news.list', 'NewsController@list');
             $router->post('/api/news.save', 'NewsController@save');
             $router->post('/api/news.delete', 'NewsController@delete');

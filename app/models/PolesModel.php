@@ -359,119 +359,76 @@ class PolesModel {
         ");
         return $stmt->execute([(int)$id]);
     }
-    public function filter($page = 1, $limit = 10, $type = '', $searchTerm = ''){
-        $offset = ($page - 1) * $limit;
+    public function filter($page = 1, $limit = 10, $type = '', $searchTerm = '') {
+        $offset = (int)max(0, ($page - 1) * $limit);
         $items = [];
         $totalCount = 0;
         $params = [];
-        $where = '';
+        $whereClauses = [];
+        if ($type === 'status') {
+            $staticData = [
+                ['id' => 'online', 'text' => 'Online'],
+                ['id' => 'inactive', 'text' => 'Inactive']
+            ];
+            if ($searchTerm !== '') {
+                $staticData = array_values(array_filter($staticData, function ($item) use ($searchTerm) {
+                    return stripos($item['text'], $searchTerm) !== false;
+                }));
+            }
+            return [
+                'items' => array_slice($staticData, $offset, $limit),
+                'total_count' => count($staticData)
+            ];
+        }
         switch ($type) {
-            case 'status':
-                $staticData = [
-                    ['id' => 'online', 'text' => 'Online'],
-                    ['id' => 'inactive', 'text' => 'Inactive']
-                ];
-                if ($searchTerm !== '') {
-                    $staticData = array_values(array_filter($staticData, function ($item) use ($searchTerm) {
-                        return stripos($item['text'], $searchTerm) !== false;
-                    }));
-                }
-                $totalCount = count($staticData);
-                $items = array_slice($staticData, $offset, $limit);
-                break;
             case 'project':
-                if ($searchTerm !== '') {
-                    $where = "WHERE project_name LIKE :search";
-                    $params[':search'] = "%{$searchTerm}%";
-                }
-                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_project {$where}");
-                $stmtCount->execute($params);
-                $totalCount = (int)$stmtCount->fetchColumn();
-                $sql = "SELECT project_id AS id, project_name AS text
-                    FROM wp_project
-                    {$where}
-                    ORDER BY project_id DESC
-                    LIMIT :limit OFFSET :offset
-                ";
-                $stmt = $this->db->prepare($sql);
-                foreach ($params as $k => $v) {
-                    $stmt->bindValue($k, $v);
-                }
-                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
-                $stmt->execute();
-                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $table = "wp_project";
+                $columnId = "project_id";
+                $columnText = "project_name";
+                $order = "DESC";
                 break;
             case 'pole':
-                if ($searchTerm !== '') {
-                    $where = "WHERE poles_code LIKE :search";
-                    $params[':search'] = "%{$searchTerm}%";
-                }
-                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_poles {$where}");
-                $stmtCount->execute($params);
-                $totalCount = (int)$stmtCount->fetchColumn();
-                $sql = "SELECT poles_id AS id, poles_code AS text
-                    FROM wp_poles
-                    {$where}
-                    ORDER BY poles_id DESC
-                    LIMIT :limit OFFSET :offset
-                ";
-                $stmt = $this->db->prepare($sql);
-                foreach ($params as $k => $v) {
-                    $stmt->bindValue($k, $v);
-                }
-                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
-                $stmt->execute();
-                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $table = "wp_poles";
+                $columnId = "poles_id";
+                $columnText = "poles_code";
+                $order = "DESC";
                 break;
             case 'type':
-                if ($searchTerm !== '') {
-                    $where = "WHERE type_name LIKE :search";
-                    $params[':search'] = "%{$searchTerm}%";
-                }
-                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_type {$where}");
-                $stmtCount->execute($params);
-                $totalCount = (int)$stmtCount->fetchColumn();
-                $sql = "SELECT type_id AS id, type_name AS text
-                    FROM wp_type
-                    {$where}
-                    ORDER BY type_id ASC
-                    LIMIT :limit OFFSET :offset
-                ";
-                $stmt = $this->db->prepare($sql);
-                foreach ($params as $k => $v) {
-                    $stmt->bindValue($k, $v);
-                }
-                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
-                $stmt->execute();
-                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $table = "wp_type";
+                $columnId = "type_id";
+                $columnText = "type_name";
+                $order = "ASC";
                 break;
             case 'installation':
-                if ($searchTerm !== '') {
-                    $where = "WHERE installations_name LIKE :search";
-                    $params[':search'] = "%{$searchTerm}%";
-                }
-                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_installations {$where}");
-                $stmtCount->execute($params);
-                $totalCount = (int)$stmtCount->fetchColumn();
-                $sql = "SELECT installations_id AS id, installations_name AS text
-                    FROM wp_installations
-                    {$where}
-                    ORDER BY installations_id ASC
-                    LIMIT :limit OFFSET :offset
-                ";
-                $stmt = $this->db->prepare($sql);
-                foreach ($params as $k => $v) {
-                    $stmt->bindValue($k, $v);
-                }
-                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
-                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
-                $stmt->execute();
-                $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                $table = "wp_installations";
+                $columnId = "installations_id";
+                $columnText = "installations_name";
+                $order = "ASC";
                 break;
+            default:
+                return ['items' => [], 'total_count' => 0];
         }
+        if ($searchTerm !== '') {
+            $whereClauses[] = "{$columnText} LIKE :search";
+            $params[':search'] = "%{$searchTerm}%";
+        }
+        $whereSql = !empty($whereClauses) ? "WHERE " . implode(" AND ", $whereClauses) : "";
+        $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM {$table} {$whereSql}");
+        $stmtCount->execute($params);
+        $totalCount = (int)$stmtCount->fetchColumn();
+        $sql = "SELECT {$columnId} AS id, {$columnText} AS text 
+                FROM {$table} 
+                {$whereSql} 
+                ORDER BY {$columnId} {$order} 
+                LIMIT :limit OFFSET :offset";         
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
+        $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return [
             'items' => $items,
             'total_count' => $totalCount

@@ -76,6 +76,16 @@ class WindModel{
             'data'  => $rows
         ];
     }
+    public function delete($id) {
+        if($id) {
+            $pdo = $this->db;
+            $sql = "UPDATE wp_winds set status = 'deleted' WHERE id = :id";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
+            return $stmt->execute();
+        }
+        return false;
+    }
     public function history($start = 0, $length = 10): array{
         $sqlTotal = "SELECT COUNT(*) FROM wp_imports";
         $total = (int)$this->db->query($sqlTotal)->fetchColumn();
@@ -167,12 +177,103 @@ class WindModel{
             $row['import_record'] = number_format($row['import_record']);
         }
     }
-    public function clear(){
-        $sql = "UPDATE wp_winds SET status = 'deleted' where status = 'active'";
-        $this->db->exec($sql);
-        return [
-            'status'  => true,
-        ];
+    public function clear($filters) {
+        try {
+            $sql = "UPDATE wp_winds SET status = 'deleted' WHERE status = 'active'";
+            $params = [];
+            if (!empty($filters['date'])) {
+                $dates = explode(' - ', $filters['date']);
+                if (count($dates) == 2) {
+                    $start = DateTime::createFromFormat('d/m/Y', trim($dates[0]));
+                    $end   = DateTime::createFromFormat('d/m/Y', trim($dates[1]));
+                    if ($start && $end) {
+                        $sql .= " AND wind_datetime BETWEEN :start AND :end";
+                        $startDateUTC = convertTimeZoneUTC(
+                            $start->format('Y-m-d') . ' 00:00:00'
+                        );
+                        $endDateUTC = convertTimeZoneUTC(
+                            $end->format('Y-m-d') . ' 23:59:59'
+                        );
+                        $params[':start'] = $startDateUTC;
+                        $params[':end']   = $endDateUTC;
+                    }
+                }
+            }
+            if (!empty($filters['pole_id'])) {
+                $sql .= " AND poles_id = :pole_id";
+                $params[':pole_id'] = $filters['pole_id'];
+            }
+            if (!empty($filters['height_level'])) {
+                $sql .= " AND levels_id = :height_level";
+                $params[':height_level'] = $filters['height_level'];
+            }
+            $poleFilters = [];
+            if (!empty($filters['project_id'])) $poleFilters['project_id'] = $filters['project_id'];
+            if (!empty($filters['type_id'])) $poleFilters['type_id'] = $filters['type_id'];
+            if (!empty($filters['installation_id'])) $poleFilters['installations_id'] = $filters['installation_id'];
+            if (!empty($poleFilters)) {
+                $subSql = "SELECT poles_id FROM wp_poles WHERE 1=1";
+                foreach ($poleFilters as $col => $val) {
+                    $subSql .= " AND $col = :$col";
+                    $params[":$col"] = $val;
+                }
+                $sql .= " AND poles_id IN ($subSql)";
+            }
+            if (empty($params)) {
+                return [
+                    'status' => false,
+                    'message' => 'please_select_filter'
+                ];
+            }
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            return [
+                'status' => true,
+                'count' => $stmt->rowCount()
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+    }
+    public function countClear($filters) {
+        try {
+            $sql = "SELECT COUNT(*) as total FROM wp_winds WHERE status = 'active'";
+            $params = [];
+            if (!empty($filters['date'])) {
+                $dates = explode(' - ', $filters['date']);
+                if (count($dates) == 2) {
+                    $start = DateTime::createFromFormat('d/m/Y', trim($dates[0]));
+                    $end   = DateTime::createFromFormat('d/m/Y', trim($dates[1]));
+                    if ($start && $end) {
+                        $sql .= " AND wind_datetime BETWEEN :start AND :end";
+                        $startDateUTC = convertTimeZoneUTC(
+                            $start->format('Y-m-d') . ' 00:00:00'
+                        );
+                        $endDateUTC = convertTimeZoneUTC(
+                            $end->format('Y-m-d') . ' 23:59:59'
+                        );
+                        $params[':start'] = $startDateUTC;
+                        $params[':end']   = $endDateUTC;
+                    }
+                }
+            }
+            if (!empty($filters['pole_id'])) {
+                $sql .= " AND poles_id = :pole_id";
+                $params[':pole_id'] = $filters['pole_id'];
+            }
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute($params);
+            $row = $stmt->fetch();
+            return [
+                'status' => true,
+                'count'  => (int)$row['total']
+            ];
+        } catch (Exception $e) {
+            return ['status' => false, 'message' => $e->getMessage()];
+        }
     }
     public function import(array $data): array {
         if (!isset($_FILES['wind_file'])) {
@@ -356,95 +457,72 @@ class WindModel{
     }
     public function filter($page = 1, $limit = 10, $type = '', $searchTerm = ''){
         $offset = max(0, ($page - 1) * $limit);
-        $items = [];
-        $totalCount = 0;
         $params = [];
+        $whereClauses = ["status <> 'deleted'"];
         switch ($type) {
             case 'project':
-                $where = "";
-                if ($searchTerm !== '') {
-                    $where = "WHERE project_name LIKE :search";
-                    $params[':search'] = "%{$searchTerm}%";
-                }
-                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_project {$where}");
-                $stmtCount->execute($params);
-                $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
-                $sql = "SELECT project_id AS id, project_name AS text FROM wp_project {$where} ORDER BY project_id DESC LIMIT :limit OFFSET :offset";
+                $table = "wp_project";
+                $fields = "project_id AS id, project_name AS text";
+                $searchCol = "project_name";
+                $orderBy = "project_id DESC";
                 break;
             case 'pole':
-                $where = "";
-                if ($searchTerm !== '') {
-                    $where = "WHERE poles_code LIKE :search";
-                    $params[':search'] = "%{$searchTerm}%";
-                }
-                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_poles {$where}");
-                $stmtCount->execute($params);
-                $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
-                $sql = "SELECT poles_id AS id, poles_code AS text FROM wp_poles {$where} ORDER BY poles_id DESC LIMIT :limit OFFSET :offset";
+                $table = "wp_poles";
+                $fields = "poles_id AS id, poles_code AS text";
+                $searchCol = "poles_code";
+                $orderBy = "poles_id DESC";
                 break;
             case 'type':
-                $where = "";
-                if ($searchTerm !== '') {
-                    $where = "WHERE type_name LIKE :search";
-                    $params[':search'] = "%{$searchTerm}%";
-                }
-                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_type {$where}");
-                $stmtCount->execute($params);
-                $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
-                $sql = "SELECT type_id AS id, type_name AS text FROM wp_type {$where} ORDER BY type_id ASC LIMIT :limit OFFSET :offset";
+                $table = "wp_type";
+                $fields = "type_id AS id, type_name AS text";
+                $searchCol = "type_name";
+                $orderBy = "type_id ASC";
                 break;
             case 'installation':
-                $where = "";
-                if ($searchTerm !== '') {
-                    $where = "WHERE installations_name LIKE :search";
-                    $params[':search'] = "%{$searchTerm}%";
-                }
-                $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_installations {$where}");
-                $stmtCount->execute($params);
-                $totalCount = $stmtCount->fetch(PDO::FETCH_OBJ)->total;
-                $sql = "SELECT installations_id AS id, installations_name AS text FROM wp_installations {$where} ORDER BY installations_id ASC LIMIT :limit OFFSET :offset";
+                $table = "wp_installations";
+                $fields = "installations_id AS id, installations_name AS text";
+                $searchCol = "installations_name";
+                $orderBy = "installations_id ASC";
                 break;
             case 'height':
-                $where = "";
                 if ($searchTerm !== '') {
-                    $where = "WHERE h.height_name LIKE :search OR l.height_levels LIKE :search";
+                    $whereClauses[] = "(h.height_name LIKE :search OR l.height_levels LIKE :search)";
                     $params[':search'] = "%{$searchTerm}%";
                 }
+                $whereSql = "WHERE " . implode(" AND ", $whereClauses);
                 $join = "LEFT JOIN wp_height_levels l ON l.height_id = h.height_id";
-                $stmtCount = $this->db->prepare("SELECT COUNT(*) AS total FROM wp_height h {$join} {$where}");
+                $stmtCount = $this->db->prepare("SELECT COUNT(*) as total FROM wp_height h {$join} {$whereSql}");
                 $stmtCount->execute($params);
-                $totalRow = $stmtCount->fetch(PDO::FETCH_OBJ);
-                $totalCount = $totalRow ? $totalRow->total : 0;
-                $sql = "SELECT 
-                            l.levels_id AS id, 
-                            CONCAT(h.height_name, ' ', l.height_levels) AS text 
-                        FROM wp_height h 
-                        {$join} 
-                        {$where} 
-                        ORDER BY h.height_id ASC, l.levels_id ASC 
-                        LIMIT :limit OFFSET :offset";
+                $totalCount = (int)$stmtCount->fetch(PDO::FETCH_OBJ)->total;
+                $sql = "SELECT l.levels_id AS id, CONCAT(h.height_name, ' ', l.height_levels) AS text 
+                        FROM wp_height h {$join} {$whereSql} 
+                        ORDER BY h.height_id ASC, l.levels_id ASC LIMIT :limit OFFSET :offset";
                 $stmt = $this->db->prepare($sql);
-                if ($searchTerm !== '') {
-                    $stmt->bindValue(':search', "%{$searchTerm}%", PDO::PARAM_STR);
-                }
+                foreach ($params as $k => $v) $stmt->bindValue($k, $v);
                 $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
                 $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
                 $stmt->execute();
-                $results = $stmt->fetchAll(PDO::FETCH_OBJ);
-                break;
+                return ['items' => $stmt->fetchAll(PDO::FETCH_ASSOC), 'total_count' => $totalCount];
+
             default:
                 return ['items' => [], 'total_count' => 0];
         }
-        $stmt = $this->db->prepare($sql);
-        foreach ($params as $k => $v) {
-            $stmt->bindValue($k, $v);
+        if ($searchTerm !== '') {
+            $whereClauses[] = "{$searchCol} LIKE :search";
+            $params[':search'] = "%{$searchTerm}%";
         }
+        $whereSql = "WHERE " . implode(" AND ", $whereClauses);
+        $stmtCount = $this->db->prepare("SELECT COUNT(*) as total FROM {$table} {$whereSql}");
+        $stmtCount->execute($params);
+        $totalCount = (int)$stmtCount->fetch(PDO::FETCH_OBJ)->total;
+        $sql = "SELECT {$fields} FROM {$table} {$whereSql} ORDER BY {$orderBy} LIMIT :limit OFFSET :offset";
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) $stmt->bindValue($k, $v);
         $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
         $stmt->execute();
-        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return [
-            'items' => $items,
+            'items' => $stmt->fetchAll(PDO::FETCH_ASSOC),
             'total_count' => $totalCount
         ];
     }

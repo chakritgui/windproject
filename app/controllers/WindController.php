@@ -56,7 +56,27 @@ class WindController extends BaseController {
         $this->json($result);
     }
     public function clear() {
-        $result = $this->model->clear();
+        $filters = [
+            'date'            => $_POST['date'] ?? null,
+            'project_id'      => $_POST['project_id'] ?? null,
+            'type_id'         => $_POST['type_id'] ?? null,
+            'installation_id' => $_POST['installation_id'] ?? null,
+            'height_level'    => $_POST['height_level'] ?? null,
+            'pole_id'         => $_POST['pole_id'] ?? null,
+        ];
+        $result = $this->model->clear($filters);
+        $this->json($result);
+    }
+    public function count_clear() {
+        $filters = [
+            'date'            => $_POST['date'] ?? null,
+            'project_id'      => $_POST['project_id'] ?? null,
+            'type_id'         => $_POST['type_id'] ?? null,
+            'installation_id' => $_POST['installation_id'] ?? null,
+            'height_level'    => $_POST['height_level'] ?? null,
+            'pole_id'         => $_POST['pole_id'] ?? null,
+        ];
+        $result = $this->model->countClear($filters);
         $this->json($result);
     }
     public function filter() {
@@ -65,5 +85,9 @@ class WindController extends BaseController {
         $searchTerm = $_POST['searchTerm'] ?? '';
         $type = $_POST['type'] ?? '';
         $this->json(['status'=>true , 'data' => $this->model->filter($page, $limit, $type, $searchTerm)]);
+    }
+    public function delete() {
+        $id = intval($_POST['id'] ?? 0);
+        $this->json(['status'=>$this->model->delete($id)]);
     }
 }

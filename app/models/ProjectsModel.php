@@ -194,9 +194,21 @@ class ProjectsModel {
         ];
     }
     public function delete($id) {
-        $sql = "UPDATE wp_project SET status=?, updated_at=NOW() WHERE project_id=?";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute(['deleted', (int)$id]);
+        $sqlSelect = "SELECT project_name FROM wp_project WHERE project_id = ?";
+        $stmtSelect = $this->db->prepare($sqlSelect);
+        $stmtSelect->execute([(int)$id]);
+        $project = $stmtSelect->fetch();
+        if ($project) {
+            $newName = "deleted_" . time() . "_" . $project['project_name'];
+            $sql = "UPDATE wp_project SET 
+                        status = 'deleted', 
+                        project_name = ?, 
+                        updated_at = NOW() 
+                    WHERE project_id = ?";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([$newName, (int)$id]);
+        }
+        return false;
     }
     public function deleteBg($id) {
         $sql = "UPDATE wp_project SET project_background=null, project_opacity=0 WHERE project_id=?";
