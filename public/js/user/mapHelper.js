@@ -414,3 +414,26 @@ function toggleAreaStroke(enabled) {
         });
     });
 }
+function enableHardBoundsLock(bounds) {
+    if (!map || !bounds) return;
+    if (map._hardBoundsHandler) {
+        map.off('drag',    map._hardBoundsHandler);
+        map.off('dragend', map._hardBoundsHandler);
+    }
+    map._hardBoundsLocked = bounds;
+    map._hardBoundsHandler = function () {
+        const center = map.getCenter();
+        const sw     = bounds.getSouthWest();
+        const ne     = bounds.getNorthEast();
+        const clampedLat = Math.min(Math.max(center.lat, sw.lat), ne.lat);
+        const clampedLng = Math.min(Math.max(center.lng, sw.lng), ne.lng);
+
+        if (clampedLat !== center.lat || clampedLng !== center.lng) {
+            map.panTo([clampedLat, clampedLng], { animate: false });
+        }
+    };
+    map.on('drag',    map._hardBoundsHandler);
+    map.on('dragend', map._hardBoundsHandler);
+    map.setMaxBounds(bounds);
+    map.options.maxBoundsViscosity = 1.0;
+}

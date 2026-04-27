@@ -662,7 +662,9 @@ async function renderWindAreas(picker, areaData, masterData) {
     if (bounds.isValid()) {
         const padded = bounds.pad(0.1);
         map.fitBounds(bounds, { padding: [20, 20] });
-        map.setMaxBounds(padded);
+        initialBounds          = bounds;
+        window._initialMaxBounds = padded;
+        enableHardBoundsLock(padded);
         map.options.minZoom = map.getBoundsZoom(bounds);
     }
     buildAreaPanel(polygons);
@@ -740,13 +742,8 @@ function flyToArea(areaIndex, areaObj, openPicker = false, openProject = false, 
     });
     map.once('moveend', () => {
         map.options.zoomAnimation = true;
-        if (needsRelax && currentMax) {
-            setTimeout(() => {
-                map.setMaxBounds(currentMax);
-                if (!currentMax.contains(map.getCenter())) {
-                    map.panInsideBounds(currentMax, { animate: true, duration: 0.5 });
-                }
-            }, 120);
+        if (window._initialMaxBounds) {
+            setTimeout(() => enableHardBoundsLock(window._initialMaxBounds), 150);
         }
         if (openPicker) {
             const pickerLatLng = clickLatLng || targetBounds.getCenter();
@@ -760,6 +757,9 @@ function flyToArea(areaIndex, areaObj, openPicker = false, openProject = false, 
 }
 function resetView() {
     if (!initialBounds) return;
+    if (window._initialMaxBounds) {
+        enableHardBoundsLock(window._initialMaxBounds);
+    }
     const fromCenter  = map.getCenter();
     const toCenter    = initialBounds.getCenter();
     const distDeg     = Math.hypot(toCenter.lat - fromCenter.lat, toCenter.lng - fromCenter.lng);
