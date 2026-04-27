@@ -442,8 +442,8 @@ function initPresentationUpload(existingPresentation = []) {
                 file.url?.match(/\.(mp4|webm|ogg|mov)$/i) || 
                 file.preview?.startsWith('data:video/');
             const mediaTag = isVideo 
-                ? `<video src="${file.preview || file.url}" class="card-img-top" style="height: 100px; object-fit: cover;" muted></video>`
-                : `<img src="${file.preview || file.url}" class="card-img-top" style="height: 100px; object-fit: contain;" loading="lazy">`;
+                ? `<video src="${file.preview || `${BASE_URL}/${file.url}`}" class="card-img-top" style="height: 100px; object-fit: cover;" muted></video>`
+                : `<img src="${file.preview || `${BASE_URL}/${file.url}`}" class="card-img-top" style="height: 100px; object-fit: contain;" loading="lazy">`;
             return `
                 <div class="col-4 col-md-3 col-lg-2" data-index="${index}">
                     <div class="card">
@@ -542,7 +542,7 @@ function initImagesUpload(existingImages = []) {
             <div class="col-4 col-md-3 col-lg-2" data-index="${index}">
                 <div class="card">
                     <div class="position-relative">
-                        <img src="${img.preview || img.url}" class="card-img-top" style="height: 100px; object-fit: contain;" loading="lazy">
+                        <img src="${img.preview || `${BASE_URL}/${img.url}`}" class="card-img-top" style="height: 100px; object-fit: contain;" loading="lazy">
                         <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" onclick="removeImage(${index})"><i class="fa-solid fa-x"></i></button>
                     </div>
                     <div class="card-body p-2">
@@ -632,7 +632,7 @@ function init360ImagesUpload(existing360Images = []) {
             <div class="col-4 col-md-3 col-lg-2" data-index="${index}">
                 <div class="card border-info">
                     <div class="position-relative">
-                        <img src="${img.preview || img.url}" class="card-img-top" style="height: 100px; object-fit: contain;" loading="lazy">
+                        <img src="${img.preview || `${BASE_URL}/${img.url}`}" class="card-img-top" style="height: 100px; object-fit: contain;" loading="lazy">
                         <div class="position-absolute top-0 start-0 m-1">
                             <span class="badge bg-info">360°</span>
                         </div>

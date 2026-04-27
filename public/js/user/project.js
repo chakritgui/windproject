@@ -201,7 +201,7 @@ function renderView(data, isNewSearch) {
                             <div class="grid-badge-top" style="margin-left: 10px;">${badge}</div>
                         </div>
                         ${isContent || item.sub_type === 'document' ? `
-                            <div class="small text-muted mt-1">
+                            <div class="small text-muted mt-1 d-none">
                                 <i class="fa-regular fa-calendar me-2"></i>${item.created_at}
                             </div>
                             <div style="position: absolute; top: 10px; right: 10px;">${typeHtml}</div>
@@ -212,7 +212,7 @@ function renderView(data, isNewSearch) {
                                 </button>    
                             ` : ``}
                         ` : `
-                            <div class="small text-muted mt-1">
+                            <div class="small text-muted mt-1 d-none">
                                 <i class="fa-regular fa-calendar me-2"></i>${item.created_at}
                             </div>
                         `}
@@ -239,7 +239,7 @@ function renderView(data, isNewSearch) {
                                 </div>
                             </div>
                         ` : ` `}
-                        <div class="small text-muted">
+                        <div class="small text-muted d-none">
                             <i class="fa-regular fa-calendar me-2"></i>${item.created_at}
                         </div>
                     </div>
