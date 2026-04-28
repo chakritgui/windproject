@@ -76,8 +76,21 @@ class LevelModel {
         }
     }
     public function delete($id) {
-        $sql = "UPDATE wp_height SET status = 'deleted', updated_at = NOW() WHERE height_id = ?";
-        return $this->db->prepare($sql)->execute([(int)$id]);
+        $sqlSelect = "SELECT height_name FROM wp_height WHERE height_id = ?";
+        $stmtSelect = $this->db->prepare($sqlSelect);
+        $stmtSelect->execute([(int)$id]);
+        $level = $stmtSelect->fetch();
+        if ($level) {
+            $newName = "deleted_" . time() . "_" . $level['height_name'];
+            $sql = "UPDATE wp_height SET 
+                        status = 'deleted', 
+                        height_name  = ?, 
+                        updated_at = NOW() 
+                    WHERE height_id = ?";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([$newName, (int)$id]);
+        }
+        return false;
     }
     public function get($id) {
         if (!$id) {

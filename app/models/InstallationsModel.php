@@ -165,9 +165,21 @@ class InstallationsModel {
         ];
     }
     public function delete($id) {
-        $sql = "UPDATE wp_installations SET status=?, updated_at=NOW() WHERE installations_id=?";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute(['deleted', (int)$id]);
+        $sqlSelect = "SELECT installations_name FROM wp_installations WHERE installations_id = ?";
+        $stmtSelect = $this->db->prepare($sqlSelect);
+        $stmtSelect->execute([(int)$id]);
+        $installations = $stmtSelect->fetch();
+        if ($installations) {
+            $newName = "deleted_" . time() . "_" . $installations['installations_name'];
+            $sql = "UPDATE wp_installations SET 
+                        status = 'deleted', 
+                        installations_name  = ?, 
+                        updated_at = NOW() 
+                    WHERE installations_id = ?";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([$newName, (int)$id]);
+        }
+        return false;
     }
     public function get($id) {
         if (!$id) {

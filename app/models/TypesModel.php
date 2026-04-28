@@ -101,9 +101,21 @@ class TypesModel {
         ];
     }
     public function delete($id) {
-        $sql = "UPDATE wp_type SET status=?, updated_at=NOW() WHERE type_id=?";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute(['deleted', (int)$id]);
+        $sqlSelect = "SELECT type_name FROM wp_type WHERE type_id = ?";
+        $stmtSelect = $this->db->prepare($sqlSelect);
+        $stmtSelect->execute([(int)$id]);
+        $type = $stmtSelect->fetch();
+        if ($type) {
+            $newName = "deleted_" . time() . "_" . $type['type_name'];
+            $sql = "UPDATE wp_type SET 
+                        status = 'deleted', 
+                        type_name  = ?, 
+                        updated_at = NOW() 
+                    WHERE type_id = ?";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([$newName, (int)$id]);
+        }
+        return false;
     }
     public function get($id) {
         if (!$id) {

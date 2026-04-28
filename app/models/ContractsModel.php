@@ -112,9 +112,21 @@ class ContractsModel {
         ];
     }
     public function delete($id) {
-        $sql = "UPDATE wp_contract SET status=?, updated_at=NOW() WHERE contract_id=?";
-        $stmt = $this->db->prepare($sql);
-        return $stmt->execute(['deleted', (int)$id]);
+        $sqlSelect = "SELECT contract_name FROM wp_contract WHERE contract_id = ?";
+        $stmtSelect = $this->db->prepare($sqlSelect);
+        $stmtSelect->execute([(int)$id]);
+        $contract = $stmtSelect->fetch();
+        if ($contract) {
+            $newName = "deleted_" . time() . "_" . $contract['contract_name'];
+            $sql = "UPDATE wp_contract SET 
+                        status = 'deleted', 
+                        contract_name  = ?, 
+                        updated_at = NOW() 
+                    WHERE contract_id = ?";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([$newName, (int)$id]);
+        }
+        return false;
     }
     public function get($id) {
         if (!$id) {

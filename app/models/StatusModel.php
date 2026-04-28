@@ -103,8 +103,21 @@ class StatusModel {
         return $stmt->execute();
     }
     public function delete($id) {
-        $sql = "UPDATE wp_project_status SET status = 'deleted', updated_at = NOW() WHERE project_status_id = ?";
-        return $this->db->prepare($sql)->execute([(int)$id]);
+        $sqlSelect = "SELECT project_status_name FROM wp_project_status WHERE project_status_id = ?";
+        $stmtSelect = $this->db->prepare($sqlSelect);
+        $stmtSelect->execute([(int)$id]);
+        $project_status = $stmtSelect->fetch();
+        if ($project_status) {
+            $newName = "deleted_" . time() . "_" . $project_status['project_status_name'];
+            $sql = "UPDATE wp_project_status SET 
+                        status = 'deleted', 
+                        project_status_name  = ?, 
+                        updated_at = NOW() 
+                    WHERE project_status_id = ?";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([$newName, (int)$id]);
+        }
+        return false;
     }
     private function isDuplicateName($name, $id = null) {
         $sql = "SELECT COUNT(*) FROM wp_project_status WHERE project_status_name = :name AND status <> 'deleted'";
