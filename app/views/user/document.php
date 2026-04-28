@@ -64,14 +64,7 @@
         <div class="collapse d-md-block" id="filterCollapse">
             <div class="filter-card">
                 <div class="filter-grid">
-                    <div>
-                        <div class="filter-label">
-                            <i class="fa-regular fa-calendar"></i>
-                            <span data-i18n="month-year"></span>
-                        </div>
-                        <input id="filter_date" class="filter-control" type="text" placeholder="MM/YYYY" autocomplete="off">
-                    </div>
-                    <div>
+                    <div class="d-none">
                         <div class="filter-label">
                             <i class="fa-solid fa-file-lines"></i>
                             <span data-i18n="contract"></span>
@@ -91,6 +84,13 @@
                             <span data-i18n="wind_measurement_equipment"></span>
                         </div>
                         <select id="filter_type" class="filter-control filter"></select>
+                    </div>
+                    <div>
+                        <div class="filter-label">
+                            <i class="fa-regular fa-calendar"></i>
+                            <span data-i18n="month-year"></span>
+                        </div>
+                        <input id="filter_date" class="filter-control" type="text" placeholder="MM/YYYY" autocomplete="off">
                     </div>
                     <div class="d-none">
                         <div class="filter-label">

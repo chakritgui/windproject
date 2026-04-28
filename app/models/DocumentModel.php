@@ -292,10 +292,14 @@ class DocumentModel {
             $type_id = !empty($data['type_id']) ? $data['type_id'] : null;
             $installations_id = !empty($data['installations_id']) ? $data['installations_id'] : null;
             $poles_id = !empty($data['poles_id']) ? $data['poles_id'] : null;
-            $startObj = !empty($data['document_start']) ? DateTime::createFromFormat('d/m/Y', trim($data['document_start'])) : null;
-            $endObj = !empty($data['document_end']) ? DateTime::createFromFormat('d/m/Y', trim($data['document_end'])) : null;
-            $document_start = ($startObj) ? convertTimeZoneUTC($startObj->format('Y-m-d'), 'Y-m-d') : null;
-            $document_end   = ($endObj) ? convertTimeZoneUTC($endObj->format('Y-m-d'), 'Y-m-d') : null;
+            $startObj = !empty($data['document_start']) 
+                ? DateTime::createFromFormat('d/m/Y', trim($data['document_start'])) 
+                : null;
+            $endObj = !empty($data['document_end']) 
+                ? DateTime::createFromFormat('d/m/Y', trim($data['document_end'])) 
+                : null;
+            $document_start = $startObj ? $startObj->format('Y-m-d') : null;
+            $document_end   = $endObj   ? $endObj->format('Y-m-d')   : null;
             $folder_show_admin = $data['folder_show_admin'];
             $folder_show_user  = $data['folder_show_user'];
             $send_notification = $data['send_notification'] ?? 'no';

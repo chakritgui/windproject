@@ -34,11 +34,8 @@ class UserModel {
         }
         if ($date && preg_match('/^\d{2}\/\d{4}$/', $date)) {
             list($m, $y) = explode('/', $date);
-            $start = convertTimeZoneUTC("$y-$m-01 00:00:00", 'Y-m-d H:i:s');
-            $end   = convertTimeZoneUTC(
-                date('Y-m-t 23:59:59', strtotime("$y-$m-01")),
-                'Y-m-d H:i:s'
-            );
+            $start = "$y-$m-01";
+            $end   = date('Y-m-t', strtotime("$y-$m-01"));
             $where .= " AND d.document_start <= :end_date AND d.document_end >= :start_date";
             $params[':start_date'] = [$start, PDO::PARAM_STR];
             $params[':end_date']   = [$end, PDO::PARAM_STR];
@@ -250,7 +247,8 @@ class UserModel {
         }
         foreach (['document_start', 'document_end'] as $f) {
             if (!empty($row[$f])) {
-                $row[$f] = convertTimeZone($row[$f], 'd/m/Y');
+                $dateObj = DateTime::createFromFormat('Y-m-d', substr($row[$f], 0, 10));
+                $row[$f] = $dateObj ? $dateObj->format('d/m/Y') : null;
             }
         }
     }
