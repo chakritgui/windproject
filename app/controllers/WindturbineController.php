@@ -7,32 +7,13 @@ class WindturbineController extends BaseController {
         $this->model = new WindturbineModel(); 
     }
     public function list(){
-        $start = intval($_POST['start'] ?? 0);
-        $length= intval($_POST['length'] ?? 10);
         $filters = [
-            'project'=> $_POST['project'] ?? '',
-            'status'=> $_POST['status'] ?? '',
+            'project' => $_POST['project'] ?? '',
+            'status'  => $_POST['status']  ?? '',
         ];
-        $search = $_POST['search']['value'] ?? '';
-        $orderDir    = 'asc';
-        if (!empty($_POST['order'][0])) {
-            $colIndex   = intval($_POST['order'][0]['column']);
-            $orderDir   = $_POST['order'][0]['dir'] === 'desc' ? 'desc' : 'asc';
-        }
-        $res = $this->model->list(
-            $start,
-            $length,
-            $filters,
-            $search,
-            $colIndex,
-            $orderDir
-        );
-        $this->json([
-            "draw" => intval($_POST['draw'] ?? 1),
-            "recordsTotal" => $res['total'],
-            "recordsFiltered" => $res['total'],
-            "data" => $res['data']
-        ]);
+        $search = $_POST['search'] ?? '';
+        $data = $this->model->listGroupedByProject($filters, $search);
+        $this->json(['data' => $data]);
     }
     public function delete() {
         $id = intval($_POST['id'] ?? 0);
@@ -89,5 +70,21 @@ class WindturbineController extends BaseController {
         $searchTerm = $_POST['searchTerm'] ?? '';
         $type = $_POST['type'] ?? '';
         $this->json(['status'=>true , 'data' => $this->model->filter($page, $limit, $type, $searchTerm)]);
+    }
+    public function listByProject() {
+        $projectId = $_POST['project_id'] ?? '';
+        $filters   = ['status' => $_POST['status'] ?? ''];
+        $search    = $_POST['search'] ?? '';
+        $data = $this->model->listByProject($projectId, $filters, $search);
+        $this->json(['data' => $data]);
+    }
+    public function deleteByProject() {
+        $projectId = $_POST['project_id'] ?? '';
+        if (empty($projectId)) {
+            $this->json(['status' => false]);
+            return;
+        }
+        $result = $this->model->deleteByProject($projectId);
+        $this->json(['status' => $result]);
     }
 }

@@ -347,32 +347,28 @@
                             <p><i class="fa-solid fa-circle-dot me-2"></i><span data-i18n="status"></span></p>
                             <select id="filter_windturbine_status" class="form-select filter"></select>
                         </div>
+                        <div class="col-sm-3 col-12 d-flex align-items-end">
+                            <input type="text" id="search_windturbine" class="form-control" placeholder="Search...">
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="mb-3">
-                <a href="${BASE_URL}/excel/WindImportExample.xlsx" class="btn btn-success btn-sm example-inport ms-1" target="_blank">
+            <div class="mb-3 d-flex gap-2 flex-wrap">
+                <a href="${BASE_URL}/excel/WindImportExample.xlsx" 
+                class="btn btn-success btn-sm example-inport" target="_blank">
                     <i class="fa-solid fa-download me-2"></i><span data-i18n="example_import"></span>
                 </a>
-                <button class="btn btn-danger btn-sm clear-windturbine ms-1">
-                    <i class="fa-solid fa-trash-can me-2"></i><span><span data-i18n="clear_data"></span></span>
+                <button class="btn btn-primary btn-sm import-windturbine">
+                    <i class="fa-solid fa-plus me-2"></i><span data-i18n="import"></span>
+                </button>
+                <button class="btn btn-info btn-sm icon-windturbine">
+                    <i class="fa-solid fa-gears me-2"></i><span data-i18n="icon"></span>
+                </button>
+                <button class="btn btn-danger btn-sm clear-windturbine">
+                    <i class="fa-solid fa-trash-can me-2"></i><span data-i18n="clear_data"></span>
                 </button>
             </div>
-            <div class="table-responsive">
-                <table class="table table-striped table-hover" id="tb_windturbine">
-                    <thead>
-                        <tr>
-                            <th data-i18n="project"></th>
-                            <th data-i18n="latitude"></th>
-                            <th data-i18n="longitude"></th>
-                            <th data-i18n="create_at"></th>
-                            <th data-i18n="status"></th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
+            <div id="windturbine_accordion"></div>
         </div>
     </div>
 </div>
@@ -387,3 +383,157 @@
 <script src="<?=asset('public/js/admin/master/project-status.js')?>" defer></script>
 <script src="<?=asset('public/js/admin/master/level.js')?>" defer></script>
 <script src="<?=asset('public/js/admin/master/windturbine.js')?>" defer></script>
+<style>
+    #windturbine_accordion .accordion-item {
+        border: 1px solid #e0e6ed !important;
+        border-radius: 10px !important;
+        overflow: hidden;
+        transition: box-shadow 0.2s ease;
+    }
+    #windturbine_accordion .accordion-item:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.10) !important;
+    }
+    #windturbine_accordion .accordion-button {
+        background-color: #f8f9fa;
+        color: #2c3e50;
+        padding: 0.85rem 1.25rem;
+        border-radius: 0 !important;
+        transition: background-color 0.2s ease;
+    }
+    #windturbine_accordion .accordion-button:not(.collapsed) {
+        background-color: #eaf1fb;
+        color: #1a5fb4;
+        box-shadow: none;
+    }
+    #windturbine_accordion .accordion-button:focus {
+        box-shadow: none;
+        border-color: transparent;
+    }
+    #windturbine_accordion .accordion-button::after {
+        filter: none;
+        opacity: 0.5;
+    }
+    #windturbine_accordion .accordion-button:not(.collapsed)::after {
+        filter: invert(30%) sepia(80%) saturate(500%) hue-rotate(190deg);
+        opacity: 1;
+    }
+    #windturbine_accordion .accordion-button .fa-folder-open {
+        transition: color 0.2s;
+    }
+    #windturbine_accordion .accordion-button:not(.collapsed) .fa-folder-open {
+        color: #f0a500 !important;
+    }
+    #windturbine_accordion .accordion-button .badge {
+        padding: 0.3em 0.65em;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+    #windturbine_accordion .accordion-body {
+        padding: 0 !important;
+        background-color: #fff;
+    }
+    #windturbine_accordion .table {
+        margin-bottom: 0;
+    }
+    #windturbine_accordion .table thead th {
+        background-color: #f1f5f9;
+        color: #64748b;
+        font-weight: 600;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 0.6rem 1rem;
+        white-space: nowrap;
+    }
+    #windturbine_accordion .table tbody tr {
+        transition: background-color 0.15s ease;
+    }
+    #windturbine_accordion .table tbody tr:hover {
+        background-color: #f0f7ff !important;
+    }
+    #windturbine_accordion .table tbody td {
+        vertical-align: middle;
+        padding: 0.6rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        color: #374151;
+    }
+    #windturbine_accordion .table tbody td.text-muted {
+        padding: 1.5rem;
+    }
+    #windturbine_accordion .form-check-input[type="checkbox"] {
+        width: 2.2em;
+        height: 1.2em;
+        cursor: pointer;
+        border-color: #ced4da;
+        transition: background-color 0.2s, border-color 0.2s;
+    }
+    #windturbine_accordion .form-check-input:checked {
+        background-color: #198754;
+        border-color: #198754;
+    }
+    #windturbine_accordion .delete-windturbine {
+        opacity: 0.5;
+        transition: opacity 0.2s, transform 0.15s;
+    }
+    #windturbine_accordion .delete-windturbine:hover {
+        opacity: 1;
+        transform: scale(1.2);
+        color: #dc3545 !important;
+    }
+    #windturbine_accordion .spinner-border {
+        width: 2rem;
+        height: 2rem;
+    }
+    #search_windturbine {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    #search_windturbine:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    }
+    #filter_windturbine_project,#filter_windturbine_status {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    #filter_windturbine_project:focus,#filter_windturbine_status:focus {
+        border-color: #86b7fe;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+    }
+    .import-windturbine,.icon-windturbine,.clear-windturbine,.example-inport {
+        padding: 0.35rem 0.85rem;
+        transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .import-windturbine:hover,.icon-windturbine:hover,.clear-windturbine:hover,.example-inport:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+    }
+    @media (max-width: 576px) {
+        #windturbine_accordion .accordion-button {
+            padding: 0.7rem 1rem;
+        }
+        #windturbine_accordion .table thead th,
+        #windturbine_accordion .table tbody td {
+            padding: 0.5rem 0.6rem;
+        }
+    }
+    #windturbine_accordion .accordion-header {
+        display: flex;
+        align-items: center;
+    }
+    #windturbine_accordion .accordion-header .accordion-button {
+        flex: 1;
+    }
+    #windturbine_accordion .delete-windturbine-project {
+        opacity: 0.35;
+        transition: opacity 0.2s, transform 0.15s;
+        text-decoration: none;
+    }
+    #windturbine_accordion .accordion-item:hover .delete-windturbine-project {
+        opacity: 1;
+    }
+    #windturbine_accordion .delete-windturbine-project:hover {
+        transform: scale(1.2);
+        color: #dc3545 !important;
+    }
+</style>

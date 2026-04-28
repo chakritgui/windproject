@@ -1,123 +1,183 @@
-let tb_windturbine;
 function initWindturbineTable() {
-    let oldPage = 0;
-    if ($.fn.DataTable.isDataTable('#tb_windturbine')) {
-        oldPage = $('#tb_windturbine').DataTable().page();
-        $('#tb_windturbine').DataTable().destroy();
-    }
-    if ($.fn.DataTable.isDataTable('#tb_windturbine')) {
-        $('#tb_windturbine').DataTable().ajax.reload(null, false);
+    const project = $('#filter_windturbine_project').val();
+    const status  = $('#filter_windturbine_status').val();
+    const search  = $('#search_windturbine').val();
+    $.ajax({
+        url: `${BASE_URL}/api/windturbine.list`,
+        type: 'POST',
+        data: { project, status, search },
+        beforeSend: function() {
+            $('#windturbine_accordion').html(`
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary"></div>
+                </div>
+            `);
+        },
+        success: function(res) {
+            renderWindturbineAccordion(res.data);
+        }
+    });
+}
+function renderWindturbineAccordion(groups) {
+    const $container = $('#windturbine_accordion');
+    $container.empty();
+    if (!groups || groups.length === 0) {
+        $container.html('<div class="alert alert-info">No data found.</div>');
         return;
     }
-    tb_windturbine = $('#tb_windturbine').DataTable({
-        processing: true,
-        serverSide: true,
-        order: [[3, 'desc']],
-        ajax: { 
-            url: `${BASE_URL}/api/windturbine.list`, 
-            type: "POST",
-            data: function(d){
-                d.project = $('#filter_windturbine_project').val();
-                d.status = $('#filter_windturbine_status').val();
-            }
-        },
-        columns: [{ 
-            data: "project_name",
-            orderable: true,
-        },{ 
-            data: "windturbine_lat",
-            orderable: true,
-        },{ 
-            data: "windturbine_lng",
-            orderable: true,
-        },{ 
-            data: "created_at",
-            orderable: true,
-        },{ 
-            data: 'status',
-            orderable: true,
-            render: function (status, type, row) {
-                const isChecked = (status === 'active') ? 'checked' : '';
-                const rowId = row.id;
-                return `
-                    <div class="form-check form-switch">
-                        <input class="form-check-input update-status-switch" type="checkbox" role="switch" id="switch_${rowId}" data-id="${rowId}" ${isChecked} style="cursor: pointer;">
-                        <label class="form-check-label ms-1 small text-muted" for="switch_${rowId}"></label>
-                    </div>
-                `;
-            }
-        },{ 
-            data: null,
-            orderable: false,
-            className: "text-end",
-            render: function(row){
-                return `
-                    <div class="btn-group border rounded-3 bg-white">
-                        <button class="btn btn-link text-danger py-1 border-start delete-windturbine" data-id="${row.id}"><i class="fa-regular fa-trash-can"></i></button>
-                    </div>
-                `;
-            }
-        }],
-        pageLength: pageLength,
-        lengthMenu: lengthMenu,
-        stateLoadParams: function (settings, data) {
-            data.start = oldPage;
-            data.length = pageLength; 
-        },
-        language: getTableLang(),
-        initComplete: function() {
-            var self = this.api();
-            var $filter = $('#tb_windturbine_filter');
-            var input = $filter.find('input').unbind(); 
-            input.bind('keypress', function(e) {
-                if (e.keyCode == 13) {
-                    self.search(input.val()).draw();
-                }
+    groups.forEach(function(group, index) {
+        const collapseId = `collapse_wt_project_${group.project_id}`;
+        const headerId   = `header_wt_project_${group.project_id}`;
+        const count      = group.items.length;
+        const isEmpty    = count === 0;
+        let rowsHtml = '';
+        if (isEmpty) {
+            rowsHtml = `
+                <tr>
+                    <td colspan="5" class="text-center text-muted fst-italic">
+                        <i class="fa-solid fa-inbox me-2"></i><span data-i18n="no_data_found"></span>
+                    </td>
+                </tr>`;
+        } else {
+            group.items.forEach(function(row) {
+                const isChecked = row.status === 'active' ? 'checked' : '';
+                rowsHtml += `
+                <tr>
+                    <td>${row.windturbine_lat}</td>
+                    <td>${row.windturbine_lng}</td>
+                    <td><small class="text-muted">${row.created_at}</small></td>
+                    <td>
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input update-status-switch" type="checkbox" role="switch"id="switch_${row.id}" data-id="${row.id}" ${isChecked} style="cursor:pointer;">
+                        </div>
+                    </td>
+                    <td class="text-end">
+                        <button class="btn btn-link btn-sm text-danger p-0 delete-windturbine" data-id="${row.id}" data-project-id="${group.project_id}"><i class="fa-regular fa-trash-can"></i></button>
+                    </td>
+                </tr>`;
             });
-            if ($filter.find('.import-windturbine').length === 0) {
-                let btn = `
-                    <button class="btn btn-primary btn-sm import-windturbine ms-1">
-                        <i class="fa-solid fa-plus me-2"></i><span>${langData['import'] || "Import"}</span>
-                    </button>
-                `;
-                $filter.append(btn);
+        }
+        const accordionItem = `
+        <div class="accordion-item mb-2 border rounded shadow-sm">
+            <h2 class="accordion-header" id="${headerId}">
+                <button class="accordion-button ${index > 0 ? 'collapsed' : ''} fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="${index === 0 ? 'true' : 'false'}" aria-controls="${collapseId}">
+                    <i class="fa-solid fa-folder-open me-2 text-warning"></i>
+                    ${group.project_name}
+                    <span class="badge ${isEmpty ? 'bg-secondary' : 'bg-primary'} ms-2">${count}</span>
+                </button>
+                <button class="btn btn-link text-danger py-0 px-3 delete-windturbine-project flex-shrink-0" data-project-id="${group.project_id}"data-project-name="${group.project_name}" title="Delete all in project">
+                    <i class="fa-regular fa-trash-can"></i>
+                </button>
+            </h2>
+            <div id="${collapseId}" 
+                 class="accordion-collapse collapse ${index === 0 ? 'show' : ''}" 
+                 aria-labelledby="${headerId}">
+                <div class="accordion-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th data-i18n="latitude"></th>
+                                    <th data-i18n="longitude"></th>
+                                    <th data-i18n="create_at"></th>
+                                    <th data-i18n="status"></th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHtml}</tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+        $container.append(accordionItem);
+    });
+    if (typeof applyI18n === 'function') applyI18n();
+}
+$('#filter_windturbine_project, #filter_windturbine_status').on('change', function() {
+    initWindturbineTable();
+});
+$('#search_windturbine').on('keypress', function(e) {
+    if (e.keyCode === 13) initWindturbineTable();
+});
+function reloadWindturbineProject(projectId) {
+    const $accordion = $(`#collapse_wt_project_${projectId}`);
+    const $tbody = $accordion.find('tbody');
+    const status = $('#filter_windturbine_status').val();
+    const search = $('#search_windturbine').val();
+    $tbody.html(`
+        <tr>
+            <td colspan="5" class="text-center py-3">
+                <div class="spinner-border spinner-border-sm text-primary"></div>
+            </td>
+        </tr>
+    `);
+    $.ajax({
+        url: `${BASE_URL}/api/windturbine.listByProject`,
+        type: 'POST',
+        data: { project_id: projectId, status, search },
+        dataType: 'json',
+        success: function(res) {
+            let rowsHtml = '';
+            if (!res.data || res.data.length === 0) {
+                rowsHtml = `
+                    <tr>
+                        <td colspan="5" class="text-center text-muted fst-italic">
+                            <i class="fa-solid fa-inbox me-2"></i><span data-i18n="no_data_found"></span>
+                        </td>
+                    </tr>`;
+            } else {
+                res.data.forEach(function(row) {
+                    const isChecked = row.status === 'active' ? 'checked' : '';
+                    rowsHtml += `
+                    <tr>
+                        <td>${row.windturbine_lat}</td>
+                        <td>${row.windturbine_lng}</td>
+                        <td><small class="text-muted">${row.created_at}</small></td>
+                        <td>
+                            <div class="form-check form-switch mb-0">
+                                <input class="form-check-input update-status-switch" type="checkbox" role="switch" id="switch_${row.id}" data-id="${row.id}" ${isChecked} style="cursor:pointer;">
+                            </div>
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-link btn-sm text-danger p-0 delete-windturbine" data-id="${row.id}" data-project-id="${row.project_id}">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                });
             }
-            if ($filter.find('.icon-windturbine').length === 0) {
-                let btn = `
-                    <button class="btn btn-info btn-sm icon-windturbine ms-1">
-                        <i class="fa-solid fa-gears me-2"></i><span>${langData['icon'] || "Icon"}</span>
-                    </button>
-                `;
-                $filter.append(btn);
-            }
-        },
-        drawCallback: function(){
-            getTableLang();
+            $tbody.html(rowsHtml);
+            const count = res.data ? res.data.length : 0;
+            $(`[data-bs-target="#collapse_wt_project_${projectId}"] .badge`).text(count).removeClass('bg-primary bg-secondary').addClass(count > 0 ? 'bg-primary' : 'bg-secondary');
+            if (typeof applyI18n === 'function') applyI18n();
         }
     });
 }
 $(document).on('click', '.delete-windturbine', function() {
-    let id = $(this).data("id");
-    showConfirm(langData['confirm'], langData['confirm_delete'], function(){
+    const id = $(this).data('id');
+    const projectId = $(this).data('project-id');
+    showConfirm(langData['confirm'], langData['confirm_delete'], function() {
         $.ajax({
             url: `${BASE_URL}/api/windturbine.delete`,
             method: 'POST',
-            data: { id: id },
+            data: { id: id, project_id: projectId },
             dataType: 'json',
             success: function(res) {
-                if(res.status === true){
+                if (res.status === true) {
                     showSuccess(langData['deleted_successfully']);
-                    initWindturbineTable();
+                    reloadWindturbineProject(projectId);
                 } else {
                     showError(langData['cannot_delete']);
-                }   
+                }
             },
-            error: function(){
+            error: function() {
                 showError(langData['cannot_delete']);
             }
         });
     });
 });
+
 $(document).on('click', '.import-windturbine', function () {
     let modalEl = $('#windModal');
     let modal = new bootstrap.Modal(modalEl[0]);
@@ -374,4 +434,32 @@ $(document).on('click', '.clear-windturbine', function() {
             }
         });
     });
+});
+$(document).on('click', '.delete-windturbine-project', function(e) {
+    e.stopPropagation();
+    const projectId   = $(this).data('project-id');
+    const projectName = $(this).data('project-name');
+    showConfirm(
+        langData['confirm'],
+        `${langData['confirm_delete']} "${projectName}"?`,
+        function() {
+            $.ajax({
+                url: `${BASE_URL}/api/windturbine.deleteByProject`,
+                method: 'POST',
+                data: { project_id: projectId },
+                dataType: 'json',
+                success: function(res) {
+                    if (res.status === true) {
+                        showSuccess(langData['deleted_successfully']);
+                        reloadWindturbineProject(projectId);
+                    } else {
+                        showError(langData['cannot_delete']);
+                    }
+                },
+                error: function() {
+                    showError(langData['cannot_delete']);
+                }
+            });
+        }
+    );
 });

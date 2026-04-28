@@ -4,56 +4,51 @@ class WindturbineModel {
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
     }
-    public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 3, $orderDir = 'desc') {
+    public function listGroupedByProject($filters = [], $search = '') {
+        $sqlProjects = "SELECT project_id, project_name 
+                        FROM wp_project 
+                        WHERE status != 'deleted' 
+                        ORDER BY ifnull(item_order, project_id) ASC";
+        $stmtP = $this->db->prepare($sqlProjects);
+        $stmtP->execute();
+        $projects = $stmtP->fetchAll(PDO::FETCH_ASSOC);
         list($where, $params) = $this->buildListWhere($filters, $search);
-        $sqlTotal = "SELECT COUNT(*) FROM wp_windturbine w LEFT JOIN wp_project p ON p.project_id = w.project_id {$where}";
-        $stmt = $this->db->prepare($sqlTotal);
-        $stmt->execute($params);
-        $total = (int)$stmt->fetchColumn();
-        $order = 'created_at';
-        $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
-        $orderMap = [
-            0 => "p.project_name",
-            1 => "w.windturbine_lat",
-            2 => "w.windturbine_lng",
-            3 => "w.created_at",
-            4 => "w.status"
-        ];
-        if (isset($orderMap[$colIndex])) {
-            $order = $orderMap[$colIndex];
-        }
+
         $sql = "SELECT
-                w.id, 
-                p.project_name,
-                w.windturbine_lat,
-                w.windturbine_lng,
-                w.status,
-                w.created_at
-            FROM wp_windturbine w
-            LEFT JOIN wp_project p ON p.project_id = w.project_id
-            {$where}
-            ORDER BY {$order} {$orderDir}
-        ";
-        if ($length != -1) {
-            $sql .= " LIMIT :start, :length";
-        }
+                    w.id, 
+                    w.project_id,
+                    p.project_name,
+                    w.windturbine_lat,
+                    w.windturbine_lng,
+                    w.status,
+                    w.created_at
+                FROM wp_windturbine w
+                LEFT JOIN wp_project p ON p.project_id = w.project_id
+                {$where}
+                ORDER BY p.project_name ASC, w.created_at DESC";
         $stmt = $this->db->prepare($sql);
         foreach ($params as $k => $v) {
             $stmt->bindValue($k, $v);
-        }
-        if ($length != -1) {
-            $stmt->bindValue(':start', (int)$start, PDO::PARAM_INT);
-            $stmt->bindValue(':length', (int)$length, PDO::PARAM_INT);
         }
         $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($rows as &$row) {
             $this->formatDocumentRow($row);
         }
-        return [
-            'total' => $total,
-            'data'  => $rows
-        ];
+        $grouped = [];
+        foreach ($rows as $row) {
+            $grouped[$row['project_id']][] = $row;
+        }
+        $result = [];
+        foreach ($projects as $project) {
+            $pid = $project['project_id'];
+            $result[] = [
+                'project_id'   => $pid,
+                'project_name' => $project['project_name'],
+                'items'        => $grouped[$pid] ?? [] 
+            ];
+        }
+        return $result;
     }
     private function buildListWhere($filters, $search) {
         $where  = " WHERE w.status != 'deleted' ";
@@ -100,19 +95,19 @@ class WindturbineModel {
                 $items = array_slice($staticData, $offset, $limit);
                 break;
             case 'project':
+                $where = "WHERE status <> 'deleted'";
                 if ($searchTerm !== '') {
-                    $where = "WHERE project_name LIKE :search";
+                    $where .= " AND project_name LIKE :search";
                     $params[':search'] = "%{$searchTerm}%";
                 }
                 $stmtCount = $this->db->prepare("SELECT COUNT(*) FROM wp_project {$where}");
                 $stmtCount->execute($params);
                 $totalCount = (int)$stmtCount->fetchColumn();
                 $sql = "SELECT project_id AS id, project_name AS text
-                    FROM wp_project
-                    {$where}
-                    ORDER BY project_id DESC
-                    LIMIT :limit OFFSET :offset
-                ";
+                        FROM wp_project
+                        {$where}
+                        ORDER BY project_id DESC
+                        LIMIT :limit OFFSET :offset";   
                 $stmt = $this->db->prepare($sql);
                 foreach ($params as $k => $v) {
                     $stmt->bindValue($k, $v);
@@ -417,5 +412,38 @@ class WindturbineModel {
             $this->db->rollBack();
             error_log($e->getMessage());
         }
+    }
+    public function listByProject($projectId, $filters = [], $search = '') {
+        list($where, $params) = $this->buildListWhere($filters, $search);
+        $where .= " AND w.project_id = :project_id";
+        $params[':project_id'] = $projectId;
+        $sql = "SELECT
+                    w.id,
+                    w.project_id,
+                    p.project_name,
+                    w.windturbine_lat,
+                    w.windturbine_lng,
+                    w.status,
+                    w.created_at
+                FROM wp_windturbine w
+                LEFT JOIN wp_project p ON p.project_id = w.project_id
+                {$where}
+                ORDER BY w.created_at DESC";
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v);
+        }
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as &$row) {
+            $this->formatDocumentRow($row);
+        }
+        return $rows;
+    }
+    public function deleteByProject($projectId) {
+        $sql  = "UPDATE wp_windturbine SET status = 'deleted', updated_at=NOW() WHERE project_id = :project_id AND status != 'deleted'";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':project_id', $projectId);
+        return $stmt->execute();
     }
 }

@@ -199,6 +199,8 @@
             $router->post('/api/project.unlink', 'ProjectController@unlink');
             $router->post('/api/project.sort', 'ProjectController@sort');
             $router->post('/api/windturbine.list', 'WindturbineController@list');
+            $router->post('/api/windturbine.listByProject', 'WindturbineController@listByProject');
+            $router->post('/api/windturbine.deleteByProject', 'WindturbineController@deleteByProject');
             $router->post('/api/windturbine.filter', 'WindturbineController@filter');
             $router->post('/api/windturbine.delete', 'WindturbineController@delete');
             $router->post('/api/windturbine.import', 'WindturbineController@import');
