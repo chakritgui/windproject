@@ -466,6 +466,17 @@ async function loadWindTurbines() {
                     toggleWindTurbine(currentVisible);
                 }
                 console.log(`✅ Turbines loaded: ${Object.keys(turbineMarkers).length} markers`);
+                console.log('turbineMarkers total:', Object.keys(turbineMarkers).length);
+
+let inMap = 0;
+Object.values(turbineMarkers).forEach(({ marker }) => {
+    if (poleLayerGroup.hasLayer(marker)) inMap++;
+});
+console.log('actually in poleLayerGroup:', inMap);
+
+// ดู map bounds ปัจจุบัน
+console.log('map bounds:', map.getBounds());
+console.log('map maxBounds:', map.options.maxBounds);
             }
         }
         renderChunk();
