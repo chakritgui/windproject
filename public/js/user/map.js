@@ -418,18 +418,22 @@ async function loadWindTurbines() {
         const res      = await fetchJSON(`${BASE_URL}/api/windturbines.get`);
         const turbines = Array.isArray(res) ? res : (res.list || []);
         if (res.icon_config) window.globalWindturbineIcon = res.icon_config;
-        if (!Array.isArray(turbines)) return;
+        if (!Array.isArray(turbines) || turbines.length === 0) return;
         Object.values(turbineMarkers).forEach(({ marker }) => {
-            if (marker && poleLayerGroup.hasLayer(marker)) poleLayerGroup.removeLayer(marker);
+            if (marker && poleLayerGroup.hasLayer(marker)) {
+                poleLayerGroup.removeLayer(marker);
+            }
         });
         turbineMarkers = {};
         const isVisible   = localStorage.getItem('windturbine') === 'true';
         const zoom        = map.getZoom();
         const currentSize = _getTurbineSize(zoom);
         const opacity     = zoom < 10 ? 0.6 : 1;
-        const CHUNK = 100;
+        const shouldAdd = isVisible;
+        const CHUNK = 150;
         let idx = 0;
         function renderChunk() {
+            if (!poleLayerGroup) return;
             const end = Math.min(idx + CHUNK, turbines.length);
             for (let i = idx; i < end; i++) {
                 const turbine = turbines[i];
@@ -437,7 +441,7 @@ async function loadWindTurbines() {
                 const lng = parseFloat(turbine.windturbine_lng);
                 if (isNaN(lat) || isNaN(lng)) continue;
                 const marker = L.marker([lat, lng], {
-                    icon:        _buildTurbineIcon(currentSize),
+                    icon:         _buildTurbineIcon(currentSize),
                     zIndexOffset: 900,
                     opacity,
                 });
@@ -449,12 +453,25 @@ async function loadWindTurbines() {
                     });
                 }
                 turbineMarkers[i] = { marker, turbine };
-                if (isVisible) marker.addTo(poleLayerGroup);
+                if (shouldAdd) {
+                    marker.addTo(poleLayerGroup);
+                }
             }
             idx = end;
-            if (idx < turbines.length) requestAnimationFrame(renderChunk);
+            if (idx < turbines.length) {
+                setTimeout(renderChunk, 0);
+            } else {
+                const currentVisible = localStorage.getItem('windturbine') === 'true';
+                if (currentVisible !== shouldAdd) {
+                    toggleWindTurbine(currentVisible);
+                }
+                console.log(`✅ Turbines loaded: ${Object.keys(turbineMarkers).length} markers`);
+            }
         }
         renderChunk();
+        if (!map._turbineZoomBound) {
+            map._turbineZoomBound = true;
+        }
     } catch (err) {
         console.error('loadWindTurbines error:', err);
     }
@@ -911,9 +928,13 @@ function toggleWindTurbine(isOn) {
     Object.values(turbineMarkers).forEach(({ marker }) => {
         if (!marker) return;
         if (isOn) {
-            if (!poleLayerGroup.hasLayer(marker)) marker.addTo(poleLayerGroup);
+            if (!poleLayerGroup.hasLayer(marker)) {
+                marker.addTo(poleLayerGroup);
+            }
         } else {
-            if (poleLayerGroup.hasLayer(marker))  poleLayerGroup.removeLayer(marker);
+            if (poleLayerGroup.hasLayer(marker)) {
+                poleLayerGroup.removeLayer(marker);
+            }
         }
     });
 }
