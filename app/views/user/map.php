@@ -6,6 +6,7 @@
 <script src="<?=asset('public/js/user/mapHelper.js')?>"></script>
 <script>
     let windyAPI, map, poleLayerGroup;
+    let turbineLayerGroup = null;
     let MAP_CONTROL = []
     let DEFAULT_LEVEL = '100m';
     let options = { 

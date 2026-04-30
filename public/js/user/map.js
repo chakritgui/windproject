@@ -6,6 +6,7 @@ function initMap() {
         map      = windyMap;
         if (typeof restoreMapSettings === 'function') restoreMapSettings();
         poleLayerGroup = L.layerGroup().addTo(map);
+        turbineLayerGroup = L.layerGroup().addTo(map);
         store.set('overlay', 'wind');
         store.set('level', DEFAULT_LEVEL);
         try {
@@ -419,73 +420,72 @@ async function loadWindTurbines() {
         const turbines = Array.isArray(res) ? res : (res.list || []);
         if (res.icon_config) window.globalWindturbineIcon = res.icon_config;
         if (!Array.isArray(turbines) || turbines.length === 0) return;
-        Object.values(turbineMarkers).forEach(({ marker }) => {
-            if (marker && poleLayerGroup.hasLayer(marker)) {
-                poleLayerGroup.removeLayer(marker);
-            }
-        });
+        if (turbineLayerGroup) {
+            turbineLayerGroup.clearLayers();
+        } else {
+            turbineLayerGroup = L.layerGroup().addTo(map);
+        }
         turbineMarkers = {};
         const isVisible   = localStorage.getItem('windturbine') === 'true';
         const zoom        = map.getZoom();
         const currentSize = _getTurbineSize(zoom);
         const opacity     = zoom < 10 ? 0.6 : 1;
-        const shouldAdd = isVisible;
-        const CHUNK = 150;
-        let idx = 0;
-        function renderChunk() {
-            if (!poleLayerGroup) return;
-            const end = Math.min(idx + CHUNK, turbines.length);
-            for (let i = idx; i < end; i++) {
-                const turbine = turbines[i];
-                const lat = parseFloat(turbine.windturbine_lat);
-                const lng = parseFloat(turbine.windturbine_lng);
-                if (isNaN(lat) || isNaN(lng)) continue;
-                const marker = L.marker([lat, lng], {
-                    icon:         _buildTurbineIcon(currentSize),
-                    zIndexOffset: 900,
-                    opacity,
+        turbines.forEach((turbine, i) => {
+            const lat = parseFloat(turbine.windturbine_lat);
+            const lng = parseFloat(turbine.windturbine_lng);
+            if (isNaN(lat) || isNaN(lng)) return;
+            const marker = L.marker([lat, lng], {
+                icon:         _buildTurbineIcon(currentSize),
+                zIndexOffset: 900,
+                opacity,
+            });
+            marker._turbineData = turbine;
+            if (turbine.windturbine_name) {
+                marker.bindTooltip(turbine.windturbine_name, {
+                    permanent:  false,
+                    direction:  'top',
                 });
-                marker._turbineData = turbine;
-                if (turbine.windturbine_name) {
-                    marker.bindTooltip(turbine.windturbine_name, {
-                        permanent:  false,
-                        direction: 'top',
-                    });
-                }
-                turbineMarkers[i] = { marker, turbine };
-                if (shouldAdd) {
-                    marker.addTo(poleLayerGroup);
-                }
             }
-            idx = end;
-            if (idx < turbines.length) {
-                setTimeout(renderChunk, 0);
-            } else {
-                const currentVisible = localStorage.getItem('windturbine') === 'true';
-                if (currentVisible !== shouldAdd) {
-                    toggleWindTurbine(currentVisible);
-                }
-                console.log(`✅ Turbines loaded: ${Object.keys(turbineMarkers).length} markers`);
-                console.log('turbineMarkers total:', Object.keys(turbineMarkers).length);
-
-let inMap = 0;
-Object.values(turbineMarkers).forEach(({ marker }) => {
-    if (poleLayerGroup.hasLayer(marker)) inMap++;
-});
-console.log('actually in poleLayerGroup:', inMap);
-
-// ดู map bounds ปัจจุบัน
-console.log('map bounds:', map.getBounds());
-console.log('map maxBounds:', map.options.maxBounds);
-            }
+            turbineMarkers[i] = { marker, turbine };
+        });
+        console.log('✅ turbineMarkers built:', Object.keys(turbineMarkers).length);
+        if (isVisible) {
+            _addAllTurbinesToMap();
         }
-        renderChunk();
         if (!map._turbineZoomBound) {
             map._turbineZoomBound = true;
         }
     } catch (err) {
         console.error('loadWindTurbines error:', err);
     }
+}
+function _addAllTurbinesToMap() {
+    if (!turbineLayerGroup) {
+        turbineLayerGroup = L.layerGroup().addTo(map);
+    }
+    const CHUNK   = 200;
+    const entries = Object.values(turbineMarkers);
+    let idx = 0;
+    function addChunk() {
+        const end = Math.min(idx + CHUNK, entries.length);
+        for (let i = idx; i < end; i++) {
+            const { marker } = entries[i];
+            if (marker && !turbineLayerGroup.hasLayer(marker)) {
+                marker.addTo(turbineLayerGroup);
+            }
+        }
+        idx = end;
+        if (idx < entries.length) {
+            setTimeout(addChunk, 0);
+        } else {
+            let inMap = 0;
+            entries.forEach(({ marker }) => {
+                if (turbineLayerGroup.hasLayer(marker)) inMap++;
+            });
+            console.log(`✅ Turbines in map: ${inMap} / ${entries.length}`);
+        }
+    }
+    addChunk();
 }
 function handlePickerOpening(latlng, picker, polygonLayer) {
     picker?.close?.();
@@ -936,18 +936,18 @@ function toggleLabel(isOn) {
         canvas.vector-field-layer { display:block!important; }`;
 }
 function toggleWindTurbine(isOn) {
-    Object.values(turbineMarkers).forEach(({ marker }) => {
-        if (!marker) return;
-        if (isOn) {
-            if (!poleLayerGroup.hasLayer(marker)) {
-                marker.addTo(poleLayerGroup);
-            }
-        } else {
-            if (poleLayerGroup.hasLayer(marker)) {
-                poleLayerGroup.removeLayer(marker);
-            }
+    if (!turbineLayerGroup) return;
+
+    if (isOn) {
+        if (!map.hasLayer(turbineLayerGroup)) {
+            turbineLayerGroup.addTo(map);
         }
-    });
+        _addAllTurbinesToMap();
+    } else {
+        if (map.hasLayer(turbineLayerGroup)) {
+            map.removeLayer(turbineLayerGroup);
+        }
+    }
 }
 function toggleEquipment(isOn) {
     if (!map || !poleLayerGroup) return;

@@ -440,15 +440,13 @@ function enableHardBoundsLock(bounds) {
 function _applyTurbineVisibilityByZoom() {
     const zoom      = map.getZoom();
     const isVisible = localStorage.getItem('windturbine') === 'true';
-    if (!isVisible) return;
-    const total = Object.keys(turbineMarkers).length;
-    if (total === 0) return;
+    if (!isVisible || !turbineLayerGroup) return;
     Object.values(turbineMarkers).forEach(({ marker }) => {
         if (!marker) return;
         const opacity = zoom < 8 ? 0.3 : zoom < 10 ? 0.6 : 1;
         marker.setOpacity(opacity);
-        if (!poleLayerGroup.hasLayer(marker)) {
-            marker.addTo(poleLayerGroup);
-        }
     });
+    if (!map.hasLayer(turbineLayerGroup)) {
+        turbineLayerGroup.addTo(map);
+    }
 }
