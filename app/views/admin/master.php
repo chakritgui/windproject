@@ -318,6 +318,7 @@
                         <tr>
                             <th data-i18n="no"></th>
                             <th data-i18n="icon"></th>
+                            <th data-i18n="wind_speed"></th>
                             <th data-i18n="pole_code"></th>
                             <th data-i18n="wind_measurement_equipment"></th>
                             <th data-i18n="project"></th>

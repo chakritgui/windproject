@@ -93,6 +93,15 @@ async function refreshAllWindData() {
         const data = json.data;
         const windSpeeds = [];
         entries.forEach(([id, p]) => {
+            if (p.show_wind_speed !== 'yes') {
+                if (p.labelMarker && p.labelMarker._map) {
+                    p.labelMarker.remove();
+                }
+                return;
+            }
+            if (p.labelMarker && !p.labelMarker._map) {
+                p.labelMarker.addTo(poleLayerGroup);
+            }
             const stationData = data[id];
             if (!stationData) return;
             let levelKey = currentLevel;
@@ -247,22 +256,19 @@ async function loadPoles() {
     });
     if (!Array.isArray(poles)) return;
     window._usedLabelBoxes = [];
-    const zoom       = map.getZoom();
-    const initSize   = _calcIconSize(zoom);
-    const initScale  = _calcLabelScale(zoom);
+    const zoom      = map.getZoom();
+    const initSize  = _calcIconSize(zoom);
+    const initScale = _calcLabelScale(zoom);
     const totalPoles = poles.length;
     const chunkSize  = 40;
     let   currentIndex = 0;
-    function _getAllPolePoints() {
-        return poles.map(p => {
-            const lat = parseFloat(p.poles_lat);
-            const lng = parseFloat(p.poles_lng);
-            if (isNaN(lat) || isNaN(lng)) return null;
-            return map.latLngToContainerPoint([lat, lng]);
-        }).filter(Boolean);
-    }
+    const allPolePoints = poles.map(p => {
+        const lat = parseFloat(p.poles_lat);
+        const lng = parseFloat(p.poles_lng);
+        if (isNaN(lat) || isNaN(lng)) return null;
+        return map.latLngToContainerPoint([lat, lng]);
+    }).filter(Boolean);
     function renderChunk() {
-        const polePoints = _getAllPolePoints();
         const end = Math.min(currentIndex + chunkSize, totalPoles);
         for (let i = currentIndex; i < end; i++) {
             const pole = poles[i];
@@ -279,7 +285,7 @@ async function loadPoles() {
             const windId  = `wind-auto-${pole.poles_id}`;
             const arrowId = `arrow-${pole.poles_id}`;
             const pt = map.latLngToContainerPoint([lat, lng]);
-            const otherPolePoints = polePoints.filter(p =>
+            const otherPolePoints = allPolePoints.filter(p =>
                 !(Math.abs(p.x - pt.x) < 1 && Math.abs(p.y - pt.y) < 1)
             );
             const off = getSmartOffset(lat, lng, window._usedLabelBoxes, map, map.getZoom(), otherPolePoints);
@@ -301,13 +307,25 @@ async function loadPoles() {
                 }),
                 interactive:  false,
                 zIndexOffset: 500,
-            }).addTo(poleLayerGroup);
-            if (!windOn) labelMarker.setOpacity(0);
-            poleMarkers[pole.poles_id] = { marker, labelMarker, lat, lng, windId, arrowId };
+            });
+            if (windOn && pole.show_wind_speed !== 'no') {
+                labelMarker.addTo(poleLayerGroup);
+            }
+            poleMarkers[pole.poles_id] = { 
+                marker, 
+                labelMarker, 
+                lat, 
+                lng, 
+                windId, 
+                arrowId,
+                show_wind_speed: pole.show_wind_speed
+            };
         }
         currentIndex = end;
         if (currentIndex < totalPoles) {
-            setTimeout(renderChunk, 1);
+            requestAnimationFrame(() => {
+                renderChunk();
+            });
         } else {
             if (typeof applyRestoredState === 'function') {
                 applyRestoredState();
@@ -321,7 +339,7 @@ async function loadPoles() {
         map._poleZoomBound = true;
         let _zoomTimer = null;
         map.on('zoom', () => {
-            const size    = _calcIconSize(map.getZoom());
+            const size = _calcIconSize(map.getZoom());
             Object.values(poleMarkers).forEach(({ marker }) => {
                 const pd = marker._poleData;
                 if (!pd) { console.warn('no _poleData on marker'); return; }
@@ -1240,7 +1258,7 @@ async function openPoles(poleId, target = 'equipment') {
                             <span class="poles-code">#${data.poles_code}</span>
                         </div>
                     </div>
-                    ${windBadgeHtml}
+                    ${(data.show_wind_speed === 'yes') ? windBadgeHtml : ``}
                 </div>
             </div>
             <div class="poles-chips">
@@ -1251,9 +1269,7 @@ async function openPoles(poleId, target = 'equipment') {
             <div class="poles-content-section" style="${bgStyle}">
                 ${data.content_id ? `
                     ${coverHtml}
-                    ${data.content.presentation?.length
-                        ? renderPresentationShow(data.content.presentation)
-                        : ''}
+                    ${data.content.presentation?.length ? renderPresentationShow(data.content.presentation) : ''}
                     <article class="poles-article">
                         <h4 class="poles-article-title">${title}</h4>
                         <div class="poles-article-meta">
@@ -1411,7 +1427,7 @@ async function openProjectDetail(project_id) {
         const ppBody = document.getElementById('pp-body');
         const statusColor = data.status_color  || '#ccc';
         const statusName  = (data.project_status || 'UNKNOWN').toUpperCase();
-        const dot  = document.getElementById('pp-status-dot');
+        const dot   = document.getElementById('pp-status-dot');
         const pill = document.getElementById('pp-status');
         if (dot) dot.style.backgroundColor = statusColor;
         if (pill) {
@@ -1460,6 +1476,7 @@ async function openProjectDetail(project_id) {
                     <circle cx="11" cy="14" r="1.8" fill="${color}" stroke="#ffffff" stroke-width="0.8"/>
                 </svg>`;
             }
+            const showWind = p.show_wind_speed === 'yes';
             return `
             <div class="pole-row" onclick="openPoles(${p.poles_id})">
                 <div class="pole-index" style="width:45px;display:flex;justify-content:center;align-items:center;">
@@ -1485,14 +1502,15 @@ async function openProjectDetail(project_id) {
                         </small>
                     </div>
                     <div class="pole-bar-wrap">
-                        <div class="pole-bar" id="bar-${p.poles_id}" style="width:0%;transition:width 0.6s ease, background-color 0.3s"></div>
+                        ${showWind ? `<div class="pole-bar" id="bar-${p.poles_id}" style="width:0%;transition:width 0.6s ease, background-color 0.3s"></div>` : ''}
                     </div>
                 </div>
                 <div class="pole-wind-box">
+                    ${showWind ? `
                     <i class="fa-solid fa-location-arrow wind-arrow" id="wind-arrow-${p.poles_id}"></i>
                     <span class="pole-wind" id="wind-val-${p.poles_id}" data-raw="0">
                         -- <small>${unit.label}</small>
-                    </span>
+                    </span>` : ''}
                 </div>
             </div>`;
         }).join('');
@@ -1500,6 +1518,9 @@ async function openProjectDetail(project_id) {
         let totalWind = 0;
         let validPolesCount = 0;
         data.poles.forEach((p) => {
+            if (p.show_wind_speed !== 'yes') {
+                return;
+            }
             const cachedPole = poleMarkers[p.poles_id];
             let speed = 0;
             let direction = 0;

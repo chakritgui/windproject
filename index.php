@@ -183,6 +183,7 @@
             $router->post('/api/poles.gets', 'PolesController@gets');
             $router->post('/api/poles.savecontent', 'PolesController@saveContent');
             $router->post('/api/poles.deletecontent', 'PolesController@deleteContent');
+            $router->post('/api/poles.updateStatus', 'PolesController@updateStatus');
             $router->post('/api/installations.list', 'InstallationsController@list');
             $router->post('/api/installations.filter', 'InstallationsController@filter');
             $router->post('/api/installations.delete', 'InstallationsController@delete');

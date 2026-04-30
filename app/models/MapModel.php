@@ -190,7 +190,7 @@ class MapModel{
                 CASE
                     WHEN p.project_status_id is not null and p.project_status_id <> '' and p.project_status_id > 0 THEN sp.project_status_color
                     ELSE s.project_status_color
-                END AS project_status_color
+                END AS project_status_color, p.show_wind_speed
                         FROM wp_poles p 
                         LEFT JOIN wp_type t on t.type_id = p.type_id 
                         LEFT JOIN wp_installations l on l.installations_id = p.installations_id

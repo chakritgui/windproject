@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 23, 2026 at 11:24 AM
+-- Generation Time: Apr 30, 2026 at 01:22 PM
 -- Server version: 10.1.31-MariaDB
 -- PHP Version: 8.0.30
 
@@ -691,6 +691,7 @@ CREATE TABLE `wp_poles` (
   `poles_lng` decimal(10,7) DEFAULT NULL,
   `content_id` bigint(20) DEFAULT NULL,
   `poles_source` enum('manual','import') NOT NULL DEFAULT 'import',
+  `show_wind_speed` enum('yes','no') NOT NULL DEFAULT 'yes',
   `status` enum('online','inactive','deleted') NOT NULL DEFAULT 'online',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,

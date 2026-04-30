@@ -1,15 +1,11 @@
 <?php
 class PolesModel {
     private $db;
-    private $levels = [
-        "100m", "950hPa", "925hPa", "900hPa", "850hPa", "800hPa", 
-        "700hPa", "600hPa", "500hPa", "400hPa", "300hPa", "250hPa", 
-        "200hPa", "150hPa", "10hPa"
-    ];
     public function __construct() {
         $this->db = Database::getInstance()->pdo;
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
+
     public function list($start = 0, $length = 10, $filters = [], $search = '', $colIndex = 0, $orderDir = 'asc') {
         list($where, $params) = $this->buildListWhere($filters, $search);
         $sqlTotal = "SELECT COUNT(*)
@@ -30,15 +26,16 @@ class PolesModel {
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
             0 => "p.item_order",
-            2 => "p.poles_code",
-            3 => "t.type_name",
-            4 => "pj.project_name",
-            5 => "p.project_name",
-            6 => "p.poles_lat",
-            7 => "p.poles_lng",
-            8 => "i.installations_name",
-            9 => "p.created_at",
-            10 => "p.status"
+            2 => "p.show_wind_speed",
+            3 => "p.poles_code",
+            4 => "t.type_name",
+            5 => "pj.project_name",
+            6 => "p.project_name",
+            7 => "p.poles_lat",
+            8 => "p.poles_lng",
+            9 => "i.installations_name",
+            10 => "p.created_at",
+            11 => "p.status"
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -72,7 +69,8 @@ class PolesModel {
                     CASE
                         WHEN p.default_color is null or p.default_color = '' THEN t.default_color
                         ELSE p.default_color
-                    END as default_color
+                    END as default_color,
+                    p.show_wind_speed
                 FROM wp_poles p
                 LEFT JOIN wp_project pj ON pj.project_id = p.project_id
                 LEFT JOIN wp_project_status s on s.project_status_id = p.project_status_id
@@ -603,5 +601,10 @@ class PolesModel {
             ':id' => $content_id
         ]);
         return ($res1 && $res2);
+    }
+    public function updateStatus($id, $status) {
+        $sql = "UPDATE wp_poles SET show_wind_speed=?, updated_at=NOW() WHERE poles_id=?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$status, (int)$id]);
     }
 }

@@ -115,4 +115,10 @@ class PolesController extends BaseController {
         $content_id = intval($_POST['content_id'] ?? 0);
         $this->json(['status'=>$this->model->deleteContent($poles_id, $content_id)]);
     }
+    public function updateStatus() {
+        $id = intval($_POST['id'] ?? 0);
+        $status = $_POST['status'] ?? 'inactive';
+        $result = $this->model->updateStatus($id, $status);
+        $this->json(['status' => $result]);
+    }
 }

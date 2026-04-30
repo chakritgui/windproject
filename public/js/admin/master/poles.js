@@ -56,6 +56,17 @@ function initPolesTable() {
                     <img src="${BASE_URL}/${data}" style="height:60px; border-radius:6px; object-fit:contain;" loading="lazy">
                 `;
             }
+        },{
+            data: "show_wind_speed", 
+            orderable: true, 
+            render: function (data, type, row, meta) {
+                const isChecked = row.show_wind_speed === 'yes' ? 'checked' : '';
+                return `
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input update-status-switch" type="checkbox" role="switch"id="switch_${row.poles_id}" data-id="${row.poles_id}" ${isChecked} style="cursor:pointer;">
+                    </div>
+                `;
+            }
         },{ 
             data: "poles_code",
             orderable: true, 
@@ -698,3 +709,30 @@ function executeSave() {
         }
     });
 }
+$(document).on("change", ".update-status-switch", function() {
+    let id = $(this).data("id");
+    let newStatus = $(this).is(":checked") ? 'yes' : 'no';
+    $.ajax({
+        url: `${BASE_URL}/api/poles.updateStatus`,
+        method: 'POST',
+        data: { id: id, status: newStatus },
+        dataType: 'json',
+        success: function(res) {    
+            if(res.status === true){
+                showSuccess(langData['saved_successfully'] || 'Saved successfully');
+                if (typeof initPolesTable === "function") initPolesTable();
+            } else {
+                showError((langData['cannot_save'] || 'Error: ') + ' ' + (langData[res.message] || 'Unknown error'));
+            }
+        },
+        error: function(){
+            Swal.close();
+            let msg = langData['cannot_save'];
+            try {
+                let res = JSON.parse(xhr.responseText);
+                if (res.message) msg += ": " + res.message;
+            } catch (e) {}
+            showError(msg);
+        }
+    });
+});
