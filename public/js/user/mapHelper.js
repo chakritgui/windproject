@@ -437,3 +437,16 @@ function enableHardBoundsLock(bounds) {
     map.setMaxBounds(bounds);
     map.options.maxBoundsViscosity = 1.0;
 }
+function _applyTurbineVisibilityByZoom() {
+    const zoom      = map.getZoom();
+    const isVisible = localStorage.getItem('windturbine') === 'true';
+    if (!isVisible) return;
+    Object.values(turbineMarkers).forEach(({ marker }) => {
+        if (!marker) return;
+        const opacity = zoom < 8 ? 0.3 : zoom < 10 ? 0.6 : 1;
+        marker.setOpacity(opacity);
+        if (!poleLayerGroup.hasLayer(marker)) {
+            marker.addTo(poleLayerGroup);
+        }
+    });
+}

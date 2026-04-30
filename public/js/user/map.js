@@ -342,7 +342,7 @@ async function loadPoles() {
             const size = _calcIconSize(map.getZoom());
             Object.values(poleMarkers).forEach(({ marker }) => {
                 const pd = marker._poleData;
-                if (!pd) { console.warn('no _poleData on marker'); return; }
+                if (!pd) return;
                 marker.setIcon(_buildPoleIcon(pd, size));
             });
         });
@@ -350,37 +350,54 @@ async function loadPoles() {
             clearTimeout(_zoomTimer);
             _zoomTimer = setTimeout(() => {
                 resizeLabel();
+                _applyTurbineVisibilityByZoom();
                 refreshAllWindData();
-            }, 80);
+            }, 150);
         });
     }
 }
+let _cachedOffsets = {};
+let _lastOffsetZoom = -1;
 function resizeLabel() {
-    const zoom     = map.getZoom();
-    const scale    = _calcLabelScale(zoom);
-    let   poleSize = 20;
-    if (globalPoleIcon?.sizes?.[zoom]) {
-        poleSize = globalPoleIcon.sizes[zoom];
+    const zoom  = map.getZoom();
+    const scale = _calcLabelScale(zoom);
+    if (typeof turbineMarkers !== 'undefined') {
+        const turbineSize = _getTurbineSize(zoom);
+        const opacity     = zoom < 10 ? 0.7 : 1;
+        Object.values(turbineMarkers).forEach(({ marker }) => {
+            if (!marker) return;
+            marker.setIcon(_buildTurbineIcon(turbineSize));
+            marker.setOpacity(opacity);
+        });
     }
-    window._usedLabelBoxes = [];
-    const polePoints = Object.values(poleMarkers).map(({ lat, lng }) =>
-        map.latLngToContainerPoint([lat, lng])
-    );
-    Object.values(poleMarkers).forEach(({ marker, labelMarker, lat, lng, windId, arrowId }) => {
+    if (zoom !== _lastOffsetZoom) {
+        _cachedOffsets = {};
+        _lastOffsetZoom = zoom;
+        window._usedLabelBoxes = [];
+        const polePoints = Object.values(poleMarkers).map(({ lat, lng }) =>
+            map.latLngToContainerPoint([lat, lng])
+        );
+        Object.entries(poleMarkers).forEach(([id, { lat, lng }]) => {
+            const pt       = map.latLngToContainerPoint([lat, lng]);
+            const otherPts = polePoints.filter(p =>
+                !(Math.abs(p.x - pt.x) < 1 && Math.abs(p.y - pt.y) < 1)
+            );
+            _cachedOffsets[id] = getSmartOffset(lat, lng, window._usedLabelBoxes, map, zoom, otherPts);
+        });
+    }
+    Object.entries(poleMarkers).forEach(([id, { marker, labelMarker, lat, lng, windId, arrowId }]) => {
         const pd = marker._poleData;
         if (!pd) return;
+        const poleSize = globalPoleIcon?.sizes?.[zoom] || 20;
         marker.setIcon(_buildPoleIcon(pd, poleSize));
-        const pt         = map.latLngToContainerPoint([lat, lng]);
-        const otherPts   = polePoints.filter(p =>
-            !(Math.abs(p.x - pt.x) < 1 && Math.abs(p.y - pt.y) < 1)
-        );
-        const off = getSmartOffset(lat, lng, window._usedLabelBoxes, map, zoom, otherPts);
+        const off     = _cachedOffsets[id];
+        if (!off) return;
         const anchorX = off.dx >= 0 ? 0 : Math.abs(off.dx);
         const anchorY = off.dy >= 0 ? 0 : Math.abs(off.dy);
-        const windEl = document.getElementById(windId);
+        const windEl  = document.getElementById(windId);
         const arrowEl = document.getElementById(arrowId);
-        const windSpeed = windEl  ? parseFloat(windEl.dataset.raw)   || 0 : 0;
-        const windDir = arrowEl ? parseFloat(arrowEl.dataset.dir)  || 0 : 0;
+        const windSpeed = windEl  ? parseFloat(windEl.dataset.raw)  || 0 : 0;
+        const windDir   = arrowEl ? parseFloat(arrowEl.dataset.dir) || 0 : 0;
         const { svgW, svgH, html } = buildWindLabelSVG({
             anchorX, anchorY,
             labelDx: off.dx,
@@ -390,24 +407,15 @@ function resizeLabel() {
         });
         labelMarker.setIcon(L.divIcon({
             className: 'pole-label-wrap',
-            iconSize: [svgW, svgH],
+            iconSize:  [svgW, svgH],
             iconAnchor: [anchorX, anchorY],
             html,
         }));
     });
-    if (typeof turbineMarkers !== 'undefined') {
-        const turbineSize = _getTurbineSize(zoom);
-        const opacity = zoom < 10 ? 0.7 : 1;
-        Object.values(turbineMarkers).forEach(({ marker }) => {
-            if (!marker) return;
-            marker.setIcon(_buildTurbineIcon(turbineSize));
-            marker.setOpacity(opacity);
-        });
-    }
 }
 async function loadWindTurbines() {
     try {
-        const res     = await fetchJSON(`${BASE_URL}/api/windturbines.get`);
+        const res      = await fetchJSON(`${BASE_URL}/api/windturbines.get`);
         const turbines = Array.isArray(res) ? res : (res.list || []);
         if (res.icon_config) window.globalWindturbineIcon = res.icon_config;
         if (!Array.isArray(turbines)) return;
@@ -415,35 +423,38 @@ async function loadWindTurbines() {
             if (marker && poleLayerGroup.hasLayer(marker)) poleLayerGroup.removeLayer(marker);
         });
         turbineMarkers = {};
-        const isVisible  = localStorage.getItem('windturbine') === 'true';
-        const zoom       = map.getZoom();
+        const isVisible   = localStorage.getItem('windturbine') === 'true';
+        const zoom        = map.getZoom();
         const currentSize = _getTurbineSize(zoom);
-        const opacity    = zoom < 10 ? 0.6 : 1;
-        turbines.forEach((turbine, index) => {
-            const lat = parseFloat(turbine.windturbine_lat);
-            const lng = parseFloat(turbine.windturbine_lng);
-            if (isNaN(lat) || isNaN(lng)) return;
-            const marker = L.marker([lat, lng], {
-                icon:        _buildTurbineIcon(currentSize),
-                zIndexOffset: 900,
-                opacity,
-            });
-            marker._turbineData = turbine;
-            if (turbine.windturbine_name) {
-                marker.bindTooltip(turbine.windturbine_name, {
-                    permanent:  false,
-                    direction: 'top',
+        const opacity     = zoom < 10 ? 0.6 : 1;
+        const CHUNK = 100;
+        let idx = 0;
+        function renderChunk() {
+            const end = Math.min(idx + CHUNK, turbines.length);
+            for (let i = idx; i < end; i++) {
+                const turbine = turbines[i];
+                const lat = parseFloat(turbine.windturbine_lat);
+                const lng = parseFloat(turbine.windturbine_lng);
+                if (isNaN(lat) || isNaN(lng)) continue;
+                const marker = L.marker([lat, lng], {
+                    icon:        _buildTurbineIcon(currentSize),
+                    zIndexOffset: 900,
+                    opacity,
                 });
+                marker._turbineData = turbine;
+                if (turbine.windturbine_name) {
+                    marker.bindTooltip(turbine.windturbine_name, {
+                        permanent:  false,
+                        direction: 'top',
+                    });
+                }
+                turbineMarkers[i] = { marker, turbine };
+                if (isVisible) marker.addTo(poleLayerGroup);
             }
-            turbineMarkers[index] = { marker, turbine };
-            if (isVisible) marker.addTo(poleLayerGroup);
-        });
-        if (!map._turbineZoomBound) {
-            map._turbineZoomBound = true;
-            map.on('zoomend', () => {
-                if (typeof resizeLabel === 'function') resizeLabel();
-            });
+            idx = end;
+            if (idx < turbines.length) requestAnimationFrame(renderChunk);
         }
+        renderChunk();
     } catch (err) {
         console.error('loadWindTurbines error:', err);
     }
