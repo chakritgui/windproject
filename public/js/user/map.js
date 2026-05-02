@@ -115,8 +115,10 @@ async function refreshAllWindData() {
             const dir   = parseFloat(weather.d); 
             windSpeeds.push(speed);
             const activeColor = getWindColor(speed);
-            const elSpeed     = document.getElementById(p.windId);
-            const elArrow     = document.getElementById(p.arrowId);
+            if (!p._elSpeed) p._elSpeed = document.getElementById(p.windId);
+            if (!p._elArrow) p._elArrow = document.getElementById(p.arrowId);
+            const elSpeed = p._elSpeed;
+            const elArrow = p._elArrow;
             if (elSpeed) {
                 elSpeed.dataset.raw  = speed;
                 elSpeed.textContent  = `${(speed * unit.factor).toFixed(1)} ${unit.label}`;
@@ -145,10 +147,10 @@ async function refreshAllWindData() {
     }
 }
 function startWindAutoRefresh() {
-    if (windInterval) return;
+    stopWindAutoRefresh();
     windInterval = setInterval(() => {
         if (windOn && !isRefreshing) refreshAllWindData();
-    }, 5 * 60 * 1000);
+    }, WIND_REFRESH);
 }
 function stopWindAutoRefresh() {
     if (windInterval) {
@@ -315,11 +317,11 @@ async function loadPoles() {
             poleMarkers[pole.poles_id] = { 
                 marker, 
                 labelMarker, 
-                lat, 
-                lng, 
-                windId, 
-                arrowId,
-                show_wind_speed: pole.show_wind_speed
+                lat, lng, 
+                windId, arrowId,
+                show_wind_speed: pole.show_wind_speed,
+                _elSpeed: null, 
+                _elArrow: null,
             };
         }
         currentIndex = end;
@@ -352,7 +354,6 @@ async function loadPoles() {
             _zoomTimer = setTimeout(() => {
                 resizeLabel();
                 _applyTurbineVisibilityByZoom();
-                refreshAllWindData();
             }, 150);
         });
     }
@@ -363,52 +364,54 @@ function resizeLabel() {
     const zoom  = map.getZoom();
     const scale = _calcLabelScale(zoom);
     if (typeof turbineMarkers !== 'undefined') {
-        const turbineSize = _getTurbineSize(zoom);
-        const opacity     = zoom < 10 ? 0.7 : 1;
+        const radius = _getTurbineRadius(zoom);
         Object.values(turbineMarkers).forEach(({ marker }) => {
-            if (!marker) return;
-            marker.setIcon(_buildTurbineIcon(turbineSize));
-            marker.setOpacity(opacity);
+            if (marker?.setRadius) marker.setRadius(radius); 
         });
     }
-    if (zoom !== _lastOffsetZoom) {
-        _cachedOffsets = {};
-        _lastOffsetZoom = zoom;
-        window._usedLabelBoxes = [];
-        const polePoints = Object.values(poleMarkers).map(({ lat, lng }) =>
-            map.latLngToContainerPoint([lat, lng])
+    if (zoom === _lastOffsetZoom) {
+        document.querySelectorAll('.pole-label-wrap svg').forEach(el => {
+            el.style.transform = `scale(${scale})`;
+            el.style.transformOrigin = '0 0';
+        });
+        return;
+    }
+    _cachedOffsets  = {};
+    _lastOffsetZoom = zoom;
+    window._usedLabelBoxes = [];
+    const polePoints = Object.values(poleMarkers).map(({ lat, lng }) =>
+        map.latLngToContainerPoint([lat, lng])
+    );
+    Object.entries(poleMarkers).forEach(([id, { lat, lng }]) => {
+        const pt       = map.latLngToContainerPoint([lat, lng]);
+        const otherPts = polePoints.filter(p =>
+            !(Math.abs(p.x - pt.x) < 1 && Math.abs(p.y - pt.y) < 1)
         );
-        Object.entries(poleMarkers).forEach(([id, { lat, lng }]) => {
-            const pt       = map.latLngToContainerPoint([lat, lng]);
-            const otherPts = polePoints.filter(p =>
-                !(Math.abs(p.x - pt.x) < 1 && Math.abs(p.y - pt.y) < 1)
-            );
-            _cachedOffsets[id] = getSmartOffset(lat, lng, window._usedLabelBoxes, map, zoom, otherPts);
-        });
-    }
+        _cachedOffsets[id] = getSmartOffset(lat, lng, window._usedLabelBoxes, map, zoom, otherPts);
+    });
     Object.entries(poleMarkers).forEach(([id, { marker, labelMarker, lat, lng, windId, arrowId }]) => {
         const pd = marker._poleData;
         if (!pd) return;
         const poleSize = globalPoleIcon?.sizes?.[zoom] || 20;
         marker.setIcon(_buildPoleIcon(pd, poleSize));
-        const off     = _cachedOffsets[id];
+        const off = _cachedOffsets[id];
         if (!off) return;
         const anchorX = off.dx >= 0 ? 0 : Math.abs(off.dx);
         const anchorY = off.dy >= 0 ? 0 : Math.abs(off.dy);
-        const windEl  = document.getElementById(windId);
-        const arrowEl = document.getElementById(arrowId);
-        const windSpeed = windEl  ? parseFloat(windEl.dataset.raw)  || 0 : 0;
-        const windDir   = arrowEl ? parseFloat(arrowEl.dataset.dir) || 0 : 0;
+        const pm        = poleMarkers[id];
+        const elSpeed   = pm?._elSpeed || document.getElementById(windId);
+        const elArrow   = pm?._elArrow || document.getElementById(arrowId);
+        const windSpeed = elSpeed ? parseFloat(elSpeed.dataset.raw)  || 0 : 0;
+        const windDir   = elArrow ? parseFloat(elArrow.dataset.dir) || 0 : 0;
         const { svgW, svgH, html } = buildWindLabelSVG({
             anchorX, anchorY,
-            labelDx: off.dx,
-            labelDy: off.dy,
+            labelDx: off.dx, labelDy: off.dy,
             windId, arrowId,
             windSpeed, windDir, scale,
         });
         labelMarker.setIcon(L.divIcon({
-            className: 'pole-label-wrap',
-            iconSize:  [svgW, svgH],
+            className:  'pole-label-wrap',
+            iconSize:   [svgW, svgH],
             iconAnchor: [anchorX, anchorY],
             html,
         }));
@@ -420,72 +423,53 @@ async function loadWindTurbines() {
         const turbines = Array.isArray(res) ? res : (res.list || []);
         if (res.icon_config) window.globalWindturbineIcon = res.icon_config;
         if (!Array.isArray(turbines) || turbines.length === 0) return;
-        if (turbineLayerGroup) {
-            turbineLayerGroup.clearLayers();
-        } else {
-            turbineLayerGroup = L.layerGroup().addTo(map);
-        }
+        if (turbineLayerGroup) turbineLayerGroup.clearLayers();
+        else turbineLayerGroup = L.layerGroup().addTo(map);
         turbineMarkers = {};
-        const isVisible   = localStorage.getItem('windturbine') === 'true';
-        const zoom        = map.getZoom();
-        const currentSize = _getTurbineSize(zoom);
-        const opacity     = zoom < 10 ? 0.6 : 1;
+        const isVisible = localStorage.getItem('windturbine') === 'true';
+        const zoom      = map.getZoom();
+        const radius    = _getTurbineRadius(zoom);
+        const color     = globalWindturbineIcon?.color || '#ef1515';
+        const canvasRenderer = L.canvas({ padding: 0.5 });
         turbines.forEach((turbine, i) => {
             const lat = parseFloat(turbine.windturbine_lat);
             const lng = parseFloat(turbine.windturbine_lng);
             if (isNaN(lat) || isNaN(lng)) return;
-            const marker = L.marker([lat, lng], {
-                icon:         _buildTurbineIcon(currentSize),
-                zIndexOffset: 900,
-                opacity,
+            const marker = L.circleMarker([lat, lng], {
+                renderer:    canvasRenderer,
+                radius,
+                fillColor:   color,
+                color:       'rgba(255,255,255,0.6)',
+                weight:      0.8,
+                fillOpacity: 0.85,
             });
-            marker._turbineData = turbine;
             if (turbine.windturbine_name) {
                 marker.bindTooltip(turbine.windturbine_name, {
-                    permanent:  false,
-                    direction:  'top',
+                    permanent: false, direction: 'top',
                 });
             }
             turbineMarkers[i] = { marker, turbine };
         });
-        console.log('✅ turbineMarkers built:', Object.keys(turbineMarkers).length);
-        if (isVisible) {
-            _addAllTurbinesToMap();
-        }
-        if (!map._turbineZoomBound) {
-            map._turbineZoomBound = true;
-        }
+        window._turbineCanvasRenderer = canvasRenderer;
+        if (isVisible) _addAllTurbinesToMap();
     } catch (err) {
         console.error('loadWindTurbines error:', err);
     }
 }
+function _getTurbineRadius(zoom) {
+    if (globalWindturbineIcon?.sizes) {
+        const size = globalWindturbineIcon.sizes[zoom] || 4;
+        return Math.max(2, size / 2);
+    }
+    return Math.max(2, Math.min(7, (zoom - 8) * 0.8 + 2));
+}
 function _addAllTurbinesToMap() {
-    if (!turbineLayerGroup) {
-        turbineLayerGroup = L.layerGroup().addTo(map);
-    }
-    const CHUNK   = 200;
-    const entries = Object.values(turbineMarkers);
-    let idx = 0;
-    function addChunk() {
-        const end = Math.min(idx + CHUNK, entries.length);
-        for (let i = idx; i < end; i++) {
-            const { marker } = entries[i];
-            if (marker && !turbineLayerGroup.hasLayer(marker)) {
-                marker.addTo(turbineLayerGroup);
-            }
-        }
-        idx = end;
-        if (idx < entries.length) {
-            setTimeout(addChunk, 0);
-        } else {
-            let inMap = 0;
-            entries.forEach(({ marker }) => {
-                if (turbineLayerGroup.hasLayer(marker)) inMap++;
-            });
-            console.log(`✅ Turbines in map: ${inMap} / ${entries.length}`);
-        }
-    }
-    addChunk();
+    if (!turbineLayerGroup) turbineLayerGroup = L.layerGroup().addTo(map);
+    const markers = Object.values(turbineMarkers).map(t => t.marker).filter(Boolean);
+    if (markers.length === 0) return;
+    const fg = L.featureGroup(markers);
+    turbineLayerGroup.clearLayers();
+    fg.addTo(turbineLayerGroup);
 }
 function handlePickerOpening(latlng, picker, polygonLayer) {
     picker?.close?.();
@@ -520,8 +504,12 @@ async function openCustomPicker(latlng) {
         await updateCustomPickerPopup(ll.lat, ll.lng);
     });
 }
+let _pickerAbort = null;
 async function updateCustomPickerPopup(lat, lng) {
-    const windData = await fetchWindAtPoint(lat, lng);
+    if (_pickerAbort) _pickerAbort.abort();
+    _pickerAbort = new AbortController();
+    const windData = await fetchWindAtPoint(lat, lng, _pickerAbort.signal);
+    if (_pickerAbort.signal.aborted) return;
     const speedColor = windData.speed !== null ? getWindColor(windData.speed) : '#ffffff';
     const pickerIcon = L.divIcon({
         className: 'popupTop',
@@ -1162,7 +1150,13 @@ function selectItem(level, id, el) {
     menuState[MENU_LEVELS[level].key] = id;
     loadMenuLevel(level + 1);
 }
+let _currentPoleAbort = null;
 async function openPoles(poleId, target = 'equipment') {
+    if (_currentPoleAbort) {
+        _currentPoleAbort.abort();
+    }
+    _currentPoleAbort = new AbortController();
+    const signal = _currentPoleAbort.signal;
     const isEquipmentOpen = $('#toggle-equipment').prop('checked');
     if (!isEquipmentOpen && target === 'equipment') {
         return;
@@ -1204,13 +1198,6 @@ async function openPoles(poleId, target = 'equipment') {
             const displaySpeed = (rawSpeed * unit.factor).toFixed(1);
             const color = getWindColor(rawSpeed);
             const arrowRotate = (!isNaN(dir)) ? `transform: rotate(${dir}deg);` : '';
-            function isLightColor(hex) {
-                const c = hex.replace('#', '');
-                const r = parseInt(c.substr(0,2),16);
-                const g = parseInt(c.substr(2,2),16);
-                const b = parseInt(c.substr(4,2),16);
-                return (r*299 + g*587 + b*114) / 1000 > 155;
-            }
             const textColor   = isLightColor(color) ? '#1a1a1a' : '#ffffff';
             const iconBg      = isLightColor(color) ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.25)';
             windBadgeHtml = `
@@ -1238,13 +1225,16 @@ async function openPoles(poleId, target = 'equipment') {
         $(this).find('i').toggleClass('fa-window-maximize fa-window-restore');
     });
     try {
-        const res  = await fetch(`${BASE_URL}/api/poles.info`, {
+       const res = await fetch(`${BASE_URL}/api/poles.info`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify({ id: poleId }),
+            signal, 
         });
+        if (signal.aborted) return;
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
+        if (signal.aborted) return;
         const data = json.poles_id ? json : json.data;
         if (!data?.poles_id) {
             $body.html(renderErrorAlert('warning', langData['no_data_found'] || 'No data found'));
@@ -1365,6 +1355,7 @@ async function openPoles(poleId, target = 'equipment') {
             });
         }
     } catch (err) {
+        if (err.name === 'AbortError') return;
         console.error('openPoles error:', err);
         $body.html(renderErrorAlert(
             'danger',

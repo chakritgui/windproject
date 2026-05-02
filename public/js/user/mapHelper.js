@@ -30,26 +30,30 @@ function getLocalBool(key, fallback = false) {
     return fallback;
 }
 async function fetchJSON(url, body = {}) {
-    const res = await fetch(url, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status} — ${url}`);
-    return res.json();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15_000);
+    try {
+        const res = await fetch(url, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify(body),
+            signal:  controller.signal,
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status} — ${url}`);
+        return res.json();
+    } finally {
+        clearTimeout(timer);
+    }
 }
-async function fetchWindAtPoint(lat, lng) {
+async function fetchWindAtPoint(lat, lng, signal = null) {
     try {
         const url = `${BASE_URL}/api/wind.current?lat=${lat}&lon=${lng}&level=${DEFAULT_LEVEL}`;
-        const res = await fetch(url);
+        const res = await fetch(url, signal ? { signal } : {});
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        return {
-            speed:     data.wind_speed     ?? null,
-            direction: data.wind_direction ?? null,
-            gusts: data.wind_gusts ?? null,
-        };
+        return { speed: data.wind_speed ?? null, direction: data.wind_direction ?? null, gusts: data.wind_gusts ?? null };
     } catch (err) {
+        if (err.name === 'AbortError') return { speed: null, direction: null, gusts: null };
         console.error('fetchWindAtPoint error:', err);
         return { speed: null, direction: null, gusts: null };
     }
@@ -235,24 +239,30 @@ function _buildPoleIcon(pole, size = 20) {
         </svg>`,
     });
 }
+const _turbineIconCache = {};
 function _buildTurbineIcon(size) {
-    const iconUrl = globalWindturbineIcon?.url ? `${BASE_URL}/${globalWindturbineIcon.url}` : '';
+    if (_turbineIconCache[size]) return _turbineIconCache[size];
+    const iconUrl   = globalWindturbineIcon?.url ? `${BASE_URL}/${globalWindturbineIcon.url}` : '';
     const iconColor = globalWindturbineIcon?.color || '#ef1515';
+    let icon;
     if (iconUrl) {
-        return L.icon({
+        icon = L.icon({
             iconUrl,
             iconSize:    [size, size],
             iconAnchor:  [size / 2, size / 2],
             popupAnchor: [0, -size / 2],
             className:   'turbine-icon',
         });
+    } else {
+        icon = L.divIcon({
+            className:  'turbine-dot',
+            iconSize:   [size, size],
+            iconAnchor: [size / 2, size / 2],
+            html: `<div style="width:${size}px;height:${size}px;background:${iconColor};border-radius:50%;"></div>`,
+        });
     }
-    return L.divIcon({
-        className:  'turbine-dot',
-        iconSize:   [size, size],
-        iconAnchor: [size / 2, size / 2],
-        html: `<div style="width:${size}px; height:${size}px; background:radial-gradient(circle at 30% 30%, ${iconColor}, ${iconColor}); border-radius:50%; box-shadow:0 2px 4px rgba(0,0,0,0.3);"></div>`,
-    });
+    _turbineIconCache[size] = icon;
+    return icon;
 }
 function _toFeatureCollection(g) {
     if (g?.type === 'FeatureCollection') return g;
@@ -444,9 +454,20 @@ function _applyTurbineVisibilityByZoom() {
     Object.values(turbineMarkers).forEach(({ marker }) => {
         if (!marker) return;
         const opacity = zoom < 8 ? 0.3 : zoom < 10 ? 0.6 : 1;
-        marker.setOpacity(opacity);
+        if (typeof marker.setStyle === 'function') {
+            marker.setStyle({ fillOpacity: opacity, opacity: opacity * 0.6 });
+        } else if (typeof marker.setOpacity === 'function') {
+            marker.setOpacity(opacity);
+        }
     });
     if (!map.hasLayer(turbineLayerGroup)) {
         turbineLayerGroup.addTo(map);
     }
+}
+function isLightColor(hex) {
+    const c = hex.replace('#', '');
+    const r = parseInt(c.substr(0,2),16);
+    const g = parseInt(c.substr(2,2),16);
+    const b = parseInt(c.substr(4,2),16);
+    return (r*299 + g*587 + b*114) / 1000 > 155;
 }
