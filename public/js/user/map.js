@@ -366,8 +366,11 @@ function resizeLabel() {
     if (typeof turbineMarkers !== 'undefined') {
         const radius = _getTurbineRadius(zoom);
         Object.values(turbineMarkers).forEach(({ marker }) => {
-            if (marker?.setRadius) marker.setRadius(radius); 
+            if (marker?.setRadius) marker.setRadius(radius);
         });
+        if (window._turbineImg && window._turbineCanvasRenderer) {
+            _patchCanvasRendererForIcon(window._turbineCanvasRenderer, window._turbineImg, radius);
+        }
     }
     if (zoom === _lastOffsetZoom) {
         document.querySelectorAll('.pole-label-wrap svg').forEach(el => {
@@ -426,11 +429,21 @@ async function loadWindTurbines() {
         if (turbineLayerGroup) turbineLayerGroup.clearLayers();
         else turbineLayerGroup = L.layerGroup().addTo(map);
         turbineMarkers = {};
-        const isVisible = localStorage.getItem('windturbine') === 'true';
-        const zoom      = map.getZoom();
-        const radius    = _getTurbineRadius(zoom);
-        const color     = globalWindturbineIcon?.color || '#ef1515';
+        const isVisible     = localStorage.getItem('windturbine') === 'true';
+        const zoom          = map.getZoom();
         const canvasRenderer = L.canvas({ padding: 0.5 });
+        window._turbineCanvasRenderer = canvasRenderer;
+        const color  = globalWindturbineIcon?.color || '#ef1515';
+        const radius = _getTurbineRadius(zoom);
+        if (globalWindturbineIcon?.url && !window._turbineImg) {
+            const img = new Image();
+            img.src = `${BASE_URL}/${globalWindturbineIcon.url}`;
+            await new Promise(resolve => {
+                img.onload  = resolve;
+                img.onerror = resolve;
+            });
+            window._turbineImg = img.complete && img.naturalWidth > 0 ? img : null;
+        }
         turbines.forEach((turbine, i) => {
             const lat = parseFloat(turbine.windturbine_lat);
             const lng = parseFloat(turbine.windturbine_lng);
@@ -441,20 +454,38 @@ async function loadWindTurbines() {
                 fillColor:   color,
                 color:       'rgba(255,255,255,0.6)',
                 weight:      0.8,
-                fillOpacity: 0.85,
+                fillOpacity: window._turbineImg ? 0 : 0.85,
             });
             if (turbine.windturbine_name) {
                 marker.bindTooltip(turbine.windturbine_name, {
-                    permanent: false, direction: 'top',
+                    permanent: false,
+                    direction: 'top',
                 });
             }
             turbineMarkers[i] = { marker, turbine };
         });
-        window._turbineCanvasRenderer = canvasRenderer;
+        if (window._turbineImg) {
+            _patchCanvasRendererForIcon(canvasRenderer, window._turbineImg, radius);
+        }
         if (isVisible) _addAllTurbinesToMap();
     } catch (err) {
         console.error('loadWindTurbines error:', err);
     }
+}
+function _patchCanvasRendererForIcon(renderer, img, radius) {
+    const originalUpdate = renderer._updateCircle.bind(renderer);
+    renderer._updateCircle = function(layer) {
+        if (!this._drawing || layer._empty()) return;
+        const p   = layer._point;
+        const ctx = this._ctx;
+        const r   = layer._radius;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(img, p.x - r, p.y - r, r * 2, r * 2);
+        ctx.restore();
+    };
 }
 function _getTurbineRadius(zoom) {
     if (globalWindturbineIcon?.sizes) {

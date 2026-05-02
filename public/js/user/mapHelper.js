@@ -454,15 +454,10 @@ function _applyTurbineVisibilityByZoom() {
     Object.values(turbineMarkers).forEach(({ marker }) => {
         if (!marker) return;
         const opacity = zoom < 8 ? 0.3 : zoom < 10 ? 0.6 : 1;
-        if (typeof marker.setStyle === 'function') {
-            marker.setStyle({ fillOpacity: opacity, opacity: opacity * 0.6 });
-        } else if (typeof marker.setOpacity === 'function') {
-            marker.setOpacity(opacity);
-        }
+        marker.setStyle({ fillOpacity: window._turbineImg ? 0 : opacity, opacity });
     });
-    if (!map.hasLayer(turbineLayerGroup)) {
-        turbineLayerGroup.addTo(map);
-    }
+
+    if (!map.hasLayer(turbineLayerGroup)) turbineLayerGroup.addTo(map);
 }
 function isLightColor(hex) {
     const c = hex.replace('#', '');
