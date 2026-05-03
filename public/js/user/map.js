@@ -214,7 +214,6 @@ function updateWindUI() {
         const gradient = WINDY_COLORS.map(c => c.color).join(', ');
         bar.style.background = `linear-gradient(to right, ${gradient})`;
     }
-    resizeLabel();
     if (typeof customPickerMarker !== 'undefined' && customPickerMarker?.isPopupOpen()) {
         const popupPane = customPickerMarker.getPopup().getElement();
         if (popupPane) {
