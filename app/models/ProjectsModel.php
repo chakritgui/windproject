@@ -16,15 +16,16 @@ class ProjectsModel {
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
             0 => "p.item_order",
-            1 => "p.project_code",
-            2 => "p.project_name",
-            3 => "p.project_name_display",
-            4 => "c.contract_name",
-            5 => "g.project_group_name",
-            6 => "p.project_start",
-            7 => "p.project_end",
-            8 => "p.created_at",
-            9 => "s.project_status_name"
+            1 => "p.status",
+            2 => "p.project_code",
+            3 => "p.project_name",
+            4 => "p.project_name_display",
+            5 => "c.contract_name",
+            6 => "g.project_group_name",
+            7 => "p.project_start",
+            8 => "p.project_end",
+            9 => "p.created_at",
+            10 => "s.project_status_name"
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -274,7 +275,6 @@ class ProjectsModel {
         $project_code = $data['project_code'] ?? '';
         $project_name = $data['project_name'] ?? '';
         $project_name_display = $data['project_name_display'] ?? '';
-        $status = $data['status'] ?? 'active';
         if ($this->isDuplicateProjectName($project_name, $project_id)) {
             return [
                 'status'  => false,
@@ -297,7 +297,6 @@ class ProjectsModel {
                         project_end = :project_end, 
                         project_status_id = :project_status, 
                         project_group_id = :group, 
-                        status = :status, 
                         updated_at = NOW() 
                     WHERE project_id = :project_id";
             $stmt = $pdo->prepare($sql);
@@ -322,7 +321,9 @@ class ProjectsModel {
         $stmt->bindValue(':project_start', $project_start);
         $stmt->bindValue(':project_end', $project_end);
         $stmt->bindValue(':project_status', $project_status);
-        $stmt->bindValue(':status', $status);
+        if (!$project_id) {
+            $stmt->bindValue(':status', 'inactive');
+        }
         return $stmt->execute();
     }
     private function isDuplicateProjectName($project_name, $project_id = null) {
@@ -405,5 +406,10 @@ class ProjectsModel {
         $sql = "UPDATE $table SET $col_bg = ?, $col_op = ? WHERE project_id = ?";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([$dbPath, $opacity, $project_id]);
+    }
+    public function updateStatus($id, $status) {
+        $sql = "UPDATE wp_project SET status = ?, updated_at = NOW() WHERE project_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$status, (int)$id]);
     }
 }

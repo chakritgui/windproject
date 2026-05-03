@@ -30,6 +30,17 @@ function initInstallationsTable() {
                 return meta.row + meta.settings._iDisplayStart + 1;
             }
         },{ 
+            data: 'status',
+            orderable: true,
+            render: function (status, type, row) {
+                const isChecked = row.status === 'active' ? 'checked' : '';
+                return `
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input update-item-switch" type="checkbox" role="switch"id="switch_${row.installations_id}" data-id="${row.installations_id}" data-type="installation" ${isChecked} style="cursor:pointer;">
+                    </div>
+                `;
+            }
+        },{ 
             data: "project_name",
             orderable: true,
         },{ 
@@ -56,28 +67,6 @@ function initInstallationsTable() {
         },{ 
             data: "created_at",
             orderable: true,
-        },{ 
-            data: 'status',
-            orderable: true,
-            render: function (status, type, row) {
-                let badge = "";
-                switch(status) {
-                    case 'active':
-                        badge = "success";
-                        break;
-                    case 'inactive':
-                        badge = "secondary";
-                        break;
-                    case 'expired':
-                        badge = "danger";
-                        break;
-                }
-                return `
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
-                    </div>
-                `;
-            }
         },{ 
             data: null,
             orderable: false,
@@ -192,25 +181,13 @@ $(document).on('click', '.manage-installation', function() {
                             <select id="type" class="form-select obj-required"></select>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
-                            <select id="status" class="form-select obj-required"></select>
-                        </div>
-                    </div>
                 `);
-                initSelect2Remote('#status', `${BASE_URL}/api/installations.filter`, { type: 'status' });
                 initSelect2Remote('#project', `${BASE_URL}/api/installations.filter`, { type: 'project' });
                 initSelect2Remote('#type', `${BASE_URL}/api/installations.filter`, { type: 'type' });
                 if (installationData) {
                     $("#installations_id").val(installationData.installations_id);
                     $("#installations_name").val(installationData.installations_name);
                     $("#installations_name_display").val(installationData.installations_name_display);
-                    if (installationData.status) {
-                        let statusName = installationData.status.charAt(0).toUpperCase() + installationData.status.slice(1);
-                        var newOptionStatus = new Option(statusName, installationData.status, true, true);
-                        $('#status').append(newOptionStatus).trigger('change');
-                    }
                     if (installationData.project_name) {
                         var newOptionStatus = new Option(installationData.project_name, installationData.project_id, true, true);
                         $('#project').append(newOptionStatus).trigger('change');
@@ -254,7 +231,6 @@ function saveInstallation() {
     formData.append("installations_id", $("#installations_id").val() || "");
     formData.append("installations_name", $("#installations_name").val() || "");
     formData.append("installations_name_display", $("#installations_name_display").val() || "");
-    formData.append("status", $("#status").val());
     formData.append("project", $("#project").val());
     formData.append("type", $("#type").val());
     Swal.fire({

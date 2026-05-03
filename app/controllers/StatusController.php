@@ -33,7 +33,6 @@ class StatusController extends BaseController {
             'project_status_id' => intval($_POST['project_status_id'] ?? 0),
             'project_status_name' => $name,
             'project_status_color' => $_POST['project_status_color'] ?? '#3b82f6',
-            'status'     => $_POST['status'] ?? 'active',
         ];
         $result = $this->model->save($data);
         if ($result === true) {
@@ -45,5 +44,11 @@ class StatusController extends BaseController {
     public function delete() {
         $id = intval($_POST['id'] ?? 0);
         $this->json(['status' => $this->model->delete($id)]);
+    }
+    public function updateStatus() {
+        $id = intval($_POST['id'] ?? 0);
+        $status = $_POST['status'] ?? 'inactive';
+        $result = $this->model->updateStatus($id, $status);
+        $this->json(['status' => $result]);
     }
 }

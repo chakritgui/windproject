@@ -28,6 +28,17 @@ function initTypesTable() {
                 return meta.row + meta.settings._iDisplayStart + 1;
             }
         },{ 
+            data: 'status',
+            orderable: true,
+            render: function (status, type, row) {
+                const isChecked = row.status === 'active' ? 'checked' : '';
+                return `
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input update-item-switch" type="checkbox" role="switch"id="switch_${row.type_id}" data-id="${row.type_id}" data-type="type" ${isChecked} style="cursor:pointer;">
+                    </div>
+                `;
+            }
+        },{ 
             data: "type_icon",
             orderable: false,
             searchable: false,
@@ -73,25 +84,6 @@ function initTypesTable() {
         },{ 
             data: "created_at",
             orderable: true,
-        },{ 
-            data: 'status',
-            orderable: true,
-            render: function (status, type, row) {
-                let badge = "";
-                switch(status) {
-                    case 'active':
-                        badge = "success";
-                        break;
-                    case 'inactive':
-                        badge = "secondary";
-                        break;
-                }
-                return `
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
-                    </div>
-                `;
-            }
         },{ 
             data: null,
             orderable: false,
@@ -211,21 +203,11 @@ $(document).on('click', '.manage-type', function() {
                             <label class="mb-2 required">${langData['color'] || 'Color'}</label>
                             <input type="color" class="form-control obj-required" id="default_color" value="${typeData.default_color}">
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
-                            <select id="status" class="form-select obj-required"></select>
-                        </div>
                     </div>
                 `);
-                initSelect2Remote('#status', `${BASE_URL}/api/types.filter`, { type: 'status' });
                 if (typeData) {
                     $("#type_id").val(typeData.type_id);
                     $("#type_name").val(typeData.type_name);
-                    if (typeData.status) {
-                        let statusName = typeData.status.charAt(0).toUpperCase() + typeData.status.slice(1);
-                        var newOptionStatus = new Option(statusName, typeData.status, true, true);
-                        $('#status').append(newOptionStatus).trigger('change');
-                    }
                 }
                 initCoverUpload();
             } else {
@@ -262,7 +244,6 @@ function saveType() {
     formData.append("type_id", $("#type_id").val() || "");
     formData.append("type_name", $("#type_name").val() || "");
     formData.append("type_name_display", $("#type_name_display").val() || "");
-    formData.append("status", $("#status").val());
     formData.append("ex_cover", $("#ex_cover").val());
     formData.append("default_color", $("#default_color").val() || "#f5a623");
     const cover = $("#cover")[0].files[0] || null;

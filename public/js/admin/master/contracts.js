@@ -28,6 +28,17 @@ function initContractsTable() {
                 return meta.row + meta.settings._iDisplayStart + 1;
             }
         },{ 
+            data: 'status',
+            orderable: true,
+            render: function (status, type, row) {
+                const isChecked = row.status === 'active' ? 'checked' : '';
+                return `
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input update-item-switch" type="checkbox" role="switch"id="switch_${row.contract_id}" data-id="${row.contract_id}" data-type="contracts" ${isChecked} style="cursor:pointer;">
+                    </div>
+                `;
+            }
+        },{ 
             data: "contract_no",
             orderable: true,
         },{ 
@@ -57,28 +68,6 @@ function initContractsTable() {
         },{ 
             data: "created_at",
             orderable: true,
-        },{ 
-            data: 'status',
-            orderable: true,
-            render: function (status, type, row) {
-                let badge = "";
-                switch(status) {
-                    case 'active':
-                        badge = "success";
-                        break;
-                    case 'inactive':
-                        badge = "secondary";
-                        break;
-                    case 'expired':
-                        badge = "danger";
-                        break;
-                }
-                return `
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
-                    </div>
-                `;
-            }
         },{ 
             data: null,
             orderable: false,
@@ -197,14 +186,7 @@ $(document).on('click', '.manage-contract', function() {
                             <input type="text" class="form-control" id="contract_end">
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
-                            <select id="status" class="form-select obj-required"></select>
-                        </div>
-                    </div>
                 `);
-                initSelect2Remote('#status', `${BASE_URL}/api/contracts.filter`, { type: 'status' });
                 initDatePicker('#contract_start');
                 initDatePicker('#contract_end');
                 if (contractData) {
@@ -219,11 +201,6 @@ $(document).on('click', '.manage-contract', function() {
                     if (contractData.contract_end) {
                         let endDate = new Date(contractData.contract_end);
                         $('#contract_end').datepicker('setDate', endDate);
-                    }
-                    if (contractData.status) {
-                        let statusName = contractData.status.charAt(0).toUpperCase() + contractData.status.slice(1);
-                        var newOptionStatus = new Option(statusName, contractData.status, true, true);
-                        $('#status').append(newOptionStatus).trigger('change');
                     }
                 }
             } else {
@@ -280,7 +257,6 @@ function saveContract() {
     formData.append("contract_no", $("#contract_no").val() || "");
     formData.append("contract_start", $("#contract_start").val());
     formData.append("contract_end", $("#contract_end").val());
-    formData.append("status", $("#status").val());
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `

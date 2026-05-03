@@ -15,9 +15,9 @@ class GroupModel {
         $total = (int)$stmtTotal->fetchColumn();
         $orderMap = [
             0 => "item_order",
-            1 => "project_group_name",
-            2 => "created_at",
-            3 => "status"
+            1 => "status",
+            2 => "project_group_name",
+            3 => "created_at",
         ];
         $order = $orderMap[$colIndex] ?? 'created_at';
         $orderDir = strtolower($orderDir) === 'asc' ? 'ASC' : 'DESC';
@@ -99,12 +99,11 @@ class GroupModel {
     public function save($data) {
         $id = $data['project_group_id'] ?? null;
         $name = trim($data['project_group_name'] ?? '');
-        $status = $data['status'] ?? 'active';
         if ($this->isDuplicateName($name, $id)) {
             return ['status' => false, 'message' => 'already_exists'];
         }
         if ($id) {
-            $sql = "UPDATE wp_project_group SET project_group_name = :name, status = :status, updated_at = NOW() WHERE project_group_id = :id";
+            $sql = "UPDATE wp_project_group SET project_group_name = :name, updated_at = NOW() WHERE project_group_id = :id";
             $stmt = $this->db->prepare($sql);
             $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
         } else {
@@ -113,7 +112,9 @@ class GroupModel {
             $stmt = $this->db->prepare($sql);
         }
         $stmt->bindValue(':name', $name);
-        $stmt->bindValue(':status', $status);
+        if (!$id) {
+            $stmt->bindValue(':status', 'inactive');
+        }
         return $stmt->execute();
     }
     private function isDuplicateName($name, $id = null) {
@@ -128,5 +129,10 @@ class GroupModel {
         }
         $stmt->execute();
         return (int)$stmt->fetchColumn() > 0;
+    }
+    public function updateStatus($id, $status) {
+        $sql = "UPDATE wp_project_group SET status = ?, updated_at = NOW() WHERE project_group_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$status, (int)$id]);
     }
 }

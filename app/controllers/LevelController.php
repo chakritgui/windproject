@@ -51,7 +51,6 @@ class LevelController extends BaseController {
         $data = [
             'height_id'     => intval($_POST['height_id'] ?? 0),
             'height_limit'     => intval($_POST['height_limit'] ?? 3),
-            'status'     => $_POST['status'] ?? 'active',
             'height_name'   => $height_name,
             'height_levels' => $height_levels 
         ];
@@ -63,5 +62,11 @@ class LevelController extends BaseController {
         } else {
             $this->json(['status' => false, 'message' => 'cannot_save']);
         }
+    }
+    public function updateStatus() {
+        $id = intval($_POST['id'] ?? 0);
+        $status = $_POST['status'] ?? 'inactive';
+        $result = $this->model->updateStatus($id, $status);
+        $this->json(['status' => $result]);
     }
 }

@@ -23,6 +23,17 @@ function initProjectStatusTable() {
                 return meta.row + meta.settings._iDisplayStart + 1;
             }
         },{ 
+            data: 'status',
+            orderable: true,
+            render: function (status, type, row) {
+                const isChecked = row.status === 'active' ? 'checked' : '';
+                return `
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input update-item-switch" type="checkbox" role="switch"id="switch_${row.project_status_id}" data-id="${row.project_status_id}" data-type="project.status" ${isChecked} style="cursor:pointer;">
+                    </div>
+                `;
+            }
+        },{ 
             data: "project_status_color",
             orderable: false,
             render: function (data, type, row) {
@@ -37,25 +48,6 @@ function initProjectStatusTable() {
         },{ 
             data: "created_at",
             orderable: true,
-        },{ 
-            data: 'status',
-            orderable: true,
-            render: function (status, type, row) {
-                let badge = "";
-                switch(status) {
-                    case 'active':
-                        badge = "success";
-                        break;
-                    case 'inactive':
-                        badge = "secondary";
-                        break;
-                }
-                return `
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
-                    </div>
-                `;
-            }
         },{ 
             data: null,
             orderable: false,
@@ -122,18 +114,8 @@ $(document).on('click', '.manage-sta', function() {
                             <label class="mb-2" data-i18n="color"></label>
                             <input type="color" class="form-control form-control-color w-100" id="project_status_color" value="${d.project_status_color || '#3b82f6'}">
                         </div>
-                        <div class="col">
-                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
-                            <select id="status" class="form-select obj-required"></select>
-                        </div>
                     </div>
                 `);
-                initSelect2Remote('#status', `${BASE_URL}/api/installations.filter`, { type: 'status' });
-                if (d.status) {
-                    let statusName = d.status.charAt(0).toUpperCase() + d.status.slice(1);
-                    var newOptionStatus = new Option(statusName, d.status, true, true);
-                    $('#status').append(newOptionStatus).trigger('change');
-                }
                 modalEl.find(".modal-footer").html(`
                     <button type="button" class="btn btn-primary save-sta">Save</button>
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
@@ -168,7 +150,6 @@ function saveStatus() {
     formData.append("project_status_id", $("#project_status_id").val());
     formData.append("project_status_name", $("#project_status_name").val());
     formData.append("project_status_color", $("#project_status_color").val());
-    formData.append("status", $("#status").val() || "active");
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `

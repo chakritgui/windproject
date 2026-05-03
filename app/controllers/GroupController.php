@@ -49,7 +49,6 @@ class GroupController extends BaseController {
         }
         $data = [
             'project_group_id'   => intval($_POST['project_group_id'] ?? 0),
-            'status'     => $_POST['status'] ?? 'active',
             'project_group_name' => $groupName
         ];
         $result = $this->model->save($data);
@@ -63,5 +62,11 @@ class GroupController extends BaseController {
                 'message' => 'cannot_save'
             ]);
         }
+    }
+    public function updateStatus() {
+        $id = intval($_POST['id'] ?? 0);
+        $status = $_POST['status'] ?? 'inactive';
+        $result = $this->model->updateStatus($id, $status);
+        $this->json(['status' => $result]);
     }
 }

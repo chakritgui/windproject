@@ -28,6 +28,17 @@ function initLevelTable() {
                 return meta.row + meta.settings._iDisplayStart + 1;
             }
         },{ 
+            data: 'status',
+            orderable: true,
+            render: function (status, type, row) {
+                const isChecked = row.status === 'active' ? 'checked' : '';
+                return `
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input update-item-switch" type="checkbox" role="switch"id="switch_${row.height_id}" data-id="${row.height_id}" data-type="level" ${isChecked} style="cursor:pointer;">
+                    </div>
+                `;
+            }
+        },{ 
             data: "height_name",
             orderable: true,
             render: function (data, type, row) {
@@ -57,25 +68,6 @@ function initLevelTable() {
         },{ 
             data: "created_at",
             orderable: true,
-        },{ 
-            data: 'status',
-            orderable: true,
-            render: function (status, type, row) {
-                let badge = "";
-                switch(status) {
-                    case 'active':
-                        badge = "success";
-                        break;
-                    case 'inactive':
-                        badge = "secondary";
-                        break;
-                }
-                return `
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
-                    </div>
-                `;
-            }
         },{ 
             data: null,
             orderable: false,
@@ -183,10 +175,6 @@ $(document).on('click', '.manage-level', function() {
                             <label class="mb-2 required">${langData['max_selection_reached'] || 'Select a maximum of'}</label>
                             <input type="number" class="form-control obj-required" id="height_limit" min="1" step="1" onkeypress="return event.charCode >= 48 && event.charCode <= 57">
                         </div>
-                        <div class="col">
-                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
-                            <select id="status" class="form-select obj-required"></select>
-                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="mb-2 required">${langData['height_level'] || 'Height Level'}</label>
@@ -204,11 +192,6 @@ $(document).on('click', '.manage-level', function() {
                     $("#height_limit").val(levelData.height_limit);
                     if (levelData.height_levels) {
                         levelsArray = levelData.height_levels.split(',').map(s => s.trim()).filter(s => s !== "");
-                    }
-                    if (levelData.status) {
-                        let statusName = levelData.status.charAt(0).toUpperCase() + levelData.status.slice(1);
-                        var newOptionStatus = new Option(statusName, levelData.status, true, true);
-                        $('#status').append(newOptionStatus).trigger('change');
                     }
                     renderTags();
                 }
@@ -320,7 +303,6 @@ function saveLevel() {
     formData.append("height_limit", $("#height_limit").val() || 3);
     formData.append("height_name", $("#height_name").val());
     formData.append("height_levels", $("#height_levels_hidden").val());
-    formData.append("status", $("#status").val() || 'active');
     Swal.fire({
         title: langData['saving'] || 'Saving...',
         html: `

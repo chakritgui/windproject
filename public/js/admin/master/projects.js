@@ -31,6 +31,17 @@ function initProjectsTable() {
                 return meta.row + meta.settings._iDisplayStart + 1;
             }
         },{ 
+            data: 'status',
+            orderable: true,
+            render: function (status, type, row) {
+                const isChecked = row.status === 'active' ? 'checked' : '';
+                return `
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input update-item-switch" type="checkbox" role="switch"id="switch_${row.project_id}" data-id="${row.project_id}" data-type="projects" ${isChecked} style="cursor:pointer;">
+                    </div>
+                `;
+            }
+        },{ 
             data: "project_code",
             orderable: true,
         },{ 
@@ -96,25 +107,6 @@ function initProjectsTable() {
                     ` : `
                         <button class="btn btn-sm btn-light manage-background" data-id="${row.project_id}"><i class="fa-solid fa-plus"></i></button>
                     `}
-                `;
-            }
-        },{ 
-            data: 'status',
-            orderable: true,
-            render: function (status, type, row) {
-                let badge = "";
-                switch(status) {
-                    case 'active':
-                        badge = "success";
-                        break;
-                    case 'inactive':
-                        badge = "secondary";
-                        break;
-                }
-                return `
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
-                    </div>
                 `;
             }
         },{ 
@@ -404,14 +396,9 @@ $(document).on('click', '.manage-project', function() {
                             <label class="mb-2 required">${langData['project_status'] || 'Project Status'}</label>
                             <select id="project_status" class="form-select obj-required"></select>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
-                            <select id="status" class="form-select obj-required"></select>
-                        </div>
                     </div>
                 `);
                 initSelect2Remote('#project_status', `${BASE_URL}/api/projects.filter`, { type: 'project_status' });
-                initSelect2Remote('#status', `${BASE_URL}/api/projects.filter`, { type: 'status' });
                 initSelect2Remote('#contract', `${BASE_URL}/api/projects.filter`, { type: 'contract' });
                 initSelect2Remote('#group', `${BASE_URL}/api/projects.filter`, { type: 'group' });
                 initDatePicker('#project_start');
@@ -440,11 +427,6 @@ $(document).on('click', '.manage-project', function() {
                     if (projectData && projectData.project_group_name) {
                         var newOptionGroup = new Option(projectData.project_group_name, projectData.project_group_id, true, true);
                         $('#group').append(newOptionGroup).trigger('change');
-                    }
-                    if (projectData.status) {
-                        let statusName = projectData.status.charAt(0).toUpperCase() + projectData.status.slice(1);
-                        var newOptionStatus = new Option(statusName, projectData.status, true, true);
-                        $('#status').append(newOptionStatus).trigger('change');
                     }
                 }
             } else {
@@ -497,7 +479,6 @@ function saveProject() {
     const formData = new FormData();
     formData.append("project_id", $("#project_id").val() || "");
     formData.append("contract_id", $("#contract").val() || "");
-    formData.append("status", $("#status").val() || "active");
     formData.append("project_name", $("#project_name").val() || "");
     formData.append("project_name_display", $("#project_name_display").val() || "");
     formData.append("project_code", $("#project_code").val() || "");

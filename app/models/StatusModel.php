@@ -15,9 +15,9 @@ class StatusModel {
         $total = (int)$stmtTotal->fetchColumn();
         $orderMap = [
             0 => "item_order",
-            2 => "project_status_name",
-            3 => "created_at",
-            4 => "status"
+            1 => "status",
+            3 => "project_status_name",
+            4 => "created_at",
         ];
         $order = $orderMap[$colIndex] ?? 'created_at';
         $orderDir = strtolower($orderDir) === 'asc' ? 'ASC' : 'DESC';
@@ -84,12 +84,11 @@ class StatusModel {
         $id = $data['project_status_id'] ?? null;
         $name = trim($data['project_status_name'] ?? '');
         $color = $data['project_status_color'] ?? '#3b82f6';
-        $status = $data['status'] ?? 'active';
         if ($this->isDuplicateName($name, $id)) {
             return ['status' => false, 'message' => 'already_exists'];
         }
         if ($id) {
-            $sql = "UPDATE wp_project_status SET project_status_name = :name, project_status_color = :color,status = :status, updated_at = NOW() WHERE project_status_id = :id";
+            $sql = "UPDATE wp_project_status SET project_status_name = :name, project_status_color = :color, updated_at = NOW() WHERE project_status_id = :id";
             $stmt = $this->db->prepare($sql);
             $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
         } else {
@@ -98,7 +97,9 @@ class StatusModel {
             $stmt = $this->db->prepare($sql);
         }
         $stmt->bindValue(':name', $name);
-        $stmt->bindValue(':status', $status);
+        if (!$id) {
+            $stmt->bindValue(':status', 'inactive');
+        }
         $stmt->bindValue(':color', $color);
         return $stmt->execute();
     }
@@ -127,5 +128,10 @@ class StatusModel {
         if ($id) { $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT); }
         $stmt->execute();
         return (int)$stmt->fetchColumn() > 0;
+    }
+    public function updateStatus($id, $status) {
+        $sql = "UPDATE wp_project_status SET status = ?, updated_at = NOW() WHERE project_status_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$status, (int)$id]);
     }
 }

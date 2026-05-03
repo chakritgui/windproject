@@ -14,12 +14,12 @@ class InstallationsModel {
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
             0 => "i.item_order",
-            1 => "p.project_name",
-            2 => "t.type_name",
-            3 => "i.installations_name",
-            4 => "i.installations_name_display",
-            5 => "i.created_at",
-            6 => "i.status",
+            1 => "i.status",
+            2 => "p.project_name",
+            3 => "t.type_name",
+            4 => "i.installations_name",
+            5 => "i.installations_name_display",
+            6 => "i.created_at",
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -191,14 +191,12 @@ class InstallationsModel {
                 'project_name' => '',
                 'type_id' => '',
                 'type_name' => '',
-                'status' => 'active'
             ];
         } else {
             $sql = "SELECT 
                     i.installations_id,
                     i.installations_name,
                     i.installations_name_display,
-                    i.status,
                     p.project_id,
                     p.project_name,
                     t.type_id,
@@ -219,7 +217,6 @@ class InstallationsModel {
         $installations_name_display = trim($data['installations_name_display'] ?? '');
         $project_id         = (int)($data['project'] ?? 0);
         $type_id            = (int)($data['type'] ?? 0);
-        $status             = ($data['status'] ?? '');
         if ($installations_name === '') {
             return [
                 'status'  => false,
@@ -234,7 +231,7 @@ class InstallationsModel {
         }
         $pdo = $this->db;
         if ($installations_id) {
-            $sql = "UPDATE wp_installations SET installations_name = :installations_name, installations_name_display = :installations_name_display, project_id = :project_id, type_id = :type_id, status = :status, updated_at = NOW() WHERE installations_id = :installations_id";
+            $sql = "UPDATE wp_installations SET installations_name = :installations_name, installations_name_display = :installations_name_display, project_id = :project_id, type_id = :type_id, updated_at = NOW() WHERE installations_id = :installations_id";
         } else {
             $sql = "INSERT INTO wp_installations (
                     installations_name,
@@ -263,7 +260,9 @@ class InstallationsModel {
         $stmt->bindValue(':installations_name_display', $installations_name_display);
         $stmt->bindValue(':project_id', $project_id, PDO::PARAM_INT);
         $stmt->bindValue(':type_id', $type_id, PDO::PARAM_INT);
-        $stmt->bindValue(':status', $status);
+        if (!$installations_id) {
+            $stmt->bindValue(':status', 'inactive');
+        }
         $result = $stmt->execute();
         if (!$result) {
             return [
@@ -277,7 +276,7 @@ class InstallationsModel {
         ];
     }
     private function isDuplicateInstallationName($installations_name,$project_id,$type_id,$installations_id = null) {
-        $sql = "SELECT 1 FROM wp_installations WHERE installations_name = :installations_name AND project_id = :project_id AND type_id = :type_id";
+        $sql = "SELECT 1 FROM wp_installations WHERE installations_name = :installations_name AND project_id = :project_id AND type_id = :type_id and status <> 'deleted'";
         if ($installations_id) {
             $sql .= " AND installations_id != :installations_id";
         }
@@ -290,5 +289,10 @@ class InstallationsModel {
         }
         $stmt->execute();
         return (bool)$stmt->fetchColumn();
+    }
+    public function updateStatus($id, $status) {
+        $sql = "UPDATE wp_installations SET status = ?, updated_at = NOW() WHERE installations_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$status, (int)$id]);
     }
 }

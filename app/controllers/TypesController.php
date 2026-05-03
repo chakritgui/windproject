@@ -53,7 +53,6 @@ class TypesController extends BaseController {
             'type_name_display' => $_POST['type_name_display'] ?? '',
             'cover' => $_FILES['cover'] ?? null,
             'ex_cover' => $_POST['ex_cover'] ?? null,
-            'status' => $_POST['status'] ?? '',
             'default_color' => $_POST['default_color'] ?? ''
         ];
         $result = $this->model->save($data);
@@ -69,5 +68,11 @@ class TypesController extends BaseController {
                 'message' => 'cannot_save'
             ]);
         }
+    }
+    public function updateStatus() {
+        $id = intval($_POST['id'] ?? 0);
+        $status = $_POST['status'] ?? 'inactive';
+        $result = $this->model->updateStatus($id, $status);
+        $this->json(['status' => $result]);
     }
 }

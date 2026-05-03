@@ -14,10 +14,10 @@ class TypesModel {
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
             0 => "item_order",
-            2 => "type_name",
-            3 => "type_name_display",
-            4 => "created_at",
-            5 => "status"
+            1 => "status",
+            3 => "type_name",
+            4 => "type_name_display",
+            5 => "created_at",
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -147,10 +147,9 @@ class TypesModel {
                 'message' => 'already_type'
             ];
         }
-        $status = $data['status'] ?? '';
         $pdo = $this->db;
         if ($type_id) {
-            $sql = "UPDATE wp_type SET type_name = :type_name, type_name_display = :type_name_display, status = :status, updated_at = NOW(), default_color = :default_color WHERE type_id = :type_id";
+            $sql = "UPDATE wp_type SET type_name = :type_name, type_name_display = :type_name_display, updated_at = NOW(), default_color = :default_color WHERE type_id = :type_id";
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':type_id', (int)$type_id, PDO::PARAM_INT);
         } else {
@@ -173,7 +172,9 @@ class TypesModel {
         }
         $stmt->bindValue(':type_name', $type_name);
         $stmt->bindValue(':type_name_display', $type_name_display);
-        $stmt->bindValue(':status', $status);
+        if (!$type_id) {
+            $stmt->bindValue(':status', 'inactive');
+        }
         $stmt->bindValue(':default_color', $default_color);
         $result = $stmt->execute();
         if (!$type_id) $type_id = $pdo->lastInsertId();
@@ -278,5 +279,10 @@ class TypesModel {
             $this->db->rollBack();
             error_log($e->getMessage());
         }
+    }
+    public function updateStatus($id, $status) {
+        $sql = "UPDATE wp_type SET status = ?, updated_at = NOW() WHERE type_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$status, (int)$id]);
     }
 }

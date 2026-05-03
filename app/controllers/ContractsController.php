@@ -54,7 +54,6 @@ class ContractsController extends BaseController {
             'contract_name_display' => $_POST['contract_name_display'] ?? '',
             'contract_start' => $_POST['contract_start'] ?? '',
             'contract_end' => $_POST['contract_end'] ?? '',
-            'status' => $_POST['status'] ?? ''
         ];
         $result = $this->model->save($data);
         if ($result === true) {
@@ -69,5 +68,11 @@ class ContractsController extends BaseController {
                 'message' => 'cannot_save'
             ]);
         }
+    }
+    public function updateStatus() {
+        $id = intval($_POST['id'] ?? 0);
+        $status = $_POST['status'] ?? 'inactive';
+        $result = $this->model->updateStatus($id, $status);
+        $this->json(['status' => $result]);
     }
 }

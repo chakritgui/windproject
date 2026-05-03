@@ -32,6 +32,28 @@ function initPolesTable() {
                 return meta.row + meta.settings._iDisplayStart + 1;
             }
         },{ 
+            data: 'status',
+            orderable: true,
+            render: function (status, type, row) {
+               const isChecked = row.status === 'online' ? 'checked' : '';
+                return `
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input update-item-switch" type="checkbox" role="switch"id="switch_${row.poles_id}" data-id="${row.poles_id}" data-type="poles" ${isChecked} style="cursor:pointer;">
+                    </div>
+                `;
+            }
+        },{
+            data: "show_wind_speed", 
+            orderable: true, 
+            render: function (data, type, row, meta) {
+                const isChecked = row.show_wind_speed === 'yes' ? 'checked' : '';
+                return `
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input update-status-switch" type="checkbox" role="switch"id="switch_${row.poles_id}" data-id="${row.poles_id}" ${isChecked} style="cursor:pointer;">
+                    </div>
+                `;
+            }
+        },{ 
             data: "poles_icon",
             orderable: false,
             searchable: false,
@@ -54,17 +76,6 @@ function initPolesTable() {
                 }
                 return `
                     <img src="${BASE_URL}/${data}" style="height:60px; border-radius:6px; object-fit:contain;" loading="lazy">
-                `;
-            }
-        },{
-            data: "show_wind_speed", 
-            orderable: true, 
-            render: function (data, type, row, meta) {
-                const isChecked = row.show_wind_speed === 'yes' ? 'checked' : '';
-                return `
-                    <div class="form-check form-switch mb-0">
-                        <input class="form-check-input update-status-switch" type="checkbox" role="switch"id="switch_${row.poles_id}" data-id="${row.poles_id}" ${isChecked} style="cursor:pointer;">
-                    </div>
                 `;
             }
         },{ 
@@ -100,25 +111,6 @@ function initPolesTable() {
         },{ 
             data: "created_at",
             orderable: true,
-        },{ 
-            data: 'status',
-            orderable: true,
-            render: function (status, type, row) {
-                let badge = "";
-                switch(status) {
-                    case 'online':
-                        badge = "success";
-                        break;
-                    case 'inactive':
-                        badge = "secondary";
-                        break;
-                }
-                return `
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-${badge}-subtle text-${badge}" style="font-weight:400;">${langData[status] || status}</span>
-                    </div>
-                `;
-            }
         },{ 
             data: null,
             orderable: false,
@@ -297,12 +289,6 @@ $(document).on('click', '.manage-pole', function() {
                             <select id="installation" class="form-select obj-required"></select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['status'] || 'Status'}</label>
-                            <select id="status" class="form-select obj-required"></select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
                             <label class="mb-2">${langData['color'] || 'Color'}</label>
                             <div class="d-flex gap-2 mb-2">
                                 <button type="button" id="btn-no-color" class="btn btn-sm btn-secondary flex-fill">${langData['no_color_used']|| 'No color used.'}</button>
@@ -329,7 +315,6 @@ $(document).on('click', '.manage-pole', function() {
                 }
                 modalEl.on('click', '#btn-no-color', function() { setColorMode(false); });
                 modalEl.on('click', '#btn-use-color', function() { setColorMode(true); });
-                initSelect2Remote('#status', `${BASE_URL}/api/poles.filter`, { type: 'status' });
                 initSelect2Remote('#project', `${BASE_URL}/api/poles.filter`, { type: 'project' });
                 initSelect2Remote('#type', `${BASE_URL}/api/poles.filter`, { type: 'type' });
                 initSelect2Remote('#installation', `${BASE_URL}/api/poles.filter`, { type: 'installation' });
@@ -355,11 +340,6 @@ $(document).on('click', '.manage-pole', function() {
                     if (poleData.installations_name) {
                         var newOptionStatus = new Option(poleData.installations_name, poleData.installations_id, true, true);
                         $('#installation').append(newOptionStatus).trigger('change');
-                    }
-                    if (poleData.status) {
-                        let statusName = poleData.status.charAt(0).toUpperCase() + poleData.status.slice(1);
-                        var newOptionStatus = new Option(statusName, poleData.status, true, true);
-                        $('#status').append(newOptionStatus).trigger('change');
                     }
                     if (poleData.project_status_name) {
                         var newOptionStatus = new Option(poleData.project_status_name, poleData.project_status_id, true, true);
@@ -410,7 +390,6 @@ function savePole() {
     formData.append("project_status", $("#project_status").val());
     formData.append("type", $("#type").val());
     formData.append("installation", $("#installation").val());
-    formData.append("status", $("#status").val());
     formData.append("default_color", $('#color-picker-wrapper').is(':visible') ? $("#default_color").val() : "");
     formData.append("ex_cover", $("#ex_cover").val());
     const cover = $("#cover")[0].files[0] || null;
@@ -713,7 +692,7 @@ $(document).on("change", ".update-status-switch", function() {
     let id = $(this).data("id");
     let newStatus = $(this).is(":checked") ? 'yes' : 'no';
     $.ajax({
-        url: `${BASE_URL}/api/poles.updateStatus`,
+        url: `${BASE_URL}/api/poles.updateWind`,
         method: 'POST',
         data: { id: id, status: newStatus },
         dataType: 'json',

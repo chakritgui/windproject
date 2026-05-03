@@ -443,3 +443,53 @@ $(document).on('click', '.btn-save-icon', function () {
         }
     });
 });
+$(document).on("change", ".update-item-switch", function() {
+    let id = $(this).data("id");
+    let type = $(this).data("type");
+    let newStatus = $(this).is(":checked") ? 'active' : 'inactive';
+    let url = `${BASE_URL}/api/${type}.updateStatus`;
+    let fn = '';
+    switch(type) {
+        case 'contracts':
+            fn = initContractsTable;
+            break;
+        case 'group':
+            fn = initGroupTable;
+            break;
+        case 'project.status':
+            fn = initProjectStatusTable;
+            break;
+        case 'projects':
+            fn = initProjectsTable;
+            break;
+        case 'types':
+            fn = initTypesTable;
+            break;
+        case 'poles':
+            fn = initPolesTable;
+            break;
+        case 'installations':
+            fn = initInstallationsTable;
+            break;
+        case 'level':
+            fn = initLevelTable;
+            break;
+    }
+    $.ajax({
+        url: url,
+        method: 'POST',
+        data: { id: id, status: newStatus },
+        dataType: 'json',
+        success: function(res) {    
+            if(res.status === true){
+                showSuccess(langData['saved_successfully'] || 'Saved successfully');
+                if (typeof fn === "function") fn();
+            } else {
+                showError((langData['cannot_save'] || 'Error: ') + ' ' + (langData[res.message] || 'Unknown error'));
+            }
+        },
+        error: function(){
+            showSuccess(langData['cannot_save']);
+        }
+    });
+});

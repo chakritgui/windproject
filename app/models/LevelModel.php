@@ -15,10 +15,10 @@ class LevelModel {
         $total = (int)$stmtTotal->fetchColumn();
         $orderMap = [
             0 => "h.item_order",
-            1 => "h.height_name",
-            3 => "h.height_limit",
-            4 => "h.created_at",
-            5 => "h.status"
+            1 => "h.status",
+            2 => "h.height_name",
+            4 => "h.height_limit",
+            5 => "h.created_at",
         ];
         $order = $orderMap[$colIndex] ?? 'h.created_at';
         $orderDir = strtolower($orderDir) === 'asc' ? 'ASC' : 'DESC';
@@ -106,15 +106,13 @@ class LevelModel {
         $name = trim($data['height_name'] ?? '');
         $levels_str = $data['height_levels'] ?? '';
         $height_limit = $data['height_limit'] ?? 3;
-        $status = $data['status'] ?? 'active';
-
         if ($this->isDuplicateName($name, $id)) {
             return ['status' => false, 'message' => 'already_exists'];
         }
         try {
             $this->db->beginTransaction();
             if ($id) {
-                $sql = "UPDATE wp_height SET height_name = :name, height_limit = :height_limit, updated_at = NOW(), status = :status WHERE height_id = :id";
+                $sql = "UPDATE wp_height SET height_name = :name, height_limit = :height_limit, updated_at = NOW() WHERE height_id = :id";
                 $stmt = $this->db->prepare($sql);
                 $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
             } else {
@@ -122,7 +120,9 @@ class LevelModel {
                 $stmt = $this->db->prepare($sql);
             }
             $stmt->bindValue(':name', $name);
-            $stmt->bindValue(':status', $status);
+            if (!$id) {
+                $stmt->bindValue(':status', 'inactive');
+            }
             $stmt->bindValue(':height_limit', (int)$height_limit, PDO::PARAM_INT);
             $stmt->execute();
             $current_height_id = $id ?: $this->db->lastInsertId();
@@ -168,5 +168,10 @@ class LevelModel {
         }
         $stmt->execute();
         return (int)$stmt->fetchColumn() > 0;
+    }
+    public function updateStatus($id, $status) {
+        $sql = "UPDATE wp_height SET status = ?, updated_at = NOW() WHERE height_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$status, (int)$id]);
     }
 }

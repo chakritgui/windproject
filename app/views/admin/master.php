@@ -78,14 +78,14 @@
                 <table class="table table-striped table-hover" id="tb_contract">
                     <thead>
                         <tr>
-                            <th data-i18n="no"></th>
+                            <th data-i18n="sort"></th>
+                            <th data-i18n="show"></th>
                             <th data-i18n="contract_no"></th>
                             <th data-i18n="contract_name"></th>
                             <th data-i18n="display"></th>
                             <th data-i18n="startDate"></th>
                             <th data-i18n="endDate"></th>
                             <th data-i18n="create_at"></th>
-                            <th data-i18n="status"></th>
                             <th></th>
                         </tr>
                     </thead>
@@ -108,10 +108,10 @@
                 <table class="table table-striped table-hover" id="tb_group">
                     <thead>
                         <tr>
-                            <th data-i18n="no"></th>
+                            <th data-i18n="sort"></th>
+                            <th data-i18n="show"></th>
                             <th data-i18n="group_name"></th>
                             <th data-i18n="create_at"></th>
-                            <th data-i18n="status"></th>
                             <th></th>
                         </tr>
                     </thead>
@@ -134,11 +134,11 @@
                 <table class="table table-striped table-hover" id="tb_project_status">
                     <thead>
                         <tr>
-                            <th data-i18n="no"></th>
+                            <th data-i18n="sort"></th>
+                            <th data-i18n="show"></th>
                             <th data-i18n="color"></th>
                             <th data-i18n="project_status"></th>
                             <th data-i18n="create_at"></th>
-                            <th data-i18n="status"></th>
                             <th></th>
                         </tr>
                     </thead>
@@ -173,7 +173,8 @@
                 <table class="table table-striped table-hover" id="tb_project">
                     <thead>
                         <tr>
-                            <th data-i18n="no"></th>
+                            <th data-i18n="sort"></th>
+                            <th data-i18n="show"></th>
                             <th data-i18n="project_code"></th>
                             <th data-i18n="project_name"></th>
                             <th data-i18n="display"></th>
@@ -184,7 +185,6 @@
                             <th data-i18n="create_at"></th>
                             <th data-i18n="project_status"></th>
                             <th data-i18n="background"></th>
-                            <th data-i18n="status"></th>
                             <th></th>
                         </tr>
                     </thead>
@@ -207,12 +207,12 @@
                 <table class="table table-striped table-hover" id="tb_type">
                     <thead>
                         <tr>
-                            <th data-i18n="no"></th>
+                            <th data-i18n="sort"></th>
+                            <th data-i18n="show"></th>
                             <th data-i18n="icon"></th>
                             <th data-i18n="wind_measurement_equipment"></th>
                             <th data-i18n="display"></th>
                             <th data-i18n="create_at"></th>
-                            <th data-i18n="status"></th>
                             <th></th>
                         </tr>
                     </thead>
@@ -243,13 +243,13 @@
                 <table class="table table-striped table-hover" id="tb_installation">
                     <thead>
                         <tr>
-                            <th data-i18n="no"></th>
+                            <th data-i18n="sort"></th>
+                            <th data-i18n="show"></th>
                             <th data-i18n="project"></th>
                             <th data-i18n="wind_measurement_equipment"></th>
                             <th data-i18n="installation"></th>
                             <th data-i18n="display"></th>
                             <th data-i18n="create_at"></th>
-                            <th data-i18n="status"></th>
                             <th></th>
                         </tr>
                     </thead>
@@ -272,12 +272,12 @@
                 <table class="table table-striped table-hover" id="tb_level">
                     <thead>
                         <tr>
-                            <th data-i18n="no"></th>
+                            <th data-i18n="sort"></th>
+                            <th data-i18n="show"></th>
                             <th data-i18n="level"></th>
                             <th data-i18n="height_level"></th>
                             <th data-i18n="max_selection_reached"></th>
                             <th data-i18n="create_at"></th>
-                            <th data-i18n="status"></th>
                             <th></th>
                         </tr>
                     </thead>
@@ -316,9 +316,10 @@
                 <table class="table table-striped table-hover" id="tb_pole">
                     <thead>
                         <tr>
-                            <th data-i18n="no"></th>
-                            <th data-i18n="icon"></th>
+                            <th data-i18n="sort"></th>
+                            <th data-i18n="show"></th>
                             <th data-i18n="wind_speed"></th>
+                            <th data-i18n="icon"></th>
                             <th data-i18n="pole_code"></th>
                             <th data-i18n="wind_measurement_equipment"></th>
                             <th data-i18n="project"></th>
@@ -327,7 +328,6 @@
                             <th data-i18n="longitude"></th>
                             <th data-i18n="installation"></th>
                             <th data-i18n="create_at"></th>
-                            <th data-i18n="status"></th>
                             <th data-i18n="content"></th>
                             <th></th>
                         </tr>

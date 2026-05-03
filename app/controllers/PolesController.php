@@ -61,7 +61,6 @@ class PolesController extends BaseController {
             'default_color' => $_POST['default_color'] ?? null,
             'type'         => (int)($_POST['type'] ?? 0),
             'installation' => (int)($_POST['installation'] ?? 0),
-            'status'       => $_POST['status'] ?? 'inactive',
             'cover' => $_FILES['cover'] ?? null,
             'ex_cover' => $_POST['ex_cover'] ?? null,
         ];
@@ -115,7 +114,13 @@ class PolesController extends BaseController {
         $content_id = intval($_POST['content_id'] ?? 0);
         $this->json(['status'=>$this->model->deleteContent($poles_id, $content_id)]);
     }
-    public function updateStatus() {
+    public function updateWind() {
+        $id = intval($_POST['id'] ?? 0);
+        $status = $_POST['status'] ?? 'inactive';
+        $result = $this->model->updateWind($id, $status);
+        $this->json(['status' => $result]);
+    }
+     public function updateStatus() {
         $id = intval($_POST['id'] ?? 0);
         $status = $_POST['status'] ?? 'inactive';
         $result = $this->model->updateStatus($id, $status);

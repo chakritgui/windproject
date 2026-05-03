@@ -26,16 +26,16 @@ class PolesModel {
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
             0 => "p.item_order",
+            1 => "p.status",
             2 => "p.show_wind_speed",
-            3 => "p.poles_code",
-            4 => "t.type_name",
-            5 => "pj.project_name",
-            6 => "p.project_name",
-            7 => "p.poles_lat",
-            8 => "p.poles_lng",
-            9 => "i.installations_name",
-            10 => "p.created_at",
-            11 => "p.status"
+            4 => "p.poles_code",
+            5 => "t.type_name",
+            6 => "pj.project_name",
+            7 => "p.project_name",
+            8 => "p.poles_lat",
+            9 => "p.poles_lng",
+            10 => "i.installations_name",
+            11 => "p.created_at",
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -152,7 +152,6 @@ class PolesModel {
             'poles_code' => null,
             'poles_lat' => null,
             'poles_lng' => null,
-            'status' => null,
             'project_id' => null,
             'project_name' => null,
             'type_id' => null,
@@ -172,7 +171,6 @@ class PolesModel {
                     p.poles_code,
                     p.poles_lat,
                     p.poles_lng,
-                    p.status,
                     pj.project_id,
                     pj.project_name,
                     t.type_id,
@@ -218,7 +216,7 @@ class PolesModel {
                             poles_code = :code, poles_lat = :lat, poles_lng = :lng,
                             project_id = :project, project_status_id = :project_status,
                             type_id = :type, installations_id = :installation,
-                            status = :status, updated_at = NOW(),
+                            updated_at = NOW(),
                             poles_source = 'manual', default_color = :default_color
                         WHERE poles_id = :id";
             } else {
@@ -243,7 +241,9 @@ class PolesModel {
             $stmt->bindValue(':project_status', $data['project_status']);
             $stmt->bindValue(':type', (int)$data['type'], PDO::PARAM_INT);
             $stmt->bindValue(':installation', (int)$data['installation'], PDO::PARAM_INT);
-            $stmt->bindValue(':status', $data['status']);
+            if (!$poles_id) {
+                $stmt->bindValue(':status', 'inactive');
+            }
             $stmt->bindValue(':default_color', $data['default_color']);
             if (!$stmt->execute()) {
                 return ['status' => false, 'message' => 'save_failed'];
@@ -602,8 +602,16 @@ class PolesModel {
         ]);
         return ($res1 && $res2);
     }
-    public function updateStatus($id, $status) {
+    public function updateWind($id, $status) {
         $sql = "UPDATE wp_poles SET show_wind_speed=?, updated_at=NOW() WHERE poles_id=?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$status, (int)$id]);
+    }
+    public function updateStatus($id, $status) {
+        if($status === 'active') {
+            $status = 'online';
+        }
+        $sql = "UPDATE wp_poles SET status = ?, updated_at = NOW() WHERE poles_id = ?";
         $stmt = $this->db->prepare($sql);
         return $stmt->execute([$status, (int)$id]);
     }

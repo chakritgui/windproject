@@ -67,7 +67,6 @@ class ProjectsController extends BaseController {
             'project_start' => $_POST['project_start'] ?? '',
             'project_end' => $_POST['project_end'] ?? '',
             'project_status' => $_POST['project_status'] ?? '',
-            'status' => $_POST['status'] ?? 'active',
             'group' => $_POST['group'] ?? null
         ];
         $result = $this->model->save($data);
@@ -93,5 +92,11 @@ class ProjectsController extends BaseController {
         ];
         $result = $this->model->saveBg($data);
         $this->json(['status' => $result ? 'success' : 'error']);
+    }
+    public function updateStatus() {
+        $id = intval($_POST['id'] ?? 0);
+        $status = $_POST['status'] ?? 'inactive';
+        $result = $this->model->updateStatus($id, $status);
+        $this->json(['status' => $result]);
     }
 }

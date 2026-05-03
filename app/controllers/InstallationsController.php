@@ -55,7 +55,6 @@ class InstallationsController extends BaseController {
             'installations_name_display' => $_POST['installations_name_display'] ?? '',
             'project'      => (int)($_POST['project'] ?? 0),
             'type'         => (int)($_POST['type'] ?? 0),
-            'status' => $_POST['status'] ?? ''
         ];
         $result = $this->model->save($data);
         if ($result === true) {
@@ -70,5 +69,11 @@ class InstallationsController extends BaseController {
                 'message' => 'cannot_save'
             ]);
         }
+    }
+    public function updateStatus() {
+        $id = intval($_POST['id'] ?? 0);
+        $status = $_POST['status'] ?? 'inactive';
+        $result = $this->model->updateStatus($id, $status);
+        $this->json(['status' => $result]);
     }
 }

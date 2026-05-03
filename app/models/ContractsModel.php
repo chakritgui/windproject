@@ -14,13 +14,13 @@ class ContractsModel {
         $orderDir = strtolower($orderDir) === 'desc' ? 'desc' : 'asc';
         $orderMap = [
             0 => "item_order",
-            1 => "contract_no",
-            2 => "contract_name",
-            3 => "contract_name_display",
-            4 => "contract_start",
-            5 => "contract_end",
-            6 => "created_at",
-            7 => "status"
+            1 => "status",
+            2 => "contract_no",
+            3 => "contract_name",
+            4 => "contract_name_display",
+            5 => "contract_start",
+            6 => "contract_end",
+            7 => "created_at",
         ];
         if (isset($orderMap[$colIndex])) {
             $order = $orderMap[$colIndex];
@@ -94,8 +94,7 @@ class ContractsModel {
             case 'status':
                 $staticData = [
                     ['id' => 'active', 'text' => 'Active'],
-                    ['id' => 'inactive', 'text' => 'Inactive'],
-                    ['id' => 'expired', 'text' => 'Expired']
+                    ['id' => 'inactive', 'text' => 'Inactive']
                 ];
                 if (!empty($searchTerm)) {
                     $staticData = array_values(array_filter($staticData, function($item) use ($searchTerm) {
@@ -137,7 +136,6 @@ class ContractsModel {
                 'contract_no' => '',
                 'contract_start' => '',
                 'contract_end' => '',
-                'status' => 'active'
             ];
         } else {
             $sql = "SELECT * FROM wp_contract WHERE contract_id  = ?";
@@ -165,14 +163,13 @@ class ContractsModel {
                 'message' => 'already_contract'
             ];
         }
-        $status = $data['status'] ?? '';
         $startObj = DateTime::createFromFormat('d/m/Y', trim($data['contract_start']));
         $endObj   = DateTime::createFromFormat('d/m/Y', trim($data['contract_end']));
         $contract_start = ($startObj) ? convertTimeZoneUTC($startObj->format('Y-m-d'), 'Y-m-d') : null;
         $contract_end   = ($endObj) ? convertTimeZoneUTC($endObj->format('Y-m-d'), 'Y-m-d') : null;
         $pdo = $this->db;
         if ($contract_id) {
-            $sql = "UPDATE wp_contract SET contract_no = :contract_no, contract_name = :contract_name, contract_name_display = :contract_name_display, contract_start = :contract_start, contract_end = :contract_end, status = :status, updated_at = NOW() WHERE contract_id = :contract_id";
+            $sql = "UPDATE wp_contract SET contract_no = :contract_no, contract_name = :contract_name, contract_name_display = :contract_name_display, contract_start = :contract_start, contract_end = :contract_end, updated_at = NOW() WHERE contract_id = :contract_id";
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(':contract_id', (int)$contract_id, PDO::PARAM_INT);
         } else {
@@ -202,11 +199,13 @@ class ContractsModel {
         $stmt->bindValue(':contract_name_display', $contract_name_display);
         $stmt->bindValue(':contract_start', $contract_start);
         $stmt->bindValue(':contract_end', $contract_end);
-        $stmt->bindValue(':status', $status);
+        if (!$contract_id) {
+            $stmt->bindValue(':status', 'inactive');
+        }
         return $stmt->execute();
     }
     private function isDuplicateContractName($contract_name, $contract_id = null){
-        $sql = "SELECT COUNT(*) FROM wp_contract WHERE contract_name = :contract_name";
+        $sql = "SELECT COUNT(*) FROM wp_contract WHERE status <> 'deleted' and contract_name = :contract_name";
         if ($contract_id) {
             $sql .= " AND contract_id != :contract_id";
         }
@@ -217,5 +216,10 @@ class ContractsModel {
         }
         $stmt->execute();
         return $stmt->fetchColumn() > 0;
+    }
+    public function updateStatus($id, $status) {
+        $sql = "UPDATE wp_contract SET status = ?, updated_at = NOW() WHERE contract_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$status, (int)$id]);
     }
 }
