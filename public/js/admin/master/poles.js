@@ -269,7 +269,7 @@ $(document).on('click', '.manage-pole', function() {
                             <select id="project_status" class="form-select"></select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="mb-2 required">${langData['type'] || 'Type'}</label>
+                            <label class="mb-2 required">${langData['wind_measurement_equipment'] || 'Wind Measurement Equipment'}</label>
                             <select id="type" class="form-select obj-required"></select>
                         </div>
                     </div>

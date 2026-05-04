@@ -179,7 +179,7 @@ $(document).on('click', '.manage-type', function() {
                 let modal = new bootstrap.Modal(modalEl[0]);
                 modal.show();
                 modalEl.find(".modal-header").html(`
-                    <h5 class="modal-title">${langData['manageType'] || 'Manage Type'}</h5>
+                    <h5 class="modal-title">${langData['wind_measurement_equipment'] || 'Wind Measurement Equipment'}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 `);
                 modalEl.find(".modal-footer").html(`
@@ -191,7 +191,7 @@ $(document).on('click', '.manage-type', function() {
                     ${renderCover(typeData, 'poles')}
                     <input type="hidden" id="ex_cover" value="${typeData.type_icon ? typeData.type_icon : ''}">
                     <div class="mb-3">
-                        <label class="mb-2 required">${langData['type_name'] || 'Type Name'}</label>
+                        <label class="mb-2 required">${langData['wind_measurement_equipment'] || 'Wind Measurement Equipment'}</label>
                         <input type="text" class="form-control obj-required" id="type_name" maxlength="255">
                     </div>
                     <div class="mb-3">
