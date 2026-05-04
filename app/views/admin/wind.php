@@ -35,7 +35,7 @@
                     <select id="filter_pole" class="form-select filter"></select>
                 </div>
                 <div class="col-sm-2 col-6">
-                    <p><i class="fa-solid fa-tags me-2"></i><span data-i18n="type"></span></p>
+                    <p><i class="fa-solid fa-tags me-2"></i><span data-i18n="wind_measurement_equipment"></span></p>
                     <select id="filter_type" class="form-select filter"></select>
                 </div>
                 <div class="col-sm-2 col-6">
@@ -61,7 +61,7 @@
                 <tr>
                     <th data-i18n="code"></th>
                     <th data-i18n="project"></th>
-                    <th data-i18n="type"></th>
+                    <th data-i18n="wind_measurement_equipment"></th>
                     <th data-i18n="installation"></th>
                     <th data-i18n="year"></th>
                     <th data-i18n="date"></th>
