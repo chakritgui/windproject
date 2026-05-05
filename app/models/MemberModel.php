@@ -345,12 +345,16 @@ class MemberModel {
         }
     }
     public function delete($id) {
-        if($id) {
-            $pdo = $this->db;
-            $sql = "UPDATE wp_members set status = 'deleted', updated_at = NOW() WHERE member_id = :id";
-            $stmt = $pdo->prepare($sql);
-            $stmt->bindValue(':id', (int)$id, PDO::PARAM_INT);
-            return $stmt->execute();
+        $sqlSelect = "SELECT username FROM wp_members WHERE member_id = ?";
+        $stmtSelect = $this->db->prepare($sqlSelect);
+        $stmtSelect->execute([(int)$id]);
+        $user = $stmtSelect->fetch();
+        if ($user) {
+            $newUsername = "deleted_" . time() . "_" . uniqid() . "_" . $user['username'];
+            $newUsername = substr($newUsername, 0, 60);
+            $sql = "UPDATE wp_members SET status = 'deleted', username = ?, updated_at = NOW() WHERE member_id = ?";
+            $stmt = $this->db->prepare($sql);
+            return $stmt->execute([$newUsername, (int)$id]);
         }
         return false;
     }
