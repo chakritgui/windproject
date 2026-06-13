@@ -671,8 +671,7 @@ class DocumentModel {
             $sqlData = "SELECT {$cfg['id']} as id, {$cfg['text']} as text 
                         FROM {$cfg['table']} $joinSql $whereSql 
                         GROUP BY {$cfg['id']} 
-                        ORDER BY id ASC LIMIT $limit OFFSET $offset";
-            
+                        ORDER BY {$cfg['order']} LIMIT $limit OFFSET $offset";
             $stmtData = $this->db->prepare($sqlData);
             $stmtData->execute($params);
             $items = $stmtData->fetchAll(PDO::FETCH_ASSOC);
