@@ -98,7 +98,10 @@ class NotificationModel {
                         WHEN t.notifications_target = 'document' THEN d.document_name
                         ELSE iTh.content_subject
                     END AS title_th,
-                    n.created_at AS notification_at,
+                    CASE
+                        WHEN t.notifications_target = 'document' THEN t.created_at
+                        ELSE n.created_at
+                    END AS notification_at,
                     t.notifications_target,
                     t.notifications_item,
                     n.content_slug,
