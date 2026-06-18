@@ -82,69 +82,55 @@ class NotificationModel {
             $page  = max(1, (int)$page);
             $limit = max(1, (int)$limit);
             $offset = ($page - 1) * $limit;
-            $sql = "SELECT 
-                    t.targets_id,
-                    t.publish_at,
-                    t.read_at,
-                    CASE
-                        WHEN t.notifications_target = 'document' THEN d.document_name
-                        ELSE iEn.content_subject
-                    END AS title_en,
-                    CASE
-                        WHEN t.notifications_target = 'document' THEN d.document_name
-                        ELSE iLo.content_subject
-                    END AS title_lo,
-                    CASE
-                        WHEN t.notifications_target = 'document' THEN d.document_name
-                        ELSE iTh.content_subject
-                    END AS title_th,
-                    CASE
-                        WHEN t.notifications_target = 'document' THEN t.created_at
-                        ELSE n.created_at
-                    END AS notification_at,
-                    t.notifications_target,
-                    t.notifications_item,
-                    n.content_slug,
-                    CASE
-                        WHEN t.notifications_target = 'document' THEN d.document_type
-                        ELSE ''
-                    END AS icon,
-                    CASE
-                        WHEN t.notifications_target = 'document' THEN d.document_path
-                        ELSE ''
-                    END AS path,
-                    CASE
-                        WHEN t.notifications_target = 'document' THEN d.document_file_name
-                        ELSE ''
-                    END AS item_name,
-                    CASE
-                        WHEN t.notifications_target = 'document' THEN d.document_size
-                        ELSE 0
-                    END AS item_size
-                FROM wp_notification_targets t
-                LEFT JOIN wp_content n ON n.content_id = t.notifications_item
-                LEFT JOIN wp_content_item iEn ON iEn.content_id = t.notifications_item AND iEn.content_lang = 'en'
-                LEFT JOIN wp_content_item iLo ON iLo.content_id = t.notifications_item AND iLo.content_lang = 'lo'
-                LEFT JOIN wp_content_item iTh ON iTh.content_id = t.notifications_item AND iTh.content_lang = 'th'
-                LEFT JOIN wp_documents d ON d.document_id = t.notifications_item AND t.notifications_target = 'document'
-                WHERE 
-                    t.member_id = ? AND t.status = 'published' AND t.publish_at <= NOW()
-                    AND (
-                            (
-                                t.notifications_target = 'document'
-                                AND d.document_id IS NOT NULL
-                                AND d.status = 'public'
-                            )
-                        OR
-                            (
-                                t.notifications_target IN ('project','news')
-                                AND n.content_id IS NOT NULL
-                                AND n.status in ('active', 'published')
-                            )
-                    )
-                ORDER BY t.publish_at DESC
-                LIMIT ?, ?
-            ";
+            $sql = "SELECT * FROM (
+            -- ฝั่งที่ 1: ดึงเฉพาะ Document
+            SELECT 
+                t.targets_id, t.publish_at, t.read_at,
+                d.document_name AS title_en,
+                d.document_name AS title_lo,
+                d.document_name AS title_th,
+                t.created_at AS notification_at,
+                t.notifications_target, t.notifications_item,
+                '' AS content_slug, -- Document ไม่มี slug
+                d.document_type AS icon,
+                d.document_path AS path,
+                d.document_file_name AS item_name,
+                d.document_size AS item_size
+            FROM wp_notification_targets t
+            INNER JOIN wp_documents d ON d.document_id = t.notifications_item
+            WHERE 
+                t.member_id = ? 
+                AND t.status = 'published' 
+                AND t.publish_at <= NOW()
+                AND t.notifications_target = 'document'
+                AND d.status = 'public'
+
+            UNION ALL
+
+            -- ฝั่งที่ 2: ดึงเฉพาะ Project และ News
+            SELECT 
+                t.targets_id, t.publish_at, t.read_at,
+                IFNULL(iEn.content_subject, '') AS title_en,
+                IFNULL(iLo.content_subject, '') AS title_lo,
+                IFNULL(iTh.content_subject, '') AS title_th,
+                n.created_at AS notification_at,
+                t.notifications_target, t.notifications_item,
+                n.content_slug,
+                '' AS icon, '' AS path, '' AS item_name, 0 AS item_size
+            FROM wp_notification_targets t
+            INNER JOIN wp_content n ON n.content_id = t.notifications_item
+            LEFT JOIN wp_content_item iEn ON iEn.content_id = t.notifications_item AND iEn.content_lang = 'en'
+            LEFT JOIN wp_content_item iLo ON iLo.content_id = t.notifications_item AND iLo.content_lang = 'lo'
+            LEFT JOIN wp_content_item iTh ON iTh.content_id = t.notifications_item AND iTh.content_lang = 'th'
+            WHERE 
+                t.member_id = ? 
+                AND t.status = 'published' 
+                AND t.publish_at <= NOW()
+                AND t.notifications_target IN ('project','news')
+                AND n.status IN ('active', 'published')
+        ) result_set
+        ORDER BY publish_at DESC
+        LIMIT ?, ?";
             $stmt = $pdo->prepare($sql);
             $stmt->bindValue(1, $member_id, PDO::PARAM_INT);
             $stmt->bindValue(2, $offset, PDO::PARAM_INT);
