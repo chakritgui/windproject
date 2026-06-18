@@ -90,7 +90,7 @@ class NotificationModel {
                     d.document_name AS title_en,
                     d.document_name AS title_lo,
                     d.document_name AS title_th,
-                    t.created_at AS notification_at,
+                    d.created_at AS notification_at,
                     t.notifications_target, t.notifications_item,
                     '' AS content_slug, 
                     d.document_type AS icon,
