@@ -14,36 +14,36 @@ class NotificationModel {
                     'unread' => 0,
                 ];
             }
-            $sql = "SELECT 1
-            FROM (
-                SELECT t.id
-                FROM wp_notification_targets t
-                INNER JOIN wp_documents d 
-                    ON d.document_id = t.notifications_item
-                WHERE 
-                    t.member_id = ?
-                    AND t.status = 'published'
-                    AND t.publish_at <= NOW()
-                    AND t.read_at IS NULL
-                    AND t.notifications_target = 'document'
-                    AND d.status = 'public'
-                UNION ALL
-                SELECT t.id
-                FROM wp_notification_targets t
-                INNER JOIN wp_content n 
-                    ON n.content_id = t.notifications_item
-                WHERE 
-                    t.member_id = ?
-                    AND t.status = 'published'
-                    AND t.publish_at <= NOW()
-                    AND t.read_at IS NULL
-                    AND t.notifications_target IN ('project','news')
-                    AND n.status IN ('active','published')
-            ) x
-            LIMIT 100";
+            $sql = "SELECT COUNT(*) AS unread_count
+                    FROM (
+                        SELECT t.targets_id 
+                        FROM wp_notification_targets t
+                        INNER JOIN wp_documents d 
+                            ON d.document_id = t.notifications_item
+                        WHERE 
+                            t.member_id = ?
+                            AND t.status = 'published'
+                            AND t.publish_at <= NOW()
+                            AND t.read_at IS NULL
+                            AND t.notifications_target = 'document'
+                            AND d.status = 'public'
+                        UNION ALL
+                        SELECT t.targets_id 
+                        FROM wp_notification_targets t
+                        INNER JOIN wp_content n 
+                            ON n.content_id = t.notifications_item
+                        WHERE 
+                            t.member_id = ?
+                            AND t.status = 'published'
+                            AND t.publish_at <= NOW()
+                            AND t.read_at IS NULL
+                            AND t.notifications_target IN ('project','news')
+                            AND n.status IN ('active','published')
+                    ) x";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([$member_id, $member_id]);
-            $unread = $stmt->rowCount(); 
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            $unread = $result ? (int)$result['unread_count'] : 0;
             return [
                 'status' => true,
                 'unread' => $unread
@@ -51,7 +51,7 @@ class NotificationModel {
         } catch (PDOException $e) {
             return [
                 'status' => false,
-                'unread' => 0
+                'unread' => "Notification Load Error: " . $e->getMessage()
             ];
         }
     }
